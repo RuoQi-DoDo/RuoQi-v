@@ -2,19 +2,19 @@
 
 # ─── 开发 ───────────────────────────────────────────
 dev:
-    cd backend && v -d trace_orm -d veb_livereload watch run ./main -f etc/config_dev.toml
+    cd backend && v -new-compiler -d trace_orm -d veb_livereload watch run ./main -f etc/config_dev.toml
 
 test:
-    cd backend && v -d trace_orm  run ./main -f etc/config_dev.toml
+    cd backend && v -new-compiler -d trace_orm  run ./main -f etc/config_dev.toml
 
 uat:
-    cd backend && v -d trace_orm  run ./main -f etc/config.toml
+    cd backend && v -new-compiler -d trace_orm  run ./main -f etc/config.toml
 
 build:
-    cd backend && v -o app ./main
+    cd backend && v -new-compiler -o app ./main
 
 build_prod:
-    cd backend && v -prod -o app ./main
+    cd backend && v -prod -new-compiler -o app ./main
 
 # ─── OpenAPI ────────────────────────────────────────
 openapi:
