@@ -73,7 +73,7 @@ pub struct CreatePayRefundResp {
 fn create_pay_refund_repo(mut ctx Context, req CreatePayRefundReq) !CreatePayRefundResp {
 	time_now := time.now()
 
-	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
+	mut db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') }
 	}

@@ -53,7 +53,7 @@ pub struct AssignRoleMenuResp {
 // ═══ Repository ═══
 fn assign_role_menu_repo(mut ctx Context, req AssignRoleMenuReq) !AssignRoleMenuResp {
 	ctx.scope_sc.workspace_id = req.workspace_id
-	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
+	mut db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
 	db.execute('BEGIN') or { return error('Failed to begin transaction: ${err}') }

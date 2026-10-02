@@ -54,7 +54,7 @@ pub struct RemoveMemberResp {
 // ═══ Repository ═══
 fn remove_member_repo(mut ctx Context, req RemoveMemberReq) !RemoveMemberResp {
 	ctx.scope_sc.workspace_id = req.workspace_id
-	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
+	mut db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
 	if role_id := req.role_id {

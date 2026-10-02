@@ -51,7 +51,7 @@ pub struct DeleteFmsFileTagResp {
 
 // ═══ Repository ═══
 fn delete_fms_file_tag_repo(mut ctx Context, ids []string) !DeleteFmsFileTagResp {
-	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
+	mut db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
 	db.execute('BEGIN') or { return error('Failed to begin transaction: ${err}') }

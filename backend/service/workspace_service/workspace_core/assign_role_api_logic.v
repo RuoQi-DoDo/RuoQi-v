@@ -53,7 +53,7 @@ pub struct AssignRoleApiResp {
 // ═══ Repository ═══
 fn assign_role_api_repo(mut ctx Context, req AssignRoleApiReq) !AssignRoleApiResp {
 	ctx.scope_sc.workspace_id = req.workspace_id
-	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
+	mut db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
 	db.execute('BEGIN') or { return error('Failed to begin transaction: ${err}') }

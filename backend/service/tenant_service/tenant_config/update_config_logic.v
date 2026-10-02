@@ -68,6 +68,9 @@ fn update_config_repo(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
 	} or { return error('Failed to query config: ${err}') }
 
 	if existing.len > 0 {
+		// Workaround for V3 cgen bug: `existing[0].id` inside a dynamic ORM
+		// query-data block emits an undeclared temp (`existing_0`).
+		target_id := existing[0].id
 		// vfmt off
 		up_expr := {
 			value == req.value,
@@ -78,7 +81,7 @@ fn update_config_repo(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
 		}
 		// vfmt on
 		sql db {
-			dynamic update TnConfig set up_expr where id == existing[0].id
+			dynamic update TnConfig set up_expr where id == target_id
 		}!
 	} else {
 		config := TnConfig{

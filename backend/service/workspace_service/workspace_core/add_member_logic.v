@@ -58,7 +58,7 @@ pub struct AddMemberResp {
 // ═══ Repository ═══
 fn add_member_repo(mut ctx Context, req AddMemberReq) !AddMemberResp {
 	ctx.scope_sc.workspace_id = req.workspace_id
-	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
+	mut db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
 	// 事务保证成员实体与角色分配的一致性
