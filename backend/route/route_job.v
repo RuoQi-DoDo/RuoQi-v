@@ -16,8 +16,8 @@ fn (mut app AliasApp) routes_job(mut ctx Context) {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
 	// Task management
-	app.register_routes_platform[Task, Context](mut &Task{}, '/job/task', mut ctx)
+	app.register_routes_platform[Task](mut &Task{}, '/job/task', mut ctx)
 
 	// Task log management
-	app.register_routes_platform[TaskLog, Context](mut &TaskLog{}, '/job/tasklog', mut ctx)
+	app.register_routes_platform[TaskLog](mut &TaskLog{}, '/job/tasklog', mut ctx)
 }

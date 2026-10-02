@@ -23,15 +23,15 @@ fn (mut app AliasApp) routes_iam(mut ctx Context) {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
 	// 无需认证 —— 认证入口 + 注册 + MFA
-	app.register_routes_no_auth[Iam, Context](mut &Iam{}, '/iam', mut ctx)
-	app.register_routes_no_auth[Authentication, Context](mut &Authentication{}, '/iam/auth', mut ctx)
+	app.register_routes_no_auth[Iam](mut &Iam{}, '/iam', mut ctx)
+	app.register_routes_no_auth[Authentication](mut &Authentication{}, '/iam/auth', mut ctx)
 
 	// 仅认证（自服务）—— 已登录即可访问，不检查 workspace 权限
-	app.register_routes_authenticated[Profile, Context](mut &Profile{}, '/iam/profile', mut ctx)
-	app.register_routes_authenticated[Token, Context](mut &Token{}, '/iam/token', mut ctx)
-	app.register_routes_authenticated[Tenant, Context](mut &Tenant{}, '/iam/tenant', mut ctx)
+	app.register_routes_authenticated[Profile](mut &Profile{}, '/iam/profile', mut ctx)
+	app.register_routes_authenticated[Token](mut &Token{}, '/iam/token', mut ctx)
+	app.register_routes_authenticated[Tenant](mut &Tenant{}, '/iam/tenant', mut ctx)
 
 	// 全量认证+授权 —— 需要 workspace 权限
-	app.register_routes_platform[User, Context](mut &User{}, '/iam/user', mut ctx)
-	app.register_routes_platform[ApiKey, Context](mut &ApiKey{}, '/iam/apikey', mut ctx)
+	app.register_routes_platform[User](mut &User{}, '/iam/user', mut ctx)
+	app.register_routes_platform[ApiKey](mut &ApiKey{}, '/iam/apikey', mut ctx)
 }

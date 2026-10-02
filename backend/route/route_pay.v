@@ -15,5 +15,5 @@ import service.pay_api { Pay }
 fn (mut app AliasApp) routes_pay(mut ctx Context) {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	app.register_routes_platform[Pay, Context](mut &Pay{}, '/pay', mut ctx)
+	app.register_routes_platform[Pay](mut &Pay{}, '/pay', mut ctx)
 }

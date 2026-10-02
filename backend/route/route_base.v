@@ -12,9 +12,9 @@ fn (mut app AliasApp) routes_sys_base(mut ctx Context) {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
 	// 不需要token_jwt 认证
-	app.register_routes_no_auth[Currency, Context](mut &Currency{}, '/base/currency', mut ctx)
-	app.register_routes_no_auth[Language, Context](mut &Language{}, '/base/language', mut ctx)
-	app.register_routes_no_auth[Region, Context](mut &Region{}, '/base/region', mut ctx)
-	app.register_routes_no_auth[RegionAdmDiv, Context](mut &RegionAdmDiv{}, '/base/region_adm_div', mut ctx)
-	app.register_routes_no_auth[Utc, Context](mut &Utc{}, '/base/utc', mut ctx)
+	app.register_routes_no_auth[Currency](mut &Currency{}, '/base/currency', mut ctx)
+	app.register_routes_no_auth[Language](mut &Language{}, '/base/language', mut ctx)
+	app.register_routes_no_auth[Region](mut &Region{}, '/base/region', mut ctx)
+	app.register_routes_no_auth[RegionAdmDiv](mut &RegionAdmDiv{}, '/base/region_adm_div', mut ctx)
+	app.register_routes_no_auth[Utc](mut &Utc{}, '/base/utc', mut ctx)
 }

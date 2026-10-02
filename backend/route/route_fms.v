@@ -15,5 +15,5 @@ import service.fms_api { Fms }
 fn (mut app AliasApp) routes_fms(mut ctx Context) {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	app.register_routes_platform[Fms, Context](mut &Fms{}, '/fms', mut ctx)
+	app.register_routes_platform[Fms](mut &Fms{}, '/fms', mut ctx)
 }
