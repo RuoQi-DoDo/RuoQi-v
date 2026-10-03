@@ -2,7 +2,7 @@
 
 # ─── 开发 ───────────────────────────────────────────
 dev:
-    cd backend && v -new-compiler -cc tcc -d trace_orm -d veb_livereload watch run ./main -f etc/config_dev.toml
+    cd backend && v -new-compiler -cc tcc -no-retry-compilation -d trace_orm -d veb_livereload watch run ./main -f etc/config_dev.toml
 
 test:
     cd backend && v -new-compiler -cc tcc -d trace_orm  run ./main -f etc/config_dev.toml
@@ -11,7 +11,7 @@ uat:
     cd backend && v -new-compiler -cc tcc -d trace_orm  run ./main -f etc/config.toml
 
 build:
-    cd backend && v -new-compiler -cc tcc -o app ./main
+    cd backend && v -new-compiler -cc tcc -no-retry-compilation -o app ./main
 
 build_prod:
     cd backend && v -prod -new-compiler -o app ./main
