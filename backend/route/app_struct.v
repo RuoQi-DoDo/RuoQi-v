@@ -2,9 +2,14 @@ module route
 
 import veb
 import model { App }
+import common.mcp
 
 pub struct AliasApp {
 	App
+pub mut:
+	// mcp_server is the embedded base MCP server, dispatched in-process by the
+	// `/mcp` route. nil when unavailable.
+	mcp_server &mcp.Server = unsafe { nil }
 }
 
 // init_server stores the veb server handle for graceful shutdown.

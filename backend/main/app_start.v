@@ -70,6 +70,9 @@ pub fn new_app() {
 		conn_db.close()
 	}
 
+	// 3b. 构建内置 base MCP 服务；不单独监听端口，直接挂到 /mcp 路由进程内分发。
+	mcp_server := new_base_mcp_server(conn_db)
+
 	// 4. 初始化缓存连接池。
 	// Redis 暂不使用，以下初始化已注释掉，直接跳过。
 	// log.debug('init_cache_pool()')
@@ -82,6 +85,7 @@ pub fn new_app() {
 	mut app := &AliasApp{
 		started: chan bool{ cap: 1 }
 		shutdown_signal: chan bool{ cap: 1 }
+		mcp_server: mcp_server
 	}
 	os.signal_opt(.int, fn [app] (_ os.Signal) {
 		app.request_shutdown()
