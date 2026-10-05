@@ -3,7 +3,7 @@ module region
 import log
 import time
 import json2 as json
-import common.mcp
+import mcp
 import adapter.dbpool
 import model.schema_base { BaseRegion }
 

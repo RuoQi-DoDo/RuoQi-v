@@ -1,6 +1,6 @@
 module utc
 
-import common.mcp
+import mcp
 import adapter.dbpool
 
 // register_utc_tools registers every base UTC time zone MCP tool on server.

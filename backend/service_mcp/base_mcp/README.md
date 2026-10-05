@@ -11,7 +11,7 @@
 
 内部实现：
 
-- `backend/common/mcp/` 是 vlib `mcp` 模块的本地副本（唯一改动：导出 `handle_http_request`）；
+- `mcp` 直接使用 V 标准库的 `vlib/mcp` 模块（其 `handle_http_request` 已导出）；
 - `backend/main/mcp_start.v` 构建 MCP server，不监听任何端口；
 - `backend/route/route_base_mcp.v` 的 `/mcp` 路由在同一个 veb 端口上**进程内**分发请求。
 
@@ -79,5 +79,5 @@ MCP 客户端配置（Streamable HTTP）：
 
 - veb 与 MCP 共用同一个监听 socket，`/mcp` 由 veb 路由进程内调用
   `mcp.Server.handle_http_request`，没有额外端口或反代跳数。
-- `common.mcp` 的 HTTP 传输沿用 vlib 实现：请求-响应模型，`GET` 返回当前已排队的
+- `mcp` 的 HTTP 传输沿用 vlib 实现：请求-响应模型，`GET` 返回当前已排队的
   SSE 事件并结束（不是长期连接）。

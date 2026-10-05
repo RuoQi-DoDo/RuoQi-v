@@ -2,7 +2,7 @@ module route
 
 import veb
 import model { App }
-import common.mcp
+import mcp
 
 pub struct AliasApp {
 	App

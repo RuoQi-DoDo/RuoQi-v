@@ -1,6 +1,6 @@
 module language
 
-import common.mcp
+import mcp
 import adapter.dbpool
 
 // register_language_tools registers every base language MCP tool on server.

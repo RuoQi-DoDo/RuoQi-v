@@ -2,7 +2,7 @@ module utc
 
 import log
 import json2 as json
-import common.mcp
+import mcp
 import adapter.dbpool
 import model.schema_base { BaseUtc }
 

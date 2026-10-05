@@ -1,6 +1,6 @@
 module currency
 
-import common.mcp
+import mcp
 import adapter.dbpool
 
 // register_currency_tools registers every base currency MCP tool on server.

@@ -1,6 +1,6 @@
 module region_adm_div
 
-import common.mcp
+import mcp
 import adapter.dbpool
 
 // register_region_adm_tools registers every base administrative division MCP tool on server.

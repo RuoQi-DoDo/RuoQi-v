@@ -1,6 +1,6 @@
 module region
 
-import common.mcp
+import mcp
 import adapter.dbpool
 
 // register_region_tools registers every base region MCP tool on server.

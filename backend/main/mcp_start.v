@@ -2,7 +2,7 @@ module main
 
 import log
 import adapter.dbpool
-import common.mcp
+import mcp
 import service_mcp.base_mcp
 
 // new_base_mcp_server builds the embedded base master-data MCP server.

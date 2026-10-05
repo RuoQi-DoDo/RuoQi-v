@@ -1,6 +1,6 @@
 module base_mcp
 
-import common.mcp
+import mcp
 import adapter.dbpool
 import service_mcp.base_mcp.currency
 import service_mcp.base_mcp.language
