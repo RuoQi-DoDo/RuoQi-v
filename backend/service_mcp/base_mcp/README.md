@@ -32,11 +32,19 @@
 
 ## 访问
 
-启动主应用即可（MCP 随应用启动）：
+MCP 路由按服务条件挂载（见 `backend/route/route_cfg.v`）：
+
+- 单体构建（默认 `all`，无编译标志）→ 随主应用一起开放 `/mcp`；
+- 基础资料服务（`just dev mcp` / `just build mcp`，即 `v -d mcp`）→ 开放 `/base`
+  基础资料 API + `/mcp`；
+- 其他微服务构建（`-d fms` / `-d iam` / ...）→ 不注册 `/mcp`。
+
+启动后即可访问（MCP 随应用启动）：
 
 ```bash
-just dev      # 开发模式
-just test     # 或直接跑一次
+just dev mcp   # 开发模式（只含基础资料 API + MCP）
+just test mcp  # 或直接跑一次
+just dev       # 不带服务名 = 单体，全部路由
 ```
 
 MCP 端点：`http://localhost:9009/mcp`（Streamable HTTP）。

@@ -58,6 +58,21 @@ v -d autofree -prod -o app ./main
 
 > Default port: `9009`. After startup, visit `http://localhost:9009`.
 
+#### Run a Single Service
+
+Routes are selected by compile flags (see the table in `backend/route/route_cfg.v`);
+the justfile wraps them behind a service variable:
+
+```bash
+just dev mcp                        # base master-data service: /base + /mcp
+just test fms                       # file service (run once)
+just build iam                      # build the core service into backend/app
+SERVICE=platform just build-prod    # production build of the platform service
+just dev                            # no service name = monolith (all routes)
+```
+
+Available services: `all fms iam job mcms pay tenant platform mcp`.
+
 ### Frontend
 
 ```bash

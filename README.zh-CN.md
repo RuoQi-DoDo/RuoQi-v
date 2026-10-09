@@ -57,6 +57,20 @@ v -d autofree -prod -o app ./main
 
 > 默认端口: `9009`，启动后访问 `http://localhost:9009`
 
+#### 单服务运行（微服务拆分）
+
+路由按编译标志选择（对应表见 `backend/route/route_cfg.v`），justfile 已封装服务变量：
+
+```bash
+just dev mcp                        # 基础资料服务：/base + /mcp
+just test fms                       # 文件服务（单次运行）
+just build iam                      # 编译核心服务到 backend/app
+SERVICE=platform just build-prod    # 生产编译平台服务
+just dev                            # 不带服务名 = 单体（all，全部路由）
+```
+
+可选服务名：`all fms iam job mcms pay tenant platform mcp`。
+
 ### 前端
 
 ```bash
