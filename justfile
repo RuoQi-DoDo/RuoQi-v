@@ -4,6 +4,9 @@
 #   all 单体 / fms 文件 / iam 核心（身份+工作空间）/ job 任务 / mcms 消息 /
 #   pay 支付 / tenant 租户 / platform 平台 / mcp 基础资料（/base + /mcp）
 # 用法：just dev mcp、just build fms、SERVICE=iam just test、just build（默认 all）
+# 用 bash 执行 recipe：time 是 bash 保留字，默认的 sh(dash) 里不存在
+
+set shell := ["bash", "-uc"]
 
 service := env_var_or_default("SERVICE", "all")
 services := "all fms iam job mcms pay tenant platform mcp"
@@ -28,11 +31,11 @@ uat s=service: (_check_service s)
 
 # 编译到 backend/app；可选服务名：just build fms
 build s=service: (_check_service s)
-    cd backend && v -new-compiler -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time v -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 生产编译；可选服务名：just build-prod pay
 build-prod s=service: (_check_service s)
-    cd backend && v -prod -new-compiler {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time v -new-compiler -prod -stats -new-compiler {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # ─── OpenAPI ────────────────────────────────────────
 openapi:
