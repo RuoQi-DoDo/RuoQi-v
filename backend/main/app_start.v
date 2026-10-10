@@ -8,13 +8,14 @@ import model { Context }
 import middleware
 import config
 import locale
+import common.reqid
 import route { AliasApp }
 
 fn serve_http(mut app AliasApp, port int, request_timeout int) {
 	veb.run_at[AliasApp, Context](mut app,
-		host: ''
-		port: port
-		family: .ip6
+		host:               ''
+		port:               port
+		family:             .ip6
 		timeout_in_seconds: request_timeout
 	) or { panic(err) }
 }
@@ -31,7 +32,8 @@ fn serve_until_shutdown(mut app AliasApp, web config.WebConf) {
 	log.info('graceful shutdown complete')
 }
 
-fn setup_app_middleware(mut app AliasApp, ctx &Context) {
+fn setup_app_middleware(mut app AliasApp, ctx &Context, registry &reqid.Registry) {
+	app.use(middleware.request_id_middleware(registry)) // 请求 id，必须最先执行
 	app.use(middleware.cores_middleware_generic()) // 跨域中间件
 	app.use(middleware.logger_middleware_generic())
 	app.use(middleware.config_middle(ctx.config))
@@ -49,7 +51,7 @@ fn shutdown_veb_server(app &AliasApp, timeout_seconds int) ! {
 	server.shutdown(timeout: timeout_seconds * time.second)!
 }
 
-pub fn new_app() {
+pub fn new_app(registry &reqid.Registry) {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
 	// 1. 加载配置，后续依赖都从同一份配置对象读取。
@@ -83,9 +85,9 @@ pub fn new_app() {
 
 	// 5. 创建 veb 应用实例，并注册系统关闭信号。
 	mut app := &AliasApp{
-		started: chan bool{ cap: 1 }
-		shutdown_signal: chan bool{ cap: 1 }
-		mcp_server: mcp_server
+		started:         chan bool{cap: 1}
+		shutdown_signal: chan bool{cap: 1}
+		mcp_server:      mcp_server
 	}
 	os.signal_opt(.int, fn [app] (_ os.Signal) {
 		app.request_shutdown()
@@ -103,7 +105,7 @@ pub fn new_app() {
 	}
 
 	// 7. 注册全局中间件，仅作用于非子路由。
-	setup_app_middleware(mut app, ctx)
+	setup_app_middleware(mut app, ctx, registry)
 
 	// 8. 注册按条件启用的子路由控制器。
 	app.setup_conditional_routes(mut ctx)

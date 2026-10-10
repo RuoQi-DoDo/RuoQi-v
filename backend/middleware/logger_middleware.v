@@ -12,6 +12,9 @@ pub fn logger_middleware(mut ctx Context) bool {
 	log.info('req.host: ${ctx.req.host}')
 	log.info('req.url: ${ctx.req.url}')
 	log.info('req.method: ${ctx.req.method}')
+	if ctx.request_id != '' {
+		log.info('req.request_id: ${ctx.request_id}')
+	}
 	log.debug('req.version: ${ctx.req.version}')
 	log.debug('req.proxy: ${ctx.req.proxy}')
 	log.debug('req.user_agent: ${ctx.req.user_agent}')
@@ -52,6 +55,6 @@ pub fn logger_middleware(mut ctx Context) bool {
 pub fn logger_middleware_generic() veb.MiddlewareOptions[Context] {
 	return veb.MiddlewareOptions[Context]{
 		handler: logger_middleware // 显式初始化 handler 字段
-		after: true // 请求处理后执行
+		after:   true              // 请求处理后执行
 	}
 }

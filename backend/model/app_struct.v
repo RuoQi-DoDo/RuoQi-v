@@ -1,7 +1,9 @@
 module model
 
 import veb
+import common.api
 import common.crypt { AuthPayload }
+import common.reqid
 import adapter.dbpool
 import adapter.cache_pool
 import orm
@@ -30,6 +32,9 @@ pub mut:
 	jwt_payload  ?AuthPayload
 	locale       &locale.LocaleStore
 	extra_locale map[string]string = map[string]string{}
+	// request_id 是本次调用的唯一标识，由 request_id_middleware 在请求入口写入；
+	// 日志前缀、响应头与响应体里的 request_id 都用它。
+	request_id string
 
 	svc_iam ServiceContextIam
 }
@@ -76,4 +81,22 @@ pub fn (ctx &Context) t(key string) ?string {
 		return none
 	}
 	return ctx.locale.t(key)
+}
+
+// json 覆盖内嵌的 veb.Context.json：在编码统一响应体之前注入本次请求的 request_id。
+//
+// 这样业务代码保持 `ctx.json(api.json_success(...))` 写法不变，
+// request_id 由请求上下文统一提供，而不是在响应构造时生成。
+pub fn (mut ctx Context) json[T](j T) veb.Result {
+	if ctx.request_id == '' {
+		// 非 HTTP 上下文（测试/后台任务）没有入口中间件，这里兜底生成。
+		ctx.request_id = reqid.generate()
+	}
+	mut v := j
+	$if T is api.ApiSuccessResponse {
+		v.request_id = ctx.request_id
+	} $else $if T is api.ApiErrorResponse {
+		v.request_id = ctx.request_id
+	}
+	return ctx.Context.json(v)
 }

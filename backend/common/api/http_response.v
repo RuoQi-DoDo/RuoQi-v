@@ -1,6 +1,6 @@
 module api
 
-import rand
+import json2
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 统一响应构造器（只保留两个）
@@ -10,12 +10,12 @@ import rand
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // 业务成功
-pub fn json_success[T](input ApiSuccessResponse[T]) ApiSuccessResponse[T] {
-	return ApiSuccessResponse[T]{
-		code: success
-		request_id: rand.uuid_v7()
-		data: input.data
-		msg: input.msg
+pub fn json_success[T](input ApiSuccessInput[T]) ApiSuccessResponse {
+	return ApiSuccessResponse{
+		code:       0
+		request_id: ''
+		data:       json2.encode(input.data)
+		msg:        input.msg
 	}
 }
 
@@ -32,9 +32,9 @@ pub fn json_error(input ApiErrorResponse) ApiErrorResponse {
 		}
 	}
 	return ApiErrorResponse{
-		code: input.code
-		request_id: rand.uuid_v7()
-		msg: msg
+		code:       input.code
+		request_id: ''
+		msg:        msg
 	}
 }
 
