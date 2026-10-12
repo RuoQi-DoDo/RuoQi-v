@@ -29,9 +29,13 @@ test s=service: (_check_service s)
 uat s=service: (_check_service s)
     cd backend && v -new-compiler -cc tcc -no-retry-compilation -d trace_orm {{ if s == "all" { "" } else { "-d " + s } }} run ./main -f etc/config.toml
 
-# 编译到 backend/app；可选服务名：just build fms
+# 编译到 backend/app（单线程，省内存）；可选服务名：just build fms
 build s=service: (_check_service s)
-    cd backend && time v -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time v -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+
+# 并行单态化编译（更快，更吃内存）；可选服务名：just build-parallel fms
+build-parallel s=service: (_check_service s)
+    cd backend && time env V3_PARALLEL_MONOMORPHIZE=1 v -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 生产编译；可选服务名：just build-prod pay
 build-prod s=service: (_check_service s)
