@@ -33,7 +33,7 @@ uat s=service: (_check_service s)
 
 # vgc 依赖 __sync_* 原子内建，bundled tcc 链接不过，必须 gcc/clang。可选服务名：just build-vgc fms
 build-vgc s=service: (_check_service s)
-    cd backend && time v -autofree -gc vgc  -no-prealloc -new-compiler -stats -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time v -autofree -gc vgc  -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 编译到 backend/app（单线程，省内存）；可选服务名：just build fms
 build s=service: (_check_service s)
