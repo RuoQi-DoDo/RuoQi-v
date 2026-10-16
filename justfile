@@ -29,23 +29,21 @@ test s=service: (_check_service s)
 uat s=service: (_check_service s)
     cd backend && v -new-compiler -cc tcc -no-retry-compilation -d trace_orm {{ if s == "all" { "" } else { "-d " + s } }} run ./main -f etc/config.toml
 
-# 编译到 backend/app（单线程，省内存）；用 V 自带 GC（-gc vgc）替代 Boehm。
-
-# vgc 依赖 __sync_* 原子内建，bundled tcc 链接不过，必须 gcc/clang。可选服务名：just build-vgc fms
-build-vgc s=service: (_check_service s)
-    cd backend && time v -autofree -gc vgc  -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
-
 # 编译到 backend/app（单线程，省内存）；可选服务名：just build fms
 build s=service: (_check_service s)
-    cd backend && time v -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time v -ownership -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+
+# 编译到 backend/app（单线程，省内存）；用 V 自带 GC（-gc vgc）替代 Boehm。
+build-vgc s=service: (_check_service s)
+    cd backend && time v -autofree -gc vgc -ownership -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 并行单态化编译（更快，更吃内存）；可选服务名：just build-parallel fms
 build-parallel s=service: (_check_service s)
-    cd backend && time env V3_PARALLEL_MONOMORPHIZE=1 v -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time env V3_PARALLEL_MONOMORPHIZE=1 v -ownership -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 生产编译；可选服务名：just build-prod pay
 build-prod s=service: (_check_service s)
-    cd backend && time v -new-compiler -prod -stats -new-compiler {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time v -ownership -new-compiler -prod -stats -new-compiler {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # ─── OpenAPI ────────────────────────────────────────
 openapi:
