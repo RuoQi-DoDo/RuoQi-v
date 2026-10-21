@@ -22,12 +22,12 @@ pub fn (app &PlatformDictionary) delete_detail_handler(mut ctx Context) veb.Resu
 
 // ═══ Use Case ═══
 pub fn delete_detail_usecase(mut ctx Context, req DeleteDetailReq) !DeleteDetailResp {
-	delete_detail_domain(req)!
+	delete_detail_domain(&req)!
 	return delete_detail_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_detail_domain(req DeleteDetailReq) ! {
+fn delete_detail_domain(req &DeleteDetailReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

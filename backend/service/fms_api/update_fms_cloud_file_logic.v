@@ -20,7 +20,7 @@ pub fn (app &Fms) update_fms_cloud_file_handler(mut ctx Context) veb.Result {
 	result := update_fms_cloud_file_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Fms) update_fms_cloud_file_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_fms_cloud_file_usecase(mut ctx Context, req UpdateFmsCloudFileReq) !UpdateFmsCloudFileResp {
-	update_fms_cloud_file_domain(req)!
+	update_fms_cloud_file_domain(&req)!
 	return update_fms_cloud_file_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_fms_cloud_file_domain(req UpdateFmsCloudFileReq) ! {
+fn update_fms_cloud_file_domain(req &UpdateFmsCloudFileReq) ! {
 	if req.id == '' {
 		return error('cloud file id is required')
 	}
@@ -42,12 +42,12 @@ fn update_fms_cloud_file_domain(req UpdateFmsCloudFileReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateFmsCloudFileReq {
-	id                           string @[json: 'id']
+	id                           string  @[json: 'id']
 	name                         ?string @[json: 'name']
 	url                          ?string @[json: 'url']
-	file_type                    ?u8 @[json: 'fileType']
+	file_type                    ?u8     @[json: 'fileType']
 	cloud_file_storage_providers ?string @[json: 'cloudFileStorageProviders']
-	status                       ?u8 @[json: 'status']
+	status                       ?u8     @[json: 'status']
 }
 
 pub struct UpdateFmsCloudFileResp {

@@ -21,7 +21,7 @@ pub fn (app &Region) create_region_handler(mut ctx Context) veb.Result {
 	result := create_region_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &Region) create_region_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_region_usecase(mut ctx Context, req CreateRegionReq) !CreateRegionResp {
-	create_region_domain(req)!
+	create_region_domain(&req)!
 	return create_region_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_region_domain(req CreateRegionReq) ! {
+fn create_region_domain(req &CreateRegionReq) ! {
 	if req.sys_region_code == '' {
 		return error('sys_region_code is required')
 	}
@@ -51,10 +51,10 @@ fn create_region_domain(req CreateRegionReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateRegionReq {
-	sys_region_code      string @[json: 'sysRegionCode']
-	sys_region_name      string @[json: 'sysRegionName']
-	name_local           string @[json: 'nameLocal']
-	langcode_local       string @[json: 'langcodeLocal']
+	sys_region_code      string  @[json: 'sysRegionCode']
+	sys_region_name      string  @[json: 'sysRegionName']
+	name_local           string  @[json: 'nameLocal']
+	langcode_local       string  @[json: 'langcodeLocal']
 	govt_code            ?string @[json: 'govtCode']
 	gid_zero             ?string @[json: 'gidZero']
 	hasc                 ?string @[json: 'hasc']
@@ -67,8 +67,8 @@ pub struct CreateRegionReq {
 	domain_name          ?string @[json: 'domainName']
 	continent_code       ?string @[json: 'continentCode']
 	coord_bounds         ?string @[json: 'coordBounds']
-	sort                 ?int @[json: 'sort']
-	status               u8 @[json: 'status']
+	sort                 ?int    @[json: 'sort']
+	status               u8      @[json: 'status']
 	name_en              ?string @[json: 'nameEn']
 	name_zh              ?string @[json: 'nameZh']
 	updater_id           ?string @[json: 'updaterId']
@@ -83,31 +83,31 @@ pub struct CreateRegionResp {
 fn create_region_repo(mut ctx Context, req CreateRegionReq) !CreateRegionResp {
 	time_now := time.now()
 	base_region := BaseRegion{
-		id: rand.uuid_v7()
-		sys_region_code: req.sys_region_code
-		sys_region_name: req.sys_region_name
-		name_local: req.name_local
-		langcode_local: req.langcode_local
-		govt_code: req.govt_code
-		gid_zero: req.gid_zero
-		hasc: req.hasc
-		iso_two: req.iso_two
-		iso_three: req.iso_three
-		numeric: req.numeric
+		id:                   rand.uuid_v7()
+		sys_region_code:      req.sys_region_code
+		sys_region_name:      req.sys_region_name
+		name_local:           req.name_local
+		langcode_local:       req.langcode_local
+		govt_code:            req.govt_code
+		gid_zero:             req.gid_zero
+		hasc:                 req.hasc
+		iso_two:              req.iso_two
+		iso_three:            req.iso_three
+		numeric:              req.numeric
 		international_prefix: req.international_prefix
-		phone_area_code: req.phone_area_code
-		postal_code: req.postal_code
-		domain_name: req.domain_name
-		continent_code: req.continent_code
-		coord_bounds: req.coord_bounds
-		sort: req.sort
-		status: req.status
-		name_en: req.name_en
-		name_zh: req.name_zh
-		updater_id: ctx.svc_iam.user_id
-		creator_id: ctx.svc_iam.user_id
-		created_at: time_now
-		updated_at: time_now
+		phone_area_code:      req.phone_area_code
+		postal_code:          req.postal_code
+		domain_name:          req.domain_name
+		continent_code:       req.continent_code
+		coord_bounds:         req.coord_bounds
+		sort:                 req.sort
+		status:               req.status
+		name_en:              req.name_en
+		name_zh:              req.name_zh
+		updater_id:           ctx.svc_iam.user_id
+		creator_id:           ctx.svc_iam.user_id
+		created_at:           time_now
+		updated_at:           time_now
 	}
 
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }

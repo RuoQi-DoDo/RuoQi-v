@@ -21,7 +21,7 @@ pub fn (app &Task) create_task_handler(mut ctx Context) veb.Result {
 	result := create_task_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &Task) create_task_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_task_usecase(mut ctx Context, req CreateTaskReq) !CreateTaskResp {
-	create_task_domain(req)!
+	create_task_domain(&req)!
 	return create_task_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_task_domain(req CreateTaskReq) ! {
+fn create_task_domain(req &CreateTaskReq) ! {
 	if req.name == '' {
 		return error('task name is required')
 	}
@@ -72,20 +72,20 @@ fn validate_cron_expression(expr string) ! {
 		}
 		if field.contains(',') {
 			for sub in field.split(',') {
-				if !is_valid_cron_atom(sub) {
+				if !is_valid_cron_atom(&sub) {
 					return error('invalid cron field value: ${sub}')
 				}
 			}
 			continue
 		}
-		if !is_valid_cron_atom(field) {
+		if !is_valid_cron_atom(&field) {
 			return error('invalid cron field value: ${field}')
 		}
 	}
 }
 
-fn is_valid_cron_atom(s string) bool {
-	if s == '' {
+fn is_valid_cron_atom(s &string) bool {
+	if s.len == 0 {
 		return false
 	}
 	// Allow ranges like 1-5
@@ -94,12 +94,12 @@ fn is_valid_cron_atom(s string) bool {
 		if parts.len != 2 {
 			return false
 		}
-		return is_valid_cron_number(parts[0]) && is_valid_cron_number(parts[1])
+		return is_valid_cron_number(&parts[0]) && is_valid_cron_number(&parts[1])
 	}
 	return is_valid_cron_number(s)
 }
 
-fn is_valid_cron_number(s string) bool {
+fn is_valid_cron_number(s &string) bool {
 	return s.is_int()
 }
 
@@ -110,7 +110,7 @@ pub struct CreateTaskReq {
 	cron_expression string @[json: 'cronExpression']
 	pattern         string @[json: 'pattern']
 	payload         string @[json: 'payload']
-	status          u8 @[json: 'status']
+	status          u8     @[json: 'status']
 }
 
 pub struct CreateTaskResp {
@@ -121,17 +121,17 @@ pub struct CreateTaskResp {
 fn create_task_repo(mut ctx Context, req CreateTaskReq) !CreateTaskResp {
 	time_now := time.now()
 	task := JobTask{
-		id: rand.uuid_v7()
-		name: req.name
-		task_group: req.task_group
+		id:              rand.uuid_v7()
+		name:            req.name
+		task_group:      req.task_group
 		cron_expression: req.cron_expression
-		pattern: req.pattern
-		payload: req.payload
-		status: req.status
-		creator_id: ctx.svc_iam.user_id
-		updater_id: ctx.svc_iam.user_id
-		created_at: time_now
-		updated_at: time_now
+		pattern:         req.pattern
+		payload:         req.payload
+		status:          req.status
+		creator_id:      ctx.svc_iam.user_id
+		updater_id:      ctx.svc_iam.user_id
+		created_at:      time_now
+		updated_at:      time_now
 	}
 
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }

@@ -19,7 +19,7 @@ pub fn (app &EmailProvider) find_email_provider_by_id_handler(mut ctx Context) v
 	result := find_email_provider_by_id_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -28,12 +28,12 @@ pub fn (app &EmailProvider) find_email_provider_by_id_handler(mut ctx Context) v
 
 // ═══ Use Case ═══
 pub fn find_email_provider_by_id_usecase(mut ctx Context, req EmailProviderByIdReq) !MsgEmailProvider {
-	find_email_provider_by_id_domain(req)!
+	find_email_provider_by_id_domain(&req)!
 	return find_email_provider_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_email_provider_by_id_domain(req EmailProviderByIdReq) ! {
+fn find_email_provider_by_id_domain(req &EmailProviderByIdReq) ! {
 	if req.id == '' {
 		return error('email provider id is required')
 	}

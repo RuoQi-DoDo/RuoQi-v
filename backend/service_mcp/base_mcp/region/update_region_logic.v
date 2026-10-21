@@ -30,12 +30,12 @@ pub fn update_region_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) 
 
 // ═══ Use Case ═══
 pub fn update_region_usecase(pool &dbpool.DatabasePoolable, req UpdateRegionReq) !UpdateRegionResp {
-	update_region_domain(req)!
+	update_region_domain(&req)!
 	return update_region_repo(pool, req)
 }
 
 // ═══ Domain ═══
-fn update_region_domain(req UpdateRegionReq) ! {
+fn update_region_domain(req &UpdateRegionReq) ! {
 	if req.id == '' {
 		return error('region id is required')
 	}

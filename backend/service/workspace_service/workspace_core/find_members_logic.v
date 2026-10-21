@@ -18,7 +18,7 @@ pub fn (app &WorkspaceCore) find_members_handler(mut ctx Context) veb.Result {
 	result := find_members_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -26,12 +26,12 @@ pub fn (app &WorkspaceCore) find_members_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_members_usecase(mut ctx Context, req FindMembersReq) !FindMembersResp {
-	find_members_domain(req)!
+	find_members_domain(&req)!
 	return find_members_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_members_domain(req FindMembersReq) ! {
+fn find_members_domain(req &FindMembersReq) ! {
 	if req.workspace_id == '' {
 		return error('workspace_id is required')
 	}
@@ -43,10 +43,10 @@ pub struct FindMembersReq {
 }
 
 pub struct MemberInfo {
-	user_id   string @[json: 'userId']
+	user_id   string    @[json: 'userId']
 	joined_at time.Time @[json: 'joinedAt']
-	status    u8 @[json: 'status']
-	role_ids  []string @[json: 'roleIds']
+	status    u8        @[json: 'status']
+	role_ids  []string  @[json: 'roleIds']
 }
 
 pub struct FindMembersResp {
@@ -79,10 +79,10 @@ fn find_members_repo(mut ctx Context, req FindMembersReq) !FindMembersResp {
 	mut result := []MemberInfo{cap: members.len}
 	for m in members {
 		result << MemberInfo{
-			user_id: m.user_id
+			user_id:   m.user_id
 			joined_at: m.joined_at
-			status: m.status
-			role_ids: role_map[m.user_id]
+			status:    m.status
+			role_ids:  role_map[m.user_id]
 		}
 	}
 

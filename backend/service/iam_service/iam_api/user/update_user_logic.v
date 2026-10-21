@@ -24,7 +24,7 @@ pub fn (app &User) update_user_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_user_usecase(mut ctx Context, req UpdateUserReq) !UpdateUserResp {
-	update_user_domain(req)!
+	update_user_domain(&req)!
 	password_hash := if pwd := req.password {
 		encrypt.bcrypt_hash(pwd) or { return error('Failed to hash password') }
 	} else {
@@ -37,7 +37,7 @@ pub fn update_user_usecase(mut ctx Context, req UpdateUserReq) !UpdateUserResp {
 }
 
 // ═══ Domain ═══
-fn update_user_domain(req UpdateUserReq) ! {
+fn update_user_domain(req &UpdateUserReq) ! {
 	if req.user_id == '' {
 		return error('user_id is required')
 	}
@@ -45,7 +45,7 @@ fn update_user_domain(req UpdateUserReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateUserReq {
-	user_id     string @[json: 'id']
+	user_id     string  @[json: 'id']
 	avatar      ?string @[json: 'avatar']
 	description ?string @[json: 'description']
 	email       ?string @[json: 'email']
@@ -53,7 +53,7 @@ pub struct UpdateUserReq {
 	mobile      ?string @[json: 'mobile']
 	nickname    ?string @[json: 'nickname']
 	password    ?string @[json: 'password']
-	status      ?u8 @[json: 'status']
+	status      ?u8     @[json: 'status']
 	username    ?string @[json: 'username']
 }
 

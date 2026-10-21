@@ -20,7 +20,7 @@ pub fn (app &TaskLog) update_task_log_handler(mut ctx Context) veb.Result {
 	result := update_task_log_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &TaskLog) update_task_log_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_task_log_usecase(mut ctx Context, req UpdateTaskLogReq) !UpdateTaskLogResp {
-	update_task_log_domain(req)!
+	update_task_log_domain(&req)!
 	return update_task_log_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_task_log_domain(req UpdateTaskLogReq) ! {
+fn update_task_log_domain(req &UpdateTaskLogReq) ! {
 	if req.id == '' {
 		return error('task log id is required')
 	}
@@ -42,10 +42,10 @@ fn update_task_log_domain(req UpdateTaskLogReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateTaskLogReq {
-	id             string @[json: 'id']
+	id             string     @[json: 'id']
 	finished_at    ?time.Time @[json: 'finishedAt']
-	result         ?u8 @[json: 'result']
-	task_task_logs ?string @[json: 'taskTaskLogs']
+	result         ?u8        @[json: 'result']
+	task_task_logs ?string    @[json: 'taskTaskLogs']
 }
 
 pub struct UpdateTaskLogResp {

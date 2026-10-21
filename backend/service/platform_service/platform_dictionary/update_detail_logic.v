@@ -23,12 +23,12 @@ pub fn (app &PlatformDictionary) update_detail_handler(mut ctx Context) veb.Resu
 
 // ═══ Use Case ═══
 pub fn update_detail_usecase(mut ctx Context, req UpdateDetailReq) !UpdateDetailResp {
-	update_detail_domain(req)!
+	update_detail_domain(&req)!
 	return update_detail_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_detail_domain(req UpdateDetailReq) ! {
+fn update_detail_domain(req &UpdateDetailReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
@@ -36,11 +36,11 @@ fn update_detail_domain(req UpdateDetailReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateDetailReq {
-	id     string @[json: 'id']
+	id     string  @[json: 'id']
 	label  ?string @[json: 'label']
 	value  ?string @[json: 'value']
-	sort   ?u32 @[json: 'sort']
-	status ?u8 @[json: 'status']
+	sort   ?u32    @[json: 'sort']
+	status ?u8     @[json: 'status']
 }
 
 pub struct UpdateDetailResp {

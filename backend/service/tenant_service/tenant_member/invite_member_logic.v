@@ -19,7 +19,7 @@ pub fn (app &TenantMember) invite_member_handler(mut ctx Context) veb.Result {
 	result := invite_member_usecase(mut ctx, req) or {
 		return ctx.json(capi.json_error(
 			code: capi.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(capi.json_success(data: result))
@@ -27,12 +27,12 @@ pub fn (app &TenantMember) invite_member_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn invite_member_usecase(mut ctx Context, req InviteMemberReq) !InviteMemberResp {
-	invite_member_domain(mut ctx, req)!
+	invite_member_domain(mut ctx, &req)!
 	return invite_member_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn invite_member_domain(mut ctx Context, req InviteMemberReq) ! {
+fn invite_member_domain(mut ctx Context, req &InviteMemberReq) ! {
 	if req.user_id == '' {
 		return error('userId is required')
 	}
@@ -72,12 +72,12 @@ fn invite_member_repo(mut ctx Context, req InviteMemberReq) !InviteMemberResp {
 	}
 
 	member := TnMember{
-		tenant_id: tenant_id
+		tenant_id:  tenant_id
 		product_id: product_id
-		portal_id: portal_id
-		user_id: req.user_id
-		status: 1
-		joined_at: time.now()
+		portal_id:  portal_id
+		user_id:    req.user_id
+		status:     1
+		joined_at:  time.now()
 		creator_id: ctx.svc_iam.user_id
 		updater_id: ctx.svc_iam.user_id
 		created_at: time.now()

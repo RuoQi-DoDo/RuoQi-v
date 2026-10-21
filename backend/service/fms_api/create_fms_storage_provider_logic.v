@@ -18,18 +18,18 @@ pub fn (app &Fms) create_fms_storage_provider_handler(mut ctx Context) veb.Resul
 	result := create_fms_storage_provider_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
 }
 
 pub fn create_fms_storage_provider_usecase(mut ctx Context, req CreateFmsStorageProviderReq) !CreateFmsStorageProviderResp {
-	create_fms_storage_provider_domain(req)!
+	create_fms_storage_provider_domain(&req)!
 	return create_fms_storage_provider_repo(mut ctx, req)
 }
 
-fn create_fms_storage_provider_domain(req CreateFmsStorageProviderReq) ! {
+fn create_fms_storage_provider_domain(req &CreateFmsStorageProviderReq) ! {
 	if req.name == '' {
 		return error('provider name is required')
 	}
@@ -51,17 +51,17 @@ fn create_fms_storage_provider_domain(req CreateFmsStorageProviderReq) ! {
 }
 
 pub struct CreateFmsStorageProviderReq {
-	name       string @[json: 'name']
-	bucket     string @[json: 'bucket']
-	secret_id  string @[json: 'secretId']
-	secret_key string @[json: 'secretKey']
-	endpoint   string @[json: 'endpoint']
+	name       string  @[json: 'name']
+	bucket     string  @[json: 'bucket']
+	secret_id  string  @[json: 'secretId']
+	secret_key string  @[json: 'secretKey']
+	endpoint   string  @[json: 'endpoint']
 	folder     ?string @[json: 'folder']
-	region     string @[json: 'region']
-	is_default u8 @[json: 'isDefault']
-	use_cdn    u8 @[json: 'useCdn']
+	region     string  @[json: 'region']
+	is_default u8      @[json: 'isDefault']
+	use_cdn    u8      @[json: 'useCdn']
 	cdn_url    ?string @[json: 'cdnUrl']
-	status     u8 @[json: 'status']
+	status     u8      @[json: 'status']
 }
 
 pub struct CreateFmsStorageProviderResp {
@@ -71,18 +71,18 @@ pub struct CreateFmsStorageProviderResp {
 fn create_fms_storage_provider_repo(mut ctx Context, req CreateFmsStorageProviderReq) !CreateFmsStorageProviderResp {
 	time_now := time.now()
 	p := FmsStorageProvider{
-		id: rand.uuid_v7()
-		name: req.name
-		bucket: req.bucket
-		secret_id: req.secret_id
+		id:         rand.uuid_v7()
+		name:       req.name
+		bucket:     req.bucket
+		secret_id:  req.secret_id
 		secret_key: req.secret_key
-		endpoint: req.endpoint
-		folder: req.folder
-		region: req.region
+		endpoint:   req.endpoint
+		folder:     req.folder
+		region:     req.region
 		is_default: req.is_default
-		use_cdn: req.use_cdn
-		cdn_url: req.cdn_url
-		status: req.status
+		use_cdn:    req.use_cdn
+		cdn_url:    req.cdn_url
+		status:     req.status
 		creator_id: ctx.svc_iam.user_id
 		updater_id: ctx.svc_iam.user_id
 		created_at: time_now

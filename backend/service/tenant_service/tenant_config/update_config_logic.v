@@ -19,7 +19,7 @@ pub fn (app &TenantConfig) update_config_handler(mut ctx Context) veb.Result {
 	result := update_config_usecase(mut ctx, req) or {
 		return ctx.json(capi.json_error(
 			code: capi.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(capi.json_success(data: result))
@@ -27,12 +27,12 @@ pub fn (app &TenantConfig) update_config_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_config_usecase(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
-	update_config_domain(req)!
+	update_config_domain(&req)!
 	return update_config_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_config_domain(req UpdateConfigReq) ! {
+fn update_config_domain(req &UpdateConfigReq) ! {
 	if req.key == '' {
 		return error('key is required')
 	}
@@ -85,18 +85,18 @@ fn update_config_repo(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
 		}!
 	} else {
 		config := TnConfig{
-			id: rand.uuid_v7()
-			tenant_id: tenant_id
-			product_id: product_id
-			key: req.key
-			value: req.value
-			category: req.category
+			id:          rand.uuid_v7()
+			tenant_id:   tenant_id
+			product_id:  product_id
+			key:         req.key
+			value:       req.value
+			category:    req.category
 			description: req.description
-			status: 1
-			creator_id: ctx.svc_iam.user_id
-			updater_id: ctx.svc_iam.user_id
-			created_at: time.now()
-			updated_at: time.now()
+			status:      1
+			creator_id:  ctx.svc_iam.user_id
+			updater_id:  ctx.svc_iam.user_id
+			created_at:  time.now()
+			updated_at:  time.now()
 		}
 		sql db {
 			insert config into TnConfig

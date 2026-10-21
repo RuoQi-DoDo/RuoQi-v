@@ -20,7 +20,7 @@ pub fn (app &Language) update_language_handler(mut ctx Context) veb.Result {
 	result := update_language_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,14 +30,14 @@ pub fn (app &Language) update_language_handler(mut ctx Context) veb.Result {
 // ═══ Use Case ═══
 pub fn update_language_usecase(mut ctx Context, req UpdateLanguageReq) !UpdateLanguageResp {
 	// Domain 校验
-	update_language_domain(req)!
+	update_language_domain(&req)!
 
 	// Repository 更新
 	return update_language_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_language_domain(req UpdateLanguageReq) ! {
+fn update_language_domain(req &UpdateLanguageReq) ! {
 	if req.id == '' {
 		return error('language id is required')
 	}
@@ -45,15 +45,15 @@ fn update_language_domain(req UpdateLanguageReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateLanguageReq {
-	id                       string @[json: 'id']
+	id                       string  @[json: 'id']
 	language_self_proclaimed ?string @[json: 'languageSelfProclaimed']
 	language_code            ?string @[json: 'languageCode']
 	two_letter_code          ?string @[json: 'twoLetterCode']
 	three_letter_code        ?string @[json: 'threeLetterCode']
 	utf8_encoding            ?string @[json: 'utf8Encoding']
-	sort                     ?int @[json: 'sort']
-	status                   ?u8 @[json: 'status']
-	is_basic                 ?u8 @[json: 'isBasic']
+	sort                     ?int    @[json: 'sort']
+	status                   ?u8     @[json: 'status']
+	is_basic                 ?u8     @[json: 'isBasic']
 }
 
 pub struct UpdateLanguageResp {

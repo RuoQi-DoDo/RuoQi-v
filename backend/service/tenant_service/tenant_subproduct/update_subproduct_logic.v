@@ -18,7 +18,7 @@ pub fn (app &TenantSubProduct) update_subproduct_handler(mut ctx Context) veb.Re
 	result := update_subproduct_usecase(mut ctx, req) or {
 		return ctx.json(capi.json_error(
 			code: capi.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(capi.json_success(data: result))
@@ -26,12 +26,12 @@ pub fn (app &TenantSubProduct) update_subproduct_handler(mut ctx Context) veb.Re
 
 // ═══ Use Case ═══
 pub fn update_subproduct_usecase(mut ctx Context, req UpdateSubProductReq) !UpdateSubProductResp {
-	update_subproduct_domain(req)!
+	update_subproduct_domain(&req)!
 	return update_subproduct_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_subproduct_domain(req UpdateSubProductReq) ! {
+fn update_subproduct_domain(req &UpdateSubProductReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
@@ -39,9 +39,9 @@ fn update_subproduct_domain(req UpdateSubProductReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateSubProductReq {
-	id      string @[json: 'id']
+	id      string  @[json: 'id']
 	plan_id ?string @[json: 'planId']
-	status  ?u8 @[json: 'status']
+	status  ?u8     @[json: 'status']
 }
 
 pub struct UpdateSubProductResp {

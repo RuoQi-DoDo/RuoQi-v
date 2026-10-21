@@ -20,7 +20,7 @@ pub fn (app &SmsProvider) update_sms_provider_handler(mut ctx Context) veb.Resul
 	result := update_sms_provider_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &SmsProvider) update_sms_provider_handler(mut ctx Context) veb.Resul
 
 // ═══ Use Case ═══
 pub fn update_sms_provider_usecase(mut ctx Context, req UpdateSmsProviderReq) !UpdateSmsProviderResp {
-	update_sms_provider_domain(req)!
+	update_sms_provider_domain(&req)!
 	return update_sms_provider_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_sms_provider_domain(req UpdateSmsProviderReq) ! {
+fn update_sms_provider_domain(req &UpdateSmsProviderReq) ! {
 	if req.id == '' {
 		return error('sms provider id is required')
 	}
@@ -42,12 +42,12 @@ fn update_sms_provider_domain(req UpdateSmsProviderReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateSmsProviderReq {
-	id         string @[json: 'id']
+	id         string  @[json: 'id']
 	name       ?string @[json: 'name']
 	secret_id  ?string @[json: 'secretId']
 	secret_key ?string @[json: 'secretKey']
 	region     ?string @[json: 'region']
-	is_default ?u8 @[json: 'isDefault']
+	is_default ?u8     @[json: 'isDefault']
 }
 
 pub struct UpdateSmsProviderResp {

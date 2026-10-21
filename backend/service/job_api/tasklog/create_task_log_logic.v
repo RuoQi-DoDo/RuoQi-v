@@ -21,7 +21,7 @@ pub fn (app &TaskLog) create_task_log_handler(mut ctx Context) veb.Result {
 	result := create_task_log_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &TaskLog) create_task_log_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_task_log_usecase(mut ctx Context, req CreateTaskLogReq) !CreateTaskLogResp {
-	create_task_log_domain(req)!
+	create_task_log_domain(&req)!
 	return create_task_log_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_task_log_domain(req CreateTaskLogReq) ! {
+fn create_task_log_domain(req &CreateTaskLogReq) ! {
 	if req.task_task_logs == '' {
 		return error('task reference (taskTaskLogs) is required')
 	}
@@ -48,8 +48,8 @@ fn create_task_log_domain(req CreateTaskLogReq) ! {
 pub struct CreateTaskLogReq {
 	started_at     time.Time @[json: 'startedAt']
 	finished_at    time.Time @[json: 'finishedAt']
-	result         u8 @[json: 'result']
-	task_task_logs string @[json: 'taskTaskLogs']
+	result         u8        @[json: 'result']
+	task_task_logs string    @[json: 'taskTaskLogs']
 }
 
 pub struct CreateTaskLogResp {
@@ -73,14 +73,14 @@ fn create_task_log_repo(mut ctx Context, req CreateTaskLogReq) !CreateTaskLogRes
 
 	time_now := time.now()
 	task_log := JobTaskLog{
-		id: rand.uuid_v7()
-		started_at: req.started_at
-		finished_at: req.finished_at
-		result: req.result
+		id:             rand.uuid_v7()
+		started_at:     req.started_at
+		finished_at:    req.finished_at
+		result:         req.result
 		task_task_logs: req.task_task_logs
-		creator_id: ctx.svc_iam.user_id
-		created_at: time_now
-		updated_at: time_now
+		creator_id:     ctx.svc_iam.user_id
+		created_at:     time_now
+		updated_at:     time_now
 	}
 
 	sql db {

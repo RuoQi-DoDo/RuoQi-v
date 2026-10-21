@@ -20,7 +20,7 @@ pub fn (app &EmailLog) update_email_log_handler(mut ctx Context) veb.Result {
 	result := update_email_log_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &EmailLog) update_email_log_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_email_log_usecase(mut ctx Context, req UpdateEmailLogReq) !UpdateEmailLogResp {
-	update_email_log_domain(req)!
+	update_email_log_domain(&req)!
 	return update_email_log_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_email_log_domain(req UpdateEmailLogReq) ! {
+fn update_email_log_domain(req &UpdateEmailLogReq) ! {
 	if req.id == '' {
 		return error('email log id is required')
 	}
@@ -42,11 +42,11 @@ fn update_email_log_domain(req UpdateEmailLogReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateEmailLogReq {
-	id          string @[json: 'id']
+	id          string  @[json: 'id']
 	target      ?string @[json: 'target']
 	subject     ?string @[json: 'subject']
 	content     ?string @[json: 'content']
-	send_status ?u8 @[json: 'sendStatus']
+	send_status ?u8     @[json: 'sendStatus']
 	provider    ?string @[json: 'provider']
 }
 

@@ -21,7 +21,7 @@ pub fn (app &Authentication) login_by_sms_handler(mut ctx Context) veb.Result {
 	result := login_by_sms_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -29,12 +29,12 @@ pub fn (app &Authentication) login_by_sms_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn login_by_sms_usecase(mut ctx Context, req LoginBySmsReq) !LoginBySmsResp {
-	login_by_sms_domain(req)!
+	login_by_sms_domain(&req)!
 	return login_by_sms_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn login_by_sms_domain(req LoginBySmsReq) ! {
+fn login_by_sms_domain(req &LoginBySmsReq) ! {
 	if req.mobile == '' {
 		return error('mobile is required')
 	}
@@ -45,7 +45,7 @@ fn login_by_sms_domain(req LoginBySmsReq) ! {
 
 // ═══ DTO ═══
 pub struct LoginBySmsReq {
-	status    u8 @[json: 'status']
+	status    u8     @[json: 'status']
 	mobile    string @[json: 'mobile']
 	opt_num   string @[json: 'optNum']
 	opt_token string @[json: 'optToken']
@@ -76,12 +76,12 @@ fn login_by_sms_repo(mut ctx Context, req LoginBySmsReq) !LoginBySmsResp {
 	expired_at := time.now().add_days(30)
 	token_jwt := token.generate_iam_token(mut ctx, user_info[0].id, user_info[0].username, req.login_ip, req.device_id) or { return error('Failed to generate token') }
 	t := IamToken{
-		id: rand.uuid_v7()
-		status: req.status
-		user_id: user_info[0].id
-		username: user_info[0].username
-		token: token_jwt
-		source: req.source
+		id:         rand.uuid_v7()
+		status:     req.status
+		user_id:    user_info[0].id
+		username:   user_info[0].username
+		token:      token_jwt
+		source:     req.source
 		expired_at: expired_at
 		created_at: time.now()
 		updated_at: time.now()
@@ -91,7 +91,7 @@ fn login_by_sms_repo(mut ctx Context, req LoginBySmsReq) !LoginBySmsResp {
 	} or { return error('Failed: ${err}') }
 	return LoginBySmsResp{
 		expired_at: expired_at.str()
-		user_id: user_info[0].id
-		token_jwt: token_jwt
+		user_id:    user_info[0].id
+		token_jwt:  t.token
 	}
 }

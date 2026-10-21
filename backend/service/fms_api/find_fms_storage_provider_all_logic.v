@@ -17,18 +17,18 @@ pub fn (app &Fms) find_fms_storage_provider_all_handler(mut ctx Context) veb.Res
 	result := find_fms_storage_provider_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
 }
 
 pub fn find_fms_storage_provider_all_usecase(mut ctx Context, req FmsStorageProviderListReq) !FmsStorageProviderListResp {
-	find_fms_storage_provider_all_domain(req)!
+	find_fms_storage_provider_all_domain(&req)!
 	return find_fms_storage_provider_all_repo(mut ctx, req)
 }
 
-fn find_fms_storage_provider_all_domain(req FmsStorageProviderListReq) ! {
+fn find_fms_storage_provider_all_domain(req &FmsStorageProviderListReq) ! {
 	if req.page <= 0 {
 		return error('page must be greater than 0')
 	}
@@ -38,28 +38,28 @@ fn find_fms_storage_provider_all_domain(req FmsStorageProviderListReq) ! {
 }
 
 pub struct FmsStorageProviderListReq {
-	page      int @[json: 'page']
-	page_size int @[json: 'pageSize']
+	page      int    @[json: 'page']
+	page_size int    @[json: 'pageSize']
 	name      string @[json: 'name']
-	status    []u8 @[json: 'status']
+	status    []u8   @[json: 'status']
 }
 
 pub struct FmsStorageProviderData {
-	id         string @[json: 'id']
-	name       string @[json: 'name']
-	bucket     string @[json: 'bucket']
-	endpoint   string @[json: 'endpoint']
+	id         string  @[json: 'id']
+	name       string  @[json: 'name']
+	bucket     string  @[json: 'bucket']
+	endpoint   string  @[json: 'endpoint']
 	folder     ?string @[json: 'folder']
-	region     string @[json: 'region']
-	is_default u8 @[json: 'isDefault']
-	use_cdn    u8 @[json: 'useCdn']
+	region     string  @[json: 'region']
+	is_default u8      @[json: 'isDefault']
+	use_cdn    u8      @[json: 'useCdn']
 	cdn_url    ?string @[json: 'cdnUrl']
-	status     u8 @[json: 'status']
+	status     u8      @[json: 'status']
 	updater_id ?string @[json: 'updaterId']
 	creator_id ?string @[json: 'creatorId']
-	created_at string @[json: 'createdAt']
-	updated_at string @[json: 'updatedAt']
-	deleted_at string @[json: 'deletedAt']
+	created_at string  @[json: 'createdAt']
+	updated_at string  @[json: 'updatedAt']
+	deleted_at string  @[json: 'deletedAt']
 }
 
 pub struct FmsStorageProviderListResp {
@@ -87,16 +87,16 @@ fn find_fms_storage_provider_all_repo(mut ctx Context, req FmsStorageProviderLis
 	mut datalist := []FmsStorageProviderData{}
 	for row in result {
 		datalist << FmsStorageProviderData{
-			id: row.id
-			name: row.name
-			bucket: row.bucket
-			endpoint: row.endpoint
-			folder: row.folder
-			region: row.region
+			id:         row.id
+			name:       row.name
+			bucket:     row.bucket
+			endpoint:   row.endpoint
+			folder:     row.folder
+			region:     row.region
 			is_default: row.is_default
-			use_cdn: row.use_cdn
-			cdn_url: row.cdn_url
-			status: row.status
+			use_cdn:    row.use_cdn
+			cdn_url:    row.cdn_url
+			status:     row.status
 			creator_id: row.creator_id
 			updater_id: row.updater_id
 			created_at: row.created_at.format_ss()
@@ -106,6 +106,6 @@ fn find_fms_storage_provider_all_repo(mut ctx Context, req FmsStorageProviderLis
 	}
 	return FmsStorageProviderListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

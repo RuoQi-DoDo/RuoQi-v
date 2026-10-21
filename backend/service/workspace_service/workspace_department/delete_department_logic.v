@@ -18,7 +18,7 @@ pub fn (app &WorkspaceDepartment) delete_department_handler(mut ctx Context) veb
 	result := delete_department_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -26,12 +26,12 @@ pub fn (app &WorkspaceDepartment) delete_department_handler(mut ctx Context) veb
 
 // ═══ Use Case ═══
 pub fn delete_department_usecase(mut ctx Context, req DeleteDepartmentReq) !DeleteDepartmentResp {
-	delete_department_domain(req)!
+	delete_department_domain(&req)!
 	return delete_department_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_department_domain(req DeleteDepartmentReq) ! {
+fn delete_department_domain(req &DeleteDepartmentReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

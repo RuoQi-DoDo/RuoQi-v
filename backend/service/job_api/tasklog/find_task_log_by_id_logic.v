@@ -19,7 +19,7 @@ pub fn (app &TaskLog) find_task_log_by_id_handler(mut ctx Context) veb.Result {
 	result := find_task_log_by_id_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -28,12 +28,12 @@ pub fn (app &TaskLog) find_task_log_by_id_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_task_log_by_id_usecase(mut ctx Context, req TaskLogByIdReq) !JobTaskLog {
-	find_task_log_by_id_domain(req)!
+	find_task_log_by_id_domain(&req)!
 	return find_task_log_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_task_log_by_id_domain(req TaskLogByIdReq) ! {
+fn find_task_log_by_id_domain(req &TaskLogByIdReq) ! {
 	if req.id == '' {
 		return error('task log id is required')
 	}

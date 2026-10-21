@@ -20,7 +20,7 @@ pub fn (app &Fms) find_fms_cloud_file_all_handler(mut ctx Context) veb.Result {
 	result := find_fms_cloud_file_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Fms) find_fms_cloud_file_all_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_fms_cloud_file_all_usecase(mut ctx Context, req FmsCloudFileListReq) !FmsCloudFileListResp {
-	find_fms_cloud_file_all_domain(req)!
+	find_fms_cloud_file_all_domain(&req)!
 	return find_fms_cloud_file_all_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_fms_cloud_file_all_domain(req FmsCloudFileListReq) ! {
+fn find_fms_cloud_file_all_domain(req &FmsCloudFileListReq) ! {
 	if req.page <= 0 {
 		return error('page must be greater than 0')
 	}
@@ -45,28 +45,28 @@ fn find_fms_cloud_file_all_domain(req FmsCloudFileListReq) ! {
 
 // ═══ DTO ═══
 pub struct FmsCloudFileListReq {
-	page      int @[json: 'page']
-	page_size int @[json: 'pageSize']
+	page      int    @[json: 'page']
+	page_size int    @[json: 'pageSize']
 	name      string @[json: 'name']
 	user_id   string @[json: 'userId']
-	file_type []u8 @[json: 'fileType']
-	status    []u8 @[json: 'status']
+	file_type []u8   @[json: 'fileType']
+	status    []u8   @[json: 'status']
 }
 
 pub struct FmsCloudFileData {
-	id                           string @[json: 'id']
-	name                         string @[json: 'name']
-	url                          string @[json: 'url']
-	size                         u64 @[json: 'size']
-	file_type                    u8 @[json: 'fileType']
-	user_id                      string @[json: 'userId']
+	id                           string  @[json: 'id']
+	name                         string  @[json: 'name']
+	url                          string  @[json: 'url']
+	size                         u64     @[json: 'size']
+	file_type                    u8      @[json: 'fileType']
+	user_id                      string  @[json: 'userId']
 	cloud_file_storage_providers ?string @[json: 'cloudFileStorageProviders']
-	status                       u8 @[json: 'status']
+	status                       u8      @[json: 'status']
 	updater_id                   ?string @[json: 'updaterId']
 	creator_id                   ?string @[json: 'creatorId']
-	created_at                   string @[json: 'createdAt']
-	updated_at                   string @[json: 'updatedAt']
-	deleted_at                   string @[json: 'deletedAt']
+	created_at                   string  @[json: 'createdAt']
+	updated_at                   string  @[json: 'updatedAt']
+	deleted_at                   string  @[json: 'deletedAt']
 }
 
 pub struct FmsCloudFileListResp {
@@ -102,24 +102,24 @@ fn find_fms_cloud_file_all_repo(mut ctx Context, req FmsCloudFileListReq) !FmsCl
 	mut datalist := []FmsCloudFileData{}
 	for row in result {
 		datalist << FmsCloudFileData{
-			id: row.id
-			name: row.name
-			url: row.url
-			size: row.size
-			file_type: row.file_type
-			user_id: row.user_id
+			id:                           row.id
+			name:                         row.name
+			url:                          row.url
+			size:                         row.size
+			file_type:                    row.file_type
+			user_id:                      row.user_id
 			cloud_file_storage_providers: row.cloud_file_storage_providers
-			status: row.status
-			creator_id: row.creator_id
-			updater_id: row.updater_id
-			created_at: row.created_at.format_ss()
-			updated_at: row.updated_at.format_ss()
-			deleted_at: (row.deleted_at or { time.Time{} }).format_ss()
+			status:                       row.status
+			creator_id:                   row.creator_id
+			updater_id:                   row.updater_id
+			created_at:                   row.created_at.format_ss()
+			updated_at:                   row.updated_at.format_ss()
+			deleted_at:                   (row.deleted_at or { time.Time{} }).format_ss()
 		}
 	}
 
 	return FmsCloudFileListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

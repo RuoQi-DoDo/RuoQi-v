@@ -18,7 +18,7 @@ pub fn (app &WorkspacePosition) delete_position_handler(mut ctx Context) veb.Res
 	result := delete_position_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -26,12 +26,12 @@ pub fn (app &WorkspacePosition) delete_position_handler(mut ctx Context) veb.Res
 
 // ═══ Use Case ═══
 pub fn delete_position_usecase(mut ctx Context, req DeletePositionReq) !DeletePositionResp {
-	delete_position_domain(req)!
+	delete_position_domain(&req)!
 	return delete_position_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_position_domain(req DeletePositionReq) ! {
+fn delete_position_domain(req &DeletePositionReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

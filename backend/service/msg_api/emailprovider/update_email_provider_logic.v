@@ -20,7 +20,7 @@ pub fn (app &EmailProvider) update_email_provider_handler(mut ctx Context) veb.R
 	result := update_email_provider_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &EmailProvider) update_email_provider_handler(mut ctx Context) veb.R
 
 // ═══ Use Case ═══
 pub fn update_email_provider_usecase(mut ctx Context, req UpdateEmailProviderReq) !UpdateEmailProviderResp {
-	update_email_provider_domain(req)!
+	update_email_provider_domain(&req)!
 	return update_email_provider_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_email_provider_domain(req UpdateEmailProviderReq) ! {
+fn update_email_provider_domain(req &UpdateEmailProviderReq) ! {
 	if req.id == '' {
 		return error('email provider id is required')
 	}
@@ -42,17 +42,17 @@ fn update_email_provider_domain(req UpdateEmailProviderReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateEmailProviderReq {
-	id         string @[json: 'id']
+	id         string  @[json: 'id']
 	name       ?string @[json: 'name']
-	auth_type  ?u8 @[json: 'authType']
+	auth_type  ?u8     @[json: 'authType']
 	email_addr ?string @[json: 'emailAddr']
 	password   ?string @[json: 'password']
 	host_name  ?string @[json: 'hostName']
 	identify   ?string @[json: 'identify']
 	secret     ?string @[json: 'secret']
-	port       ?u32 @[json: 'port']
-	tls        ?u8 @[json: 'tls']
-	is_default ?u8 @[json: 'isDefault']
+	port       ?u32    @[json: 'port']
+	tls        ?u8     @[json: 'tls']
+	is_default ?u8     @[json: 'isDefault']
 }
 
 pub struct UpdateEmailProviderResp {

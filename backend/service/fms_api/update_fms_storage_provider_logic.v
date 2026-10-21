@@ -17,25 +17,25 @@ pub fn (app &Fms) update_fms_storage_provider_handler(mut ctx Context) veb.Resul
 	result := update_fms_storage_provider_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
 }
 
 pub fn update_fms_storage_provider_usecase(mut ctx Context, req UpdateFmsStorageProviderReq) !UpdateFmsStorageProviderResp {
-	update_fms_storage_provider_domain(req)!
+	update_fms_storage_provider_domain(&req)!
 	return update_fms_storage_provider_repo(mut ctx, req)
 }
 
-fn update_fms_storage_provider_domain(req UpdateFmsStorageProviderReq) ! {
+fn update_fms_storage_provider_domain(req &UpdateFmsStorageProviderReq) ! {
 	if req.id == '' {
 		return error('provider id is required')
 	}
 }
 
 pub struct UpdateFmsStorageProviderReq {
-	id         string @[json: 'id']
+	id         string  @[json: 'id']
 	name       ?string @[json: 'name']
 	bucket     ?string @[json: 'bucket']
 	secret_id  ?string @[json: 'secretId']
@@ -43,10 +43,10 @@ pub struct UpdateFmsStorageProviderReq {
 	endpoint   ?string @[json: 'endpoint']
 	folder     ?string @[json: 'folder']
 	region     ?string @[json: 'region']
-	is_default ?u8 @[json: 'isDefault']
-	use_cdn    ?u8 @[json: 'useCdn']
+	is_default ?u8     @[json: 'isDefault']
+	use_cdn    ?u8     @[json: 'useCdn']
 	cdn_url    ?string @[json: 'cdnUrl']
-	status     ?u8 @[json: 'status']
+	status     ?u8     @[json: 'status']
 }
 
 pub struct UpdateFmsStorageProviderResp {

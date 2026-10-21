@@ -16,18 +16,18 @@ pub fn (app &Fms) delete_fms_cloudfile_join_cloudtag_handler(mut ctx Context) ve
 	result := delete_fms_cloudfile_join_cloudtag_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
 }
 
 pub fn delete_fms_cloudfile_join_cloudtag_usecase(mut ctx Context, req DeleteFmsCloudFileCloudFileTagReq) !DeleteFmsCloudFileCloudFileTagResp {
-	delete_fms_cloudfile_join_cloudtag_domain(req)!
+	delete_fms_cloudfile_join_cloudtag_domain(&req)!
 	return delete_fms_cloudfile_join_cloudtag_repo(mut ctx, req)
 }
 
-fn delete_fms_cloudfile_join_cloudtag_domain(req DeleteFmsCloudFileCloudFileTagReq) ! {
+fn delete_fms_cloudfile_join_cloudtag_domain(req &DeleteFmsCloudFileCloudFileTagReq) ! {
 	if req.cloud_file_tag_id == '' || req.cloud_file_id == '' {
 		return error('both ids are required')
 	}

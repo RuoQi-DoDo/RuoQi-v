@@ -20,7 +20,7 @@ pub fn (app &RegionAdmDiv) update_adm_handler(mut ctx Context) veb.Result {
 	result := update_adm_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,14 +30,14 @@ pub fn (app &RegionAdmDiv) update_adm_handler(mut ctx Context) veb.Result {
 // ═══ Use Case ═══
 pub fn update_adm_usecase(mut ctx Context, req UpdateAdmReq) !UpdateAdmResp {
 	// Domain 校验
-	update_adm_domain(req)!
+	update_adm_domain(&req)!
 
 	// Repository 更新
 	return update_adm_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_adm_domain(req UpdateAdmReq) ! {
+fn update_adm_domain(req &UpdateAdmReq) ! {
 	if req.id == '' {
 		return error('Adm id is required')
 	}
@@ -45,7 +45,7 @@ fn update_adm_domain(req UpdateAdmReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateAdmReq {
-	id              string @[json: 'id']
+	id              string  @[json: 'id']
 	parent_id       ?string @[json: 'parentId']
 	region_id       ?string @[json: 'regionId']
 	sys_adm_code    ?string @[json: 'sysAdmCode']
@@ -58,11 +58,11 @@ pub struct UpdateAdmReq {
 	iso_three       ?string @[json: 'isoThree']
 	numeric         ?string @[json: 'numeric']
 	postal_code     ?string @[json: 'postalCode']
-	level           ?u8 @[json: 'level']
+	level           ?u8     @[json: 'level']
 	tree_id         ?string @[json: 'treeId']
 	coord_bounds    ?string @[json: 'coordBounds']
-	sort            ?u64 @[json: 'sort']
-	status          ?u8 @[json: 'status']
+	sort            ?u64    @[json: 'sort']
+	status          ?u8     @[json: 'status']
 	adm_merger_name ?string @[json: 'admMergerName']
 	adm_short_name  ?string @[json: 'admShortName']
 	pinyin          ?string @[json: 'pinyin']

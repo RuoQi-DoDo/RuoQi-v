@@ -23,7 +23,7 @@ pub fn (app &Token) delete_token_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn delete_token_usecase(mut ctx Context, req DeleteTokenReq) !map[string]string {
-	delete_token_domain(req)!
+	delete_token_domain(&req)!
 	delete_token_repo(mut ctx, req)!
 	return {
 		'msg': 'Token deleted successfully'
@@ -31,7 +31,7 @@ pub fn delete_token_usecase(mut ctx Context, req DeleteTokenReq) !map[string]str
 }
 
 // ═══ Domain ═══
-fn delete_token_domain(req DeleteTokenReq) ! {
+fn delete_token_domain(req &DeleteTokenReq) ! {
 	if req.id == '' {
 		return error('token id is required')
 	}

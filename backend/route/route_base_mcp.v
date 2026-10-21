@@ -1,6 +1,7 @@
 module route
 
 import log
+import net.http
 import veb
 import model { Context }
 
@@ -15,11 +16,21 @@ fn (c &BaseMcp) index(mut ctx Context) veb.Result {
 			'{"error":"base mcp server is not available"}')
 	}
 
-	resp := c.mcp_server.handle_http_request(ctx.req)
+	resp_value := c.mcp_server.handle_http_request(ctx.req)
+	// http.Response methods use value receivers, so keep one heap owner and
+	// borrow all response fields and methods through it.
+	resp := &http.Response{
+		body:         resp_value.body
+		header:       resp_value.header
+		trailers:     resp_value.trailers
+		status_code:  resp_value.status_code
+		status_msg:   resp_value.status_msg
+		http_version: resp_value.http_version
+	}
 
 	ctx.res.set_status(resp.status())
 	for key in resp.header.keys() {
-		for value in resp.header.custom_values(key, exact: true) {
+		for value in resp.header.custom_values(key.clone(), exact: true) {
 			ctx.set_custom_header(key, value) or {}
 		}
 	}

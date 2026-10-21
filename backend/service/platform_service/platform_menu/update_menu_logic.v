@@ -23,12 +23,12 @@ pub fn (app &PlatformMenu) update_menu_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_menu_usecase(mut ctx Context, req UpdateMenuReq) !UpdateMenuResp {
-	update_menu_domain(req)!
+	update_menu_domain(&req)!
 	return update_menu_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_menu_domain(req UpdateMenuReq) ! {
+fn update_menu_domain(req &UpdateMenuReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
@@ -36,18 +36,18 @@ fn update_menu_domain(req UpdateMenuReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateMenuReq {
-	id         string @[json: 'id']
+	id         string  @[json: 'id']
 	parent_id  ?string @[json: 'parentId']
-	menu_level ?u8 @[json: 'menuLevel']
-	menu_type  ?u8 @[json: 'menuType']
+	menu_level ?u8     @[json: 'menuLevel']
+	menu_type  ?u8     @[json: 'menuType']
 	path       ?string @[json: 'path']
 	name       ?string @[json: 'name']
 	redirect   ?string @[json: 'redirect']
 	component  ?string @[json: 'component']
-	order_no   ?u32 @[json: 'orderNo']
+	order_no   ?u32    @[json: 'orderNo']
 	icon       ?string @[json: 'icon']
 	title      ?string @[json: 'title']
-	status     ?u8 @[json: 'status']
+	status     ?u8     @[json: 'status']
 }
 
 pub struct UpdateMenuResp {

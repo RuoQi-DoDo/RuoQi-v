@@ -20,7 +20,7 @@ pub fn (app &Fms) delete_fms_file_handler(mut ctx Context) veb.Result {
 	result := delete_fms_file_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Fms) delete_fms_file_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn delete_fms_file_usecase(mut ctx Context, req DeleteFmsFileReq) !DeleteFmsFileResp {
-	delete_fms_file_domain(req)!
+	delete_fms_file_domain(&req)!
 	return delete_fms_file_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_fms_file_domain(req DeleteFmsFileReq) ! {
+fn delete_fms_file_domain(req &DeleteFmsFileReq) ! {
 	if req.ids.len == 0 {
 		return error('No FmsFile ids provided')
 	}

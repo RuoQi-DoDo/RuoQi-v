@@ -20,7 +20,7 @@ pub fn (app &SmsLog) update_sms_log_handler(mut ctx Context) veb.Result {
 	result := update_sms_log_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &SmsLog) update_sms_log_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_sms_log_usecase(mut ctx Context, req UpdateSmsLogReq) !UpdateSmsLogResp {
-	update_sms_log_domain(req)!
+	update_sms_log_domain(&req)!
 	return update_sms_log_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_sms_log_domain(req UpdateSmsLogReq) ! {
+fn update_sms_log_domain(req &UpdateSmsLogReq) ! {
 	if req.id == '' {
 		return error('sms log id is required')
 	}
@@ -42,10 +42,10 @@ fn update_sms_log_domain(req UpdateSmsLogReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateSmsLogReq {
-	id           string @[json: 'id']
+	id           string  @[json: 'id']
 	phone_number ?string @[json: 'phoneNumber']
 	content      ?string @[json: 'content']
-	send_status  ?u8 @[json: 'sendStatus']
+	send_status  ?u8     @[json: 'sendStatus']
 	provider     ?string @[json: 'provider']
 }
 

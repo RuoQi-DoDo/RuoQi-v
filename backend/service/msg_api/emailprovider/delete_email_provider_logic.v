@@ -20,7 +20,7 @@ pub fn (app &EmailProvider) delete_email_provider_handler(mut ctx Context) veb.R
 	result := delete_email_provider_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &EmailProvider) delete_email_provider_handler(mut ctx Context) veb.R
 
 // ═══ Use Case ═══
 pub fn delete_email_provider_usecase(mut ctx Context, req DeleteEmailProviderReq) !DeleteEmailProviderResp {
-	delete_email_provider_domain(req)!
+	delete_email_provider_domain(&req)!
 	return delete_email_provider_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_email_provider_domain(req DeleteEmailProviderReq) ! {
+fn delete_email_provider_domain(req &DeleteEmailProviderReq) ! {
 	if req.ids.len == 0 {
 		return error('No EmailProvider ids provided')
 	}

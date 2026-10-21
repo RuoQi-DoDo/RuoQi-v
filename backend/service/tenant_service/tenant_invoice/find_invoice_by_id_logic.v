@@ -17,7 +17,7 @@ pub fn (app &TenantInvoice) find_invoice_by_id_handler(mut ctx Context) veb.Resu
 	result := find_invoice_by_id_usecase(mut ctx, req) or {
 		return ctx.json(capi.json_error(
 			code: capi.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(capi.json_success(data: result))
@@ -25,12 +25,12 @@ pub fn (app &TenantInvoice) find_invoice_by_id_handler(mut ctx Context) veb.Resu
 
 // ═══ Use Case ═══
 pub fn find_invoice_by_id_usecase(mut ctx Context, req FindInvoiceByIdReq) !TnInvoice {
-	find_invoice_by_id_domain(req)!
+	find_invoice_by_id_domain(&req)!
 	return find_invoice_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_invoice_by_id_domain(req FindInvoiceByIdReq) ! {
+fn find_invoice_by_id_domain(req &FindInvoiceByIdReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

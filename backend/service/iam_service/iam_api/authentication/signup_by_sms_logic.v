@@ -21,7 +21,7 @@ pub fn (app &Authentication) signup_by_sms_handler(mut ctx Context) veb.Result {
 	result := signup_by_sms_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -29,12 +29,12 @@ pub fn (app &Authentication) signup_by_sms_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn signup_by_sms_usecase(mut ctx Context, req SignupBySmsReq) !SignupBySmsResp {
-	signup_by_sms_domain(req)!
+	signup_by_sms_domain(&req)!
 	return signup_by_sms_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn signup_by_sms_domain(req SignupBySmsReq) ! {
+fn signup_by_sms_domain(req &SignupBySmsReq) ! {
 	if req.mobile == '' {
 		return error('mobile is required')
 	}
@@ -79,13 +79,13 @@ fn signup_by_sms_repo(mut ctx Context, req SignupBySmsReq) !SignupBySmsResp {
 		return error('Failed to hash password')
 	}
 	user := IamUser{
-		id: user_id
-		username: req.username
-		password: password_hash
-		nickname: req.nickname
-		mobile: req.mobile
-		home_path: '"/dashboard"'
-		status: 1
+		id:         user_id
+		username:   req.username
+		password:   password_hash
+		nickname:   req.nickname
+		mobile:     req.mobile
+		home_path:  '"/dashboard"'
+		status:     1
 		created_at: time.now()
 		updated_at: time.now()
 	}
@@ -94,6 +94,6 @@ fn signup_by_sms_repo(mut ctx Context, req SignupBySmsReq) !SignupBySmsResp {
 	} or { return error('Failed to create user: ${err}') }
 	return SignupBySmsResp{
 		user_id: user_id
-		msg: 'Signup successful'
+		msg:     'Signup successful'
 	}
 }

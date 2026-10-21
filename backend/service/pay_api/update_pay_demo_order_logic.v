@@ -20,7 +20,7 @@ pub fn (app &Pay) update_pay_demo_order_handler(mut ctx Context) veb.Result {
 	result := update_pay_demo_order_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Pay) update_pay_demo_order_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_pay_demo_order_usecase(mut ctx Context, req UpdatePayDemoOrderReq) !UpdatePayDemoOrderResp {
-	update_pay_demo_order_domain(req)!
+	update_pay_demo_order_domain(&req)!
 	return update_pay_demo_order_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_pay_demo_order_domain(req UpdatePayDemoOrderReq) ! {
+fn update_pay_demo_order_domain(req &UpdatePayDemoOrderReq) ! {
 	if req.id == '' {
 		return error('demo order id is required')
 	}
@@ -42,14 +42,14 @@ fn update_pay_demo_order_domain(req UpdatePayDemoOrderReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdatePayDemoOrderReq {
-	id               string @[json: 'id']
-	spu_name         ?string @[json: 'spuName']
-	pay_status       ?u8 @[json: 'payStatus']
-	pay_order_id     ?string @[json: 'payOrderId']
+	id               string     @[json: 'id']
+	spu_name         ?string    @[json: 'spuName']
+	pay_status       ?u8        @[json: 'payStatus']
+	pay_order_id     ?string    @[json: 'payOrderId']
 	pay_time         ?time.Time @[json: 'payTime']
-	pay_channel_code ?string @[json: 'payChannelCode']
-	pay_refund_id    ?string @[json: 'payRefundId']
-	refund_price     ?int @[json: 'refundPrice']
+	pay_channel_code ?string    @[json: 'payChannelCode']
+	pay_refund_id    ?string    @[json: 'payRefundId']
+	refund_price     ?int       @[json: 'refundPrice']
 	refund_time      ?time.Time @[json: 'refundTime']
 }
 

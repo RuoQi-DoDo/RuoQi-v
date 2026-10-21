@@ -22,12 +22,12 @@ pub fn (app &PlatformConfiguration) delete_config_handler(mut ctx Context) veb.R
 
 // ═══ Use Case ═══
 pub fn delete_config_usecase(mut ctx Context, req DeleteConfigReq) !DeleteConfigResp {
-	delete_config_domain(req)!
+	delete_config_domain(&req)!
 	return delete_config_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_config_domain(req DeleteConfigReq) ! {
+fn delete_config_domain(req &DeleteConfigReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

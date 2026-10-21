@@ -31,12 +31,12 @@ pub fn delete_currency_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 
 // ═══ Use Case ═══
 pub fn delete_currency_usecase(pool &dbpool.DatabasePoolable, req DeleteCurrencyReq) !DeleteCurrencyResp {
-	delete_currency_domain(req)!
+	delete_currency_domain(&req)!
 	return delete_currency_repo(pool, req.currency_ids)
 }
 
 // ═══ Domain ═══
-fn delete_currency_domain(req DeleteCurrencyReq) ! {
+fn delete_currency_domain(req &DeleteCurrencyReq) ! {
 	if req.currency_ids.len == 0 {
 		return error('No Currency ids provided')
 	}

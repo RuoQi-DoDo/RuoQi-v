@@ -8,24 +8,24 @@ import model.schema_iam { IamApiKey }
 import common.api
 
 pub struct ApiKeyItem {
-	id             string @[json: 'id']
-	name           string @[json: 'name']
-	access_key_id  string @[json: 'access_key_id']
-	key_prefix     string @[json: 'key_prefix']
-	key_last_four  string @[json: 'key_last_four']
+	id             string   @[json: 'id']
+	name           string   @[json: 'name']
+	access_key_id  string   @[json: 'access_key_id']
+	key_prefix     string   @[json: 'key_prefix']
+	key_last_four  string   @[json: 'key_last_four']
 	tenant_ids     []string @[json: 'tenant_ids']
 	subproduct_ids []string @[json: 'subproduct_ids']
 	subportal_ids  []string @[json: 'subportal_ids']
 	scopes         []string @[json: 'scopes']
-	status         u8 @[json: 'status']
-	last_used_at   ?string @[json: 'last_used_at']
-	expired_at     ?string @[json: 'expired_at']
-	created_at     string @[json: 'created_at']
+	status         u8       @[json: 'status']
+	last_used_at   ?string  @[json: 'last_used_at']
+	expired_at     ?string  @[json: 'expired_at']
+	created_at     string   @[json: 'created_at']
 }
 
 pub struct ApiKeyListResp {
 	items []ApiKeyItem @[json: 'items']
-	total int @[json: 'total']
+	total int          @[json: 'total']
 }
 
 @['/list'; post]
@@ -34,7 +34,7 @@ pub fn (app &ApiKey) find_apikey_all_handler(mut ctx Context) veb.Result {
 	result := find_apikey_all_usecase(mut ctx) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -46,9 +46,10 @@ fn find_apikey_all_usecase(mut ctx Context) !ApiKeyListResp {
 	for rec in records {
 		items << api_key_to_item(rec)
 	}
+	total := items.len
 	return ApiKeyListResp{
 		items: items
-		total: items.len
+		total: total
 	}
 }
 
@@ -95,18 +96,18 @@ fn find_apikey_by_id_repo(mut ctx Context, apikey_id string) !IamApiKey {
 
 fn api_key_to_item(rec IamApiKey) ApiKeyItem {
 	return ApiKeyItem{
-		id: rec.id
-		name: rec.name
-		access_key_id: rec.access_key_id
-		key_prefix: rec.key_prefix
-		key_last_four: rec.key_last_four
-		tenant_ids: json.decode[[]string](rec.tenant_ids) or { [] }
+		id:             rec.id
+		name:           rec.name
+		access_key_id:  rec.access_key_id
+		key_prefix:     rec.key_prefix
+		key_last_four:  rec.key_last_four
+		tenant_ids:     json.decode[[]string](rec.tenant_ids) or { [] }
 		subproduct_ids: json.decode[[]string](rec.subproduct_ids) or { [] }
-		subportal_ids: json.decode[[]string](rec.subportal_ids) or { [] }
-		scopes: json.decode[[]string](rec.scopes) or { ['all'] }
-		status: rec.status
-		last_used_at: if lu := rec.last_used_at { lu.format_ss() } else { none }
-		expired_at: if ex := rec.expired_at { ex.format_ss() } else { none }
-		created_at: rec.created_at.format_ss()
+		subportal_ids:  json.decode[[]string](rec.subportal_ids) or { [] }
+		scopes:         json.decode[[]string](rec.scopes) or { ['all'] }
+		status:         rec.status
+		last_used_at:   if lu := rec.last_used_at { lu.format_ss() } else { none }
+		expired_at:     if ex := rec.expired_at { ex.format_ss() } else { none }
+		created_at:     rec.created_at.format_ss()
 	}
 }

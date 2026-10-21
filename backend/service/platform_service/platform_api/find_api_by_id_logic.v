@@ -22,12 +22,12 @@ pub fn (app &PlatformApi) find_api_by_id_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_api_by_id_usecase(mut ctx Context, req FindApiByIdReq) !PfApi {
-	find_api_by_id_domain(req)!
+	find_api_by_id_domain(&req)!
 	return find_api_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_api_by_id_domain(req FindApiByIdReq) ! {
+fn find_api_by_id_domain(req &FindApiByIdReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

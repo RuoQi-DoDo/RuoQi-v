@@ -21,7 +21,7 @@ pub fn (app &MessageSender) send_email_handler(mut ctx Context) veb.Result {
 	result := send_email_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &MessageSender) send_email_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn send_email_usecase(mut ctx Context, req SendEmailReq) !SendEmailResp {
-	send_email_domain(req)!
+	send_email_domain(&req)!
 	return send_email_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn send_email_domain(req SendEmailReq) ! {
+fn send_email_domain(req &SendEmailReq) ! {
 	if req.target == '' {
 		return error('target email address is required')
 	}
@@ -76,14 +76,14 @@ fn send_email_repo(mut ctx Context, req SendEmailReq) !SendEmailResp {
 	// Insert send log with pending status (0 = unknown/pending)
 	time_now := time.now()
 	email_log := MsgEmailLog{
-		id: rand.uuid_v7()
-		target: req.target
-		subject: req.subject
-		content: req.content
+		id:          rand.uuid_v7()
+		target:      req.target
+		subject:     req.subject
+		content:     req.content
 		send_status: 0
-		provider: req.provider
-		created_at: time_now
-		updated_at: time_now
+		provider:    req.provider
+		created_at:  time_now
+		updated_at:  time_now
 	}
 
 	sql db {

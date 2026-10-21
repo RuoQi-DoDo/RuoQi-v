@@ -20,7 +20,7 @@ pub fn (app &Task) update_task_handler(mut ctx Context) veb.Result {
 	result := update_task_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Task) update_task_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_task_usecase(mut ctx Context, req UpdateTaskReq) !UpdateTaskResp {
-	update_task_domain(req)!
+	update_task_domain(&req)!
 	return update_task_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_task_domain(req UpdateTaskReq) ! {
+fn update_task_domain(req &UpdateTaskReq) ! {
 	if req.id == '' {
 		return error('task id is required')
 	}
@@ -42,13 +42,13 @@ fn update_task_domain(req UpdateTaskReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateTaskReq {
-	id              string @[json: 'id']
+	id              string  @[json: 'id']
 	name            ?string @[json: 'name']
 	task_group      ?string @[json: 'taskGroup']
 	cron_expression ?string @[json: 'cronExpression']
 	pattern         ?string @[json: 'pattern']
 	payload         ?string @[json: 'payload']
-	status          ?u8 @[json: 'status']
+	status          ?u8     @[json: 'status']
 }
 
 pub struct UpdateTaskResp {

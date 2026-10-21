@@ -20,7 +20,7 @@ pub fn (app &SmsProvider) delete_sms_provider_handler(mut ctx Context) veb.Resul
 	result := delete_sms_provider_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &SmsProvider) delete_sms_provider_handler(mut ctx Context) veb.Resul
 
 // ═══ Use Case ═══
 pub fn delete_sms_provider_usecase(mut ctx Context, req DeleteSmsProviderReq) !DeleteSmsProviderResp {
-	delete_sms_provider_domain(req)!
+	delete_sms_provider_domain(&req)!
 	return delete_sms_provider_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_sms_provider_domain(req DeleteSmsProviderReq) ! {
+fn delete_sms_provider_domain(req &DeleteSmsProviderReq) ! {
 	if req.ids.len == 0 {
 		return error('No SmsProvider ids provided')
 	}

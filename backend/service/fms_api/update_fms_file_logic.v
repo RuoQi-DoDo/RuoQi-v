@@ -20,7 +20,7 @@ pub fn (app &Fms) update_fms_file_handler(mut ctx Context) veb.Result {
 	result := update_fms_file_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Fms) update_fms_file_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_fms_file_usecase(mut ctx Context, req UpdateFmsFileReq) !UpdateFmsFileResp {
-	update_fms_file_domain(req)!
+	update_fms_file_domain(&req)!
 	return update_fms_file_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_fms_file_domain(req UpdateFmsFileReq) ! {
+fn update_fms_file_domain(req &UpdateFmsFileReq) ! {
 	if req.id == '' {
 		return error('file id is required')
 	}
@@ -42,13 +42,13 @@ fn update_fms_file_domain(req UpdateFmsFileReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateFmsFileReq {
-	id        string @[json: 'id']
+	id        string  @[json: 'id']
 	name      ?string @[json: 'name']
-	file_type ?u8 @[json: 'fileType']
-	size      ?u64 @[json: 'size']
+	file_type ?u8     @[json: 'fileType']
+	size      ?u64    @[json: 'size']
 	path      ?string @[json: 'path']
 	md5       ?string @[json: 'md5']
-	status    ?u8 @[json: 'status']
+	status    ?u8     @[json: 'status']
 }
 
 pub struct UpdateFmsFileResp {

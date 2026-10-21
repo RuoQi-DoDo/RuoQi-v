@@ -19,7 +19,7 @@ pub fn (app &Fms) delete_fms_file_join_tag_handler(mut ctx Context) veb.Result {
 	result := delete_fms_file_join_tag_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -28,12 +28,12 @@ pub fn (app &Fms) delete_fms_file_join_tag_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn delete_fms_file_join_tag_usecase(mut ctx Context, req DeleteFmsFileJoinTagReq) !DeleteFmsFileJoinTagResp {
-	delete_fms_file_join_tag_domain(req)!
+	delete_fms_file_join_tag_domain(&req)!
 	return delete_fms_file_join_tag_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_fms_file_join_tag_domain(req DeleteFmsFileJoinTagReq) ! {
+fn delete_fms_file_join_tag_domain(req &DeleteFmsFileJoinTagReq) ! {
 	if req.file_tag_id == '' || req.file_id == '' {
 		return error('file tag id and file id are both required')
 	}

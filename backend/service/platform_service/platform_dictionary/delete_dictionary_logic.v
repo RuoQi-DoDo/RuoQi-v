@@ -22,12 +22,12 @@ pub fn (app &PlatformDictionary) delete_dictionary_handler(mut ctx Context) veb.
 
 // ═══ Use Case ═══
 pub fn delete_dictionary_usecase(mut ctx Context, req DeleteDictionaryReq) !DeleteDictionaryResp {
-	delete_dictionary_domain(req)!
+	delete_dictionary_domain(&req)!
 	return delete_dictionary_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_dictionary_domain(req DeleteDictionaryReq) ! {
+fn delete_dictionary_domain(req &DeleteDictionaryReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

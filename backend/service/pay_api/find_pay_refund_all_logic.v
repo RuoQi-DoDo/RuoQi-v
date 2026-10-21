@@ -20,7 +20,7 @@ pub fn (app &Pay) find_pay_refund_all_handler(mut ctx Context) veb.Result {
 	result := find_pay_refund_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Pay) find_pay_refund_all_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_pay_refund_all_usecase(mut ctx Context, req PayRefundListReq) !PayRefundListResp {
-	find_pay_refund_all_domain(req)!
+	find_pay_refund_all_domain(&req)!
 	return find_pay_refund_all_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_pay_refund_all_domain(req PayRefundListReq) ! {
+fn find_pay_refund_all_domain(req &PayRefundListReq) ! {
 	if req.page <= 0 {
 		return error('page must be greater than 0')
 	}
@@ -45,31 +45,31 @@ fn find_pay_refund_all_domain(req PayRefundListReq) ! {
 
 // ═══ DTO ═══
 pub struct PayRefundListReq {
-	page         int @[json: 'page']
-	page_size    int @[json: 'pageSize']
+	page         int    @[json: 'page']
+	page_size    int    @[json: 'pageSize']
 	order_id     string @[json: 'orderId']
 	channel_code string @[json: 'channelCode']
-	status       []u8 @[json: 'status']
+	status       []u8   @[json: 'status']
 }
 
 pub struct PayRefundData {
-	id                 string @[json: 'id']
-	no                 string @[json: 'no']
-	channel_code       string @[json: 'channelCode']
-	order_id           string @[json: 'orderId']
-	order_no           string @[json: 'orderNo']
-	merchant_order_id  string @[json: 'merchantOrderId']
-	merchant_refund_id string @[json: 'merchantRefundId']
-	pay_price          int @[json: 'payPrice']
-	refund_price       int @[json: 'refundPrice']
-	reason             string @[json: 'reason']
+	id                 string  @[json: 'id']
+	no                 string  @[json: 'no']
+	channel_code       string  @[json: 'channelCode']
+	order_id           string  @[json: 'orderId']
+	order_no           string  @[json: 'orderNo']
+	merchant_order_id  string  @[json: 'merchantOrderId']
+	merchant_refund_id string  @[json: 'merchantRefundId']
+	pay_price          int     @[json: 'payPrice']
+	refund_price       int     @[json: 'refundPrice']
+	reason             string  @[json: 'reason']
 	channel_refund_no  ?string @[json: 'channelRefundNo']
-	status             u8 @[json: 'status']
+	status             u8      @[json: 'status']
 	updater_id         ?string @[json: 'updaterId']
 	creator_id         ?string @[json: 'creatorId']
-	created_at         string @[json: 'createdAt']
-	updated_at         string @[json: 'updatedAt']
-	deleted_at         string @[json: 'deletedAt']
+	created_at         string  @[json: 'createdAt']
+	updated_at         string  @[json: 'updatedAt']
+	deleted_at         string  @[json: 'deletedAt']
 }
 
 pub struct PayRefundListResp {
@@ -104,28 +104,28 @@ fn find_pay_refund_all_repo(mut ctx Context, req PayRefundListReq) !PayRefundLis
 	mut datalist := []PayRefundData{}
 	for row in result {
 		datalist << PayRefundData{
-			id: row.id
-			no: row.no
-			channel_code: row.channel_code
-			order_id: row.order_id
-			order_no: row.order_no
-			merchant_order_id: row.merchant_order_id
+			id:                 row.id
+			no:                 row.no
+			channel_code:       row.channel_code
+			order_id:           row.order_id
+			order_no:           row.order_no
+			merchant_order_id:  row.merchant_order_id
 			merchant_refund_id: row.merchant_refund_id
-			pay_price: row.pay_price
-			refund_price: row.refund_price
-			reason: row.reason
-			channel_refund_no: row.channel_refund_no
-			status: row.status
-			creator_id: row.creator_id
-			updater_id: row.updater_id
-			created_at: row.created_at.format_ss()
-			updated_at: row.updated_at.format_ss()
-			deleted_at: (row.deleted_at or { time.Time{} }).format_ss()
+			pay_price:          row.pay_price
+			refund_price:       row.refund_price
+			reason:             row.reason
+			channel_refund_no:  row.channel_refund_no
+			status:             row.status
+			creator_id:         row.creator_id
+			updater_id:         row.updater_id
+			created_at:         row.created_at.format_ss()
+			updated_at:         row.updated_at.format_ss()
+			deleted_at:         (row.deleted_at or { time.Time{} }).format_ss()
 		}
 	}
 
 	return PayRefundListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

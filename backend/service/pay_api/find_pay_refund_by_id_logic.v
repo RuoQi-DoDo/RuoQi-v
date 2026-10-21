@@ -19,7 +19,7 @@ pub fn (app &Pay) find_pay_refund_by_id_handler(mut ctx Context) veb.Result {
 	result := find_pay_refund_by_id_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -28,12 +28,12 @@ pub fn (app &Pay) find_pay_refund_by_id_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_pay_refund_by_id_usecase(mut ctx Context, req PayRefundByIdReq) !PayRefund {
-	find_pay_refund_by_id_domain(req)!
+	find_pay_refund_by_id_domain(&req)!
 	return find_pay_refund_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_pay_refund_by_id_domain(req PayRefundByIdReq) ! {
+fn find_pay_refund_by_id_domain(req &PayRefundByIdReq) ! {
 	if req.id == '' {
 		return error('pay refund id is required')
 	}

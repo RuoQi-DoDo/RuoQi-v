@@ -20,7 +20,7 @@ pub fn (app &SmsLog) delete_sms_log_handler(mut ctx Context) veb.Result {
 	result := delete_sms_log_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &SmsLog) delete_sms_log_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn delete_sms_log_usecase(mut ctx Context, req DeleteSmsLogReq) !DeleteSmsLogResp {
-	delete_sms_log_domain(req)!
+	delete_sms_log_domain(&req)!
 	return delete_sms_log_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_sms_log_domain(req DeleteSmsLogReq) ! {
+fn delete_sms_log_domain(req &DeleteSmsLogReq) ! {
 	if req.ids.len == 0 {
 		return error('No SmsLog ids provided')
 	}

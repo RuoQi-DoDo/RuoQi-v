@@ -20,7 +20,7 @@ pub fn (app &Pay) update_pay_refund_handler(mut ctx Context) veb.Result {
 	result := update_pay_refund_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Pay) update_pay_refund_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_pay_refund_usecase(mut ctx Context, req UpdatePayRefundReq) !UpdatePayRefundResp {
-	update_pay_refund_domain(req)!
+	update_pay_refund_domain(&req)!
 	return update_pay_refund_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_pay_refund_domain(req UpdatePayRefundReq) ! {
+fn update_pay_refund_domain(req &UpdatePayRefundReq) ! {
 	if req.id == '' {
 		return error('pay refund id is required')
 	}
@@ -42,13 +42,13 @@ fn update_pay_refund_domain(req UpdatePayRefundReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdatePayRefundReq {
-	id                  string @[json: 'id']
-	channel_refund_no   ?string @[json: 'channelRefundNo']
+	id                  string     @[json: 'id']
+	channel_refund_no   ?string    @[json: 'channelRefundNo']
 	success_time        ?time.Time @[json: 'successTime']
-	channel_error_code  ?string @[json: 'channelErrorCode']
-	channel_error_msg   ?string @[json: 'channelErrorMsg']
-	channel_notify_data ?string @[json: 'channelNotifyData']
-	status              ?u8 @[json: 'status']
+	channel_error_code  ?string    @[json: 'channelErrorCode']
+	channel_error_msg   ?string    @[json: 'channelErrorMsg']
+	channel_notify_data ?string    @[json: 'channelNotifyData']
+	status              ?u8        @[json: 'status']
 }
 
 pub struct UpdatePayRefundResp {

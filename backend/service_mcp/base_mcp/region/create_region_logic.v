@@ -31,12 +31,12 @@ pub fn create_region_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) 
 
 // ═══ Use Case ═══
 pub fn create_region_usecase(pool &dbpool.DatabasePoolable, req CreateRegionReq) !CreateRegionResp {
-	create_region_domain(req)!
+	create_region_domain(&req)!
 	return create_region_repo(pool, req)
 }
 
 // ═══ Domain ═══
-fn create_region_domain(req CreateRegionReq) ! {
+fn create_region_domain(req &CreateRegionReq) ! {
 	if req.sys_region_code == '' {
 		return error('sys_region_code is required')
 	}

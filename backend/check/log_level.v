@@ -8,7 +8,6 @@ pub fn set_log_sevel(doc toml.Doc) ! {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
 	log_level_str := doc.value('logging.log_level').string()
-	log.warn(log_level_str)
 	// 将字符串转换为log.Level枚举值
 	level := match log_level_str.to_lower() {
 		'debug' { log.Level.debug }
@@ -18,6 +17,7 @@ pub fn set_log_sevel(doc toml.Doc) ! {
 		'fatal' { log.Level.fatal }
 		else { log.Level.debug }
 	}
+	log.warn(log_level_str)
 
 	// 设置默认值
 

@@ -17,7 +17,7 @@ pub fn (app &WorkspaceCore) assign_role_menu_handler(mut ctx Context) veb.Result
 	result := assign_role_menu_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -25,12 +25,12 @@ pub fn (app &WorkspaceCore) assign_role_menu_handler(mut ctx Context) veb.Result
 
 // ═══ Use Case ═══
 pub fn assign_role_menu_usecase(mut ctx Context, req AssignRoleMenuReq) !AssignRoleMenuResp {
-	assign_role_menu_domain(req)!
+	assign_role_menu_domain(&req)!
 	return assign_role_menu_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn assign_role_menu_domain(req AssignRoleMenuReq) ! {
+fn assign_role_menu_domain(req &AssignRoleMenuReq) ! {
 	if req.workspace_id == '' {
 		return error('workspace_id is required')
 	}
@@ -41,8 +41,8 @@ fn assign_role_menu_domain(req AssignRoleMenuReq) ! {
 
 // ═══ DTO ═══
 pub struct AssignRoleMenuReq {
-	workspace_id string @[json: 'workspaceId']
-	role_id      string @[json: 'roleId']
+	workspace_id string   @[json: 'workspaceId']
+	role_id      string   @[json: 'roleId']
 	menu_ids     []string @[json: 'menuIds']
 }
 
@@ -68,8 +68,8 @@ fn assign_role_menu_repo(mut ctx Context, req AssignRoleMenuReq) !AssignRoleMenu
 	for menu_id in req.menu_ids {
 		rm := WsRoleMenu{
 			workspace_id: req.workspace_id
-			role_id: req.role_id
-			menu_id: menu_id
+			role_id:      req.role_id
+			menu_id:      menu_id
 		}
 		sql db {
 			insert rm into WsRoleMenu

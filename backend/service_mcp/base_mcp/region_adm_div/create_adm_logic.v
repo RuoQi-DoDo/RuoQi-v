@@ -31,12 +31,12 @@ pub fn create_adm_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 
 // ═══ Use Case ═══
 pub fn create_adm_usecase(pool &dbpool.DatabasePoolable, req CreateAdmReq) !CreateAdmResp {
-	create_adm_domain(req)!
+	create_adm_domain(&req)!
 	return create_adm_repo(pool, req)
 }
 
 // ═══ Domain ═══
-fn create_adm_domain(req CreateAdmReq) ! {
+fn create_adm_domain(req &CreateAdmReq) ! {
 	if req.region_id == '' {
 		return error('region_id is required')
 	}

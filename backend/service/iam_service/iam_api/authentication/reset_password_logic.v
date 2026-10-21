@@ -18,7 +18,7 @@ pub fn (app &Authentication) reset_password_handler(mut ctx Context) veb.Result 
 	result := reset_password_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -26,12 +26,12 @@ pub fn (app &Authentication) reset_password_handler(mut ctx Context) veb.Result 
 
 // ═══ Use Case ═══
 pub fn reset_password_usecase(mut ctx Context, req ResetPasswordReq) !ResetPasswordResp {
-	reset_password_domain(req)!
+	reset_password_domain(&req)!
 	return reset_password_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn reset_password_domain(req ResetPasswordReq) ! {
+fn reset_password_domain(req &ResetPasswordReq) ! {
 	if req.user_id == '' {
 		return error('user_id is required')
 	}

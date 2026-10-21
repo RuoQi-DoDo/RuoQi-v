@@ -30,12 +30,12 @@ pub fn update_language_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 
 // ═══ Use Case ═══
 pub fn update_language_usecase(pool &dbpool.DatabasePoolable, req UpdateLanguageReq) !UpdateLanguageResp {
-	update_language_domain(req)!
+	update_language_domain(&req)!
 	return update_language_repo(pool, req)
 }
 
 // ═══ Domain ═══
-fn update_language_domain(req UpdateLanguageReq) ! {
+fn update_language_domain(req &UpdateLanguageReq) ! {
 	if req.id == '' {
 		return error('language id is required')
 	}

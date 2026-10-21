@@ -21,7 +21,7 @@ pub fn (app &Currency) create_currency_handler(mut ctx Context) veb.Result {
 	result := create_currency_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &Currency) create_currency_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_currency_usecase(mut ctx Context, req CreateCurrencyReq) !CreateCurrencyResp {
-	create_currency_domain(req)!
+	create_currency_domain(&req)!
 	return create_currency_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_currency_domain(req CreateCurrencyReq) ! {
+fn create_currency_domain(req &CreateCurrencyReq) ! {
 	if req.currency_code == '' {
 		return error('currency_code is required')
 	}
@@ -55,12 +55,12 @@ pub struct CreateCurrencyReq {
 	simplified_name           string @[json: 'simplifiedName']
 	currency_code             string @[json: 'currencyCode']
 	currency_symbol           string @[json: 'currencySymbol']
-	decimal_place             u8 @[json: 'decimalPlace']
-	exchange_rate             f64 @[json: 'exchangeRate']
-	exchange_rate_fluctuation f64 @[json: 'exchangeRateFluctuation']
-	exchange_rate_used        f64 @[json: 'exchangeRateUsed']
-	sort                      ?int @[json: 'sort']
-	status                    u8 @[json: 'status']
+	decimal_place             u8     @[json: 'decimalPlace']
+	exchange_rate             f64    @[json: 'exchangeRate']
+	exchange_rate_fluctuation f64    @[json: 'exchangeRateFluctuation']
+	exchange_rate_used        f64    @[json: 'exchangeRateUsed']
+	sort                      ?int   @[json: 'sort']
+	status                    u8     @[json: 'status']
 }
 
 pub struct CreateCurrencyResp {
@@ -71,19 +71,19 @@ pub struct CreateCurrencyResp {
 fn create_currency_repo(mut ctx Context, req CreateCurrencyReq) !CreateCurrencyResp {
 	time_now := time.now()
 	base_currency := BaseCurrency{
-		id: rand.uuid_v7()
-		english_name: req.english_name
-		simplified_name: req.simplified_name
-		currency_code: req.currency_code
-		currency_symbol: req.currency_symbol
-		decimal_place: req.decimal_place
-		exchange_rate: req.exchange_rate
+		id:                        rand.uuid_v7()
+		english_name:              req.english_name
+		simplified_name:           req.simplified_name
+		currency_code:             req.currency_code
+		currency_symbol:           req.currency_symbol
+		decimal_place:             req.decimal_place
+		exchange_rate:             req.exchange_rate
 		exchange_rate_fluctuation: req.exchange_rate_fluctuation
-		exchange_rate_used: req.exchange_rate_used
-		sort: req.sort
-		status: req.status
-		created_at: time_now
-		updated_at: time_now
+		exchange_rate_used:        req.exchange_rate_used
+		sort:                      req.sort
+		status:                    req.status
+		created_at:                time_now
+		updated_at:                time_now
 	}
 
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }

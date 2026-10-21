@@ -20,7 +20,7 @@ pub fn (app &Pay) update_pay_order_extension_handler(mut ctx Context) veb.Result
 	result := update_pay_order_extension_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Pay) update_pay_order_extension_handler(mut ctx Context) veb.Result
 
 // ═══ Use Case ═══
 pub fn update_pay_order_extension_usecase(mut ctx Context, req UpdatePayOrderExtensionReq) !UpdatePayOrderExtensionResp {
-	update_pay_order_extension_domain(req)!
+	update_pay_order_extension_domain(&req)!
 	return update_pay_order_extension_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_pay_order_extension_domain(req UpdatePayOrderExtensionReq) ! {
+fn update_pay_order_extension_domain(req &UpdatePayOrderExtensionReq) ! {
 	if req.id == '' {
 		return error('order extension id is required')
 	}
@@ -42,13 +42,13 @@ fn update_pay_order_extension_domain(req UpdatePayOrderExtensionReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdatePayOrderExtensionReq {
-	id                  string @[json: 'id']
+	id                  string  @[json: 'id']
 	channel_code        ?string @[json: 'channelCode']
 	channel_extras      ?string @[json: 'channelExtras']
 	channel_error_code  ?string @[json: 'channelErrorCode']
 	channel_error_msg   ?string @[json: 'channelErrorMsg']
 	channel_notify_data ?string @[json: 'channelNotifyData']
-	status              ?u8 @[json: 'status']
+	status              ?u8     @[json: 'status']
 }
 
 pub struct UpdatePayOrderExtensionResp {

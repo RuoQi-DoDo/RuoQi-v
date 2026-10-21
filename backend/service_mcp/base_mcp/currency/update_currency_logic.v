@@ -30,12 +30,12 @@ pub fn update_currency_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 
 // ═══ Use Case ═══
 pub fn update_currency_usecase(pool &dbpool.DatabasePoolable, req UpdateCurrencyReq) !UpdateCurrencyResp {
-	update_currency_domain(req)!
+	update_currency_domain(&req)!
 	return update_currency_repo(pool, req)
 }
 
 // ═══ Domain ═══
-fn update_currency_domain(req UpdateCurrencyReq) ! {
+fn update_currency_domain(req &UpdateCurrencyReq) ! {
 	if req.id == '' {
 		return error('currency id is required')
 	}

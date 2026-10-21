@@ -18,7 +18,7 @@ pub fn (app &WorkspaceCore) remove_member_handler(mut ctx Context) veb.Result {
 	result := remove_member_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -26,12 +26,12 @@ pub fn (app &WorkspaceCore) remove_member_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn remove_member_usecase(mut ctx Context, req RemoveMemberReq) !RemoveMemberResp {
-	remove_member_domain(req)!
+	remove_member_domain(&req)!
 	return remove_member_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn remove_member_domain(req RemoveMemberReq) ! {
+fn remove_member_domain(req &RemoveMemberReq) ! {
 	if req.workspace_id == '' {
 		return error('workspace_id is required')
 	}
@@ -42,8 +42,8 @@ fn remove_member_domain(req RemoveMemberReq) ! {
 
 // ═══ DTO ═══
 pub struct RemoveMemberReq {
-	workspace_id string @[json: 'workspaceId']
-	user_id      string @[json: 'userId']
+	workspace_id string  @[json: 'workspaceId']
+	user_id      string  @[json: 'userId']
 	role_id      ?string @[json: 'roleId']
 }
 

@@ -17,18 +17,18 @@ pub fn (app &Fms) delete_fms_storage_provider_handler(mut ctx Context) veb.Resul
 	result := delete_fms_storage_provider_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
 }
 
 pub fn delete_fms_storage_provider_usecase(mut ctx Context, req DeleteFmsStorageProviderReq) !DeleteFmsStorageProviderResp {
-	delete_fms_storage_provider_domain(req)!
+	delete_fms_storage_provider_domain(&req)!
 	return delete_fms_storage_provider_repo(mut ctx, req.ids)
 }
 
-fn delete_fms_storage_provider_domain(req DeleteFmsStorageProviderReq) ! {
+fn delete_fms_storage_provider_domain(req &DeleteFmsStorageProviderReq) ! {
 	if req.ids.len == 0 {
 		return error('No FmsStorageProvider ids provided')
 	}

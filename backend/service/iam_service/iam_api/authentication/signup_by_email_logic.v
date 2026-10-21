@@ -21,7 +21,7 @@ pub fn (app &Authentication) signup_by_email_handler(mut ctx Context) veb.Result
 	result := signup_by_email_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -29,12 +29,12 @@ pub fn (app &Authentication) signup_by_email_handler(mut ctx Context) veb.Result
 
 // ═══ Use Case ═══
 pub fn signup_by_email_usecase(mut ctx Context, req SignupByEmailReq) !SignupByEmailResp {
-	signup_by_email_domain(req)!
+	signup_by_email_domain(&req)!
 	return signup_by_email_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn signup_by_email_domain(req SignupByEmailReq) ! {
+fn signup_by_email_domain(req &SignupByEmailReq) ! {
 	if req.email == '' {
 		return error('email is required')
 	}
@@ -85,13 +85,13 @@ fn signup_by_email_repo(mut ctx Context, req SignupByEmailReq) !SignupByEmailRes
 		return error('Failed to hash password')
 	}
 	user := IamUser{
-		id: user_id
-		username: req.username
-		password: password_hash
-		nickname: req.nickname
-		email: req.email
-		home_path: '"/dashboard"'
-		status: 1
+		id:         user_id
+		username:   req.username
+		password:   password_hash
+		nickname:   req.nickname
+		email:      req.email
+		home_path:  '"/dashboard"'
+		status:     1
 		created_at: time.now()
 		updated_at: time.now()
 	}
@@ -100,6 +100,6 @@ fn signup_by_email_repo(mut ctx Context, req SignupByEmailReq) !SignupByEmailRes
 	} or { return error('Failed to create user: ${err}') }
 	return SignupByEmailResp{
 		user_id: user_id
-		msg: 'Signup successful'
+		msg:     'Signup successful'
 	}
 }

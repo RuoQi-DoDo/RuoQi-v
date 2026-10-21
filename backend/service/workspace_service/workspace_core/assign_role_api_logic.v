@@ -17,7 +17,7 @@ pub fn (app &WorkspaceCore) assign_role_api_handler(mut ctx Context) veb.Result 
 	result := assign_role_api_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -25,12 +25,12 @@ pub fn (app &WorkspaceCore) assign_role_api_handler(mut ctx Context) veb.Result 
 
 // ═══ Use Case ═══
 pub fn assign_role_api_usecase(mut ctx Context, req AssignRoleApiReq) !AssignRoleApiResp {
-	assign_role_api_domain(req)!
+	assign_role_api_domain(&req)!
 	return assign_role_api_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn assign_role_api_domain(req AssignRoleApiReq) ! {
+fn assign_role_api_domain(req &AssignRoleApiReq) ! {
 	if req.workspace_id == '' {
 		return error('workspace_id is required')
 	}
@@ -41,8 +41,8 @@ fn assign_role_api_domain(req AssignRoleApiReq) ! {
 
 // ═══ DTO ═══
 pub struct AssignRoleApiReq {
-	workspace_id string @[json: 'workspaceId']
-	role_id      string @[json: 'roleId']
+	workspace_id string   @[json: 'workspaceId']
+	role_id      string   @[json: 'roleId']
 	api_ids      []string @[json: 'apiIds']
 }
 
@@ -68,8 +68,8 @@ fn assign_role_api_repo(mut ctx Context, req AssignRoleApiReq) !AssignRoleApiRes
 	for api_id in req.api_ids {
 		ra := WsRoleApi{
 			workspace_id: req.workspace_id
-			role_id: req.role_id
-			api_id: api_id
+			role_id:      req.role_id
+			api_id:       api_id
 		}
 		sql db {
 			insert ra into WsRoleApi

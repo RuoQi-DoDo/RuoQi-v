@@ -17,7 +17,7 @@ pub fn (app &WorkspaceCore) find_role_apis_handler(mut ctx Context) veb.Result {
 	result := find_role_apis_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -25,12 +25,12 @@ pub fn (app &WorkspaceCore) find_role_apis_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_role_apis_usecase(mut ctx Context, req FindRolePermReq) ![]WsRoleApi {
-	find_role_apis_domain(req)!
+	find_role_apis_domain(&req)!
 	return find_role_apis_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_role_apis_domain(req FindRolePermReq) ! {
+fn find_role_apis_domain(req &FindRolePermReq) ! {
 	if req.workspace_id == '' {
 		return error('workspace_id is required')
 	}

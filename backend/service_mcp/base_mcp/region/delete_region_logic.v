@@ -31,12 +31,12 @@ pub fn delete_region_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) 
 
 // ═══ Use Case ═══
 pub fn delete_region_usecase(pool &dbpool.DatabasePoolable, req DeleteRegionReq) !DeleteRegionResp {
-	delete_region_domain(req)!
+	delete_region_domain(&req)!
 	return delete_region_repo(pool, req.region_ids)
 }
 
 // ═══ Domain ═══
-fn delete_region_domain(req DeleteRegionReq) ! {
+fn delete_region_domain(req &DeleteRegionReq) ! {
 	if req.region_ids.len == 0 {
 		return error('No Region ids provided')
 	}

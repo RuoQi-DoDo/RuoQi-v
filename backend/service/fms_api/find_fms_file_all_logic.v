@@ -20,7 +20,7 @@ pub fn (app &Fms) find_fms_file_all_handler(mut ctx Context) veb.Result {
 	result := find_fms_file_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Fms) find_fms_file_all_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_fms_file_all_usecase(mut ctx Context, req FmsFileListReq) !FmsFileListResp {
-	find_fms_file_all_domain(req)!
+	find_fms_file_all_domain(&req)!
 	return find_fms_file_all_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_fms_file_all_domain(req FmsFileListReq) ! {
+fn find_fms_file_all_domain(req &FmsFileListReq) ! {
 	if req.page <= 0 {
 		return error('page must be greater than 0')
 	}
@@ -45,28 +45,28 @@ fn find_fms_file_all_domain(req FmsFileListReq) ! {
 
 // ═══ DTO ═══
 pub struct FmsFileListReq {
-	page      int @[json: 'page']
-	page_size int @[json: 'pageSize']
+	page      int    @[json: 'page']
+	page_size int    @[json: 'pageSize']
 	name      string @[json: 'name']
 	user_id   string @[json: 'userId']
-	file_type []u8 @[json: 'fileType']
-	status    []u8 @[json: 'status']
+	file_type []u8   @[json: 'fileType']
+	status    []u8   @[json: 'status']
 }
 
 pub struct FmsFileData {
-	id         string @[json: 'id']
-	name       string @[json: 'name']
-	file_type  u8 @[json: 'fileType']
-	size       u64 @[json: 'size']
-	path       string @[json: 'path']
-	user_id    string @[json: 'userId']
-	md5        string @[json: 'md5']
-	status     u8 @[json: 'status']
+	id         string  @[json: 'id']
+	name       string  @[json: 'name']
+	file_type  u8      @[json: 'fileType']
+	size       u64     @[json: 'size']
+	path       string  @[json: 'path']
+	user_id    string  @[json: 'userId']
+	md5        string  @[json: 'md5']
+	status     u8      @[json: 'status']
 	updater_id ?string @[json: 'updaterId']
 	creator_id ?string @[json: 'creatorId']
-	created_at string @[json: 'createdAt']
-	updated_at string @[json: 'updatedAt']
-	deleted_at string @[json: 'deletedAt']
+	created_at string  @[json: 'createdAt']
+	updated_at string  @[json: 'updatedAt']
+	deleted_at string  @[json: 'deletedAt']
 }
 
 pub struct FmsFileListResp {
@@ -102,14 +102,14 @@ fn find_fms_file_all_repo(mut ctx Context, req FmsFileListReq) !FmsFileListResp 
 	mut datalist := []FmsFileData{}
 	for row in result {
 		datalist << FmsFileData{
-			id: row.id
-			name: row.name
-			file_type: row.file_type
-			size: row.size
-			path: row.path
-			user_id: row.user_id
-			md5: row.md5
-			status: row.status
+			id:         row.id
+			name:       row.name
+			file_type:  row.file_type
+			size:       row.size
+			path:       row.path
+			user_id:    row.user_id
+			md5:        row.md5
+			status:     row.status
 			creator_id: row.creator_id
 			updater_id: row.updater_id
 			created_at: row.created_at.format_ss()
@@ -120,6 +120,6 @@ fn find_fms_file_all_repo(mut ctx Context, req FmsFileListReq) !FmsFileListResp 
 
 	return FmsFileListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

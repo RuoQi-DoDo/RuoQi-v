@@ -20,7 +20,7 @@ pub fn (app &Fms) find_fms_cloud_file_by_id_handler(mut ctx Context) veb.Result 
 	result := find_fms_cloud_file_by_id_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Fms) find_fms_cloud_file_by_id_handler(mut ctx Context) veb.Result 
 
 // ═══ Use Case ═══
 pub fn find_fms_cloud_file_by_id_usecase(mut ctx Context, req FmsCloudFileByIdReq) !FmsCloudFileByIdResp {
-	find_fms_cloud_file_by_id_domain(req)!
+	find_fms_cloud_file_by_id_domain(&req)!
 	return find_fms_cloud_file_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_fms_cloud_file_by_id_domain(req FmsCloudFileByIdReq) ! {
+fn find_fms_cloud_file_by_id_domain(req &FmsCloudFileByIdReq) ! {
 	if req.id == '' {
 		return error('cloud file id is required')
 	}
@@ -65,19 +65,19 @@ fn find_fms_cloud_file_by_id_repo(mut ctx Context, req FmsCloudFileByIdReq) !Fms
 	row := files[0]
 	return FmsCloudFileByIdResp{
 		data: FmsCloudFileData{
-			id: row.id
-			name: row.name
-			url: row.url
-			size: row.size
-			file_type: row.file_type
-			user_id: row.user_id
+			id:                           row.id
+			name:                         row.name
+			url:                          row.url
+			size:                         row.size
+			file_type:                    row.file_type
+			user_id:                      row.user_id
 			cloud_file_storage_providers: row.cloud_file_storage_providers
-			status: row.status
-			creator_id: row.creator_id
-			updater_id: row.updater_id
-			created_at: row.created_at.format_ss()
-			updated_at: row.updated_at.format_ss()
-			deleted_at: (row.deleted_at or { time.Time{} }).format_ss()
+			status:                       row.status
+			creator_id:                   row.creator_id
+			updater_id:                   row.updater_id
+			created_at:                   row.created_at.format_ss()
+			updated_at:                   row.updated_at.format_ss()
+			deleted_at:                   (row.deleted_at or { time.Time{} }).format_ss()
 		}
 	}
 }

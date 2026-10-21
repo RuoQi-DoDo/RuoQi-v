@@ -24,12 +24,12 @@ pub fn (app &WorkspaceDepartment) create_department_handler(mut ctx Context) veb
 
 // ═══ Use Case ═══
 pub fn create_department_usecase(mut ctx Context, req CreateDepartmentReq) !CreateDepartmentResp {
-	create_department_domain(req)!
+	create_department_domain(&req)!
 	return create_department_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_department_domain(req CreateDepartmentReq) ! {
+fn create_department_domain(req &CreateDepartmentReq) ! {
 	if req.name == '' {
 		return error('name is required')
 	}
@@ -45,7 +45,7 @@ pub struct CreateDepartmentReq {
 	name         string @[json: 'name']
 	code         string @[json: 'code']
 	description  string @[json: 'description']
-	sort         u32 @[json: 'sort']
+	sort         u32    @[json: 'sort']
 }
 
 pub struct CreateDepartmentResp {
@@ -59,22 +59,22 @@ fn create_department_repo(mut ctx Context, req CreateDepartmentReq) !CreateDepar
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	d := WsDepartment{
-		id: rand.uuid_v7()
+		id:           rand.uuid_v7()
 		workspace_id: req.workspace_id
-		parent_id: req.parent_id
-		name: req.name
-		code: req.code
-		description: req.description
-		sort: req.sort
-		status: 1
-		created_at: time.now()
-		updated_at: time.now()
+		parent_id:    req.parent_id
+		name:         req.name
+		code:         req.code
+		description:  req.description
+		sort:         req.sort
+		status:       1
+		created_at:   time.now()
+		updated_at:   time.now()
 	}
 	sql db {
 		insert d into WsDepartment
 	} or { return error('Failed: ${err}') }
 	return CreateDepartmentResp{
-		id: d.id
+		id:  d.id
 		msg: 'Department created'
 	}
 }

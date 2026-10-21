@@ -20,7 +20,7 @@ pub fn (app &Fms) find_fms_file_by_id_handler(mut ctx Context) veb.Result {
 	result := find_fms_file_by_id_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Fms) find_fms_file_by_id_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_fms_file_by_id_usecase(mut ctx Context, req FmsFileByIdReq) !FmsFileByIdResp {
-	find_fms_file_by_id_domain(req)!
+	find_fms_file_by_id_domain(&req)!
 	return find_fms_file_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_fms_file_by_id_domain(req FmsFileByIdReq) ! {
+fn find_fms_file_by_id_domain(req &FmsFileByIdReq) ! {
 	if req.id == '' {
 		return error('file id is required')
 	}
@@ -64,14 +64,14 @@ fn find_fms_file_by_id_repo(mut ctx Context, req FmsFileByIdReq) !FmsFileByIdRes
 	row := files[0]
 	return FmsFileByIdResp{
 		data: FmsFileData{
-			id: row.id
-			name: row.name
-			file_type: row.file_type
-			size: row.size
-			path: row.path
-			user_id: row.user_id
-			md5: row.md5
-			status: row.status
+			id:         row.id
+			name:       row.name
+			file_type:  row.file_type
+			size:       row.size
+			path:       row.path
+			user_id:    row.user_id
+			md5:        row.md5
+			status:     row.status
 			creator_id: row.creator_id
 			updater_id: row.updater_id
 			created_at: row.created_at.format_ss()

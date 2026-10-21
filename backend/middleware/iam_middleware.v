@@ -44,7 +44,7 @@ fn iam_auth_scoped(mut ctx Context) bool {
 
 	ctx.json(api.json_error(
 		code: api.err_common_auth
-		msg: 'Authentication required to access this resource'
+		msg:  'Authentication required to access this resource'
 	))
 	return false
 }
@@ -75,7 +75,7 @@ fn iam_auth_identity(mut ctx Context) bool {
 
 	ctx.json(api.json_error(
 		code: api.err_common_auth
-		msg: 'Authentication required to access this resource'
+		msg:  'Authentication required to access this resource'
 	))
 	return false
 }
@@ -102,7 +102,7 @@ fn iam_auth_full(mut ctx Context) bool {
 
 	ctx.json(api.json_error(
 		code: api.err_common_auth
-		msg: 'Authentication required to access this resource'
+		msg:  'Authentication required to access this resource'
 	))
 	return false
 }
@@ -117,7 +117,7 @@ fn authenticate_jwt_identity(mut ctx Context, token string) bool {
 	payload := crypt.verify_and_decode[crypt.AuthPayload](secret, token) or {
 		ctx.json(api.json_error(
 			code: api.err_common_auth
-			msg: 'Authentication required to access this resource'
+			msg:  'Authentication required to access this resource'
 		))
 		return false
 	}
@@ -137,7 +137,7 @@ fn authorize_workspace_permission(mut ctx Context, token string) bool {
 		log.warn('find_user_apis_by_token failed: ${err}')
 		ctx.json(api.json_error(
 			code: api.err_common_permission
-			msg: "You don't have permission to perform this action"
+			msg:  "You don't have permission to perform this action"
 		))
 		return false
 	}
@@ -163,7 +163,7 @@ fn authorize_tenant_membership(mut ctx Context) bool {
 	if tenant_id == '' || product_id == '' || portal_id == '' {
 		ctx.json(api.json_error(
 			code: api.err_common_param_invalid
-			msg: 'X-Tenant-ID, X-Product-ID and X-Portal-ID are required'
+			msg:  'X-Tenant-ID, X-Product-ID and X-Portal-ID are required'
 		))
 		return false
 	}
@@ -182,14 +182,14 @@ fn authorize_tenant_membership(mut ctx Context) bool {
 	} or {
 		ctx.json(api.json_error(
 			code: api.err_common_permission
-			msg: "You don't have permission to perform this action"
+			msg:  "You don't have permission to perform this action"
 		))
 		return false
 	}
 	if members.len == 0 {
 		ctx.json(api.json_error(
 			code: api.err_common_permission
-			msg: 'user not a member of this tenant/product/portal'
+			msg:  'user not a member of this tenant/product/portal'
 		))
 		return false
 	}
@@ -223,7 +223,7 @@ fn authenticate_aksk_signature(mut ctx Context, ak string) bool {
 	if timestamp == '' || sig == '' {
 		ctx.json(api.json_error(
 			code: api.err_common_auth
-			msg: 'Missing X-Timestamp or X-Signature header'
+			msg:  'Missing X-Timestamp or X-Signature header'
 		))
 		return false
 	}
@@ -231,7 +231,7 @@ fn authenticate_aksk_signature(mut ctx Context, ak string) bool {
 	key := middle.find_apis_by_aksk(mut ctx, ak) or {
 		return reject(mut ctx, api.json_error(
 			code: api.err_common_auth
-			msg: 'Authentication required to access this resource'
+			msg:  'Authentication required to access this resource'
 		))
 	}
 
@@ -240,7 +240,7 @@ fn authenticate_aksk_signature(mut ctx Context, ak string) bool {
 		log.warn('aes_decrypt failed for apikey ${key.id}: ${err}')
 		ctx.json(api.json_error(
 			code: api.err_common_auth
-			msg: 'Authentication required to access this resource'
+			msg:  'Authentication required to access this resource'
 		))
 		return false
 	}
@@ -249,7 +249,7 @@ fn authenticate_aksk_signature(mut ctx Context, ak string) bool {
 	crypt.verify_apisign(sk, ctx.req.method.str(), path, ctx.req.data, timestamp, sig, sig_skew_seconds) or {
 		ctx.json(api.json_error(
 			code: api.err_common_auth
-			msg: err.msg()
+			msg:  err.msg()
 		))
 		return false
 	}
@@ -262,7 +262,7 @@ fn populate_aksk_context(mut ctx Context, key IamApiKey) bool {
 	if key.status != 1 {
 		ctx.json(api.json_error(
 			code: api.err_common_permission
-			msg: "You don't have permission to perform this action"
+			msg:  "You don't have permission to perform this action"
 		))
 		return false
 	}
@@ -270,7 +270,7 @@ fn populate_aksk_context(mut ctx Context, key IamApiKey) bool {
 		if time.now() > exp {
 			ctx.json(api.json_error(
 				code: api.err_common_permission
-				msg: "You don't have permission to perform this action"
+				msg:  "You don't have permission to perform this action"
 			))
 			return false
 		}
@@ -298,7 +298,7 @@ fn populate_aksk_context(mut ctx Context, key IamApiKey) bool {
 		return false
 	}
 
-	check_isolation(tenants, subproducts, subportals, tenant_id, subproduct_id, subportal_id) or {
+	check_isolation(&tenants, &subproducts, &subportals, tenant_id, subproduct_id, subportal_id) or {
 		ctx.json(api.json_error(code: api.err_common_permission, msg: err.msg()))
 		return false
 	}
@@ -326,7 +326,7 @@ fn populate_aksk_context(mut ctx Context, key IamApiKey) bool {
 
 // check_isolation — AK/SK 专用: 校验 API Key 的租户/产品/门户隔离白名单
 // tenants/subproducts/subportals 应由调用方预先从 JSON 解码，解码失败视为空（无隔离限制）
-fn check_isolation(tenants []string, subproducts []string, subportals []string, tenant_id string, subproduct_id string, subportal_id string) ! {
+fn check_isolation(tenants &[]string, subproducts &[]string, subportals &[]string, tenant_id string, subproduct_id string, subportal_id string) ! {
 	if tenants.len == 0 && subproducts.len == 0 && subportals.len == 0 {
 		return
 	}
@@ -427,7 +427,7 @@ $if debug {
 		if timestamp == '' || sig == '' {
 			return reject(mut ctx, api.json_error(
 				code: api.err_common_auth
-				msg: 'Missing X-Timestamp or X-Signature header'
+				msg:  'Missing X-Timestamp or X-Signature header'
 			))
 		}
 
@@ -435,7 +435,7 @@ $if debug {
 		crypt.verify_apisign(debug_sk, ctx.req.method.str(), path, ctx.req.data, timestamp, sig, sig_skew_seconds) or {
 			return reject(mut ctx, api.json_error(
 				code: api.err_common_auth
-				msg: err.msg()
+				msg:  err.msg()
 			))
 		}
 
@@ -459,7 +459,7 @@ fn reject(mut ctx Context, err api.ApiErrorResponse) bool {
 pub fn iam_identity_middleware() veb.MiddlewareOptions[Context] {
 	return veb.MiddlewareOptions[Context]{
 		handler: iam_auth_identity
-		after: false
+		after:   false
 	}
 }
 
@@ -468,7 +468,7 @@ pub fn iam_identity_middleware() veb.MiddlewareOptions[Context] {
 pub fn iam_full_middleware() veb.MiddlewareOptions[Context] {
 	return veb.MiddlewareOptions[Context]{
 		handler: iam_auth_full
-		after: false
+		after:   false
 	}
 }
 
@@ -477,7 +477,7 @@ pub fn iam_full_middleware() veb.MiddlewareOptions[Context] {
 pub fn iam_scoped_middleware() veb.MiddlewareOptions[Context] {
 	return veb.MiddlewareOptions[Context]{
 		handler: iam_auth_scoped
-		after: false
+		after:   false
 	}
 }
 

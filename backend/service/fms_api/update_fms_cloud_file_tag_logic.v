@@ -17,28 +17,28 @@ pub fn (app &Fms) update_fms_cloud_file_tag_handler(mut ctx Context) veb.Result 
 	result := update_fms_cloud_file_tag_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
 }
 
 pub fn update_fms_cloud_file_tag_usecase(mut ctx Context, req UpdateFmsCloudFileTagReq) !UpdateFmsCloudFileTagResp {
-	update_fms_cloud_file_tag_domain(req)!
+	update_fms_cloud_file_tag_domain(&req)!
 	return update_fms_cloud_file_tag_repo(mut ctx, req)
 }
 
-fn update_fms_cloud_file_tag_domain(req UpdateFmsCloudFileTagReq) ! {
+fn update_fms_cloud_file_tag_domain(req &UpdateFmsCloudFileTagReq) ! {
 	if req.id == '' {
 		return error('tag id is required')
 	}
 }
 
 pub struct UpdateFmsCloudFileTagReq {
-	id     string @[json: 'id']
+	id     string  @[json: 'id']
 	name   ?string @[json: 'name']
 	remark ?string @[json: 'remark']
-	status ?u8 @[json: 'status']
+	status ?u8     @[json: 'status']
 }
 
 pub struct UpdateFmsCloudFileTagResp {

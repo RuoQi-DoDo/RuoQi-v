@@ -20,7 +20,7 @@ pub fn (app &Pay) delete_pay_refund_handler(mut ctx Context) veb.Result {
 	result := delete_pay_refund_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Pay) delete_pay_refund_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn delete_pay_refund_usecase(mut ctx Context, req DeletePayRefundReq) !DeletePayRefundResp {
-	delete_pay_refund_domain(req)!
+	delete_pay_refund_domain(&req)!
 	return delete_pay_refund_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_pay_refund_domain(req DeletePayRefundReq) ! {
+fn delete_pay_refund_domain(req &DeletePayRefundReq) ! {
 	if req.ids.len == 0 {
 		return error('No PayRefund ids provided')
 	}

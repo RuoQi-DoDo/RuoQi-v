@@ -31,12 +31,12 @@ pub fn create_utc_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 
 // ═══ Use Case ═══
 pub fn create_utc_usecase(pool &dbpool.DatabasePoolable, req CreateUtcReq) !CreateUtcResp {
-	create_utc_domain(req)!
+	create_utc_domain(&req)!
 	return create_utc_repo(pool, req)
 }
 
 // ═══ Domain ═══
-fn create_utc_domain(req CreateUtcReq) ! {
+fn create_utc_domain(req &CreateUtcReq) ! {
 	if req.name == '' {
 		return error('name is required')
 	}

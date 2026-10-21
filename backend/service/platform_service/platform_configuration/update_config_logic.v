@@ -23,12 +23,12 @@ pub fn (app &PlatformConfiguration) update_config_handler(mut ctx Context) veb.R
 
 // ═══ Use Case ═══
 pub fn update_config_usecase(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
-	update_config_domain(req)!
+	update_config_domain(&req)!
 	return update_config_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_config_domain(req UpdateConfigReq) ! {
+fn update_config_domain(req &UpdateConfigReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
@@ -36,12 +36,12 @@ fn update_config_domain(req UpdateConfigReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateConfigReq {
-	id          string @[json: 'id']
+	id          string  @[json: 'id']
 	key         ?string @[json: 'key']
 	value       ?string @[json: 'value']
 	category    ?string @[json: 'category']
 	description ?string @[json: 'description']
-	status      ?u8 @[json: 'status']
+	status      ?u8     @[json: 'status']
 }
 
 pub struct UpdateConfigResp {

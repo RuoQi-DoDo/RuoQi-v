@@ -30,12 +30,12 @@ pub fn update_adm_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 
 // ═══ Use Case ═══
 pub fn update_adm_usecase(pool &dbpool.DatabasePoolable, req UpdateAdmReq) !UpdateAdmResp {
-	update_adm_domain(req)!
+	update_adm_domain(&req)!
 	return update_adm_repo(pool, req)
 }
 
 // ═══ Domain ═══
-fn update_adm_domain(req UpdateAdmReq) ! {
+fn update_adm_domain(req &UpdateAdmReq) ! {
 	if req.id == '' {
 		return error('Adm id is required')
 	}

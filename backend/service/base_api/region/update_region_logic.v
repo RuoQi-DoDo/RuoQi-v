@@ -20,7 +20,7 @@ pub fn (app &Region) update_region_handler(mut ctx Context) veb.Result {
 	result := update_region_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,14 +30,14 @@ pub fn (app &Region) update_region_handler(mut ctx Context) veb.Result {
 // ═══ Use Case ═══
 pub fn update_region_usecase(mut ctx Context, req UpdateRegionReq) !UpdateRegionResp {
 	// Domain 校验
-	update_region_domain(req)!
+	update_region_domain(&req)!
 
 	// Repository 更新
 	return update_region_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_region_domain(req UpdateRegionReq) ! {
+fn update_region_domain(req &UpdateRegionReq) ! {
 	if req.id == '' {
 		return error('region id is required')
 	}
@@ -45,7 +45,7 @@ fn update_region_domain(req UpdateRegionReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateRegionReq {
-	id                   string @[json: 'id']
+	id                   string  @[json: 'id']
 	sys_region_code      ?string @[json: 'sysRegionCode']
 	sys_region_name      ?string @[json: 'sysRegionName']
 	name_local           ?string @[json: 'nameLocal']
@@ -62,8 +62,8 @@ pub struct UpdateRegionReq {
 	domain_name          ?string @[json: 'domainName']
 	continent_code       ?string @[json: 'continentCode']
 	coord_bounds         ?string @[json: 'coordBounds']
-	sort                 ?int @[json: 'sort']
-	status               ?u8 @[json: 'status']
+	sort                 ?int    @[json: 'sort']
+	status               ?u8     @[json: 'status']
 	name_en              ?string @[json: 'nameEn']
 	name_zh              ?string @[json: 'nameZh']
 }

@@ -22,12 +22,12 @@ pub fn (app &PlatformApi) delete_api_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn delete_api_usecase(mut ctx Context, req DeleteApiReq) !DeleteApiResp {
-	delete_api_domain(req)!
+	delete_api_domain(&req)!
 	return delete_api_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_api_domain(req DeleteApiReq) ! {
+fn delete_api_domain(req &DeleteApiReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

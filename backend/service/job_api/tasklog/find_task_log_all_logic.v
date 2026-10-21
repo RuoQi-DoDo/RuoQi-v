@@ -19,7 +19,7 @@ pub fn (app &TaskLog) find_task_log_all_handler(mut ctx Context) veb.Result {
 	result := find_task_log_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -28,12 +28,12 @@ pub fn (app &TaskLog) find_task_log_all_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_task_log_all_usecase(mut ctx Context, req TaskLogListReq) !TaskLogListResp {
-	find_task_log_all_domain(req)!
+	find_task_log_all_domain(&req)!
 	return find_task_log_all_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_task_log_all_domain(req TaskLogListReq) ! {
+fn find_task_log_all_domain(req &TaskLogListReq) ! {
 	if req.page <= 0 {
 		return error('page must be greater than 0')
 	}
@@ -44,16 +44,16 @@ fn find_task_log_all_domain(req TaskLogListReq) ! {
 
 // ═══ DTO ═══
 pub struct TaskLogListReq {
-	page      int @[json: 'page']
-	page_size int @[json: 'pageSize']
+	page      int  @[json: 'page']
+	page_size int  @[json: 'pageSize']
 	result    []u8 @[json: 'result']
 }
 
 pub struct TaskLogData {
-	id             string @[json: 'id']
-	started_at     string @[json: 'startedAt']
-	finished_at    string @[json: 'finishedAt']
-	result         u8 @[json: 'result']
+	id             string  @[json: 'id']
+	started_at     string  @[json: 'startedAt']
+	finished_at    string  @[json: 'finishedAt']
+	result         u8      @[json: 'result']
 	task_task_logs ?string @[json: 'taskTaskLogs']
 }
 
@@ -87,16 +87,16 @@ fn find_task_log_all_repo(mut ctx Context, req TaskLogListReq) !TaskLogListResp 
 	mut datalist := []TaskLogData{}
 	for row in rows {
 		datalist << TaskLogData{
-			id: row.id
-			started_at: row.started_at.format_ss()
-			finished_at: row.finished_at.format_ss()
-			result: row.result
+			id:             row.id
+			started_at:     row.started_at.format_ss()
+			finished_at:    row.finished_at.format_ss()
+			result:         row.result
 			task_task_logs: row.task_task_logs
 		}
 	}
 
 	return TaskLogListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

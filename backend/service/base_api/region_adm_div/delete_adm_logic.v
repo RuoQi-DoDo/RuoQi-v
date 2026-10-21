@@ -21,7 +21,7 @@ pub fn (app &RegionAdmDiv) delete_adm_handler(mut ctx Context) veb.Result {
 	result := delete_adm_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -31,14 +31,14 @@ pub fn (app &RegionAdmDiv) delete_adm_handler(mut ctx Context) veb.Result {
 // ═══ Use Case ═══
 pub fn delete_adm_usecase(mut ctx Context, req DeleteAdmReq) !DeleteAdmResp {
 	// Domain 校验
-	delete_adm_domain(req)!
+	delete_adm_domain(&req)!
 
 	// Repository 执行删除
 	return delete_adm_repo(mut ctx, req.adm_ids)
 }
 
 // ═══ Domain ═══
-fn delete_adm_domain(req DeleteAdmReq) ! {
+fn delete_adm_domain(req &DeleteAdmReq) ! {
 	if req.adm_ids.len == 0 {
 		return error('No Adm ids provided')
 	}

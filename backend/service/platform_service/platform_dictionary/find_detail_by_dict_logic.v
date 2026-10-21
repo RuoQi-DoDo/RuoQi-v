@@ -22,12 +22,12 @@ pub fn (app &PlatformDictionary) find_detail_by_dict_handler(mut ctx Context) ve
 
 // ═══ Use Case ═══
 pub fn find_detail_by_dict_usecase(mut ctx Context, req FindDetailByDictReq) ![]PfDictionaryDetail {
-	find_detail_by_dict_domain(req)!
+	find_detail_by_dict_domain(&req)!
 	return find_detail_by_dict_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_detail_by_dict_domain(req FindDetailByDictReq) ! {
+fn find_detail_by_dict_domain(req &FindDetailByDictReq) ! {
 	if req.dictionary_id == '' {
 		return error('dictionary_id is required')
 	}

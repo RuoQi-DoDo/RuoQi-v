@@ -21,7 +21,7 @@ pub fn (app &Currency) delete_currency_handler(mut ctx Context) veb.Result {
 	result := delete_currency_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -31,14 +31,14 @@ pub fn (app &Currency) delete_currency_handler(mut ctx Context) veb.Result {
 // ═══ Use Case ═══
 pub fn delete_currency_usecase(mut ctx Context, req DeleteCurrencyReq) !DeleteCurrencyResp {
 	// Domain 校验
-	delete_currency_domain(req)!
+	delete_currency_domain(&req)!
 
 	// Repository 执行删除
 	return delete_currency_repo(mut ctx, req.currency_ids)
 }
 
 // ═══ Domain ═══
-fn delete_currency_domain(req DeleteCurrencyReq) ! {
+fn delete_currency_domain(req &DeleteCurrencyReq) ! {
 	if req.currency_ids.len == 0 {
 		return error('No Currency ids provided')
 	}

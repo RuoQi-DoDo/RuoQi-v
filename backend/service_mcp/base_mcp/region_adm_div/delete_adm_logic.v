@@ -31,12 +31,12 @@ pub fn delete_adm_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 
 // ═══ Use Case ═══
 pub fn delete_adm_usecase(pool &dbpool.DatabasePoolable, req DeleteAdmReq) !DeleteAdmResp {
-	delete_adm_domain(req)!
+	delete_adm_domain(&req)!
 	return delete_adm_repo(pool, req.adm_ids)
 }
 
 // ═══ Domain ═══
-fn delete_adm_domain(req DeleteAdmReq) ! {
+fn delete_adm_domain(req &DeleteAdmReq) ! {
 	if req.adm_ids.len == 0 {
 		return error('No Adm ids provided')
 	}

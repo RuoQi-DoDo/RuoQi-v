@@ -22,12 +22,12 @@ pub fn (app &PlatformMenu) find_menu_by_id_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_menu_by_id_usecase(mut ctx Context, req FindMenuByIdReq) !PfMenu {
-	find_menu_by_id_domain(req)!
+	find_menu_by_id_domain(&req)!
 	return find_menu_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_menu_by_id_domain(req FindMenuByIdReq) ! {
+fn find_menu_by_id_domain(req &FindMenuByIdReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

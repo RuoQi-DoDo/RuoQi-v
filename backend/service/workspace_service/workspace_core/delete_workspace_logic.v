@@ -18,7 +18,7 @@ pub fn (app &WorkspaceCore) delete_workspace_handler(mut ctx Context) veb.Result
 	result := delete_workspace_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -26,12 +26,12 @@ pub fn (app &WorkspaceCore) delete_workspace_handler(mut ctx Context) veb.Result
 
 // ═══ Use Case ═══
 pub fn delete_workspace_usecase(mut ctx Context, req DeleteWsReq) !DeleteWsResp {
-	delete_workspace_domain(req)!
+	delete_workspace_domain(&req)!
 	return delete_workspace_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_workspace_domain(req DeleteWsReq) ! {
+fn delete_workspace_domain(req &DeleteWsReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

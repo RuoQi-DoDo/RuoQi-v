@@ -25,8 +25,9 @@ pub:
 pub fn captcha_generate(secret string) !(string, string, string) {
 	captch_obj := generate_captcha()
 	now := time.now()
+	captcha_text := captch_obj.text.clone()
 	payload := CaptchaPayload{
-		BasePayload: BasePayload{
+		BasePayload:  BasePayload{
 			iss: 'ruoqi-v'
 			sub: 'captcha'
 			exp: now.add_seconds(120).unix()
@@ -34,7 +35,7 @@ pub fn captcha_generate(secret string) !(string, string, string) {
 			iat: now.unix()
 			jti: rand.uuid_v4()
 		}
-		captcha_text: captch_obj.text
+		captcha_text: captcha_text
 	}
 	token := sign_payload[CaptchaPayload](secret, payload)
 	return token, captch_obj.image, captch_obj.text
@@ -120,7 +121,7 @@ pub fn generate_captcha() Captcha {
 	svg += '</svg>'
 
 	return Captcha{
-		text: text
+		text:  text
 		image: 'data:image/svg+xml;base64,' + base64.encode_str(svg)
 	}
 }

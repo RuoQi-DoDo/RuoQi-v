@@ -21,7 +21,7 @@ pub fn (app &MessageSender) send_sms_handler(mut ctx Context) veb.Result {
 	result := send_sms_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &MessageSender) send_sms_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn send_sms_usecase(mut ctx Context, req SendSmsReq) !SendSmsResp {
-	send_sms_domain(req)!
+	send_sms_domain(&req)!
 	return send_sms_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn send_sms_domain(req SendSmsReq) ! {
+fn send_sms_domain(req &SendSmsReq) ! {
 	if req.phone_number == '' {
 		return error('phone number is required')
 	}
@@ -75,13 +75,13 @@ fn send_sms_repo(mut ctx Context, req SendSmsReq) !SendSmsResp {
 	// Insert send log with pending status (0 = unknown/pending)
 	time_now := time.now()
 	sms_log := MsgSmsLog{
-		id: rand.uuid_v7()
+		id:           rand.uuid_v7()
 		phone_number: req.phone_number
-		content: req.content
-		send_status: 0
-		provider: req.provider
-		created_at: time_now
-		updated_at: time_now
+		content:      req.content
+		send_status:  0
+		provider:     req.provider
+		created_at:   time_now
+		updated_at:   time_now
 	}
 
 	sql db {

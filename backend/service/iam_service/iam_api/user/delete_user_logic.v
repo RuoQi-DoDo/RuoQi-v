@@ -18,7 +18,7 @@ pub fn (app &User) delete_user_handler(mut ctx Context) veb.Result {
 	result := delete_user_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -26,7 +26,7 @@ pub fn (app &User) delete_user_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn delete_user_usecase(mut ctx Context, req DeleteUserReq) !DeleteUserResp {
-	delete_user_domain(req)!
+	delete_user_domain(&req)!
 	delete_user_repo(mut ctx, req) or { return error('Failed to delete user: ${err}') }
 	return DeleteUserResp{
 		msg: 'User deleted'
@@ -34,7 +34,7 @@ pub fn delete_user_usecase(mut ctx Context, req DeleteUserReq) !DeleteUserResp {
 }
 
 // ═══ Domain ═══
-fn delete_user_domain(req DeleteUserReq) ! {
+fn delete_user_domain(req &DeleteUserReq) ! {
 	if req.user_id == '' {
 		return error('user_id is required')
 	}

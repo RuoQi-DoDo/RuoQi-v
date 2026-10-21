@@ -21,7 +21,7 @@ pub fn (app &EmailProvider) create_email_provider_handler(mut ctx Context) veb.R
 	result := create_email_provider_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &EmailProvider) create_email_provider_handler(mut ctx Context) veb.R
 
 // ═══ Use Case ═══
 pub fn create_email_provider_usecase(mut ctx Context, req CreateEmailProviderReq) !CreateEmailProviderResp {
-	create_email_provider_domain(req)!
+	create_email_provider_domain(&req)!
 	return create_email_provider_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_email_provider_domain(req CreateEmailProviderReq) ! {
+fn create_email_provider_domain(req &CreateEmailProviderReq) ! {
 	if req.name == '' {
 		return error('provider name is required')
 	}
@@ -49,16 +49,16 @@ fn create_email_provider_domain(req CreateEmailProviderReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateEmailProviderReq {
-	name       string @[json: 'name']
-	auth_type  u8 @[json: 'authType']
-	email_addr string @[json: 'emailAddr']
+	name       string  @[json: 'name']
+	auth_type  u8      @[json: 'authType']
+	email_addr string  @[json: 'emailAddr']
 	password   ?string @[json: 'password']
-	host_name  string @[json: 'hostName']
+	host_name  string  @[json: 'hostName']
 	identify   ?string @[json: 'identify']
 	secret     ?string @[json: 'secret']
-	port       ?u32 @[json: 'port']
-	tls        u8 @[json: 'tls']
-	is_default u8 @[json: 'isDefault']
+	port       ?u32    @[json: 'port']
+	tls        u8      @[json: 'tls']
+	is_default u8      @[json: 'isDefault']
 }
 
 pub struct CreateEmailProviderResp {
@@ -69,16 +69,16 @@ pub struct CreateEmailProviderResp {
 fn create_email_provider_repo(mut ctx Context, req CreateEmailProviderReq) !CreateEmailProviderResp {
 	time_now := time.now()
 	provider := MsgEmailProvider{
-		id: rand.uuid_v7()
-		name: req.name
-		auth_type: req.auth_type
+		id:         rand.uuid_v7()
+		name:       req.name
+		auth_type:  req.auth_type
 		email_addr: req.email_addr
-		password: req.password
-		host_name: req.host_name
-		identify: req.identify
-		secret: req.secret
-		port: req.port
-		tls: req.tls
+		password:   req.password
+		host_name:  req.host_name
+		identify:   req.identify
+		secret:     req.secret
+		port:       req.port
+		tls:        req.tls
 		is_default: req.is_default
 		creator_id: ctx.svc_iam.user_id
 		updater_id: ctx.svc_iam.user_id

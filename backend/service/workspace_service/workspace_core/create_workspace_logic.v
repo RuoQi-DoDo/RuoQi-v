@@ -19,7 +19,7 @@ pub fn (app &WorkspaceCore) create_workspace_handler(mut ctx Context) veb.Result
 	result := create_workspace_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -27,12 +27,12 @@ pub fn (app &WorkspaceCore) create_workspace_handler(mut ctx Context) veb.Result
 
 // ═══ Use Case ═══
 pub fn create_workspace_usecase(mut ctx Context, req CreateWsReq) !CreateWsResp {
-	create_workspace_domain(req)!
+	create_workspace_domain(&req)!
 	return create_workspace_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_workspace_domain(req CreateWsReq) ! {
+fn create_workspace_domain(req &CreateWsReq) ! {
 	if req.name == '' {
 		return error('name is required')
 	}
@@ -58,19 +58,19 @@ fn create_workspace_repo(mut ctx Context, req CreateWsReq) !CreateWsResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	w := WsWorkspace{
-		id: rand.uuid_v7()
-		tenant_id: req.tenant_id
-		name: req.name
+		id:          rand.uuid_v7()
+		tenant_id:   req.tenant_id
+		name:        req.name
 		description: req.description
-		status: 1
-		created_at: time.now()
-		updated_at: time.now()
+		status:      1
+		created_at:  time.now()
+		updated_at:  time.now()
 	}
 	sql db {
 		insert w into WsWorkspace
 	} or { return error('Failed: ${err}') }
 	return CreateWsResp{
-		id: w.id
+		id:  w.id
 		msg: 'Workspace created'
 	}
 }

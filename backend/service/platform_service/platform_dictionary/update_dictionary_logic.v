@@ -23,12 +23,12 @@ pub fn (app &PlatformDictionary) update_dictionary_handler(mut ctx Context) veb.
 
 // ═══ Use Case ═══
 pub fn update_dictionary_usecase(mut ctx Context, req UpdateDictionaryReq) !UpdateDictionaryResp {
-	update_dictionary_domain(req)!
+	update_dictionary_domain(&req)!
 	return update_dictionary_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_dictionary_domain(req UpdateDictionaryReq) ! {
+fn update_dictionary_domain(req &UpdateDictionaryReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
@@ -36,11 +36,11 @@ fn update_dictionary_domain(req UpdateDictionaryReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateDictionaryReq {
-	id          string @[json: 'id']
+	id          string  @[json: 'id']
 	name        ?string @[json: 'name']
 	code        ?string @[json: 'code']
 	description ?string @[json: 'description']
-	status      ?u8 @[json: 'status']
+	status      ?u8     @[json: 'status']
 }
 
 pub struct UpdateDictionaryResp {

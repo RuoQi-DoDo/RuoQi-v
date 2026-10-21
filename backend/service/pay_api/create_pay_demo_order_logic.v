@@ -21,7 +21,7 @@ pub fn (app &Pay) create_pay_demo_order_handler(mut ctx Context) veb.Result {
 	result := create_pay_demo_order_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &Pay) create_pay_demo_order_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_pay_demo_order_usecase(mut ctx Context, req CreatePayDemoOrderReq) !CreatePayDemoOrderResp {
-	create_pay_demo_order_domain(req)!
+	create_pay_demo_order_domain(&req)!
 	return create_pay_demo_order_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_pay_demo_order_domain(req CreatePayDemoOrderReq) ! {
+fn create_pay_demo_order_domain(req &CreatePayDemoOrderReq) ! {
 	if req.price <= 0 {
 		return error('price must be greater than 0')
 	}
@@ -44,10 +44,10 @@ fn create_pay_demo_order_domain(req CreatePayDemoOrderReq) ! {
 // ═══ DTO ═══
 pub struct CreatePayDemoOrderReq {
 	user_id    string @[json: 'userId']
-	spu_id     u64 @[json: 'spuId']
+	spu_id     u64    @[json: 'spuId']
 	spu_name   string @[json: 'spuName']
-	price      int @[json: 'price']
-	pay_status u8 @[json: 'payStatus']
+	price      int    @[json: 'price']
+	pay_status u8     @[json: 'payStatus']
 }
 
 pub struct CreatePayDemoOrderResp {
@@ -58,11 +58,11 @@ pub struct CreatePayDemoOrderResp {
 fn create_pay_demo_order_repo(mut ctx Context, req CreatePayDemoOrderReq) !CreatePayDemoOrderResp {
 	time_now := time.now()
 	order := PayDemoOrder{
-		id: rand.uuid_v7()
-		user_id: ctx.svc_iam.user_id
-		spu_id: req.spu_id
-		spu_name: req.spu_name
-		price: req.price
+		id:         rand.uuid_v7()
+		user_id:    ctx.svc_iam.user_id
+		spu_id:     req.spu_id
+		spu_name:   req.spu_name
+		price:      req.price
 		pay_status: req.pay_status
 		creator_id: ctx.svc_iam.user_id
 		updater_id: ctx.svc_iam.user_id

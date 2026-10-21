@@ -21,7 +21,7 @@ pub fn (app &Utc) delete_utc_handler(mut ctx Context) veb.Result {
 	result := delete_utc_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -31,14 +31,14 @@ pub fn (app &Utc) delete_utc_handler(mut ctx Context) veb.Result {
 // ═══ Use Case ═══
 pub fn delete_utc_usecase(mut ctx Context, req DeleteUtcReq) !DeleteUtcResp {
 	// Domain 校验
-	delete_utc_domain(req)!
+	delete_utc_domain(&req)!
 
 	// Repository 执行删除
 	return delete_utc_repo(mut ctx, req.utc_ids)
 }
 
 // ═══ Domain ═══
-fn delete_utc_domain(req DeleteUtcReq) ! {
+fn delete_utc_domain(req &DeleteUtcReq) ! {
 	if req.utc_ids.len == 0 {
 		return error('No Currency ids provided')
 	}

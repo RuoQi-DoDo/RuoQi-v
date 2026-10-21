@@ -18,7 +18,7 @@ pub fn (app &TenantSubProduct) cancel_subproduct_handler(mut ctx Context) veb.Re
 	result := cancel_subproduct_usecase(mut ctx, req) or {
 		return ctx.json(capi.json_error(
 			code: capi.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(capi.json_success(data: result))
@@ -26,12 +26,12 @@ pub fn (app &TenantSubProduct) cancel_subproduct_handler(mut ctx Context) veb.Re
 
 // ═══ Use Case ═══
 pub fn cancel_subproduct_usecase(mut ctx Context, req CancelSubProductReq) !CancelSubProductResp {
-	cancel_subproduct_domain(req)!
+	cancel_subproduct_domain(&req)!
 	return cancel_subproduct_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn cancel_subproduct_domain(req CancelSubProductReq) ! {
+fn cancel_subproduct_domain(req &CancelSubProductReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

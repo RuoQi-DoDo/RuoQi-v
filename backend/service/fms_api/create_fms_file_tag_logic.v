@@ -21,7 +21,7 @@ pub fn (app &Fms) create_fms_file_tag_handler(mut ctx Context) veb.Result {
 	result := create_fms_file_tag_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &Fms) create_fms_file_tag_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_fms_file_tag_usecase(mut ctx Context, req CreateFmsFileTagReq) !CreateFmsFileTagResp {
-	create_fms_file_tag_domain(req)!
+	create_fms_file_tag_domain(&req)!
 	return create_fms_file_tag_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_fms_file_tag_domain(req CreateFmsFileTagReq) ! {
+fn create_fms_file_tag_domain(req &CreateFmsFileTagReq) ! {
 	if req.name == '' {
 		return error('tag name is required')
 	}
@@ -46,9 +46,9 @@ fn create_fms_file_tag_domain(req CreateFmsFileTagReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateFmsFileTagReq {
-	name   string @[json: 'name']
+	name   string  @[json: 'name']
 	remark ?string @[json: 'remark']
-	status u8 @[json: 'status']
+	status u8      @[json: 'status']
 }
 
 pub struct CreateFmsFileTagResp {
@@ -59,10 +59,10 @@ pub struct CreateFmsFileTagResp {
 fn create_fms_file_tag_repo(mut ctx Context, req CreateFmsFileTagReq) !CreateFmsFileTagResp {
 	time_now := time.now()
 	tag := FmsFileTag{
-		id: rand.uuid_v7()
-		name: req.name
-		remark: req.remark
-		status: req.status
+		id:         rand.uuid_v7()
+		name:       req.name
+		remark:     req.remark
+		status:     req.status
 		creator_id: ctx.svc_iam.user_id
 		updater_id: ctx.svc_iam.user_id
 		created_at: time_now

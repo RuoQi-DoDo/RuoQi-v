@@ -31,12 +31,12 @@ pub fn create_currency_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 
 // ═══ Use Case ═══
 pub fn create_currency_usecase(pool &dbpool.DatabasePoolable, req CreateCurrencyReq) !CreateCurrencyResp {
-	create_currency_domain(req)!
+	create_currency_domain(&req)!
 	return create_currency_repo(pool, req)
 }
 
 // ═══ Domain ═══
-fn create_currency_domain(req CreateCurrencyReq) ! {
+fn create_currency_domain(req &CreateCurrencyReq) ! {
 	if req.currency_code == '' {
 		return error('currency_code is required')
 	}

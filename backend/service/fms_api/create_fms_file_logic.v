@@ -21,7 +21,7 @@ pub fn (app &Fms) create_fms_file_handler(mut ctx Context) veb.Result {
 	result := create_fms_file_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &Fms) create_fms_file_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_fms_file_usecase(mut ctx Context, req CreateFmsFileReq) !CreateFmsFileResp {
-	create_fms_file_domain(req)!
+	create_fms_file_domain(&req)!
 	return create_fms_file_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_fms_file_domain(req CreateFmsFileReq) ! {
+fn create_fms_file_domain(req &CreateFmsFileReq) ! {
 	if req.name == '' {
 		return error('file name is required')
 	}
@@ -53,11 +53,11 @@ fn create_fms_file_domain(req CreateFmsFileReq) ! {
 // ═══ DTO ═══
 pub struct CreateFmsFileReq {
 	name      string @[json: 'name']
-	file_type u8 @[json: 'fileType']
-	size      u64 @[json: 'size']
+	file_type u8     @[json: 'fileType']
+	size      u64    @[json: 'size']
 	path      string @[json: 'path']
 	md5       string @[json: 'md5']
-	status    u8 @[json: 'status']
+	status    u8     @[json: 'status']
 }
 
 pub struct CreateFmsFileResp {
@@ -68,14 +68,14 @@ pub struct CreateFmsFileResp {
 fn create_fms_file_repo(mut ctx Context, req CreateFmsFileReq) !CreateFmsFileResp {
 	time_now := time.now()
 	file := FmsFile{
-		id: rand.uuid_v7()
-		name: req.name
-		file_type: req.file_type
-		size: req.size
-		path: req.path
-		user_id: ctx.svc_iam.user_id
-		md5: req.md5
-		status: req.status
+		id:         rand.uuid_v7()
+		name:       req.name
+		file_type:  req.file_type
+		size:       req.size
+		path:       req.path
+		user_id:    ctx.svc_iam.user_id
+		md5:        req.md5
+		status:     req.status
 		creator_id: ctx.svc_iam.user_id
 		updater_id: ctx.svc_iam.user_id
 		created_at: time_now

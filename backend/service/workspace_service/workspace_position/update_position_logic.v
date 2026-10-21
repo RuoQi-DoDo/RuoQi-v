@@ -23,12 +23,12 @@ pub fn (app &WorkspacePosition) update_position_handler(mut ctx Context) veb.Res
 
 // ═══ Use Case ═══
 pub fn update_position_usecase(mut ctx Context, req UpdatePositionReq) !UpdatePositionResp {
-	update_position_domain(req)!
+	update_position_domain(&req)!
 	return update_position_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_position_domain(req UpdatePositionReq) ! {
+fn update_position_domain(req &UpdatePositionReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
@@ -36,12 +36,12 @@ fn update_position_domain(req UpdatePositionReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdatePositionReq {
-	id          string @[json: 'id']
+	id          string  @[json: 'id']
 	name        ?string @[json: 'name']
 	code        ?string @[json: 'code']
 	description ?string @[json: 'description']
-	sort        ?u32 @[json: 'sort']
-	status      ?u8 @[json: 'status']
+	sort        ?u32    @[json: 'sort']
+	status      ?u8     @[json: 'status']
 }
 
 pub struct UpdatePositionResp {

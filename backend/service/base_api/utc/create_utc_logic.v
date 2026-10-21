@@ -21,7 +21,7 @@ pub fn (app &Utc) create_utc_handler(mut ctx Context) veb.Result {
 	result := create_utc_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,7 +30,7 @@ pub fn (app &Utc) create_utc_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_utc_usecase(mut ctx Context, req CreateUtcReq) !CreateUtcResp {
-	// create_utc_domain(req)!
+	// create_utc_domain(&req)!
 	return create_utc_repo(mut ctx, req)
 }
 
@@ -50,11 +50,11 @@ pub fn create_utc_usecase(mut ctx Context, req CreateUtcReq) !CreateUtcResp {
 // ═══ DTO ═══
 pub struct CreateUtcReq {
 	id              string @[json: 'id']
-	sort            ?int @[json: 'sort']
+	sort            ?int   @[json: 'sort']
 	name            string @[json: 'name']
-	lng_range_start f64 @[json: 'lngRangeStart']
-	lng_range_end   f64 @[json: 'lngRangeEnd']
-	lng_mid         f64 @[json: 'lngMid']
+	lng_range_start f64    @[json: 'lngRangeStart']
+	lng_range_end   f64    @[json: 'lngRangeEnd']
+	lng_mid         f64    @[json: 'lngMid']
 }
 
 pub struct CreateUtcResp {
@@ -65,14 +65,14 @@ pub struct CreateUtcResp {
 fn create_utc_repo(mut ctx Context, req CreateUtcReq) !CreateUtcResp {
 	time_now := time.now()
 	base_utc := BaseUtc{
-		id: rand.uuid_v7()
-		sort: req.sort
-		name: req.name
+		id:              rand.uuid_v7()
+		sort:            req.sort
+		name:            req.name
 		lng_range_start: req.lng_range_start
-		lng_range_end: req.lng_range_end
-		lng_mid: req.lng_mid
-		created_at: time_now
-		updated_at: time_now
+		lng_range_end:   req.lng_range_end
+		lng_mid:         req.lng_mid
+		created_at:      time_now
+		updated_at:      time_now
 	}
 
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }

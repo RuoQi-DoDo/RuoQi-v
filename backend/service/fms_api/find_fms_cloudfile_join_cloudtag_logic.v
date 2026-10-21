@@ -16,18 +16,18 @@ pub fn (app &Fms) find_fms_cloudfile_join_cloudtag_all_handler(mut ctx Context) 
 	result := find_fms_cloudfile_join_cloudtag_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
 }
 
 pub fn find_fms_cloudfile_join_cloudtag_all_usecase(mut ctx Context, req FmsCloudFileCloudFileTagListReq) !FmsCloudFileCloudFileTagListResp {
-	find_fms_cloudfile_join_cloudtag_all_domain(req)!
+	find_fms_cloudfile_join_cloudtag_all_domain(&req)!
 	return find_fms_cloudfile_join_cloudtag_all_repo(mut ctx, req)
 }
 
-fn find_fms_cloudfile_join_cloudtag_all_domain(req FmsCloudFileCloudFileTagListReq) ! {
+fn find_fms_cloudfile_join_cloudtag_all_domain(req &FmsCloudFileCloudFileTagListReq) ! {
 	if req.page <= 0 {
 		return error('page must be greater than 0')
 	}
@@ -37,8 +37,8 @@ fn find_fms_cloudfile_join_cloudtag_all_domain(req FmsCloudFileCloudFileTagListR
 }
 
 pub struct FmsCloudFileCloudFileTagListReq {
-	page              int @[json: 'page']
-	page_size         int @[json: 'pageSize']
+	page              int    @[json: 'page']
+	page_size         int    @[json: 'pageSize']
 	cloud_file_tag_id string @[json: 'cloudFileTagId']
 	cloud_file_id     string @[json: 'cloudFileId']
 }
@@ -77,11 +77,11 @@ fn find_fms_cloudfile_join_cloudtag_all_repo(mut ctx Context, req FmsCloudFileCl
 	for row in result {
 		datalist << FmsCloudFileCloudFileTagData{
 			cloud_file_tag_id: row.cloud_file_tag_id
-			cloud_file_id: row.cloud_file_id
+			cloud_file_id:     row.cloud_file_id
 		}
 	}
 	return FmsCloudFileCloudFileTagListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

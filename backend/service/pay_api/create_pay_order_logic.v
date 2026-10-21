@@ -21,7 +21,7 @@ pub fn (app &Pay) create_pay_order_handler(mut ctx Context) veb.Result {
 	result := create_pay_order_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &Pay) create_pay_order_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_pay_order_usecase(mut ctx Context, req CreatePayOrderReq) !CreatePayOrderResp {
-	create_pay_order_domain(req)!
+	create_pay_order_domain(&req)!
 	return create_pay_order_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_pay_order_domain(req CreatePayOrderReq) ! {
+fn create_pay_order_domain(req &CreatePayOrderReq) ! {
 	if req.merchant_order_id == '' {
 		return error('merchant order id is required')
 	}
@@ -46,16 +46,16 @@ fn create_pay_order_domain(req CreatePayOrderReq) ! {
 
 // ═══ DTO ═══
 pub struct CreatePayOrderReq {
-	channel_code      ?string @[json: 'channelCode']
-	merchant_order_id string @[json: 'merchantOrderId']
-	subject           string @[json: 'subject']
-	body              string @[json: 'body']
-	price             int @[json: 'price']
-	channel_fee_rate  ?f64 @[json: 'channelFeeRate']
-	channel_fee_price ?int @[json: 'channelFeePrice']
-	user_ip           string @[json: 'userIp']
+	channel_code      ?string   @[json: 'channelCode']
+	merchant_order_id string    @[json: 'merchantOrderId']
+	subject           string    @[json: 'subject']
+	body              string    @[json: 'body']
+	price             int       @[json: 'price']
+	channel_fee_rate  ?f64      @[json: 'channelFeeRate']
+	channel_fee_price ?int      @[json: 'channelFeePrice']
+	user_ip           string    @[json: 'userIp']
 	expire_time       time.Time @[json: 'expireTime']
-	status            u8 @[json: 'status']
+	status            u8        @[json: 'status']
 }
 
 pub struct CreatePayOrderResp {
@@ -66,22 +66,22 @@ pub struct CreatePayOrderResp {
 fn create_pay_order_repo(mut ctx Context, req CreatePayOrderReq) !CreatePayOrderResp {
 	time_now := time.now()
 	order := PayOrder{
-		id: rand.uuid_v7()
-		channel_code: req.channel_code
+		id:                rand.uuid_v7()
+		channel_code:      req.channel_code
 		merchant_order_id: req.merchant_order_id
-		subject: req.subject
-		body: req.body
-		price: req.price
-		channel_fee_rate: req.channel_fee_rate
+		subject:           req.subject
+		body:              req.body
+		price:             req.price
+		channel_fee_rate:  req.channel_fee_rate
 		channel_fee_price: req.channel_fee_price
-		user_ip: req.user_ip
-		expire_time: req.expire_time
-		refund_price: 0
-		status: req.status
-		creator_id: ctx.svc_iam.user_id
-		updater_id: ctx.svc_iam.user_id
-		created_at: time_now
-		updated_at: time_now
+		user_ip:           req.user_ip
+		expire_time:       req.expire_time
+		refund_price:      0
+		status:            req.status
+		creator_id:        ctx.svc_iam.user_id
+		updater_id:        ctx.svc_iam.user_id
+		created_at:        time_now
+		updated_at:        time_now
 	}
 
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }

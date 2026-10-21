@@ -20,7 +20,7 @@ pub fn (app &Fms) find_fms_file_tag_all_handler(mut ctx Context) veb.Result {
 	result := find_fms_file_tag_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Fms) find_fms_file_tag_all_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn find_fms_file_tag_all_usecase(mut ctx Context, req FmsFileTagListReq) !FmsFileTagListResp {
-	find_fms_file_tag_all_domain(req)!
+	find_fms_file_tag_all_domain(&req)!
 	return find_fms_file_tag_all_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_fms_file_tag_all_domain(req FmsFileTagListReq) ! {
+fn find_fms_file_tag_all_domain(req &FmsFileTagListReq) ! {
 	if req.page <= 0 {
 		return error('page must be greater than 0')
 	}
@@ -45,22 +45,22 @@ fn find_fms_file_tag_all_domain(req FmsFileTagListReq) ! {
 
 // ═══ DTO ═══
 pub struct FmsFileTagListReq {
-	page      int @[json: 'page']
-	page_size int @[json: 'pageSize']
+	page      int    @[json: 'page']
+	page_size int    @[json: 'pageSize']
 	name      string @[json: 'name']
-	status    []u8 @[json: 'status']
+	status    []u8   @[json: 'status']
 }
 
 pub struct FmsFileTagData {
-	id         string @[json: 'id']
-	name       string @[json: 'name']
+	id         string  @[json: 'id']
+	name       string  @[json: 'name']
 	remark     ?string @[json: 'remark']
-	status     u8 @[json: 'status']
+	status     u8      @[json: 'status']
 	updater_id ?string @[json: 'updaterId']
 	creator_id ?string @[json: 'creatorId']
-	created_at string @[json: 'createdAt']
-	updated_at string @[json: 'updatedAt']
-	deleted_at string @[json: 'deletedAt']
+	created_at string  @[json: 'createdAt']
+	updated_at string  @[json: 'updatedAt']
+	deleted_at string  @[json: 'deletedAt']
 }
 
 pub struct FmsFileTagListResp {
@@ -94,10 +94,10 @@ fn find_fms_file_tag_all_repo(mut ctx Context, req FmsFileTagListReq) !FmsFileTa
 	mut datalist := []FmsFileTagData{}
 	for row in result {
 		datalist << FmsFileTagData{
-			id: row.id
-			name: row.name
-			remark: row.remark
-			status: row.status
+			id:         row.id
+			name:       row.name
+			remark:     row.remark
+			status:     row.status
 			creator_id: row.creator_id
 			updater_id: row.updater_id
 			created_at: row.created_at.format_ss()
@@ -108,6 +108,6 @@ fn find_fms_file_tag_all_repo(mut ctx Context, req FmsFileTagListReq) !FmsFileTa
 
 	return FmsFileTagListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

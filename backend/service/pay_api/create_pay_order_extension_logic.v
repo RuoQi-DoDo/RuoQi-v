@@ -21,7 +21,7 @@ pub fn (app &Pay) create_pay_order_extension_handler(mut ctx Context) veb.Result
 	result := create_pay_order_extension_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &Pay) create_pay_order_extension_handler(mut ctx Context) veb.Result
 
 // ═══ Use Case ═══
 pub fn create_pay_order_extension_usecase(mut ctx Context, req CreatePayOrderExtensionReq) !CreatePayOrderExtensionResp {
-	create_pay_order_extension_domain(req)!
+	create_pay_order_extension_domain(&req)!
 	return create_pay_order_extension_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_pay_order_extension_domain(req CreatePayOrderExtensionReq) ! {
+fn create_pay_order_extension_domain(req &CreatePayOrderExtensionReq) ! {
 	if req.order_id == '' {
 		return error('order id is required')
 	}
@@ -43,12 +43,12 @@ fn create_pay_order_extension_domain(req CreatePayOrderExtensionReq) ! {
 
 // ═══ DTO ═══
 pub struct CreatePayOrderExtensionReq {
-	no             string @[json: 'no']
-	order_id       string @[json: 'orderId']
-	channel_code   string @[json: 'channelCode']
-	user_ip        string @[json: 'userIp']
+	no             string  @[json: 'no']
+	order_id       string  @[json: 'orderId']
+	channel_code   string  @[json: 'channelCode']
+	user_ip        string  @[json: 'userIp']
 	channel_extras ?string @[json: 'channelExtras']
-	status         u8 @[json: 'status']
+	status         u8      @[json: 'status']
 }
 
 pub struct CreatePayOrderExtensionResp {
@@ -59,17 +59,17 @@ pub struct CreatePayOrderExtensionResp {
 fn create_pay_order_extension_repo(mut ctx Context, req CreatePayOrderExtensionReq) !CreatePayOrderExtensionResp {
 	time_now := time.now()
 	ext := PayOrderExtension{
-		id: rand.uuid_v7()
-		no: req.no
-		order_id: req.order_id
-		channel_code: req.channel_code
-		user_ip: req.user_ip
+		id:             rand.uuid_v7()
+		no:             req.no
+		order_id:       req.order_id
+		channel_code:   req.channel_code
+		user_ip:        req.user_ip
 		channel_extras: req.channel_extras
-		status: req.status
-		creator_id: ctx.svc_iam.user_id
-		updater_id: ctx.svc_iam.user_id
-		created_at: time_now
-		updated_at: time_now
+		status:         req.status
+		creator_id:     ctx.svc_iam.user_id
+		updater_id:     ctx.svc_iam.user_id
+		created_at:     time_now
+		updated_at:     time_now
 	}
 
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }

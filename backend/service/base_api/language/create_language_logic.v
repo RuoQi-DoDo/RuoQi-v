@@ -21,7 +21,7 @@ pub fn (app &Language) create_language_handler(mut ctx Context) veb.Result {
 	result := create_language_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &Language) create_language_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_language_usecase(mut ctx Context, req CreateLanguageReq) !CreateLanguageResp {
-	create_language_domain(req)!
+	create_language_domain(&req)!
 	return create_language_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_language_domain(req CreateLanguageReq) ! {
+fn create_language_domain(req &CreateLanguageReq) ! {
 	if req.language_code == '' {
 		return error('language_code is required')
 	}
@@ -56,9 +56,9 @@ pub struct CreateLanguageReq {
 	two_letter_code          string @[json: 'twoLetterCode']
 	three_letter_code        string @[json: 'threeLetterCode']
 	utf8_encoding            string @[json: 'utf8Encoding']
-	sort                     ?int @[json: 'sort']
-	status                   u8 @[json: 'status']
-	is_basic                 u8 @[json: 'isBasic']
+	sort                     ?int   @[json: 'sort']
+	status                   u8     @[json: 'status']
+	is_basic                 u8     @[json: 'isBasic']
 }
 
 pub struct CreateLanguageResp {
@@ -69,17 +69,17 @@ pub struct CreateLanguageResp {
 fn create_language_repo(mut ctx Context, req CreateLanguageReq) !CreateLanguageResp {
 	time_now := time.now()
 	base_language := BaseLanguage{
-		id: rand.uuid_v7()
+		id:                       rand.uuid_v7()
 		language_self_proclaimed: req.language_self_proclaimed
-		language_code: req.language_code
-		two_letter_code: req.two_letter_code
-		three_letter_code: req.three_letter_code
-		utf8_encoding: req.utf8_encoding
-		sort: req.sort
-		status: req.status
-		is_basic: req.is_basic
-		created_at: time_now
-		updated_at: time_now
+		language_code:            req.language_code
+		two_letter_code:          req.two_letter_code
+		three_letter_code:        req.three_letter_code
+		utf8_encoding:            req.utf8_encoding
+		sort:                     req.sort
+		status:                   req.status
+		is_basic:                 req.is_basic
+		created_at:               time_now
+		updated_at:               time_now
 	}
 
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }

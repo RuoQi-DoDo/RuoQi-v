@@ -23,12 +23,12 @@ pub fn (app &WorkspaceDepartment) update_department_handler(mut ctx Context) veb
 
 // ═══ Use Case ═══
 pub fn update_department_usecase(mut ctx Context, req UpdateDepartmentReq) !UpdateDepartmentResp {
-	update_department_domain(req)!
+	update_department_domain(&req)!
 	return update_department_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_department_domain(req UpdateDepartmentReq) ! {
+fn update_department_domain(req &UpdateDepartmentReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
@@ -36,13 +36,13 @@ fn update_department_domain(req UpdateDepartmentReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateDepartmentReq {
-	id          string @[json: 'id']
+	id          string  @[json: 'id']
 	parent_id   ?string @[json: 'parentId']
 	name        ?string @[json: 'name']
 	code        ?string @[json: 'code']
 	description ?string @[json: 'description']
-	sort        ?u32 @[json: 'sort']
-	status      ?u8 @[json: 'status']
+	sort        ?u32    @[json: 'sort']
+	status      ?u8     @[json: 'status']
 }
 
 pub struct UpdateDepartmentResp {

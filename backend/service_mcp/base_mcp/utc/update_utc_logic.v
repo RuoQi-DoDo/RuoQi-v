@@ -30,12 +30,12 @@ pub fn update_utc_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 
 // ═══ Use Case ═══
 pub fn update_utc_usecase(pool &dbpool.DatabasePoolable, req UpdateUtcReq) !UpdateUtcResp {
-	update_utc_domain(req)!
+	update_utc_domain(&req)!
 	return update_utc_repo(pool, req)
 }
 
 // ═══ Domain ═══
-fn update_utc_domain(req UpdateUtcReq) ! {
+fn update_utc_domain(req &UpdateUtcReq) ! {
 	if req.id == '' {
 		return error('utc id is required')
 	}

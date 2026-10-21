@@ -17,18 +17,18 @@ pub fn (app &Fms) find_fms_cloud_file_tag_by_id_handler(mut ctx Context) veb.Res
 	result := find_fms_cloud_file_tag_by_id_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
 }
 
 pub fn find_fms_cloud_file_tag_by_id_usecase(mut ctx Context, req FmsCloudFileTagByIdReq) !FmsCloudFileTagByIdResp {
-	find_fms_cloud_file_tag_by_id_domain(req)!
+	find_fms_cloud_file_tag_by_id_domain(&req)!
 	return find_fms_cloud_file_tag_by_id_repo(mut ctx, req)
 }
 
-fn find_fms_cloud_file_tag_by_id_domain(req FmsCloudFileTagByIdReq) ! {
+fn find_fms_cloud_file_tag_by_id_domain(req &FmsCloudFileTagByIdReq) ! {
 	if req.id == '' {
 		return error('tag id is required')
 	}
@@ -55,10 +55,10 @@ fn find_fms_cloud_file_tag_by_id_repo(mut ctx Context, req FmsCloudFileTagByIdRe
 	row := tags[0]
 	return FmsCloudFileTagByIdResp{
 		data: FmsCloudFileTagData{
-			id: row.id
-			name: row.name
-			remark: row.remark
-			status: row.status
+			id:         row.id
+			name:       row.name
+			remark:     row.remark
+			status:     row.status
 			creator_id: row.creator_id
 			updater_id: row.updater_id
 			created_at: row.created_at.format_ss()

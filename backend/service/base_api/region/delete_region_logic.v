@@ -21,7 +21,7 @@ pub fn (app &Region) delete_region_handler(mut ctx Context) veb.Result {
 	result := delete_region_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -31,14 +31,14 @@ pub fn (app &Region) delete_region_handler(mut ctx Context) veb.Result {
 // ═══ Use Case ═══
 pub fn delete_region_usecase(mut ctx Context, req DeleteRegionReq) !DeleteRegionResp {
 	// Domain 校验
-	delete_region_domain(req)!
+	delete_region_domain(&req)!
 
 	// Repository 执行删除
 	return delete_region_repo(mut ctx, req.region_ids)
 }
 
 // ═══ Domain ═══
-fn delete_region_domain(req DeleteRegionReq) ! {
+fn delete_region_domain(req &DeleteRegionReq) ! {
 	if req.region_ids.len == 0 {
 		return error('No Region ids provided')
 	}

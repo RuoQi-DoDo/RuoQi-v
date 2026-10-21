@@ -31,12 +31,12 @@ pub fn delete_utc_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 
 // ═══ Use Case ═══
 pub fn delete_utc_usecase(pool &dbpool.DatabasePoolable, req DeleteUtcReq) !DeleteUtcResp {
-	delete_utc_domain(req)!
+	delete_utc_domain(&req)!
 	return delete_utc_repo(pool, req.utc_ids)
 }
 
 // ═══ Domain ═══
-fn delete_utc_domain(req DeleteUtcReq) ! {
+fn delete_utc_domain(req &DeleteUtcReq) ! {
 	if req.utc_ids.len == 0 {
 		return error('No Utc ids provided')
 	}

@@ -24,12 +24,12 @@ pub fn (app &PlatformDictionary) create_detail_handler(mut ctx Context) veb.Resu
 
 // ═══ Use Case ═══
 pub fn create_detail_usecase(mut ctx Context, req CreateDetailReq) !CreateDetailResp {
-	create_detail_domain(req)!
+	create_detail_domain(&req)!
 	return create_detail_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_detail_domain(req CreateDetailReq) ! {
+fn create_detail_domain(req &CreateDetailReq) ! {
 	if req.dictionary_id == '' {
 		return error('dictionary_id is required')
 	}
@@ -40,7 +40,7 @@ pub struct CreateDetailReq {
 	dictionary_id string @[json: 'dictionaryId']
 	label         string @[json: 'label']
 	value         string @[json: 'value']
-	sort          u32 @[json: 'sort']
+	sort          u32    @[json: 'sort']
 }
 
 pub struct CreateDetailResp {
@@ -53,20 +53,20 @@ fn create_detail_repo(mut ctx Context, req CreateDetailReq) !CreateDetailResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	d := PfDictionaryDetail{
-		id: rand.uuid_v7()
+		id:            rand.uuid_v7()
 		dictionary_id: req.dictionary_id
-		label: req.label
-		value: req.value
-		sort: req.sort
-		status: 1
-		created_at: time.now()
-		updated_at: time.now()
+		label:         req.label
+		value:         req.value
+		sort:          req.sort
+		status:        1
+		created_at:    time.now()
+		updated_at:    time.now()
 	}
 	sql db {
 		insert d into PfDictionaryDetail
 	} or { return error('Failed: ${err}') }
 	return CreateDetailResp{
-		id: d.id
+		id:  d.id
 		msg: 'Detail created'
 	}
 }

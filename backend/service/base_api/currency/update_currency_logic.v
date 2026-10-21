@@ -20,7 +20,7 @@ pub fn (app &Currency) update_currency_handler(mut ctx Context) veb.Result {
 	result := update_currency_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,14 +30,14 @@ pub fn (app &Currency) update_currency_handler(mut ctx Context) veb.Result {
 // ═══ Use Case ═══
 pub fn update_currency_usecase(mut ctx Context, req UpdateCurrencyReq) !UpdateCurrencyResp {
 	// Domain 校验
-	update_currency_domain(req)!
+	update_currency_domain(&req)!
 
 	// Repository 更新
 	return update_currency_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_currency_domain(req UpdateCurrencyReq) ! {
+fn update_currency_domain(req &UpdateCurrencyReq) ! {
 	if req.id == '' {
 		return error('currency id is required')
 	}
@@ -45,17 +45,17 @@ fn update_currency_domain(req UpdateCurrencyReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateCurrencyReq {
-	id                        string @[json: 'id']
+	id                        string  @[json: 'id']
 	english_name              ?string @[json: 'englishName']
 	simplified_name           ?string @[json: 'simplifiedName']
 	currency_code             ?string @[json: 'currencyCode']
 	currency_symbol           ?string @[json: 'currencySymbol']
-	decimal_place             ?u8 @[json: 'decimalPlace']
-	exchange_rate             ?f64 @[json: 'exchangeRate']
-	exchange_rate_fluctuation ?f64 @[json: 'exchangeRateFluctuation']
-	exchange_rate_used        ?f64 @[json: 'exchangeRateUsed']
-	sort                      ?int @[json: 'sort']
-	status                    ?u8 @[json: 'status']
+	decimal_place             ?u8     @[json: 'decimalPlace']
+	exchange_rate             ?f64    @[json: 'exchangeRate']
+	exchange_rate_fluctuation ?f64    @[json: 'exchangeRateFluctuation']
+	exchange_rate_used        ?f64    @[json: 'exchangeRateUsed']
+	sort                      ?int    @[json: 'sort']
+	status                    ?u8     @[json: 'status']
 }
 
 pub struct UpdateCurrencyResp {

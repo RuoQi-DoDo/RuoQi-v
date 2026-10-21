@@ -22,12 +22,12 @@ pub fn (app &PlatformMenu) delete_menu_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn delete_menu_usecase(mut ctx Context, req DeleteMenuReq) !DeleteMenuResp {
-	delete_menu_domain(req)!
+	delete_menu_domain(&req)!
 	return delete_menu_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_menu_domain(req DeleteMenuReq) ! {
+fn delete_menu_domain(req &DeleteMenuReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}

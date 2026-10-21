@@ -20,7 +20,7 @@ pub fn (app &Pay) delete_pay_demo_order_handler(mut ctx Context) veb.Result {
 	result := delete_pay_demo_order_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Pay) delete_pay_demo_order_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn delete_pay_demo_order_usecase(mut ctx Context, req DeletePayDemoOrderReq) !DeletePayDemoOrderResp {
-	delete_pay_demo_order_domain(req)!
+	delete_pay_demo_order_domain(&req)!
 	return delete_pay_demo_order_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_pay_demo_order_domain(req DeletePayDemoOrderReq) ! {
+fn delete_pay_demo_order_domain(req &DeletePayDemoOrderReq) ! {
 	if req.ids.len == 0 {
 		return error('No PayDemoOrder ids provided')
 	}

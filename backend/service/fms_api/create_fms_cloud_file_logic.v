@@ -21,7 +21,7 @@ pub fn (app &Fms) create_fms_cloud_file_handler(mut ctx Context) veb.Result {
 	result := create_fms_cloud_file_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &Fms) create_fms_cloud_file_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_fms_cloud_file_usecase(mut ctx Context, req CreateFmsCloudFileReq) !CreateFmsCloudFileResp {
-	create_fms_cloud_file_domain(req)!
+	create_fms_cloud_file_domain(&req)!
 	return create_fms_cloud_file_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_fms_cloud_file_domain(req CreateFmsCloudFileReq) ! {
+fn create_fms_cloud_file_domain(req &CreateFmsCloudFileReq) ! {
 	if req.name == '' {
 		return error('file name is required')
 	}
@@ -52,12 +52,12 @@ fn create_fms_cloud_file_domain(req CreateFmsCloudFileReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateFmsCloudFileReq {
-	name                         string @[json: 'name']
-	url                          string @[json: 'url']
-	size                         u64 @[json: 'size']
-	file_type                    u8 @[json: 'fileType']
+	name                         string  @[json: 'name']
+	url                          string  @[json: 'url']
+	size                         u64     @[json: 'size']
+	file_type                    u8      @[json: 'fileType']
 	cloud_file_storage_providers ?string @[json: 'cloudFileStorageProviders']
-	status                       u8 @[json: 'status']
+	status                       u8      @[json: 'status']
 }
 
 pub struct CreateFmsCloudFileResp {
@@ -68,18 +68,18 @@ pub struct CreateFmsCloudFileResp {
 fn create_fms_cloud_file_repo(mut ctx Context, req CreateFmsCloudFileReq) !CreateFmsCloudFileResp {
 	time_now := time.now()
 	file := FmsCloudFile{
-		id: rand.uuid_v7()
-		name: req.name
-		url: req.url
-		size: req.size
-		file_type: req.file_type
-		user_id: ctx.svc_iam.user_id
+		id:                           rand.uuid_v7()
+		name:                         req.name
+		url:                          req.url
+		size:                         req.size
+		file_type:                    req.file_type
+		user_id:                      ctx.svc_iam.user_id
 		cloud_file_storage_providers: req.cloud_file_storage_providers
-		status: req.status
-		creator_id: ctx.svc_iam.user_id
-		updater_id: ctx.svc_iam.user_id
-		created_at: time_now
-		updated_at: time_now
+		status:                       req.status
+		creator_id:                   ctx.svc_iam.user_id
+		updater_id:                   ctx.svc_iam.user_id
+		created_at:                   time_now
+		updated_at:                   time_now
 	}
 
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }

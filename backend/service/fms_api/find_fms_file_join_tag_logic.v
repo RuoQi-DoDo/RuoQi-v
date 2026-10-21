@@ -19,7 +19,7 @@ pub fn (app &Fms) find_fms_file_join_tag_all_handler(mut ctx Context) veb.Result
 	result := find_fms_file_join_tag_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -28,12 +28,12 @@ pub fn (app &Fms) find_fms_file_join_tag_all_handler(mut ctx Context) veb.Result
 
 // ═══ Use Case ═══
 pub fn find_fms_file_join_tag_all_usecase(mut ctx Context, req FmsFileJoinTagListReq) !FmsFileJoinTagListResp {
-	find_fms_file_join_tag_all_domain(req)!
+	find_fms_file_join_tag_all_domain(&req)!
 	return find_fms_file_join_tag_all_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_fms_file_join_tag_all_domain(req FmsFileJoinTagListReq) ! {
+fn find_fms_file_join_tag_all_domain(req &FmsFileJoinTagListReq) ! {
 	if req.page <= 0 {
 		return error('page must be greater than 0')
 	}
@@ -44,8 +44,8 @@ fn find_fms_file_join_tag_all_domain(req FmsFileJoinTagListReq) ! {
 
 // ═══ DTO ═══
 pub struct FmsFileJoinTagListReq {
-	page        int @[json: 'page']
-	page_size   int @[json: 'pageSize']
+	page        int    @[json: 'page']
+	page_size   int    @[json: 'pageSize']
 	file_tag_id string @[json: 'fileTagId']
 	file_id     string @[json: 'fileId']
 }
@@ -86,12 +86,12 @@ fn find_fms_file_join_tag_all_repo(mut ctx Context, req FmsFileJoinTagListReq) !
 	for row in result {
 		datalist << FmsFileJoinTagData{
 			file_tag_id: row.file_tag_id
-			file_id: row.file_id
+			file_id:     row.file_id
 		}
 	}
 
 	return FmsFileJoinTagListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

@@ -18,7 +18,7 @@ pub fn (app &WorkspaceCore) update_workspace_handler(mut ctx Context) veb.Result
 	result := update_workspace_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -26,12 +26,12 @@ pub fn (app &WorkspaceCore) update_workspace_handler(mut ctx Context) veb.Result
 
 // ═══ Use Case ═══
 pub fn update_workspace_usecase(mut ctx Context, req UpdateWsReq) !UpdateWsResp {
-	update_workspace_domain(req)!
+	update_workspace_domain(&req)!
 	return update_workspace_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_workspace_domain(req UpdateWsReq) ! {
+fn update_workspace_domain(req &UpdateWsReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
@@ -39,10 +39,10 @@ fn update_workspace_domain(req UpdateWsReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateWsReq {
-	id          string @[json: 'id']
+	id          string  @[json: 'id']
 	name        ?string @[json: 'name']
 	description ?string @[json: 'description']
-	status      ?u8 @[json: 'status']
+	status      ?u8     @[json: 'status']
 }
 
 pub struct UpdateWsResp {

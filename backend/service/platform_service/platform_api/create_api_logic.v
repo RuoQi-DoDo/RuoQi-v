@@ -19,7 +19,7 @@ pub fn (app &PlatformApi) create_api_handler(mut ctx Context) veb.Result {
 	result := create_api_usecase(mut ctx, req) or {
 		return ctx.json(capi.json_error(
 			code: capi.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(capi.json_success(data: result))
@@ -27,12 +27,12 @@ pub fn (app &PlatformApi) create_api_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn create_api_usecase(mut ctx Context, req CreateApiReq) !CreateApiResp {
-	create_api_domain(req)!
+	create_api_domain(&req)!
 	return create_api_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_api_domain(req CreateApiReq) ! {
+fn create_api_domain(req &CreateApiReq) ! {
 	if req.path == '' {
 		return error('path is required')
 	}
@@ -40,12 +40,12 @@ fn create_api_domain(req CreateApiReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateApiReq {
-	path         string @[json: 'path']
+	path         string  @[json: 'path']
 	description  ?string @[json: 'description']
-	api_group    string @[json: 'apiGroup']
-	service_name string @[json: 'serviceName']
-	method       string @[json: 'method']
-	is_required  u8 @[json: 'isRequired']
+	api_group    string  @[json: 'apiGroup']
+	service_name string  @[json: 'serviceName']
+	method       string  @[json: 'method']
+	is_required  u8      @[json: 'isRequired']
 }
 
 pub struct CreateApiResp {
@@ -58,22 +58,22 @@ fn create_api_repo(mut ctx Context, req CreateApiReq) !CreateApiResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	api := PfApi{
-		id: rand.uuid_v7()
-		path: req.path
-		description: req.description
-		api_group: req.api_group
+		id:           rand.uuid_v7()
+		path:         req.path
+		description:  req.description
+		api_group:    req.api_group
 		service_name: req.service_name
-		method: req.method
-		is_required: req.is_required
-		status: 1
-		created_at: time.now()
-		updated_at: time.now()
+		method:       req.method
+		is_required:  req.is_required
+		status:       1
+		created_at:   time.now()
+		updated_at:   time.now()
 	}
 	sql db {
 		insert api into PfApi
 	} or { return error('Failed: ${err}') }
 	return CreateApiResp{
-		id: api.id
+		id:  api.id
 		msg: 'API created'
 	}
 }

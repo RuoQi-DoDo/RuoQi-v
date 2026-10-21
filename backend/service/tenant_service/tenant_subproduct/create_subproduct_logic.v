@@ -20,7 +20,7 @@ pub fn (app &TenantSubProduct) create_subproduct_handler(mut ctx Context) veb.Re
 	result := create_subproduct_usecase(mut ctx, req) or {
 		return ctx.json(capi.json_error(
 			code: capi.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(capi.json_success(data: result))
@@ -28,12 +28,12 @@ pub fn (app &TenantSubProduct) create_subproduct_handler(mut ctx Context) veb.Re
 
 // ═══ Use Case ═══
 pub fn create_subproduct_usecase(mut ctx Context, req CreateSubProductReq) !CreateSubProductResp {
-	create_subproduct_domain(req)!
+	create_subproduct_domain(&req)!
 	return create_subproduct_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_subproduct_domain(req CreateSubProductReq) ! {
+fn create_subproduct_domain(req &CreateSubProductReq) ! {
 	if req.product_id == '' {
 		return error('productId is required')
 	}
@@ -77,11 +77,11 @@ fn create_subproduct_repo(mut ctx Context, req CreateSubProductReq) !CreateSubPr
 	}
 
 	subproduct := TnSubProduct{
-		id: rand.uuid_v7()
-		tenant_id: tenant_id
+		id:         rand.uuid_v7()
+		tenant_id:  tenant_id
 		product_id: req.product_id
-		plan_id: req.plan_id
-		status: 1
+		plan_id:    req.plan_id
+		status:     1
 		creator_id: ctx.svc_iam.user_id
 		updater_id: ctx.svc_iam.user_id
 		created_at: time.now()
@@ -93,6 +93,6 @@ fn create_subproduct_repo(mut ctx Context, req CreateSubProductReq) !CreateSubPr
 
 	return CreateSubProductResp{
 		subproduct_id: subproduct.id
-		msg: '产品订阅成功'
+		msg:           '产品订阅成功'
 	}
 }

@@ -21,7 +21,7 @@ pub fn (app &SmsProvider) create_sms_provider_handler(mut ctx Context) veb.Resul
 	result := create_sms_provider_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,12 +30,12 @@ pub fn (app &SmsProvider) create_sms_provider_handler(mut ctx Context) veb.Resul
 
 // ═══ Use Case ═══
 pub fn create_sms_provider_usecase(mut ctx Context, req CreateSmsProviderReq) !CreateSmsProviderResp {
-	create_sms_provider_domain(req)!
+	create_sms_provider_domain(&req)!
 	return create_sms_provider_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn create_sms_provider_domain(req CreateSmsProviderReq) ! {
+fn create_sms_provider_domain(req &CreateSmsProviderReq) ! {
 	if req.name == '' {
 		return error('provider name is required')
 	}
@@ -53,7 +53,7 @@ pub struct CreateSmsProviderReq {
 	secret_id  string @[json: 'secretId']
 	secret_key string @[json: 'secretKey']
 	region     string @[json: 'region']
-	is_default u8 @[json: 'isDefault']
+	is_default u8     @[json: 'isDefault']
 }
 
 pub struct CreateSmsProviderResp {
@@ -64,11 +64,11 @@ pub struct CreateSmsProviderResp {
 fn create_sms_provider_repo(mut ctx Context, req CreateSmsProviderReq) !CreateSmsProviderResp {
 	time_now := time.now()
 	provider := MsgSmsProvider{
-		id: rand.uuid_v7()
-		name: req.name
-		secret_id: req.secret_id
+		id:         rand.uuid_v7()
+		name:       req.name
+		secret_id:  req.secret_id
 		secret_key: req.secret_key
-		region: req.region
+		region:     req.region
 		is_default: req.is_default
 		creator_id: ctx.svc_iam.user_id
 		updater_id: ctx.svc_iam.user_id

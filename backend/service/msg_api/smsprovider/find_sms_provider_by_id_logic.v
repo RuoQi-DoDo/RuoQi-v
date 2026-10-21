@@ -19,7 +19,7 @@ pub fn (app &SmsProvider) find_sms_provider_by_id_handler(mut ctx Context) veb.R
 	result := find_sms_provider_by_id_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -28,12 +28,12 @@ pub fn (app &SmsProvider) find_sms_provider_by_id_handler(mut ctx Context) veb.R
 
 // ═══ Use Case ═══
 pub fn find_sms_provider_by_id_usecase(mut ctx Context, req SmsProviderByIdReq) !MsgSmsProvider {
-	find_sms_provider_by_id_domain(req)!
+	find_sms_provider_by_id_domain(&req)!
 	return find_sms_provider_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_sms_provider_by_id_domain(req SmsProviderByIdReq) ! {
+fn find_sms_provider_by_id_domain(req &SmsProviderByIdReq) ! {
 	if req.id == '' {
 		return error('sms provider id is required')
 	}

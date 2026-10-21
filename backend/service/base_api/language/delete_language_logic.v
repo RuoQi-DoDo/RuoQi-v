@@ -21,7 +21,7 @@ pub fn (app &Language) delete_language_handler(mut ctx Context) veb.Result {
 	result := delete_language_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -31,14 +31,14 @@ pub fn (app &Language) delete_language_handler(mut ctx Context) veb.Result {
 // ═══ Use Case ═══
 pub fn delete_language_usecase(mut ctx Context, req DeleteLanguageReq) !DeleteLanguageResp {
 	// Domain 校验
-	delete_language_domain(req)!
+	delete_language_domain(&req)!
 
 	// Repository 执行删除
 	return delete_language_repo(mut ctx, req.language_ids)
 }
 
 // ═══ Domain ═══
-fn delete_language_domain(req DeleteLanguageReq) ! {
+fn delete_language_domain(req &DeleteLanguageReq) ! {
 	if req.language_ids.len == 0 {
 		return error('No Language ids provided')
 	}

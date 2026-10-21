@@ -17,18 +17,18 @@ pub fn (app &Fms) find_fms_storage_provider_by_id_handler(mut ctx Context) veb.R
 	result := find_fms_storage_provider_by_id_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
 }
 
 pub fn find_fms_storage_provider_by_id_usecase(mut ctx Context, req FmsStorageProviderByIdReq) !FmsStorageProviderByIdResp {
-	find_fms_storage_provider_by_id_domain(req)!
+	find_fms_storage_provider_by_id_domain(&req)!
 	return find_fms_storage_provider_by_id_repo(mut ctx, req)
 }
 
-fn find_fms_storage_provider_by_id_domain(req FmsStorageProviderByIdReq) ! {
+fn find_fms_storage_provider_by_id_domain(req &FmsStorageProviderByIdReq) ! {
 	if req.id == '' {
 		return error('provider id is required')
 	}
@@ -55,16 +55,16 @@ fn find_fms_storage_provider_by_id_repo(mut ctx Context, req FmsStorageProviderB
 	row := providers[0]
 	return FmsStorageProviderByIdResp{
 		data: FmsStorageProviderData{
-			id: row.id
-			name: row.name
-			bucket: row.bucket
-			endpoint: row.endpoint
-			folder: row.folder
-			region: row.region
+			id:         row.id
+			name:       row.name
+			bucket:     row.bucket
+			endpoint:   row.endpoint
+			folder:     row.folder
+			region:     row.region
 			is_default: row.is_default
-			use_cdn: row.use_cdn
-			cdn_url: row.cdn_url
-			status: row.status
+			use_cdn:    row.use_cdn
+			cdn_url:    row.cdn_url
+			status:     row.status
 			creator_id: row.creator_id
 			updater_id: row.updater_id
 			created_at: row.created_at.format_ss()

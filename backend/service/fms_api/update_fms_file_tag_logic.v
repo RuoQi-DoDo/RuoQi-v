@@ -20,7 +20,7 @@ pub fn (app &Fms) update_fms_file_tag_handler(mut ctx Context) veb.Result {
 	result := update_fms_file_tag_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -29,12 +29,12 @@ pub fn (app &Fms) update_fms_file_tag_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_fms_file_tag_usecase(mut ctx Context, req UpdateFmsFileTagReq) !UpdateFmsFileTagResp {
-	update_fms_file_tag_domain(req)!
+	update_fms_file_tag_domain(&req)!
 	return update_fms_file_tag_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_fms_file_tag_domain(req UpdateFmsFileTagReq) ! {
+fn update_fms_file_tag_domain(req &UpdateFmsFileTagReq) ! {
 	if req.id == '' {
 		return error('tag id is required')
 	}
@@ -42,10 +42,10 @@ fn update_fms_file_tag_domain(req UpdateFmsFileTagReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateFmsFileTagReq {
-	id     string @[json: 'id']
+	id     string  @[json: 'id']
 	name   ?string @[json: 'name']
 	remark ?string @[json: 'remark']
-	status ?u8 @[json: 'status']
+	status ?u8     @[json: 'status']
 }
 
 pub struct UpdateFmsFileTagResp {

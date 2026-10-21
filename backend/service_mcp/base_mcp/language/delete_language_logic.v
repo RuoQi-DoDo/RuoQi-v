@@ -31,12 +31,12 @@ pub fn delete_language_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 
 // ═══ Use Case ═══
 pub fn delete_language_usecase(pool &dbpool.DatabasePoolable, req DeleteLanguageReq) !DeleteLanguageResp {
-	delete_language_domain(req)!
+	delete_language_domain(&req)!
 	return delete_language_repo(pool, req.language_ids)
 }
 
 // ═══ Domain ═══
-fn delete_language_domain(req DeleteLanguageReq) ! {
+fn delete_language_domain(req &DeleteLanguageReq) ! {
 	if req.language_ids.len == 0 {
 		return error('No Language ids provided')
 	}

@@ -20,7 +20,7 @@ pub fn (app &Utc) update_utc_handler(mut ctx Context) veb.Result {
 	result := update_utc_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -30,14 +30,14 @@ pub fn (app &Utc) update_utc_handler(mut ctx Context) veb.Result {
 // ═══ Use Case ═══
 pub fn update_utc_usecase(mut ctx Context, req UpdateUtcReq) !UpdateUtcResp {
 	// Domain 校验
-	update_utc_domain(req)!
+	update_utc_domain(&req)!
 
 	// Repository 更新
 	return update_utc_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_utc_domain(req UpdateUtcReq) ! {
+fn update_utc_domain(req &UpdateUtcReq) ! {
 	if req.id == '' {
 		return error('currency id is required')
 	}
@@ -45,12 +45,12 @@ fn update_utc_domain(req UpdateUtcReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateUtcReq {
-	id              string @[json: 'id']
-	sort            ?int @[json: 'sort']
+	id              string  @[json: 'id']
+	sort            ?int    @[json: 'sort']
 	name            ?string @[json: 'name']
-	lng_range_start ?f64 @[json: 'lngRangeStart']
-	lng_range_end   ?f64 @[json: 'lngRangeEnd']
-	lng_mid         ?f64 @[json: 'lngMid']
+	lng_range_start ?f64    @[json: 'lngRangeStart']
+	lng_range_end   ?f64    @[json: 'lngRangeEnd']
+	lng_mid         ?f64    @[json: 'lngMid']
 }
 
 pub struct UpdateUtcResp {

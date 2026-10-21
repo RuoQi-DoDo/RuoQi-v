@@ -31,12 +31,12 @@ pub fn create_language_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 
 // ═══ Use Case ═══
 pub fn create_language_usecase(pool &dbpool.DatabasePoolable, req CreateLanguageReq) !CreateLanguageResp {
-	create_language_domain(req)!
+	create_language_domain(&req)!
 	return create_language_repo(pool, req)
 }
 
 // ═══ Domain ═══
-fn create_language_domain(req CreateLanguageReq) ! {
+fn create_language_domain(req &CreateLanguageReq) ! {
 	if req.language_code == '' {
 		return error('language_code is required')
 	}

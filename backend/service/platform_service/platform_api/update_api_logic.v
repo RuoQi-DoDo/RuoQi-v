@@ -23,12 +23,12 @@ pub fn (app &PlatformApi) update_api_handler(mut ctx Context) veb.Result {
 
 // ═══ Use Case ═══
 pub fn update_api_usecase(mut ctx Context, req UpdateApiReq) !UpdateApiResp {
-	update_api_domain(req)!
+	update_api_domain(&req)!
 	return update_api_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn update_api_domain(req UpdateApiReq) ! {
+fn update_api_domain(req &UpdateApiReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
@@ -36,14 +36,14 @@ fn update_api_domain(req UpdateApiReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateApiReq {
-	id           string @[json: 'id']
+	id           string  @[json: 'id']
 	path         ?string @[json: 'path']
 	description  ?string @[json: 'description']
 	api_group    ?string @[json: 'apiGroup']
 	service_name ?string @[json: 'serviceName']
 	method       ?string @[json: 'method']
-	is_required  ?u8 @[json: 'isRequired']
-	status       ?u8 @[json: 'status']
+	is_required  ?u8     @[json: 'isRequired']
+	status       ?u8     @[json: 'status']
 }
 
 pub struct UpdateApiResp {
