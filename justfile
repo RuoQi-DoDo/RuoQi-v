@@ -35,7 +35,7 @@ build s=service: (_check_service s)
 
 # 并行单态化编译（更快，更吃内存）；可选服务名：just build-parallel fms
 build-parallel s=service: (_check_service s)
-    cd backend && time env V3_PARALLEL_MONOMORPHIZE=1 v -ownership -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time env V3_PARALLEL_MONOMORPHIZE=1 v -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 编译到 backend/app（单线程，省内存）；用 -gc none  -owersip。
 build-owership s=service: (_check_service s)
