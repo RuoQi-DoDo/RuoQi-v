@@ -1,5 +1,6 @@
 module currency
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &Currency) update_currency_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_currency_usecase(mut ctx Context, req UpdateCurrencyReq) !UpdateCurrencyResp {
+pub fn update_currency_usecase(mut ctx Context, req UpdateCurrencyReq) !dto.MsgResp {
 	// Domain 校验
 	update_currency_domain(&req)!
 
@@ -58,12 +59,8 @@ pub struct UpdateCurrencyReq {
 	status                    ?u8     @[json: 'status']
 }
 
-pub struct UpdateCurrencyResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_currency_repo(mut ctx Context, req UpdateCurrencyReq) !UpdateCurrencyResp {
+fn update_currency_repo(mut ctx Context, req UpdateCurrencyReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -108,7 +105,7 @@ fn update_currency_repo(mut ctx Context, req UpdateCurrencyReq) !UpdateCurrencyR
 		dynamic update BaseCurrency set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateCurrencyResp{
+	return dto.MsgResp{
 		msg: 'Currency updated successfully'
 	}
 }

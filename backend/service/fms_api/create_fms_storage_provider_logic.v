@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import veb
 import log
 import time
@@ -24,7 +25,7 @@ pub fn (app &Fms) create_fms_storage_provider_handler(mut ctx Context) veb.Resul
 	return ctx.json(api.json_success(data: result))
 }
 
-pub fn create_fms_storage_provider_usecase(mut ctx Context, req CreateFmsStorageProviderReq) !CreateFmsStorageProviderResp {
+pub fn create_fms_storage_provider_usecase(mut ctx Context, req CreateFmsStorageProviderReq) !dto.MsgResp {
 	create_fms_storage_provider_domain(&req)!
 	return create_fms_storage_provider_repo(mut ctx, req)
 }
@@ -64,11 +65,7 @@ pub struct CreateFmsStorageProviderReq {
 	status     u8      @[json: 'status']
 }
 
-pub struct CreateFmsStorageProviderResp {
-	msg string @[json: 'msg']
-}
-
-fn create_fms_storage_provider_repo(mut ctx Context, req CreateFmsStorageProviderReq) !CreateFmsStorageProviderResp {
+fn create_fms_storage_provider_repo(mut ctx Context, req CreateFmsStorageProviderReq) !dto.MsgResp {
 	time_now := time.now()
 	p := FmsStorageProvider{
 		id:         rand.uuid_v7()
@@ -93,7 +90,7 @@ fn create_fms_storage_provider_repo(mut ctx Context, req CreateFmsStorageProvide
 	sql db {
 		insert p into FmsStorageProvider
 	} or { return error('Failed to create FmsStorageProvider: ${err}') }
-	return CreateFmsStorageProviderResp{
+	return dto.MsgResp{
 		msg: 'FmsStorageProvider created successfully'
 	}
 }

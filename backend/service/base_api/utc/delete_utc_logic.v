@@ -1,5 +1,6 @@
 module utc
 
+import common.dto
 import time
 import veb
 import log
@@ -29,7 +30,7 @@ pub fn (app &Utc) delete_utc_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_utc_usecase(mut ctx Context, req DeleteUtcReq) !DeleteUtcResp {
+pub fn delete_utc_usecase(mut ctx Context, req DeleteUtcReq) !dto.MsgResp {
 	// Domain 校验
 	delete_utc_domain(&req)!
 
@@ -49,12 +50,8 @@ pub struct DeleteUtcReq {
 	utc_ids []string @[json: 'ids']
 }
 
-pub struct DeleteUtcResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_utc_repo(mut ctx Context, utc_ids []string) !DeleteUtcResp {
+fn delete_utc_repo(mut ctx Context, utc_ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -63,7 +60,7 @@ fn delete_utc_repo(mut ctx Context, utc_ids []string) !DeleteUtcResp {
 		where id in utc_ids && del_flag == 0
 	} or { return error('Failed to soft-delete utc: ${err}') }
 
-	return DeleteUtcResp{
+	return dto.MsgResp{
 		msg: '${utc_ids} token(s) deleted successfully'
 	}
 }

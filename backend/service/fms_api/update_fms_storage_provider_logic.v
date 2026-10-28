@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import veb
 import log
 import time
@@ -23,7 +24,7 @@ pub fn (app &Fms) update_fms_storage_provider_handler(mut ctx Context) veb.Resul
 	return ctx.json(api.json_success(data: result))
 }
 
-pub fn update_fms_storage_provider_usecase(mut ctx Context, req UpdateFmsStorageProviderReq) !UpdateFmsStorageProviderResp {
+pub fn update_fms_storage_provider_usecase(mut ctx Context, req UpdateFmsStorageProviderReq) !dto.MsgResp {
 	update_fms_storage_provider_domain(&req)!
 	return update_fms_storage_provider_repo(mut ctx, req)
 }
@@ -49,11 +50,7 @@ pub struct UpdateFmsStorageProviderReq {
 	status     ?u8     @[json: 'status']
 }
 
-pub struct UpdateFmsStorageProviderResp {
-	msg string @[json: 'msg']
-}
-
-fn update_fms_storage_provider_repo(mut ctx Context, req UpdateFmsStorageProviderReq) !UpdateFmsStorageProviderResp {
+fn update_fms_storage_provider_repo(mut ctx Context, req UpdateFmsStorageProviderReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -106,7 +103,7 @@ fn update_fms_storage_provider_repo(mut ctx Context, req UpdateFmsStorageProvide
 	sql db {
 		dynamic update FmsStorageProvider set up_expr where id == req.id && del_flag == 0
 	} or { return error('Failed to update storage provider: ${err}') }
-	return UpdateFmsStorageProviderResp{
+	return dto.MsgResp{
 		msg: 'FmsStorageProvider updated successfully'
 	}
 }

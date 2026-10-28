@@ -1,5 +1,6 @@
 module platform_menu
 
+import common.dto
 import veb
 import log
 import time
@@ -26,7 +27,7 @@ pub fn (app &PlatformMenu) create_menu_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_menu_usecase(mut ctx Context, req CreateMenuReq) !CreateMenuResp {
+pub fn create_menu_usecase(mut ctx Context, req CreateMenuReq) !dto.CreatedResp {
 	create_menu_domain(&req)!
 	return create_menu_repo(mut ctx, req)
 }
@@ -52,13 +53,8 @@ pub struct CreateMenuReq {
 	title      string @[json: 'title']
 }
 
-pub struct CreateMenuResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_menu_repo(mut ctx Context, req CreateMenuReq) !CreateMenuResp {
+fn create_menu_repo(mut ctx Context, req CreateMenuReq) !dto.CreatedResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	menu := PfMenu{
@@ -80,7 +76,7 @@ fn create_menu_repo(mut ctx Context, req CreateMenuReq) !CreateMenuResp {
 	sql db {
 		insert menu into PfMenu
 	} or { return error('Failed: ${err}') }
-	return CreateMenuResp{
+	return dto.CreatedResp{
 		id:  menu.id
 		msg: 'Menu created'
 	}

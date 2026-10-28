@@ -1,5 +1,6 @@
 module emailprovider
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &EmailProvider) update_email_provider_handler(mut ctx Context) veb.R
 }
 
 // ═══ Use Case ═══
-pub fn update_email_provider_usecase(mut ctx Context, req UpdateEmailProviderReq) !UpdateEmailProviderResp {
+pub fn update_email_provider_usecase(mut ctx Context, req UpdateEmailProviderReq) !dto.MsgResp {
 	update_email_provider_domain(&req)!
 	return update_email_provider_repo(mut ctx, req)
 }
@@ -55,12 +56,8 @@ pub struct UpdateEmailProviderReq {
 	is_default ?u8     @[json: 'isDefault']
 }
 
-pub struct UpdateEmailProviderResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_email_provider_repo(mut ctx Context, req UpdateEmailProviderReq) !UpdateEmailProviderResp {
+fn update_email_provider_repo(mut ctx Context, req UpdateEmailProviderReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -105,7 +102,7 @@ fn update_email_provider_repo(mut ctx Context, req UpdateEmailProviderReq) !Upda
 		dynamic update MsgEmailProvider set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateEmailProviderResp{
+	return dto.MsgResp{
 		msg: 'EmailProvider updated successfully'
 	}
 }

@@ -1,5 +1,6 @@
 module language
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &Language) update_language_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_language_usecase(mut ctx Context, req UpdateLanguageReq) !UpdateLanguageResp {
+pub fn update_language_usecase(mut ctx Context, req UpdateLanguageReq) !dto.MsgResp {
 	// Domain 校验
 	update_language_domain(&req)!
 
@@ -56,12 +57,8 @@ pub struct UpdateLanguageReq {
 	is_basic                 ?u8     @[json: 'isBasic']
 }
 
-pub struct UpdateLanguageResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_language_repo(mut ctx Context, req UpdateLanguageReq) !UpdateLanguageResp {
+fn update_language_repo(mut ctx Context, req UpdateLanguageReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -100,7 +97,7 @@ fn update_language_repo(mut ctx Context, req UpdateLanguageReq) !UpdateLanguageR
 		dynamic update BaseLanguage set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateLanguageResp{
+	return dto.MsgResp{
 		msg: 'language updated successfully'
 	}
 }

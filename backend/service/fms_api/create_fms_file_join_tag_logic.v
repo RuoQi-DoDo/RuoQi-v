@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -27,7 +28,7 @@ pub fn (app &Fms) create_fms_file_join_tag_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_fms_file_join_tag_usecase(mut ctx Context, req CreateFmsFileJoinTagReq) !CreateFmsFileJoinTagResp {
+pub fn create_fms_file_join_tag_usecase(mut ctx Context, req CreateFmsFileJoinTagReq) !dto.MsgResp {
 	create_fms_file_join_tag_domain(&req)!
 	return create_fms_file_join_tag_repo(mut ctx, req)
 }
@@ -48,12 +49,8 @@ pub struct CreateFmsFileJoinTagReq {
 	file_id     string @[json: 'fileId']
 }
 
-pub struct CreateFmsFileJoinTagResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_fms_file_join_tag_repo(mut ctx Context, req CreateFmsFileJoinTagReq) !CreateFmsFileJoinTagResp {
+fn create_fms_file_join_tag_repo(mut ctx Context, req CreateFmsFileJoinTagReq) !dto.MsgResp {
 	join := FmsFileJoinTag{
 		file_tag_id: req.file_tag_id
 		file_id:     req.file_id
@@ -75,7 +72,7 @@ fn create_fms_file_join_tag_repo(mut ctx Context, req CreateFmsFileJoinTagReq) !
 		insert join into FmsFileJoinTag
 	} or { return error('Failed to create file-tag link: ${err}') }
 
-	return CreateFmsFileJoinTagResp{
+	return dto.MsgResp{
 		msg: 'File-tag link created successfully'
 	}
 }

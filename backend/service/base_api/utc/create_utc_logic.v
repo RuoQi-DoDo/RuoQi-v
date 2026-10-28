@@ -1,5 +1,6 @@
 module utc
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Utc) create_utc_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_utc_usecase(mut ctx Context, req CreateUtcReq) !CreateUtcResp {
+pub fn create_utc_usecase(mut ctx Context, req CreateUtcReq) !dto.MsgResp {
 	// create_utc_domain(&req)!
 	return create_utc_repo(mut ctx, req)
 }
@@ -57,12 +58,8 @@ pub struct CreateUtcReq {
 	lng_mid         f64    @[json: 'lngMid']
 }
 
-pub struct CreateUtcResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_utc_repo(mut ctx Context, req CreateUtcReq) !CreateUtcResp {
+fn create_utc_repo(mut ctx Context, req CreateUtcReq) !dto.MsgResp {
 	time_now := time.now()
 	base_utc := BaseUtc{
 		id:              rand.uuid_v7()
@@ -84,7 +81,7 @@ fn create_utc_repo(mut ctx Context, req CreateUtcReq) !CreateUtcResp {
 		insert base_utc into BaseUtc
 	} or { return error('Failed to create UTC: ${err}') }
 
-	return CreateUtcResp{
+	return dto.MsgResp{
 		msg: 'Utc created successfully'
 	}
 }

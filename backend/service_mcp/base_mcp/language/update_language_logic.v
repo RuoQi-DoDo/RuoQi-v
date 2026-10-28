@@ -1,5 +1,6 @@
 module language
 
+import common.dto
 import log
 import time
 import json2 as json
@@ -29,7 +30,7 @@ pub fn update_language_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 }
 
 // ═══ Use Case ═══
-pub fn update_language_usecase(pool &dbpool.DatabasePoolable, req UpdateLanguageReq) !UpdateLanguageResp {
+pub fn update_language_usecase(pool &dbpool.DatabasePoolable, req UpdateLanguageReq) !dto.MsgResp {
 	update_language_domain(&req)!
 	return update_language_repo(pool, req)
 }
@@ -54,12 +55,8 @@ pub struct UpdateLanguageReq {
 	is_basic                 ?u8     @[json: 'isBasic']
 }
 
-pub struct UpdateLanguageResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_language_repo(pool &dbpool.DatabasePoolable, req UpdateLanguageReq) !UpdateLanguageResp {
+fn update_language_repo(pool &dbpool.DatabasePoolable, req UpdateLanguageReq) !dto.MsgResp {
 	db, conn := pool.acquire() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		pool.release(conn) or { log.warn('Failed to release conn: ${err}') }
@@ -99,7 +96,7 @@ fn update_language_repo(pool &dbpool.DatabasePoolable, req UpdateLanguageReq) !U
 		dynamic update BaseLanguage set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateLanguageResp{
+	return dto.MsgResp{
 		msg: 'Language updated successfully'
 	}
 }

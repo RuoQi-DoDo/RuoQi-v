@@ -1,5 +1,6 @@
 module region
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Region) create_region_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_region_usecase(mut ctx Context, req CreateRegionReq) !CreateRegionResp {
+pub fn create_region_usecase(mut ctx Context, req CreateRegionReq) !dto.MsgResp {
 	create_region_domain(&req)!
 	return create_region_repo(mut ctx, req)
 }
@@ -75,12 +76,8 @@ pub struct CreateRegionReq {
 	creator_id           ?string @[json: 'creatorId']
 }
 
-pub struct CreateRegionResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_region_repo(mut ctx Context, req CreateRegionReq) !CreateRegionResp {
+fn create_region_repo(mut ctx Context, req CreateRegionReq) !dto.MsgResp {
 	time_now := time.now()
 	base_region := BaseRegion{
 		id:                   rand.uuid_v7()
@@ -119,7 +116,7 @@ fn create_region_repo(mut ctx Context, req CreateRegionReq) !CreateRegionResp {
 		insert base_region into BaseRegion
 	} or { return error('Failed to create Region: ${err}') }
 
-	return CreateRegionResp{
+	return dto.MsgResp{
 		msg: 'Region created successfully'
 	}
 }

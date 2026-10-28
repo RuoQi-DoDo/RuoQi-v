@@ -1,5 +1,6 @@
 module tasklog
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &TaskLog) update_task_log_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_task_log_usecase(mut ctx Context, req UpdateTaskLogReq) !UpdateTaskLogResp {
+pub fn update_task_log_usecase(mut ctx Context, req UpdateTaskLogReq) !dto.MsgResp {
 	update_task_log_domain(&req)!
 	return update_task_log_repo(mut ctx, req)
 }
@@ -48,12 +49,8 @@ pub struct UpdateTaskLogReq {
 	task_task_logs ?string    @[json: 'taskTaskLogs']
 }
 
-pub struct UpdateTaskLogResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_task_log_repo(mut ctx Context, req UpdateTaskLogReq) !UpdateTaskLogResp {
+fn update_task_log_repo(mut ctx Context, req UpdateTaskLogReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -78,7 +75,7 @@ fn update_task_log_repo(mut ctx Context, req UpdateTaskLogReq) !UpdateTaskLogRes
 		dynamic update JobTaskLog set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateTaskLogResp{
+	return dto.MsgResp{
 		msg: 'TaskLog updated successfully'
 	}
 }

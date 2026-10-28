@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &Fms) update_fms_file_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_fms_file_usecase(mut ctx Context, req UpdateFmsFileReq) !UpdateFmsFileResp {
+pub fn update_fms_file_usecase(mut ctx Context, req UpdateFmsFileReq) !dto.MsgResp {
 	update_fms_file_domain(&req)!
 	return update_fms_file_repo(mut ctx, req)
 }
@@ -51,12 +52,8 @@ pub struct UpdateFmsFileReq {
 	status    ?u8     @[json: 'status']
 }
 
-pub struct UpdateFmsFileResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_fms_file_repo(mut ctx Context, req UpdateFmsFileReq) !UpdateFmsFileResp {
+fn update_fms_file_repo(mut ctx Context, req UpdateFmsFileReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -96,7 +93,7 @@ fn update_fms_file_repo(mut ctx Context, req UpdateFmsFileReq) !UpdateFmsFileRes
 		dynamic update FmsFile set up_expr where id == req.id && del_flag == 0
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateFmsFileResp{
+	return dto.MsgResp{
 		msg: 'FmsFile updated successfully'
 	}
 }

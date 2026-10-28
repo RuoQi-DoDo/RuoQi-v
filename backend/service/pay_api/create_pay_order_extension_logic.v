@@ -1,5 +1,6 @@
 module pay_api
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Pay) create_pay_order_extension_handler(mut ctx Context) veb.Result
 }
 
 // ═══ Use Case ═══
-pub fn create_pay_order_extension_usecase(mut ctx Context, req CreatePayOrderExtensionReq) !CreatePayOrderExtensionResp {
+pub fn create_pay_order_extension_usecase(mut ctx Context, req CreatePayOrderExtensionReq) !dto.MsgResp {
 	create_pay_order_extension_domain(&req)!
 	return create_pay_order_extension_repo(mut ctx, req)
 }
@@ -51,12 +52,8 @@ pub struct CreatePayOrderExtensionReq {
 	status         u8      @[json: 'status']
 }
 
-pub struct CreatePayOrderExtensionResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_pay_order_extension_repo(mut ctx Context, req CreatePayOrderExtensionReq) !CreatePayOrderExtensionResp {
+fn create_pay_order_extension_repo(mut ctx Context, req CreatePayOrderExtensionReq) !dto.MsgResp {
 	time_now := time.now()
 	ext := PayOrderExtension{
 		id:             rand.uuid_v7()
@@ -81,7 +78,7 @@ fn create_pay_order_extension_repo(mut ctx Context, req CreatePayOrderExtensionR
 		insert ext into PayOrderExtension
 	} or { return error('Failed to create PayOrderExtension: ${err}') }
 
-	return CreatePayOrderExtensionResp{
+	return dto.MsgResp{
 		msg: 'PayOrderExtension created successfully'
 	}
 }

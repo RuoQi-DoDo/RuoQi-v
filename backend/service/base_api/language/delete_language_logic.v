@@ -1,5 +1,6 @@
 module language
 
+import common.dto
 import time
 import veb
 import log
@@ -29,7 +30,7 @@ pub fn (app &Language) delete_language_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_language_usecase(mut ctx Context, req DeleteLanguageReq) !DeleteLanguageResp {
+pub fn delete_language_usecase(mut ctx Context, req DeleteLanguageReq) !dto.MsgResp {
 	// Domain 校验
 	delete_language_domain(&req)!
 
@@ -49,12 +50,8 @@ pub struct DeleteLanguageReq {
 	language_ids []string @[json: 'ids']
 }
 
-pub struct DeleteLanguageResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_language_repo(mut ctx Context, language_ids []string) !DeleteLanguageResp {
+fn delete_language_repo(mut ctx Context, language_ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -63,7 +60,7 @@ fn delete_language_repo(mut ctx Context, language_ids []string) !DeleteLanguageR
 		where id in language_ids && del_flag == 0
 	} or { return error('Failed to soft-delete language: ${err}') }
 
-	return DeleteLanguageResp{
+	return dto.MsgResp{
 		msg: '${language_ids} language(s) deleted successfully'
 	}
 }

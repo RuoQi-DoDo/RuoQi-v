@@ -1,5 +1,6 @@
 module messagesender
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &MessageSender) send_email_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn send_email_usecase(mut ctx Context, req SendEmailReq) !SendEmailResp {
+pub fn send_email_usecase(mut ctx Context, req SendEmailReq) !dto.MsgResp {
 	send_email_domain(&req)!
 	return send_email_repo(mut ctx, req)
 }
@@ -55,12 +56,8 @@ pub struct SendEmailReq {
 	provider string @[json: 'provider']
 }
 
-pub struct SendEmailResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn send_email_repo(mut ctx Context, req SendEmailReq) !SendEmailResp {
+fn send_email_repo(mut ctx Context, req SendEmailReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -90,7 +87,7 @@ fn send_email_repo(mut ctx Context, req SendEmailReq) !SendEmailResp {
 		insert email_log into MsgEmailLog
 	} or { return error('Failed to create email send log: ${err}') }
 
-	return SendEmailResp{
+	return dto.MsgResp{
 		msg: 'Email queued successfully to ${req.target}'
 	}
 }

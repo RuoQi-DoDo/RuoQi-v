@@ -1,5 +1,6 @@
 module language
 
+import common.dto
 import log
 import time
 import rand
@@ -30,7 +31,7 @@ pub fn create_language_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 }
 
 // ═══ Use Case ═══
-pub fn create_language_usecase(pool &dbpool.DatabasePoolable, req CreateLanguageReq) !CreateLanguageResp {
+pub fn create_language_usecase(pool &dbpool.DatabasePoolable, req CreateLanguageReq) !dto.CreatedResp {
 	create_language_domain(&req)!
 	return create_language_repo(pool, req)
 }
@@ -57,13 +58,8 @@ pub struct CreateLanguageReq {
 	is_basic                 u8     @[json: 'isBasic']
 }
 
-pub struct CreateLanguageResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_language_repo(pool &dbpool.DatabasePoolable, req CreateLanguageReq) !CreateLanguageResp {
+fn create_language_repo(pool &dbpool.DatabasePoolable, req CreateLanguageReq) !dto.CreatedResp {
 	time_now := time.now()
 	new_id := rand.uuid_v7()
 	base_language := BaseLanguage{
@@ -89,7 +85,7 @@ fn create_language_repo(pool &dbpool.DatabasePoolable, req CreateLanguageReq) !C
 		insert base_language into BaseLanguage
 	} or { return error('Failed to create Language: ${err}') }
 
-	return CreateLanguageResp{
+	return dto.CreatedResp{
 		id:  new_id
 		msg: 'Language created successfully'
 	}

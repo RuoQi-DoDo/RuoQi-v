@@ -1,5 +1,6 @@
 module smsprovider
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &SmsProvider) update_sms_provider_handler(mut ctx Context) veb.Resul
 }
 
 // ═══ Use Case ═══
-pub fn update_sms_provider_usecase(mut ctx Context, req UpdateSmsProviderReq) !UpdateSmsProviderResp {
+pub fn update_sms_provider_usecase(mut ctx Context, req UpdateSmsProviderReq) !dto.MsgResp {
 	update_sms_provider_domain(&req)!
 	return update_sms_provider_repo(mut ctx, req)
 }
@@ -50,12 +51,8 @@ pub struct UpdateSmsProviderReq {
 	is_default ?u8     @[json: 'isDefault']
 }
 
-pub struct UpdateSmsProviderResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_sms_provider_repo(mut ctx Context, req UpdateSmsProviderReq) !UpdateSmsProviderResp {
+fn update_sms_provider_repo(mut ctx Context, req UpdateSmsProviderReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -85,7 +82,7 @@ fn update_sms_provider_repo(mut ctx Context, req UpdateSmsProviderReq) !UpdateSm
 		dynamic update MsgSmsProvider set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateSmsProviderResp{
+	return dto.MsgResp{
 		msg: 'SmsProvider updated successfully'
 	}
 }

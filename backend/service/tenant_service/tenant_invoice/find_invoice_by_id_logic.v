@@ -1,5 +1,6 @@
 module tenant_invoice
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -11,7 +12,7 @@ import common.api as capi
 @['/find_invoice_by_id'; post]
 pub fn (app &TenantInvoice) find_invoice_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
-	req := json.decode[FindInvoiceByIdReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(capi.json_error(code: capi.err_common_param_invalid, msg: err.msg()))
 	}
 	result := find_invoice_by_id_usecase(mut ctx, req) or {
@@ -24,25 +25,20 @@ pub fn (app &TenantInvoice) find_invoice_by_id_handler(mut ctx Context) veb.Resu
 }
 
 // ═══ Use Case ═══
-pub fn find_invoice_by_id_usecase(mut ctx Context, req FindInvoiceByIdReq) !TnInvoice {
+pub fn find_invoice_by_id_usecase(mut ctx Context, req dto.IdReq) !TnInvoice {
 	find_invoice_by_id_domain(&req)!
 	return find_invoice_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_invoice_by_id_domain(req &FindInvoiceByIdReq) ! {
+fn find_invoice_by_id_domain(req &dto.IdReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
 }
 
-// ═══ DTO ═══
-pub struct FindInvoiceByIdReq {
-	id string @[json: 'id']
-}
-
 // ═══ Repository ═══
-fn find_invoice_by_id_repo(mut ctx Context, req FindInvoiceByIdReq) !TnInvoice {
+fn find_invoice_by_id_repo(mut ctx Context, req dto.IdReq) !TnInvoice {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 

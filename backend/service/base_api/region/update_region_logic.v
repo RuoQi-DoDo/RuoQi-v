@@ -1,5 +1,6 @@
 module region
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &Region) update_region_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_region_usecase(mut ctx Context, req UpdateRegionReq) !UpdateRegionResp {
+pub fn update_region_usecase(mut ctx Context, req UpdateRegionReq) !dto.MsgResp {
 	// Domain 校验
 	update_region_domain(&req)!
 
@@ -68,12 +69,8 @@ pub struct UpdateRegionReq {
 	name_zh              ?string @[json: 'nameZh']
 }
 
-pub struct UpdateRegionResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_region_repo(mut ctx Context, req UpdateRegionReq) !UpdateRegionResp {
+fn update_region_repo(mut ctx Context, req UpdateRegionReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -148,7 +145,7 @@ fn update_region_repo(mut ctx Context, req UpdateRegionReq) !UpdateRegionResp {
 		dynamic update BaseRegion set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateRegionResp{
+	return dto.MsgResp{
 		msg: 'regiion updated successfully'
 	}
 }

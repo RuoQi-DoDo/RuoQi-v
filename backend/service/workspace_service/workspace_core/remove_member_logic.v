@@ -1,5 +1,6 @@
 module workspace_core
 
+import common.dto
 import veb
 import log
 import time
@@ -25,7 +26,7 @@ pub fn (app &WorkspaceCore) remove_member_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn remove_member_usecase(mut ctx Context, req RemoveMemberReq) !RemoveMemberResp {
+pub fn remove_member_usecase(mut ctx Context, req RemoveMemberReq) !dto.MsgResp {
 	remove_member_domain(&req)!
 	return remove_member_repo(mut ctx, req)
 }
@@ -47,12 +48,8 @@ pub struct RemoveMemberReq {
 	role_id      ?string @[json: 'roleId']
 }
 
-pub struct RemoveMemberResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn remove_member_repo(mut ctx Context, req RemoveMemberReq) !RemoveMemberResp {
+fn remove_member_repo(mut ctx Context, req RemoveMemberReq) !dto.MsgResp {
 	ctx.scope_sc.workspace_id = req.workspace_id
 	mut db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
@@ -63,7 +60,7 @@ fn remove_member_repo(mut ctx Context, req RemoveMemberReq) !RemoveMemberResp {
 			delete from WsMemberRole where workspace_id == req.workspace_id && user_id == req.user_id
 			&& role_id == role_id
 		}!
-		return RemoveMemberResp{
+		return dto.MsgResp{
 			msg: 'Role removed from member'
 		}
 	}
@@ -84,7 +81,7 @@ fn remove_member_repo(mut ctx Context, req RemoveMemberReq) !RemoveMemberResp {
 		return error('Failed to remove member: ${err}')
 	}
 	db.execute('COMMIT') or { return error('Failed to commit transaction: ${err}') }
-	return RemoveMemberResp{
+	return dto.MsgResp{
 		msg: 'Member removed'
 	}
 }

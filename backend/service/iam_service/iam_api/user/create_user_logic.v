@@ -1,5 +1,6 @@
 module user
 
+import common.dto
 import veb
 import log
 import time
@@ -24,14 +25,14 @@ pub fn (app &User) create_user_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_user_usecase(mut ctx Context, req CreateUserReq) !CreateUserResp {
+pub fn create_user_usecase(mut ctx Context, req CreateUserReq) !dto.MsgResp {
 	create_user_domain(&req)!
 	user_id := rand.uuid_v7()
 	password_hash := encrypt.bcrypt_hash(req.password) or {
 		return error('Failed to hash password')
 	}
 	create_user_repo(mut ctx, req, user_id, password_hash)!
-	return CreateUserResp{
+	return dto.MsgResp{
 		msg: 'User created successfully'
 	}
 }
@@ -57,10 +58,6 @@ pub struct CreateUserReq {
 	position_ids []string  @[json: 'positionIds']
 	created_at   time.Time @[json: 'createdAt']
 	updated_at   time.Time @[json: 'updatedAt']
-}
-
-pub struct CreateUserResp {
-	msg string @[json: 'msg']
 }
 
 // ═══ Repository ═══

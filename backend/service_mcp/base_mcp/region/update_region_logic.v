@@ -1,5 +1,6 @@
 module region
 
+import common.dto
 import log
 import time
 import json2 as json
@@ -29,7 +30,7 @@ pub fn update_region_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) 
 }
 
 // ═══ Use Case ═══
-pub fn update_region_usecase(pool &dbpool.DatabasePoolable, req UpdateRegionReq) !UpdateRegionResp {
+pub fn update_region_usecase(pool &dbpool.DatabasePoolable, req UpdateRegionReq) !dto.MsgResp {
 	update_region_domain(&req)!
 	return update_region_repo(pool, req)
 }
@@ -66,12 +67,8 @@ pub struct UpdateRegionReq {
 	name_zh              ?string @[json: 'nameZh']
 }
 
-pub struct UpdateRegionResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_region_repo(pool &dbpool.DatabasePoolable, req UpdateRegionReq) !UpdateRegionResp {
+fn update_region_repo(pool &dbpool.DatabasePoolable, req UpdateRegionReq) !dto.MsgResp {
 	db, conn := pool.acquire() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		pool.release(conn) or { log.warn('Failed to release conn: ${err}') }
@@ -147,7 +144,7 @@ fn update_region_repo(pool &dbpool.DatabasePoolable, req UpdateRegionReq) !Updat
 		dynamic update BaseRegion set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateRegionResp{
+	return dto.MsgResp{
 		msg: 'Region updated successfully'
 	}
 }

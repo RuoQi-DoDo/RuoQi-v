@@ -1,5 +1,6 @@
 module user
 
+import common.dto
 import veb
 import log
 import time
@@ -25,10 +26,10 @@ pub fn (app &User) delete_user_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_user_usecase(mut ctx Context, req DeleteUserReq) !DeleteUserResp {
+pub fn delete_user_usecase(mut ctx Context, req DeleteUserReq) !dto.MsgResp {
 	delete_user_domain(&req)!
 	delete_user_repo(mut ctx, req) or { return error('Failed to delete user: ${err}') }
-	return DeleteUserResp{
+	return dto.MsgResp{
 		msg: 'User deleted'
 	}
 }
@@ -43,10 +44,6 @@ fn delete_user_domain(req &DeleteUserReq) ! {
 // ═══ DTO ═══
 pub struct DeleteUserReq {
 	user_id string @[json: 'id']
-}
-
-pub struct DeleteUserResp {
-	msg string @[json: 'msg']
 }
 
 // ═══ Repository ═══

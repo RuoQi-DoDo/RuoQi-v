@@ -1,5 +1,6 @@
 module workspace_core
 
+import common.dto
 import veb
 import log
 import time
@@ -25,7 +26,7 @@ pub fn (app &WorkspaceCore) update_workspace_handler(mut ctx Context) veb.Result
 }
 
 // ═══ Use Case ═══
-pub fn update_workspace_usecase(mut ctx Context, req UpdateWsReq) !UpdateWsResp {
+pub fn update_workspace_usecase(mut ctx Context, req UpdateWsReq) !dto.MsgResp {
 	update_workspace_domain(&req)!
 	return update_workspace_repo(mut ctx, req)
 }
@@ -45,12 +46,8 @@ pub struct UpdateWsReq {
 	status      ?u8     @[json: 'status']
 }
 
-pub struct UpdateWsResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_workspace_repo(mut ctx Context, req UpdateWsReq) !UpdateWsResp {
+fn update_workspace_repo(mut ctx Context, req UpdateWsReq) !dto.MsgResp {
 	ctx.scope_sc.workspace_id = req.id
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
@@ -72,7 +69,7 @@ fn update_workspace_repo(mut ctx Context, req UpdateWsReq) !UpdateWsResp {
 	sql db {
 		dynamic update WsWorkspace set up_expr where id == req.id && del_flag == 0
 	} or { return error('Failed to update workspace: ${err}') }
-	return UpdateWsResp{
+	return dto.MsgResp{
 		msg: 'Workspace updated'
 	}
 }

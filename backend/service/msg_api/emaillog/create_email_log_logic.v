@@ -1,5 +1,6 @@
 module emaillog
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &EmailLog) create_email_log_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_email_log_usecase(mut ctx Context, req CreateEmailLogReq) !CreateEmailLogResp {
+pub fn create_email_log_usecase(mut ctx Context, req CreateEmailLogReq) !dto.MsgResp {
 	create_email_log_domain(&req)!
 	return create_email_log_repo(mut ctx, req)
 }
@@ -56,12 +57,8 @@ pub struct CreateEmailLogReq {
 	provider    string @[json: 'provider']
 }
 
-pub struct CreateEmailLogResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_email_log_repo(mut ctx Context, req CreateEmailLogReq) !CreateEmailLogResp {
+fn create_email_log_repo(mut ctx Context, req CreateEmailLogReq) !dto.MsgResp {
 	time_now := time.now()
 	email_log := MsgEmailLog{
 		id:          rand.uuid_v7()
@@ -85,7 +82,7 @@ fn create_email_log_repo(mut ctx Context, req CreateEmailLogReq) !CreateEmailLog
 		insert email_log into MsgEmailLog
 	} or { return error('Failed to create EmailLog: ${err}') }
 
-	return CreateEmailLogResp{
+	return dto.MsgResp{
 		msg: 'EmailLog created successfully'
 	}
 }

@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &Fms) update_fms_cloud_file_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_fms_cloud_file_usecase(mut ctx Context, req UpdateFmsCloudFileReq) !UpdateFmsCloudFileResp {
+pub fn update_fms_cloud_file_usecase(mut ctx Context, req UpdateFmsCloudFileReq) !dto.MsgResp {
 	update_fms_cloud_file_domain(&req)!
 	return update_fms_cloud_file_repo(mut ctx, req)
 }
@@ -50,12 +51,8 @@ pub struct UpdateFmsCloudFileReq {
 	status                       ?u8     @[json: 'status']
 }
 
-pub struct UpdateFmsCloudFileResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_fms_cloud_file_repo(mut ctx Context, req UpdateFmsCloudFileReq) !UpdateFmsCloudFileResp {
+fn update_fms_cloud_file_repo(mut ctx Context, req UpdateFmsCloudFileReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -92,7 +89,7 @@ fn update_fms_cloud_file_repo(mut ctx Context, req UpdateFmsCloudFileReq) !Updat
 		dynamic update FmsCloudFile set up_expr where id == req.id && del_flag == 0
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateFmsCloudFileResp{
+	return dto.MsgResp{
 		msg: 'FmsCloudFile updated successfully'
 	}
 }

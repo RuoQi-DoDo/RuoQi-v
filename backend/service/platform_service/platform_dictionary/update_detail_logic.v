@@ -1,5 +1,6 @@
 module platform_dictionary
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &PlatformDictionary) update_detail_handler(mut ctx Context) veb.Resu
 }
 
 // ═══ Use Case ═══
-pub fn update_detail_usecase(mut ctx Context, req UpdateDetailReq) !UpdateDetailResp {
+pub fn update_detail_usecase(mut ctx Context, req UpdateDetailReq) !dto.MsgResp {
 	update_detail_domain(&req)!
 	return update_detail_repo(mut ctx, req)
 }
@@ -43,12 +44,8 @@ pub struct UpdateDetailReq {
 	status ?u8     @[json: 'status']
 }
 
-pub struct UpdateDetailResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_detail_repo(mut ctx Context, req UpdateDetailReq) !UpdateDetailResp {
+fn update_detail_repo(mut ctx Context, req UpdateDetailReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	// vfmt off
@@ -72,7 +69,7 @@ fn update_detail_repo(mut ctx Context, req UpdateDetailReq) !UpdateDetailResp {
 	sql db {
 		dynamic update PfDictionaryDetail set up_expr where id == req.id
 	}!
-	return UpdateDetailResp{
+	return dto.MsgResp{
 		msg: 'Detail updated'
 	}
 }

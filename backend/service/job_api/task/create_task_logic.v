@@ -1,5 +1,6 @@
 module task
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Task) create_task_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_task_usecase(mut ctx Context, req CreateTaskReq) !CreateTaskResp {
+pub fn create_task_usecase(mut ctx Context, req CreateTaskReq) !dto.MsgResp {
 	create_task_domain(&req)!
 	return create_task_repo(mut ctx, req)
 }
@@ -113,12 +114,8 @@ pub struct CreateTaskReq {
 	status          u8     @[json: 'status']
 }
 
-pub struct CreateTaskResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_task_repo(mut ctx Context, req CreateTaskReq) !CreateTaskResp {
+fn create_task_repo(mut ctx Context, req CreateTaskReq) !dto.MsgResp {
 	time_now := time.now()
 	task := JobTask{
 		id:              rand.uuid_v7()
@@ -143,7 +140,7 @@ fn create_task_repo(mut ctx Context, req CreateTaskReq) !CreateTaskResp {
 		insert task into JobTask
 	} or { return error('Failed to create Task: ${err}') }
 
-	return CreateTaskResp{
+	return dto.MsgResp{
 		msg: 'Task created successfully'
 	}
 }

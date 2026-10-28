@@ -1,5 +1,6 @@
 module utc
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -28,7 +29,7 @@ pub fn (app &Utc) update_utc_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_utc_usecase(mut ctx Context, req UpdateUtcReq) !UpdateUtcResp {
+pub fn update_utc_usecase(mut ctx Context, req UpdateUtcReq) !dto.MsgResp {
 	// Domain 校验
 	update_utc_domain(&req)!
 
@@ -53,12 +54,8 @@ pub struct UpdateUtcReq {
 	lng_mid         ?f64    @[json: 'lngMid']
 }
 
-pub struct UpdateUtcResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_utc_repo(mut ctx Context, req UpdateUtcReq) !UpdateUtcResp {
+fn update_utc_repo(mut ctx Context, req UpdateUtcReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -88,7 +85,7 @@ fn update_utc_repo(mut ctx Context, req UpdateUtcReq) !UpdateUtcResp {
 		dynamic update BaseUtc set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateUtcResp{
+	return dto.MsgResp{
 		msg: 'UTC updated successfully'
 	}
 }

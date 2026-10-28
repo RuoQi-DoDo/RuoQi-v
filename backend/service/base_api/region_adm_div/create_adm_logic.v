@@ -1,5 +1,6 @@
 module region_adm_div
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &RegionAdmDiv) create_adm_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_adm_usecase(mut ctx Context, req CreateAdmReq) !CreateAdmResp {
+pub fn create_adm_usecase(mut ctx Context, req CreateAdmReq) !dto.MsgResp {
 	// create_adm_domain(&req)!
 	return create_adm_repo(mut ctx, req)
 }
@@ -76,12 +77,8 @@ pub struct CreateAdmReq {
 	creator_id      ?string @[json: 'creatorId']
 }
 
-pub struct CreateAdmResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_adm_repo(mut ctx Context, req CreateAdmReq) !CreateAdmResp {
+fn create_adm_repo(mut ctx Context, req CreateAdmReq) !dto.MsgResp {
 	time_now := time.now()
 	base_region := BaseRegionAdmDiv{
 		id:              rand.uuid_v7()
@@ -123,7 +120,7 @@ fn create_adm_repo(mut ctx Context, req CreateAdmReq) !CreateAdmResp {
 		insert base_region into BaseRegionAdmDiv
 	} or { return error('Failed to create Region: ${err}') }
 
-	return CreateAdmResp{
+	return dto.MsgResp{
 		msg: 'Adm created successfully'
 	}
 }

@@ -1,5 +1,6 @@
 module platform_dictionary
 
+import common.dto
 import veb
 import log
 import time
@@ -23,7 +24,7 @@ pub fn (app &PlatformDictionary) create_detail_handler(mut ctx Context) veb.Resu
 }
 
 // ═══ Use Case ═══
-pub fn create_detail_usecase(mut ctx Context, req CreateDetailReq) !CreateDetailResp {
+pub fn create_detail_usecase(mut ctx Context, req CreateDetailReq) !dto.CreatedResp {
 	create_detail_domain(&req)!
 	return create_detail_repo(mut ctx, req)
 }
@@ -43,13 +44,8 @@ pub struct CreateDetailReq {
 	sort          u32    @[json: 'sort']
 }
 
-pub struct CreateDetailResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_detail_repo(mut ctx Context, req CreateDetailReq) !CreateDetailResp {
+fn create_detail_repo(mut ctx Context, req CreateDetailReq) !dto.CreatedResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	d := PfDictionaryDetail{
@@ -65,7 +61,7 @@ fn create_detail_repo(mut ctx Context, req CreateDetailReq) !CreateDetailResp {
 	sql db {
 		insert d into PfDictionaryDetail
 	} or { return error('Failed: ${err}') }
-	return CreateDetailResp{
+	return dto.CreatedResp{
 		id:  d.id
 		msg: 'Detail created'
 	}

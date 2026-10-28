@@ -1,5 +1,6 @@
 module region_adm_div
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &RegionAdmDiv) update_adm_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_adm_usecase(mut ctx Context, req UpdateAdmReq) !UpdateAdmResp {
+pub fn update_adm_usecase(mut ctx Context, req UpdateAdmReq) !dto.MsgResp {
 	// Domain 校验
 	update_adm_domain(&req)!
 
@@ -71,12 +72,8 @@ pub struct UpdateAdmReq {
 	name_zh         ?string @[json: 'nameZh']
 }
 
-pub struct UpdateAdmResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_adm_repo(mut ctx Context, req UpdateAdmReq) !UpdateAdmResp {
+fn update_adm_repo(mut ctx Context, req UpdateAdmReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -160,7 +157,7 @@ fn update_adm_repo(mut ctx Context, req UpdateAdmReq) !UpdateAdmResp {
 		dynamic update BaseRegionAdmDiv set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateAdmResp{
+	return dto.MsgResp{
 		msg: 'Adm updated successfully'
 	}
 }

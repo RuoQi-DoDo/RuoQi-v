@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Fms) create_fms_file_tag_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_fms_file_tag_usecase(mut ctx Context, req CreateFmsFileTagReq) !CreateFmsFileTagResp {
+pub fn create_fms_file_tag_usecase(mut ctx Context, req CreateFmsFileTagReq) !dto.MsgResp {
 	create_fms_file_tag_domain(&req)!
 	return create_fms_file_tag_repo(mut ctx, req)
 }
@@ -51,12 +52,8 @@ pub struct CreateFmsFileTagReq {
 	status u8      @[json: 'status']
 }
 
-pub struct CreateFmsFileTagResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_fms_file_tag_repo(mut ctx Context, req CreateFmsFileTagReq) !CreateFmsFileTagResp {
+fn create_fms_file_tag_repo(mut ctx Context, req CreateFmsFileTagReq) !dto.MsgResp {
 	time_now := time.now()
 	tag := FmsFileTag{
 		id:         rand.uuid_v7()
@@ -78,7 +75,7 @@ fn create_fms_file_tag_repo(mut ctx Context, req CreateFmsFileTagReq) !CreateFms
 		insert tag into FmsFileTag
 	} or { return error('Failed to create FmsFileTag: ${err}') }
 
-	return CreateFmsFileTagResp{
+	return dto.MsgResp{
 		msg: 'FmsFileTag created successfully'
 	}
 }

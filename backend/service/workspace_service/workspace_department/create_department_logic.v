@@ -1,5 +1,6 @@
 module workspace_department
 
+import common.dto
 import veb
 import log
 import time
@@ -23,7 +24,7 @@ pub fn (app &WorkspaceDepartment) create_department_handler(mut ctx Context) veb
 }
 
 // ═══ Use Case ═══
-pub fn create_department_usecase(mut ctx Context, req CreateDepartmentReq) !CreateDepartmentResp {
+pub fn create_department_usecase(mut ctx Context, req CreateDepartmentReq) !dto.CreatedResp {
 	create_department_domain(&req)!
 	return create_department_repo(mut ctx, req)
 }
@@ -48,13 +49,8 @@ pub struct CreateDepartmentReq {
 	sort         u32    @[json: 'sort']
 }
 
-pub struct CreateDepartmentResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_department_repo(mut ctx Context, req CreateDepartmentReq) !CreateDepartmentResp {
+fn create_department_repo(mut ctx Context, req CreateDepartmentReq) !dto.CreatedResp {
 	ctx.scope_sc.workspace_id = req.workspace_id
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
@@ -73,7 +69,7 @@ fn create_department_repo(mut ctx Context, req CreateDepartmentReq) !CreateDepar
 	sql db {
 		insert d into WsDepartment
 	} or { return error('Failed: ${err}') }
-	return CreateDepartmentResp{
+	return dto.CreatedResp{
 		id:  d.id
 		msg: 'Department created'
 	}

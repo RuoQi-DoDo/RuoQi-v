@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import veb
 import log
 import time
@@ -13,7 +14,7 @@ import model { Context }
 pub fn (app &Fms) find_fms_cloud_file_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[FmsCloudFileByIdReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -28,29 +29,26 @@ pub fn (app &Fms) find_fms_cloud_file_by_id_handler(mut ctx Context) veb.Result 
 }
 
 // ═══ Use Case ═══
-pub fn find_fms_cloud_file_by_id_usecase(mut ctx Context, req FmsCloudFileByIdReq) !FmsCloudFileByIdResp {
+pub fn find_fms_cloud_file_by_id_usecase(mut ctx Context, req dto.IdReq) !FmsCloudFileByIdResp {
 	find_fms_cloud_file_by_id_domain(&req)!
 	return find_fms_cloud_file_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_fms_cloud_file_by_id_domain(req &FmsCloudFileByIdReq) ! {
+fn find_fms_cloud_file_by_id_domain(req &dto.IdReq) ! {
 	if req.id == '' {
 		return error('cloud file id is required')
 	}
 }
 
 // ═══ DTO ═══
-pub struct FmsCloudFileByIdReq {
-	id string @[json: 'id']
-}
 
 pub struct FmsCloudFileByIdResp {
 	data FmsCloudFileData
 }
 
 // ═══ Repository ═══
-fn find_fms_cloud_file_by_id_repo(mut ctx Context, req FmsCloudFileByIdReq) !FmsCloudFileByIdResp {
+fn find_fms_cloud_file_by_id_repo(mut ctx Context, req dto.IdReq) !FmsCloudFileByIdResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 

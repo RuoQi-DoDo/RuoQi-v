@@ -1,5 +1,6 @@
 module emailprovider
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &EmailProvider) create_email_provider_handler(mut ctx Context) veb.R
 }
 
 // ═══ Use Case ═══
-pub fn create_email_provider_usecase(mut ctx Context, req CreateEmailProviderReq) !CreateEmailProviderResp {
+pub fn create_email_provider_usecase(mut ctx Context, req CreateEmailProviderReq) !dto.MsgResp {
 	create_email_provider_domain(&req)!
 	return create_email_provider_repo(mut ctx, req)
 }
@@ -61,12 +62,8 @@ pub struct CreateEmailProviderReq {
 	is_default u8      @[json: 'isDefault']
 }
 
-pub struct CreateEmailProviderResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_email_provider_repo(mut ctx Context, req CreateEmailProviderReq) !CreateEmailProviderResp {
+fn create_email_provider_repo(mut ctx Context, req CreateEmailProviderReq) !dto.MsgResp {
 	time_now := time.now()
 	provider := MsgEmailProvider{
 		id:         rand.uuid_v7()
@@ -95,7 +92,7 @@ fn create_email_provider_repo(mut ctx Context, req CreateEmailProviderReq) !Crea
 		insert provider into MsgEmailProvider
 	} or { return error('Failed to create EmailProvider: ${err}') }
 
-	return CreateEmailProviderResp{
+	return dto.MsgResp{
 		msg: 'EmailProvider created successfully'
 	}
 }

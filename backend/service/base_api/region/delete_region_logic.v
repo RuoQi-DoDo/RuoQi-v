@@ -1,5 +1,6 @@
 module region
 
+import common.dto
 import time
 import veb
 import log
@@ -29,7 +30,7 @@ pub fn (app &Region) delete_region_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_region_usecase(mut ctx Context, req DeleteRegionReq) !DeleteRegionResp {
+pub fn delete_region_usecase(mut ctx Context, req DeleteRegionReq) !dto.MsgResp {
 	// Domain 校验
 	delete_region_domain(&req)!
 
@@ -49,12 +50,8 @@ pub struct DeleteRegionReq {
 	region_ids []string @[json: 'ids']
 }
 
-pub struct DeleteRegionResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_region_repo(mut ctx Context, region_ids []string) !DeleteRegionResp {
+fn delete_region_repo(mut ctx Context, region_ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -63,7 +60,7 @@ fn delete_region_repo(mut ctx Context, region_ids []string) !DeleteRegionResp {
 		where id in region_ids && del_flag == 0
 	} or { return error('Failed to soft-delete region: ${err}') }
 
-	return DeleteRegionResp{
+	return dto.MsgResp{
 		msg: '${region_ids} region(s) deleted successfully'
 	}
 }

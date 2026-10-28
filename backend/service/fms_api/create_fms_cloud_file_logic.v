@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Fms) create_fms_cloud_file_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_fms_cloud_file_usecase(mut ctx Context, req CreateFmsCloudFileReq) !CreateFmsCloudFileResp {
+pub fn create_fms_cloud_file_usecase(mut ctx Context, req CreateFmsCloudFileReq) !dto.MsgResp {
 	create_fms_cloud_file_domain(&req)!
 	return create_fms_cloud_file_repo(mut ctx, req)
 }
@@ -60,12 +61,8 @@ pub struct CreateFmsCloudFileReq {
 	status                       u8      @[json: 'status']
 }
 
-pub struct CreateFmsCloudFileResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_fms_cloud_file_repo(mut ctx Context, req CreateFmsCloudFileReq) !CreateFmsCloudFileResp {
+fn create_fms_cloud_file_repo(mut ctx Context, req CreateFmsCloudFileReq) !dto.MsgResp {
 	time_now := time.now()
 	file := FmsCloudFile{
 		id:                           rand.uuid_v7()
@@ -91,7 +88,7 @@ fn create_fms_cloud_file_repo(mut ctx Context, req CreateFmsCloudFileReq) !Creat
 		insert file into FmsCloudFile
 	} or { return error('Failed to create FmsCloudFile: ${err}') }
 
-	return CreateFmsCloudFileResp{
+	return dto.MsgResp{
 		msg: 'FmsCloudFile created successfully'
 	}
 }

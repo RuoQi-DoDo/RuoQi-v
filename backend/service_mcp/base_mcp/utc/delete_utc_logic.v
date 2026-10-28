@@ -1,5 +1,6 @@
 module utc
 
+import common.dto
 import log
 import time
 import json2 as json
@@ -30,7 +31,7 @@ pub fn delete_utc_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 }
 
 // ═══ Use Case ═══
-pub fn delete_utc_usecase(pool &dbpool.DatabasePoolable, req DeleteUtcReq) !DeleteUtcResp {
+pub fn delete_utc_usecase(pool &dbpool.DatabasePoolable, req DeleteUtcReq) !dto.MsgResp {
 	delete_utc_domain(&req)!
 	return delete_utc_repo(pool, req.utc_ids)
 }
@@ -47,12 +48,8 @@ pub struct DeleteUtcReq {
 	utc_ids []string @[json: 'ids']
 }
 
-pub struct DeleteUtcResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_utc_repo(pool &dbpool.DatabasePoolable, utc_ids []string) !DeleteUtcResp {
+fn delete_utc_repo(pool &dbpool.DatabasePoolable, utc_ids []string) !dto.MsgResp {
 	db, conn := pool.acquire() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		pool.release(conn) or { log.warn('Failed to release conn: ${err}') }
@@ -63,7 +60,7 @@ fn delete_utc_repo(pool &dbpool.DatabasePoolable, utc_ids []string) !DeleteUtcRe
 		where id in utc_ids && del_flag == 0
 	} or { return error('Failed to soft-delete utc: ${err}') }
 
-	return DeleteUtcResp{
+	return dto.MsgResp{
 		msg: '${utc_ids} utc(s) deleted successfully'
 	}
 }

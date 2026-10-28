@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &Fms) create_fms_cloudfile_join_cloudtag_handler(mut ctx Context) ve
 	return ctx.json(api.json_success(data: result))
 }
 
-pub fn create_fms_cloudfile_join_cloudtag_usecase(mut ctx Context, req CreateFmsCloudFileCloudFileTagReq) !CreateFmsCloudFileCloudFileTagResp {
+pub fn create_fms_cloudfile_join_cloudtag_usecase(mut ctx Context, req CreateFmsCloudFileCloudFileTagReq) !dto.MsgResp {
 	create_fms_cloudfile_join_cloudtag_domain(&req)!
 	return create_fms_cloudfile_join_cloudtag_repo(mut ctx, req)
 }
@@ -41,11 +42,7 @@ pub struct CreateFmsCloudFileCloudFileTagReq {
 	cloud_file_id     string @[json: 'cloudFileId']
 }
 
-pub struct CreateFmsCloudFileCloudFileTagResp {
-	msg string @[json: 'msg']
-}
-
-fn create_fms_cloudfile_join_cloudtag_repo(mut ctx Context, req CreateFmsCloudFileCloudFileTagReq) !CreateFmsCloudFileCloudFileTagResp {
+fn create_fms_cloudfile_join_cloudtag_repo(mut ctx Context, req CreateFmsCloudFileCloudFileTagReq) !dto.MsgResp {
 	join := FmsCloudFileCloudFileTag{
 		cloud_file_tag_id: req.cloud_file_tag_id
 		cloud_file_id:     req.cloud_file_id
@@ -63,7 +60,7 @@ fn create_fms_cloudfile_join_cloudtag_repo(mut ctx Context, req CreateFmsCloudFi
 	sql db {
 		insert join into FmsCloudFileCloudFileTag
 	} or { return error('Failed to create cloud file-tag link: ${err}') }
-	return CreateFmsCloudFileCloudFileTagResp{
+	return dto.MsgResp{
 		msg: 'Cloud file-tag link created successfully'
 	}
 }

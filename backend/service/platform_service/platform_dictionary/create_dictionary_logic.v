@@ -1,5 +1,6 @@
 module platform_dictionary
 
+import common.dto
 import veb
 import log
 import time
@@ -23,7 +24,7 @@ pub fn (app &PlatformDictionary) create_dictionary_handler(mut ctx Context) veb.
 }
 
 // ═══ Use Case ═══
-pub fn create_dictionary_usecase(mut ctx Context, req CreateDictionaryReq) !CreateDictionaryResp {
+pub fn create_dictionary_usecase(mut ctx Context, req CreateDictionaryReq) !dto.CreatedResp {
 	create_dictionary_domain(&req)!
 	return create_dictionary_repo(mut ctx, req)
 }
@@ -42,13 +43,8 @@ pub struct CreateDictionaryReq {
 	description string @[json: 'description']
 }
 
-pub struct CreateDictionaryResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_dictionary_repo(mut ctx Context, req CreateDictionaryReq) !CreateDictionaryResp {
+fn create_dictionary_repo(mut ctx Context, req CreateDictionaryReq) !dto.CreatedResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	d := PfDictionary{
@@ -63,7 +59,7 @@ fn create_dictionary_repo(mut ctx Context, req CreateDictionaryReq) !CreateDicti
 	sql db {
 		insert d into PfDictionary
 	} or { return error('Failed: ${err}') }
-	return CreateDictionaryResp{
+	return dto.CreatedResp{
 		id:  d.id
 		msg: 'Dictionary created'
 	}

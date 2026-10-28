@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &Fms) delete_fms_cloudfile_join_cloudtag_handler(mut ctx Context) ve
 	return ctx.json(api.json_success(data: result))
 }
 
-pub fn delete_fms_cloudfile_join_cloudtag_usecase(mut ctx Context, req DeleteFmsCloudFileCloudFileTagReq) !DeleteFmsCloudFileCloudFileTagResp {
+pub fn delete_fms_cloudfile_join_cloudtag_usecase(mut ctx Context, req DeleteFmsCloudFileCloudFileTagReq) !dto.MsgResp {
 	delete_fms_cloudfile_join_cloudtag_domain(&req)!
 	return delete_fms_cloudfile_join_cloudtag_repo(mut ctx, req)
 }
@@ -38,18 +39,14 @@ pub struct DeleteFmsCloudFileCloudFileTagReq {
 	cloud_file_id     string @[json: 'cloudFileId']
 }
 
-pub struct DeleteFmsCloudFileCloudFileTagResp {
-	msg string @[json: 'msg']
-}
-
-fn delete_fms_cloudfile_join_cloudtag_repo(mut ctx Context, req DeleteFmsCloudFileCloudFileTagReq) !DeleteFmsCloudFileCloudFileTagResp {
+fn delete_fms_cloudfile_join_cloudtag_repo(mut ctx Context, req DeleteFmsCloudFileCloudFileTagReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	sql db {
 		delete from FmsCloudFileCloudFileTag where cloud_file_tag_id == req.cloud_file_tag_id
 		&& cloud_file_id == req.cloud_file_id
 	} or { return error('Failed: ${err}') }
-	return DeleteFmsCloudFileCloudFileTagResp{
+	return dto.MsgResp{
 		msg: 'Cloud file-tag link deleted successfully'
 	}
 }

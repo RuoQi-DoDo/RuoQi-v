@@ -1,5 +1,6 @@
 module pay_api
 
+import common.dto
 import time
 import veb
 import log
@@ -13,7 +14,7 @@ import model { Context }
 pub fn (app &Pay) delete_pay_order_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeletePayOrderReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -28,29 +29,20 @@ pub fn (app &Pay) delete_pay_order_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_pay_order_usecase(mut ctx Context, req DeletePayOrderReq) !DeletePayOrderResp {
+pub fn delete_pay_order_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	delete_pay_order_domain(&req)!
 	return delete_pay_order_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_pay_order_domain(req &DeletePayOrderReq) ! {
+fn delete_pay_order_domain(req &dto.DeleteIdsReq) ! {
 	if req.ids.len == 0 {
 		return error('No PayOrder ids provided')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeletePayOrderReq {
-	ids []string @[json: 'ids']
-}
-
-pub struct DeletePayOrderResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_pay_order_repo(mut ctx Context, ids []string) !DeletePayOrderResp {
+fn delete_pay_order_repo(mut ctx Context, ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -59,7 +51,7 @@ fn delete_pay_order_repo(mut ctx Context, ids []string) !DeletePayOrderResp {
 		where id in ids && del_flag == 0
 	} or { return error('Failed to soft-delete pay order: ${err}') }
 
-	return DeletePayOrderResp{
+	return dto.MsgResp{
 		msg: '${ids.len} PayOrder(s) deleted successfully'
 	}
 }

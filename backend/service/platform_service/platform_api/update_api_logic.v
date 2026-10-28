@@ -1,5 +1,6 @@
 module platform_api
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &PlatformApi) update_api_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_api_usecase(mut ctx Context, req UpdateApiReq) !UpdateApiResp {
+pub fn update_api_usecase(mut ctx Context, req UpdateApiReq) !dto.MsgResp {
 	update_api_domain(&req)!
 	return update_api_repo(mut ctx, req)
 }
@@ -46,12 +47,8 @@ pub struct UpdateApiReq {
 	status       ?u8     @[json: 'status']
 }
 
-pub struct UpdateApiResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_api_repo(mut ctx Context, req UpdateApiReq) !UpdateApiResp {
+fn update_api_repo(mut ctx Context, req UpdateApiReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	// vfmt off
@@ -84,7 +81,7 @@ fn update_api_repo(mut ctx Context, req UpdateApiReq) !UpdateApiResp {
 	sql db {
 		dynamic update PfApi set up_expr where id == req.id
 	}!
-	return UpdateApiResp{
+	return dto.MsgResp{
 		msg: 'API updated'
 	}
 }

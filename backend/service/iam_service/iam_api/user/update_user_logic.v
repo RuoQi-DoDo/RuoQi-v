@@ -1,5 +1,6 @@
 module user
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -23,7 +24,7 @@ pub fn (app &User) update_user_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_user_usecase(mut ctx Context, req UpdateUserReq) !UpdateUserResp {
+pub fn update_user_usecase(mut ctx Context, req UpdateUserReq) !dto.MsgResp {
 	update_user_domain(&req)!
 	password_hash := if pwd := req.password {
 		encrypt.bcrypt_hash(pwd) or { return error('Failed to hash password') }
@@ -31,7 +32,7 @@ pub fn update_user_usecase(mut ctx Context, req UpdateUserReq) !UpdateUserResp {
 		''
 	}
 	update_user_repo(mut ctx, req, password_hash)!
-	return UpdateUserResp{
+	return dto.MsgResp{
 		msg: 'User updated'
 	}
 }
@@ -55,10 +56,6 @@ pub struct UpdateUserReq {
 	password    ?string @[json: 'password']
 	status      ?u8     @[json: 'status']
 	username    ?string @[json: 'username']
-}
-
-pub struct UpdateUserResp {
-	msg string @[json: 'msg']
 }
 
 // ═══ Repository ═══

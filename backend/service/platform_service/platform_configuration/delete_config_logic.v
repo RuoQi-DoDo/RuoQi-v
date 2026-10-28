@@ -1,5 +1,6 @@
 module platform_configuration
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -11,7 +12,7 @@ import common.api
 @['/delete_config'; post]
 pub fn (app &PlatformConfiguration) delete_config_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
-	req := json.decode[DeleteConfigReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 	result := delete_config_usecase(mut ctx, req) or {
@@ -21,35 +22,26 @@ pub fn (app &PlatformConfiguration) delete_config_handler(mut ctx Context) veb.R
 }
 
 // ═══ Use Case ═══
-pub fn delete_config_usecase(mut ctx Context, req DeleteConfigReq) !DeleteConfigResp {
+pub fn delete_config_usecase(mut ctx Context, req dto.IdReq) !dto.MsgResp {
 	delete_config_domain(&req)!
 	return delete_config_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_config_domain(req &DeleteConfigReq) ! {
+fn delete_config_domain(req &dto.IdReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteConfigReq {
-	id string @[json: 'id']
-}
-
-pub struct DeleteConfigResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_config_repo(mut ctx Context, req DeleteConfigReq) !DeleteConfigResp {
+fn delete_config_repo(mut ctx Context, req dto.IdReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	sql db {
 		update PfConfig set del_flag = -1 where id == req.id
 	}!
-	return DeleteConfigResp{
+	return dto.MsgResp{
 		msg: 'Configuration deleted'
 	}
 }

@@ -1,5 +1,6 @@
 module workspace_core
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -24,7 +25,7 @@ pub fn (app &WorkspaceCore) assign_role_menu_handler(mut ctx Context) veb.Result
 }
 
 // ═══ Use Case ═══
-pub fn assign_role_menu_usecase(mut ctx Context, req AssignRoleMenuReq) !AssignRoleMenuResp {
+pub fn assign_role_menu_usecase(mut ctx Context, req AssignRoleMenuReq) !dto.MsgResp {
 	assign_role_menu_domain(&req)!
 	return assign_role_menu_repo(mut ctx, req)
 }
@@ -46,12 +47,8 @@ pub struct AssignRoleMenuReq {
 	menu_ids     []string @[json: 'menuIds']
 }
 
-pub struct AssignRoleMenuResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn assign_role_menu_repo(mut ctx Context, req AssignRoleMenuReq) !AssignRoleMenuResp {
+fn assign_role_menu_repo(mut ctx Context, req AssignRoleMenuReq) !dto.MsgResp {
 	ctx.scope_sc.workspace_id = req.workspace_id
 	mut db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
@@ -81,7 +78,7 @@ fn assign_role_menu_repo(mut ctx Context, req AssignRoleMenuReq) !AssignRoleMenu
 
 	db.execute('COMMIT') or { return error('Failed to commit transaction: ${err}') }
 
-	return AssignRoleMenuResp{
+	return dto.MsgResp{
 		msg: 'Role Menu assigned'
 	}
 }

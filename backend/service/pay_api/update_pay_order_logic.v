@@ -1,5 +1,6 @@
 module pay_api
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &Pay) update_pay_order_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_pay_order_usecase(mut ctx Context, req UpdatePayOrderReq) !UpdatePayOrderResp {
+pub fn update_pay_order_usecase(mut ctx Context, req UpdatePayOrderReq) !dto.MsgResp {
 	update_pay_order_domain(&req)!
 	return update_pay_order_repo(mut ctx, req)
 }
@@ -59,12 +60,8 @@ pub struct UpdatePayOrderReq {
 	status            ?u8        @[json: 'status']
 }
 
-pub struct UpdatePayOrderResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_pay_order_repo(mut ctx Context, req UpdatePayOrderReq) !UpdatePayOrderResp {
+fn update_pay_order_repo(mut ctx Context, req UpdatePayOrderReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -121,7 +118,7 @@ fn update_pay_order_repo(mut ctx Context, req UpdatePayOrderReq) !UpdatePayOrder
 		dynamic update PayOrder set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdatePayOrderResp{
+	return dto.MsgResp{
 		msg: 'PayOrder updated successfully'
 	}
 }

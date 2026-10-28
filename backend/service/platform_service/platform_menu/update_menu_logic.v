@@ -1,5 +1,6 @@
 module platform_menu
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &PlatformMenu) update_menu_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_menu_usecase(mut ctx Context, req UpdateMenuReq) !UpdateMenuResp {
+pub fn update_menu_usecase(mut ctx Context, req UpdateMenuReq) !dto.MsgResp {
 	update_menu_domain(&req)!
 	return update_menu_repo(mut ctx, req)
 }
@@ -50,12 +51,8 @@ pub struct UpdateMenuReq {
 	status     ?u8     @[json: 'status']
 }
 
-pub struct UpdateMenuResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_menu_repo(mut ctx Context, req UpdateMenuReq) !UpdateMenuResp {
+fn update_menu_repo(mut ctx Context, req UpdateMenuReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	// vfmt off
@@ -100,7 +97,7 @@ fn update_menu_repo(mut ctx Context, req UpdateMenuReq) !UpdateMenuResp {
 	sql db {
 		dynamic update PfMenu set up_expr where id == req.id
 	}!
-	return UpdateMenuResp{
+	return dto.MsgResp{
 		msg: 'Menu updated'
 	}
 }

@@ -1,5 +1,6 @@
 module pay_api
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Pay) create_pay_demo_order_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_pay_demo_order_usecase(mut ctx Context, req CreatePayDemoOrderReq) !CreatePayDemoOrderResp {
+pub fn create_pay_demo_order_usecase(mut ctx Context, req CreatePayDemoOrderReq) !dto.MsgResp {
 	create_pay_demo_order_domain(&req)!
 	return create_pay_demo_order_repo(mut ctx, req)
 }
@@ -50,12 +51,8 @@ pub struct CreatePayDemoOrderReq {
 	pay_status u8     @[json: 'payStatus']
 }
 
-pub struct CreatePayDemoOrderResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_pay_demo_order_repo(mut ctx Context, req CreatePayDemoOrderReq) !CreatePayDemoOrderResp {
+fn create_pay_demo_order_repo(mut ctx Context, req CreatePayDemoOrderReq) !dto.MsgResp {
 	time_now := time.now()
 	order := PayDemoOrder{
 		id:         rand.uuid_v7()
@@ -79,7 +76,7 @@ fn create_pay_demo_order_repo(mut ctx Context, req CreatePayDemoOrderReq) !Creat
 		insert order into PayDemoOrder
 	} or { return error('Failed to create PayDemoOrder: ${err}') }
 
-	return CreatePayDemoOrderResp{
+	return dto.MsgResp{
 		msg: 'PayDemoOrder created successfully'
 	}
 }

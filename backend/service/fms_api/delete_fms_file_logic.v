@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import time
 import veb
 import log
@@ -13,7 +14,7 @@ import model { Context }
 pub fn (app &Fms) delete_fms_file_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeleteFmsFileReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -28,29 +29,20 @@ pub fn (app &Fms) delete_fms_file_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_fms_file_usecase(mut ctx Context, req DeleteFmsFileReq) !DeleteFmsFileResp {
+pub fn delete_fms_file_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	delete_fms_file_domain(&req)!
 	return delete_fms_file_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_fms_file_domain(req &DeleteFmsFileReq) ! {
+fn delete_fms_file_domain(req &dto.DeleteIdsReq) ! {
 	if req.ids.len == 0 {
 		return error('No FmsFile ids provided')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteFmsFileReq {
-	ids []string @[json: 'ids']
-}
-
-pub struct DeleteFmsFileResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_fms_file_repo(mut ctx Context, ids []string) !DeleteFmsFileResp {
+fn delete_fms_file_repo(mut ctx Context, ids []string) !dto.MsgResp {
 	mut db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -73,7 +65,7 @@ fn delete_fms_file_repo(mut ctx Context, ids []string) !DeleteFmsFileResp {
 
 	db.execute('COMMIT') or { return error('Failed to commit transaction: ${err}') }
 
-	return DeleteFmsFileResp{
+	return dto.MsgResp{
 		msg: '${ids.len} FmsFile(s) deleted successfully'
 	}
 }

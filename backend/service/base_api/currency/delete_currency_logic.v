@@ -1,5 +1,6 @@
 module currency
 
+import common.dto
 import time
 import veb
 import log
@@ -29,7 +30,7 @@ pub fn (app &Currency) delete_currency_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_currency_usecase(mut ctx Context, req DeleteCurrencyReq) !DeleteCurrencyResp {
+pub fn delete_currency_usecase(mut ctx Context, req DeleteCurrencyReq) !dto.MsgResp {
 	// Domain 校验
 	delete_currency_domain(&req)!
 
@@ -49,12 +50,8 @@ pub struct DeleteCurrencyReq {
 	currency_ids []string @[json: 'ids']
 }
 
-pub struct DeleteCurrencyResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_currency_repo(mut ctx Context, currency_ids []string) !DeleteCurrencyResp {
+fn delete_currency_repo(mut ctx Context, currency_ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -63,7 +60,7 @@ fn delete_currency_repo(mut ctx Context, currency_ids []string) !DeleteCurrencyR
 		where id in currency_ids && del_flag == 0
 	} or { return error('Failed to soft-delete currency: ${err}') }
 
-	return DeleteCurrencyResp{
+	return dto.MsgResp{
 		msg: '${currency_ids} token(s) deleted successfully'
 	}
 }

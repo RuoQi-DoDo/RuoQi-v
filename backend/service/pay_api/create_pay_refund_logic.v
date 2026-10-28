@@ -1,5 +1,6 @@
 module pay_api
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Pay) create_pay_refund_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_pay_refund_usecase(mut ctx Context, req CreatePayRefundReq) !CreatePayRefundResp {
+pub fn create_pay_refund_usecase(mut ctx Context, req CreatePayRefundReq) !dto.MsgResp {
 	create_pay_refund_domain(&req)!
 	return create_pay_refund_repo(mut ctx, req)
 }
@@ -65,12 +66,8 @@ pub struct CreatePayRefundReq {
 	channel_order_no   string  @[json: 'channelOrderNo']
 }
 
-pub struct CreatePayRefundResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_pay_refund_repo(mut ctx Context, req CreatePayRefundReq) !CreatePayRefundResp {
+fn create_pay_refund_repo(mut ctx Context, req CreatePayRefundReq) !dto.MsgResp {
 	time_now := time.now()
 
 	mut db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
@@ -156,7 +153,7 @@ fn create_pay_refund_repo(mut ctx Context, req CreatePayRefundReq) !CreatePayRef
 
 	db.execute('COMMIT') or { return error('Failed to commit transaction: ${err}') }
 
-	return CreatePayRefundResp{
+	return dto.MsgResp{
 		msg: 'PayRefund created successfully'
 	}
 }

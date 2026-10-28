@@ -1,5 +1,6 @@
 module pay_api
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &Pay) update_pay_order_extension_handler(mut ctx Context) veb.Result
 }
 
 // ═══ Use Case ═══
-pub fn update_pay_order_extension_usecase(mut ctx Context, req UpdatePayOrderExtensionReq) !UpdatePayOrderExtensionResp {
+pub fn update_pay_order_extension_usecase(mut ctx Context, req UpdatePayOrderExtensionReq) !dto.MsgResp {
 	update_pay_order_extension_domain(&req)!
 	return update_pay_order_extension_repo(mut ctx, req)
 }
@@ -51,12 +52,8 @@ pub struct UpdatePayOrderExtensionReq {
 	status              ?u8     @[json: 'status']
 }
 
-pub struct UpdatePayOrderExtensionResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_pay_order_extension_repo(mut ctx Context, req UpdatePayOrderExtensionReq) !UpdatePayOrderExtensionResp {
+fn update_pay_order_extension_repo(mut ctx Context, req UpdatePayOrderExtensionReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -89,7 +86,7 @@ fn update_pay_order_extension_repo(mut ctx Context, req UpdatePayOrderExtensionR
 		dynamic update PayOrderExtension set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdatePayOrderExtensionResp{
+	return dto.MsgResp{
 		msg: 'PayOrderExtension updated successfully'
 	}
 }

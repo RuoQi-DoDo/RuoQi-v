@@ -1,5 +1,6 @@
 module platform_api
 
+import common.dto
 import veb
 import log
 import time
@@ -26,7 +27,7 @@ pub fn (app &PlatformApi) create_api_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_api_usecase(mut ctx Context, req CreateApiReq) !CreateApiResp {
+pub fn create_api_usecase(mut ctx Context, req CreateApiReq) !dto.CreatedResp {
 	create_api_domain(&req)!
 	return create_api_repo(mut ctx, req)
 }
@@ -48,13 +49,8 @@ pub struct CreateApiReq {
 	is_required  u8      @[json: 'isRequired']
 }
 
-pub struct CreateApiResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_api_repo(mut ctx Context, req CreateApiReq) !CreateApiResp {
+fn create_api_repo(mut ctx Context, req CreateApiReq) !dto.CreatedResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	api := PfApi{
@@ -72,7 +68,7 @@ fn create_api_repo(mut ctx Context, req CreateApiReq) !CreateApiResp {
 	sql db {
 		insert api into PfApi
 	} or { return error('Failed: ${err}') }
-	return CreateApiResp{
+	return dto.CreatedResp{
 		id:  api.id
 		msg: 'API created'
 	}

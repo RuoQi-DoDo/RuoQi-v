@@ -1,5 +1,6 @@
 module platform_configuration
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &PlatformConfiguration) update_config_handler(mut ctx Context) veb.R
 }
 
 // ═══ Use Case ═══
-pub fn update_config_usecase(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
+pub fn update_config_usecase(mut ctx Context, req UpdateConfigReq) !dto.MsgResp {
 	update_config_domain(&req)!
 	return update_config_repo(mut ctx, req)
 }
@@ -44,12 +45,8 @@ pub struct UpdateConfigReq {
 	status      ?u8     @[json: 'status']
 }
 
-pub struct UpdateConfigResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_config_repo(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
+fn update_config_repo(mut ctx Context, req UpdateConfigReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	// vfmt off
@@ -76,7 +73,7 @@ fn update_config_repo(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
 	sql db {
 		dynamic update PfConfig set up_expr where id == req.id
 	}!
-	return UpdateConfigResp{
+	return dto.MsgResp{
 		msg: 'Configuration updated'
 	}
 }

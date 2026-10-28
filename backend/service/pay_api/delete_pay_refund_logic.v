@@ -1,5 +1,6 @@
 module pay_api
 
+import common.dto
 import time
 import veb
 import log
@@ -13,7 +14,7 @@ import model { Context }
 pub fn (app &Pay) delete_pay_refund_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeletePayRefundReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -28,29 +29,20 @@ pub fn (app &Pay) delete_pay_refund_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_pay_refund_usecase(mut ctx Context, req DeletePayRefundReq) !DeletePayRefundResp {
+pub fn delete_pay_refund_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	delete_pay_refund_domain(&req)!
 	return delete_pay_refund_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_pay_refund_domain(req &DeletePayRefundReq) ! {
+fn delete_pay_refund_domain(req &dto.DeleteIdsReq) ! {
 	if req.ids.len == 0 {
 		return error('No PayRefund ids provided')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeletePayRefundReq {
-	ids []string @[json: 'ids']
-}
-
-pub struct DeletePayRefundResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_pay_refund_repo(mut ctx Context, ids []string) !DeletePayRefundResp {
+fn delete_pay_refund_repo(mut ctx Context, ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -59,7 +51,7 @@ fn delete_pay_refund_repo(mut ctx Context, ids []string) !DeletePayRefundResp {
 		where id in ids && del_flag == 0
 	} or { return error('Failed to soft-delete pay refund: ${err}') }
 
-	return DeletePayRefundResp{
+	return dto.MsgResp{
 		msg: '${ids.len} PayRefund(s) deleted successfully'
 	}
 }

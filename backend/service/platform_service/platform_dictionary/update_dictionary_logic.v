@@ -1,5 +1,6 @@
 module platform_dictionary
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &PlatformDictionary) update_dictionary_handler(mut ctx Context) veb.
 }
 
 // ═══ Use Case ═══
-pub fn update_dictionary_usecase(mut ctx Context, req UpdateDictionaryReq) !UpdateDictionaryResp {
+pub fn update_dictionary_usecase(mut ctx Context, req UpdateDictionaryReq) !dto.MsgResp {
 	update_dictionary_domain(&req)!
 	return update_dictionary_repo(mut ctx, req)
 }
@@ -43,12 +44,8 @@ pub struct UpdateDictionaryReq {
 	status      ?u8     @[json: 'status']
 }
 
-pub struct UpdateDictionaryResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_dictionary_repo(mut ctx Context, req UpdateDictionaryReq) !UpdateDictionaryResp {
+fn update_dictionary_repo(mut ctx Context, req UpdateDictionaryReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	// vfmt off
@@ -72,7 +69,7 @@ fn update_dictionary_repo(mut ctx Context, req UpdateDictionaryReq) !UpdateDicti
 	sql db {
 		dynamic update PfDictionary set up_expr where id == req.id
 	}!
-	return UpdateDictionaryResp{
+	return dto.MsgResp{
 		msg: 'Dictionary updated'
 	}
 }

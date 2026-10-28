@@ -1,5 +1,6 @@
 module currency
 
+import common.dto
 import log
 import time
 import json2 as json
@@ -29,7 +30,7 @@ pub fn update_currency_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 }
 
 // ═══ Use Case ═══
-pub fn update_currency_usecase(pool &dbpool.DatabasePoolable, req UpdateCurrencyReq) !UpdateCurrencyResp {
+pub fn update_currency_usecase(pool &dbpool.DatabasePoolable, req UpdateCurrencyReq) !dto.MsgResp {
 	update_currency_domain(&req)!
 	return update_currency_repo(pool, req)
 }
@@ -56,12 +57,8 @@ pub struct UpdateCurrencyReq {
 	status                    ?u8     @[json: 'status']
 }
 
-pub struct UpdateCurrencyResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_currency_repo(pool &dbpool.DatabasePoolable, req UpdateCurrencyReq) !UpdateCurrencyResp {
+fn update_currency_repo(pool &dbpool.DatabasePoolable, req UpdateCurrencyReq) !dto.MsgResp {
 	db, conn := pool.acquire() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		pool.release(conn) or { log.warn('Failed to release conn: ${err}') }
@@ -107,7 +104,7 @@ fn update_currency_repo(pool &dbpool.DatabasePoolable, req UpdateCurrencyReq) !U
 		dynamic update BaseCurrency set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateCurrencyResp{
+	return dto.MsgResp{
 		msg: 'Currency updated successfully'
 	}
 }

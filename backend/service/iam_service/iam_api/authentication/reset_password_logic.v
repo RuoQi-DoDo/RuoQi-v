@@ -1,5 +1,6 @@
 module authentication
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -25,7 +26,7 @@ pub fn (app &Authentication) reset_password_handler(mut ctx Context) veb.Result 
 }
 
 // ═══ Use Case ═══
-pub fn reset_password_usecase(mut ctx Context, req ResetPasswordReq) !ResetPasswordResp {
+pub fn reset_password_usecase(mut ctx Context, req ResetPasswordReq) !dto.MsgResp {
 	reset_password_domain(&req)!
 	return reset_password_repo(mut ctx, req)
 }
@@ -50,12 +51,8 @@ pub struct ResetPasswordReq {
 	new_password string @[json: 'new_password']
 }
 
-pub struct ResetPasswordResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn reset_password_repo(mut ctx Context, req ResetPasswordReq) !ResetPasswordResp {
+fn reset_password_repo(mut ctx Context, req ResetPasswordReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	user := sql db {
@@ -71,7 +68,7 @@ fn reset_password_repo(mut ctx Context, req ResetPasswordReq) !ResetPasswordResp
 	sql db {
 		update IamUser set password = new_hash where id == req.user_id
 	} or { return error('Failed to update password: ${err}') }
-	return ResetPasswordResp{
+	return dto.MsgResp{
 		msg: 'Password updated'
 	}
 }

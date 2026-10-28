@@ -1,5 +1,6 @@
 module workspace_department
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &WorkspaceDepartment) update_department_handler(mut ctx Context) veb
 }
 
 // ═══ Use Case ═══
-pub fn update_department_usecase(mut ctx Context, req UpdateDepartmentReq) !UpdateDepartmentResp {
+pub fn update_department_usecase(mut ctx Context, req UpdateDepartmentReq) !dto.MsgResp {
 	update_department_domain(&req)!
 	return update_department_repo(mut ctx, req)
 }
@@ -45,12 +46,8 @@ pub struct UpdateDepartmentReq {
 	status      ?u8     @[json: 'status']
 }
 
-pub struct UpdateDepartmentResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_department_repo(mut ctx Context, req UpdateDepartmentReq) !UpdateDepartmentResp {
+fn update_department_repo(mut ctx Context, req UpdateDepartmentReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	// vfmt off
@@ -80,7 +77,7 @@ fn update_department_repo(mut ctx Context, req UpdateDepartmentReq) !UpdateDepar
 	sql db {
 		dynamic update WsDepartment set up_expr where id == req.id
 	}!
-	return UpdateDepartmentResp{
+	return dto.MsgResp{
 		msg: 'Department updated'
 	}
 }

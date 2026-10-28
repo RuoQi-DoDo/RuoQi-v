@@ -1,5 +1,6 @@
 module fms_api
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &Fms) update_fms_file_tag_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_fms_file_tag_usecase(mut ctx Context, req UpdateFmsFileTagReq) !UpdateFmsFileTagResp {
+pub fn update_fms_file_tag_usecase(mut ctx Context, req UpdateFmsFileTagReq) !dto.MsgResp {
 	update_fms_file_tag_domain(&req)!
 	return update_fms_file_tag_repo(mut ctx, req)
 }
@@ -48,12 +49,8 @@ pub struct UpdateFmsFileTagReq {
 	status ?u8     @[json: 'status']
 }
 
-pub struct UpdateFmsFileTagResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_fms_file_tag_repo(mut ctx Context, req UpdateFmsFileTagReq) !UpdateFmsFileTagResp {
+fn update_fms_file_tag_repo(mut ctx Context, req UpdateFmsFileTagReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -84,7 +81,7 @@ fn update_fms_file_tag_repo(mut ctx Context, req UpdateFmsFileTagReq) !UpdateFms
 		dynamic update FmsFileTag set up_expr where id == req.id && del_flag == 0
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateFmsFileTagResp{
+	return dto.MsgResp{
 		msg: 'FmsFileTag updated successfully'
 	}
 }

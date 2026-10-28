@@ -1,5 +1,6 @@
 module tenant_config
 
+import common.dto
 import veb
 import log
 import time
@@ -26,7 +27,7 @@ pub fn (app &TenantConfig) update_config_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_config_usecase(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
+pub fn update_config_usecase(mut ctx Context, req UpdateConfigReq) !dto.MsgResp {
 	update_config_domain(&req)!
 	return update_config_repo(mut ctx, req)
 }
@@ -49,12 +50,8 @@ pub struct UpdateConfigReq {
 	description string @[json: 'description']
 }
 
-pub struct UpdateConfigResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_config_repo(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
+fn update_config_repo(mut ctx Context, req UpdateConfigReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -102,7 +99,7 @@ fn update_config_repo(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
 			insert config into TnConfig
 		}!
 	}
-	return UpdateConfigResp{
+	return dto.MsgResp{
 		msg: '配置已更新'
 	}
 }

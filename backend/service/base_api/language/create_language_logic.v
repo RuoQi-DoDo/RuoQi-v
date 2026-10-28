@@ -1,5 +1,6 @@
 module language
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Language) create_language_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_language_usecase(mut ctx Context, req CreateLanguageReq) !CreateLanguageResp {
+pub fn create_language_usecase(mut ctx Context, req CreateLanguageReq) !dto.MsgResp {
 	create_language_domain(&req)!
 	return create_language_repo(mut ctx, req)
 }
@@ -61,12 +62,8 @@ pub struct CreateLanguageReq {
 	is_basic                 u8     @[json: 'isBasic']
 }
 
-pub struct CreateLanguageResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_language_repo(mut ctx Context, req CreateLanguageReq) !CreateLanguageResp {
+fn create_language_repo(mut ctx Context, req CreateLanguageReq) !dto.MsgResp {
 	time_now := time.now()
 	base_language := BaseLanguage{
 		id:                       rand.uuid_v7()
@@ -91,7 +88,7 @@ fn create_language_repo(mut ctx Context, req CreateLanguageReq) !CreateLanguageR
 		insert base_language into BaseLanguage
 	} or { return error('Failed to create Currency: ${err}') }
 
-	return CreateLanguageResp{
+	return dto.MsgResp{
 		msg: 'Language created successfully'
 	}
 }

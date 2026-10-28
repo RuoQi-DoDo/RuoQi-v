@@ -1,5 +1,6 @@
 module workspace_position
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &WorkspacePosition) update_position_handler(mut ctx Context) veb.Res
 }
 
 // ═══ Use Case ═══
-pub fn update_position_usecase(mut ctx Context, req UpdatePositionReq) !UpdatePositionResp {
+pub fn update_position_usecase(mut ctx Context, req UpdatePositionReq) !dto.MsgResp {
 	update_position_domain(&req)!
 	return update_position_repo(mut ctx, req)
 }
@@ -44,12 +45,8 @@ pub struct UpdatePositionReq {
 	status      ?u8     @[json: 'status']
 }
 
-pub struct UpdatePositionResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_position_repo(mut ctx Context, req UpdatePositionReq) !UpdatePositionResp {
+fn update_position_repo(mut ctx Context, req UpdatePositionReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	// vfmt off
@@ -76,7 +73,7 @@ fn update_position_repo(mut ctx Context, req UpdatePositionReq) !UpdatePositionR
 	sql db {
 		dynamic update WsPosition set up_expr where id == req.id
 	}!
-	return UpdatePositionResp{
+	return dto.MsgResp{
 		msg: 'Position updated'
 	}
 }

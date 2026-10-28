@@ -1,5 +1,6 @@
 module pay_api
 
+import common.dto
 import veb
 import log
 import json2 as json
@@ -12,7 +13,7 @@ import model { Context }
 pub fn (app &Pay) find_pay_demo_order_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[PayDemoOrderByIdReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -27,25 +28,20 @@ pub fn (app &Pay) find_pay_demo_order_by_id_handler(mut ctx Context) veb.Result 
 }
 
 // ═══ Use Case ═══
-pub fn find_pay_demo_order_by_id_usecase(mut ctx Context, req PayDemoOrderByIdReq) !PayDemoOrder {
+pub fn find_pay_demo_order_by_id_usecase(mut ctx Context, req dto.IdReq) !PayDemoOrder {
 	find_pay_demo_order_by_id_domain(&req)!
 	return find_pay_demo_order_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_pay_demo_order_by_id_domain(req &PayDemoOrderByIdReq) ! {
+fn find_pay_demo_order_by_id_domain(req &dto.IdReq) ! {
 	if req.id == '' {
 		return error('demo order id is required')
 	}
 }
 
-// ═══ DTO ═══
-pub struct PayDemoOrderByIdReq {
-	id string @[json: 'id']
-}
-
 // ═══ Repository ═══
-fn find_pay_demo_order_by_id_repo(mut ctx Context, req PayDemoOrderByIdReq) !PayDemoOrder {
+fn find_pay_demo_order_by_id_repo(mut ctx Context, req dto.IdReq) !PayDemoOrder {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 

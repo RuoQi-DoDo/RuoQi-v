@@ -1,5 +1,6 @@
 module smslog
 
+import common.dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &SmsLog) update_sms_log_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_sms_log_usecase(mut ctx Context, req UpdateSmsLogReq) !UpdateSmsLogResp {
+pub fn update_sms_log_usecase(mut ctx Context, req UpdateSmsLogReq) !dto.MsgResp {
 	update_sms_log_domain(&req)!
 	return update_sms_log_repo(mut ctx, req)
 }
@@ -49,12 +50,8 @@ pub struct UpdateSmsLogReq {
 	provider     ?string @[json: 'provider']
 }
 
-pub struct UpdateSmsLogResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_sms_log_repo(mut ctx Context, req UpdateSmsLogReq) !UpdateSmsLogResp {
+fn update_sms_log_repo(mut ctx Context, req UpdateSmsLogReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -81,7 +78,7 @@ fn update_sms_log_repo(mut ctx Context, req UpdateSmsLogReq) !UpdateSmsLogResp {
 		dynamic update MsgSmsLog set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateSmsLogResp{
+	return dto.MsgResp{
 		msg: 'SmsLog updated successfully'
 	}
 }

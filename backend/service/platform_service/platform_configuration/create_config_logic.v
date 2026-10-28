@@ -1,5 +1,6 @@
 module platform_configuration
 
+import common.dto
 import veb
 import log
 import time
@@ -23,7 +24,7 @@ pub fn (app &PlatformConfiguration) create_config_handler(mut ctx Context) veb.R
 }
 
 // ═══ Use Case ═══
-pub fn create_config_usecase(mut ctx Context, req CreateConfigReq) !CreateConfigResp {
+pub fn create_config_usecase(mut ctx Context, req CreateConfigReq) !dto.CreatedResp {
 	create_config_domain(&req)!
 	return create_config_repo(mut ctx, req)
 }
@@ -43,13 +44,8 @@ pub struct CreateConfigReq {
 	description string @[json: 'description']
 }
 
-pub struct CreateConfigResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_config_repo(mut ctx Context, req CreateConfigReq) !CreateConfigResp {
+fn create_config_repo(mut ctx Context, req CreateConfigReq) !dto.CreatedResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	c := PfConfig{
@@ -65,7 +61,7 @@ fn create_config_repo(mut ctx Context, req CreateConfigReq) !CreateConfigResp {
 	sql db {
 		insert c into PfConfig
 	} or { return error('Failed: ${err}') }
-	return CreateConfigResp{
+	return dto.CreatedResp{
 		id:  c.id
 		msg: 'Configuration created'
 	}

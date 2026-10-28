@@ -1,5 +1,6 @@
 module currency
 
+import common.dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Currency) create_currency_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_currency_usecase(mut ctx Context, req CreateCurrencyReq) !CreateCurrencyResp {
+pub fn create_currency_usecase(mut ctx Context, req CreateCurrencyReq) !dto.MsgResp {
 	create_currency_domain(&req)!
 	return create_currency_repo(mut ctx, req)
 }
@@ -63,12 +64,8 @@ pub struct CreateCurrencyReq {
 	status                    u8     @[json: 'status']
 }
 
-pub struct CreateCurrencyResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_currency_repo(mut ctx Context, req CreateCurrencyReq) !CreateCurrencyResp {
+fn create_currency_repo(mut ctx Context, req CreateCurrencyReq) !dto.MsgResp {
 	time_now := time.now()
 	base_currency := BaseCurrency{
 		id:                        rand.uuid_v7()
@@ -95,7 +92,7 @@ fn create_currency_repo(mut ctx Context, req CreateCurrencyReq) !CreateCurrencyR
 		insert base_currency into BaseCurrency
 	} or { return error('Failed to create Currency: ${err}') }
 
-	return CreateCurrencyResp{
+	return dto.MsgResp{
 		msg: 'Currency created successfully'
 	}
 }
