@@ -71,7 +71,7 @@ SERVICE=platform just build-prod    # production build of the platform service
 just dev                            # no service name = monolith (all routes)
 ```
 
-Available services: `all fms iam job mcms pay tenant platform mcp`.
+Available services: `all fms iam job mcms pay tenant platform mcp db`.
 
 ### Frontend
 

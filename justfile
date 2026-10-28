@@ -2,14 +2,15 @@
 # ─── 微服务选择 ─────────────────────────────────────
 # 服务名对应 backend/route/route_cfg.v 的条件编译分支，默认 all（单体，全部路由）：
 #   all 单体 / fms 文件 / iam 核心（身份+工作空间）/ job 任务 / mcms 消息 /
-#   pay 支付 / tenant 租户 / platform 平台 / mcp 基础资料（/base + /mcp）
+#   pay 支付 / tenant 租户 / platform 平台 / mcp 基础资料（/base + /mcp）/
+#   db 数据库初始化（/database）
 # 用法：just dev mcp、just build fms、SERVICE=iam just test、just build（默认 all）
 # 用 bash 执行 recipe：time 是 bash 保留字，默认的 sh(dash) 里不存在
 
 set shell := ["bash", "-uc"]
 
 service := env_var_or_default("SERVICE", "all")
-services := "all fms iam job mcms pay tenant platform mcp"
+services := "all fms iam job mcms pay tenant platform mcp db"
 
 # 校验服务名：拼错时直接报错，避免未知 -d 标志静默落到 All 分支
 _check_service s:

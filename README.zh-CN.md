@@ -69,7 +69,7 @@ SERVICE=platform just build-prod    # 生产编译平台服务
 just dev                            # 不带服务名 = 单体（all，全部路由）
 ```
 
-可选服务名：`all fms iam job mcms pay tenant platform mcp`。
+可选服务名：`all fms iam job mcms pay tenant platform mcp db`。
 
 ### 前端
 
