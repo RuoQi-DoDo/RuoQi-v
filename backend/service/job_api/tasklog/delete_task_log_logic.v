@@ -1,6 +1,6 @@
 module tasklog
 
-import common.dto
+import dto
 import time
 import veb
 import log

@@ -1,6 +1,6 @@
 module currency
 
-import common.dto
+import dto
 import log
 import time
 import json2 as json

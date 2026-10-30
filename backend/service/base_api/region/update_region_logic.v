@@ -1,6 +1,6 @@
 module region
 
-import common.dto
+import dto
 import veb
 import log
 import time

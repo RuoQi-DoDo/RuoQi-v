@@ -1,6 +1,6 @@
 module fms_api
 
-import common.dto
+import dto
 import time
 import veb
 import log

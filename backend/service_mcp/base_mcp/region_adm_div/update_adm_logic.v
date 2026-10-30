@@ -1,6 +1,6 @@
 module region_adm_div
 
-import common.dto
+import dto
 import log
 import time
 import json2 as json

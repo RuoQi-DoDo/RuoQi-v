@@ -1,6 +1,6 @@
 module smslog
 
-import common.dto
+import dto
 import veb
 import log
 import time

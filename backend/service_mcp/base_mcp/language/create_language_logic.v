@@ -1,6 +1,6 @@
 module language
 
-import common.dto
+import dto
 import log
 import time
 import rand
