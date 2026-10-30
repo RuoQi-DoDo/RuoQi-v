@@ -20,7 +20,7 @@ _check_service s:
 
 # 带 watch 的开发模式；可选服务名：just dev mcp
 dev s=service: (_check_service s)
-    cd backend && v -new-compiler -cc tcc -no-retry-compilation -d trace_orm -d veb_livereload {{ if s == "all" { "" } else { "-d " + s } }} watch run ./main -f etc/config_dev.toml
+    cd backend && env V3_PARALLEL_MONOMORPHIZE=1 v -new-compiler -cc tcc -no-retry-compilation -d trace_orm -d veb_livereload {{ if s == "all" { "" } else { "-d " + s } }} watch run ./main -f etc/config_dev.toml
 
 # 单次运行 dev 配置；可选服务名：just test mcp
 test s=service: (_check_service s)
