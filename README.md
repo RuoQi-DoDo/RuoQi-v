@@ -71,11 +71,11 @@ Routes are selected by compile flags (see the table in `backend/route/route_cfg.
 the justfile wraps them behind a service variable:
 
 ```bash
-just dev mcp                        # base master-data service: /base + /mcp
-just test fms                       # file service (run once)
-just build iam                      # build the core service into backend/app
-SERVICE=platform just build-prod    # production build of the platform service
-just dev                            # no service name = monolith (all routes)
+just run-dev-tcc mcp                    # base master-data service: /base + /mcp
+just run-test-tcc fms                   # file service (run once)
+just build-tcc iam                      # build the core service into backend/app
+SERVICE=platform just build-prod-c      # production build of the platform service
+just run-dev-tcc                        # no service name = monolith (all routes)
 ```
 
 Available services: `all fms iam job mcms pay tenant platform mcp db`.

@@ -4,7 +4,7 @@
 #   all 单体 / fms 文件 / iam 核心（身份+工作空间）/ job 任务 / mcms 消息 /
 #   pay 支付 / tenant 租户 / platform 平台 / mcp 基础资料（/base + /mcp）/
 #   db 数据库初始化（/database）
-# 用法：just dev mcp、just build fms、SERVICE=iam just test、just build（默认 all）
+# 用法：just run-dev-tcc mcp、just build-tcc fms、SERVICE=iam just run-test-x64
 # 用 bash 执行 recipe：time 是 bash 保留字，默认的 sh(dash) 里不存在
 
 set shell := ["bash", "-uc"]
@@ -16,39 +16,51 @@ services := "all fms iam job mcms pay tenant platform mcp db"
 _check_service s:
     @case " {{ services }} " in *" "{{ s }}" "*) ;; *) echo "未知服务 '{{ s }}'，可选：{{ services }}" >&2; exit 1 ;; esac
 
-# ─── 开发 ───────────────────────────────────────────
+# ─── 后端 ───────────────────────────────────────────
 
-# 带 watch 的开发模式；可选服务名：just dev mcp
-dev s=service: (_check_service s)
+# 带 watch 的开发模式（x64）；可选服务名：just run-dev-x64 mcp
+run-dev-x64 s=service: (_check_service s)
+    cd backend && env V3_PARALLEL_MONOMORPHIZE=1 v -new-compiler -d x64 -no-retry-compilation -d trace_orm -d veb_livereload {{ if s == "all" { "" } else { "-d " + s } }} watch run ./main -f etc/config_dev.toml
+
+# 带 watch 的开发模式（tcc）；可选服务名：just run-dev-tcc mcp
+run-dev-tcc s=service: (_check_service s)
     cd backend && env V3_PARALLEL_MONOMORPHIZE=1 v -new-compiler -cc tcc -no-retry-compilation -d trace_orm -d veb_livereload {{ if s == "all" { "" } else { "-d " + s } }} watch run ./main -f etc/config_dev.toml
 
-# 单次运行 dev 配置；可选服务名：just test mcp
-test s=service: (_check_service s)
+# 单次运行 dev 配置（x64）；可选服务名：just run-test-x64 mcp
+run-test-x64 s=service: (_check_service s)
+    cd backend && v -new-compiler -d x64 -no-retry-compilation -d trace_orm {{ if s == "all" { "" } else { "-d " + s } }} run ./main -f etc/config_dev.toml
+
+# 单次运行 dev 配置（tcc）；可选服务名：just run-test-tcc mcp
+run-test-tcc s=service: (_check_service s)
     cd backend && v -new-compiler -cc tcc -no-retry-compilation -d trace_orm {{ if s == "all" { "" } else { "-d " + s } }} run ./main -f etc/config_dev.toml
 
-# 单次运行 uat 配置；可选服务名：just uat iam
-uat s=service: (_check_service s)
-    cd backend && v -new-compiler -cc tcc -no-retry-compilation -d trace_orm {{ if s == "all" { "" } else { "-d " + s } }} run ./main -f etc/config.toml
+# 编译到 backend/app（x64）；可选服务名：just build-x64 fms
+build-x64 s=service: (_check_service s)
+    cd backend && time v -no-prealloc -new-compiler -stats -d x64 -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
-# 编译到 backend/app（单线程，省内存）；可选服务名：just build fms
-build s=service: (_check_service s)
-    cd backend && time v  -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+# 编译到 backend/app（tcc）；可选服务名：just build-tcc fms
+build-tcc s=service: (_check_service s)
+    cd backend && time v -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
-# 并行单态化编译（更快，更吃内存）；可选服务名：just build-parallel fms
-build-parallel s=service: (_check_service s)
-    cd backend && time env V3_PARALLEL_MONOMORPHIZE=1 v -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+# 编译到 backend/app（x64 + ownership）；可选服务名：just build-x64-owership fms
+build-x64-owership s=service: (_check_service s)
+    cd backend && time v -ownership -autofree -gc none -no-prealloc -new-compiler -stats -d x64 -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
-# 编译到 backend/app（单线程，省内存）；用 -gc none  -owersip。
-build-owership s=service: (_check_service s)
-    cd backend && time v -ownership -autofree -gc none  -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
-
-# 编译到 backend/app（单线程，省内存）；用 V 自带 GC（-gc vgc）替代 Boehm。
-build-vgc s=service: (_check_service s)
+# 编译到 backend/app（tcc + V 自带 GC）；可选服务名：just build-tcc-vgc fms
+build-tcc-vgc s=service: (_check_service s)
     cd backend && time v -autofree -gc vgc -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
-# 生产编译；可选服务名：just build-prod pay
-build-prod s=service: (_check_service s)
-    cd backend && time v -ownership -new-compiler -prod -stats -new-compiler {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+# 编译到 backend/app（x64 + V 自带 GC）；可选服务名：just build-x64-vgc fms
+build-x64-vgc s=service: (_check_service s)
+    cd backend && time v -autofree -gc vgc -no-prealloc -new-compiler -stats -d x64 -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+
+# 生产编译（默认 C 后端）；可选服务名：just build-prod-c pay
+build-prod-c s=service: (_check_service s)
+    cd backend && time v -ownership -new-compiler -prod -stats {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+
+# 生产编译（x64）；可选服务名：just build-prod-x64 pay
+build-prod-x64 s=service: (_check_service s)
+    cd backend && time v -ownership -new-compiler -prod -stats -d x64 {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # ─── 前端 ──────────────────────────────────────────
 frontend_get:

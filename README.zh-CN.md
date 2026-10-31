@@ -66,11 +66,11 @@ v -d autofree -prod -o app ./main
 路由按编译标志选择（对应表见 `backend/route/route_cfg.v`），justfile 已封装服务变量：
 
 ```bash
-just dev mcp                        # 基础资料服务：/base + /mcp
-just test fms                       # 文件服务（单次运行）
-just build iam                      # 编译核心服务到 backend/app
-SERVICE=platform just build-prod    # 生产编译平台服务
-just dev                            # 不带服务名 = 单体（all，全部路由）
+just run-dev-tcc mcp                    # 基础资料服务：/base + /mcp
+just run-test-tcc fms                   # 文件服务（单次运行）
+just build-tcc iam                      # 编译核心服务到 backend/app
+SERVICE=platform just build-prod-c      # 生产编译平台服务
+just run-dev-tcc                        # 不带服务名 = 单体（all，全部路由）
 ```
 
 可选服务名：`all fms iam job mcms pay tenant platform mcp db`。
