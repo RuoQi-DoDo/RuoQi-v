@@ -4,7 +4,7 @@ import json2
 import net.http
 import veb
 import dto
-import model { Context, OpenApiErrorResponse, OpenApiSuccessResponse }
+import model { Context }
 import service.base_api.currency {
 	CreateCurrencyReq,
 	CurrencyListReq,
@@ -28,21 +28,23 @@ import service.platform_service.platform_api { CreateApiReq }
 // documentation independent of whether v.mod is copied into a container.
 const api_version = '0.5.0'
 
-// route_openapi builds the document from the registered dispatcher routes and
-// them with the project-wide response/security contract plus selected typed
-// DTOs. The returned document is served directly at runtime.
+// build_openapi_document uses veb's route metadata and typed schema helpers,
+// adding only the business response envelope that OpenAPI 3.0 cannot infer.
 pub fn (app &AliasApp) build_openapi_document() !veb.OpenApiDocument {
+	mut controller_security := app.openapi_controller_security.clone()
+	// Root routes are public; secured controllers inherit the document default.
+	controller_security[typeof(AliasApp{}).name] = []map[string][]string{}
 	mut doc := veb.new_openapi(
-		title:            'RuoQi-v API'
-		description:      'RuoQi backend API. Paths are generated from the live veb dispatcher; business failures use HTTP 200 with a non-zero response code.'
-		version:          api_version
-		default_errors:   false
-		security_errors:  false
-		schema_names:     {
-			typeof(OpenApiSuccessResponse{}).name: 'ApiSuccessResponse'
-			typeof(OpenApiErrorResponse{}).name:   'ApiErrorResponse'
+		title:                 'RuoQi-v API'
+		description:           'RuoQi backend API. Paths are generated from the live veb dispatcher; business failures use HTTP 200 with a non-zero response code.'
+		version:               api_version
+		default_errors:        false
+		security_errors:       false
+		controller_security:   controller_security
+		response_descriptions: {
+			'200': 'Business response. HTTP 200 is also used when code is non-zero.'
 		}
-		security_schemes: {
+		security_schemes:      {
 			'bearerAuth':    json2.Any({
 				'type':         json2.Any('http')
 				'scheme':       json2.Any('bearer')
@@ -68,41 +70,29 @@ pub fn (app &AliasApp) build_openapi_document() !veb.OpenApiDocument {
 				'description': json2.Any('AK/SK authentication: Base64(HMAC-SHA256(SK, METHOD + newline + PATH + newline + SHA256_HEX(BODY) + newline + TIMESTAMP)).')
 			})
 		}
+		security:              openapi_secured_security()
 	)!
 	doc.custom_schema('ApiSuccessResponse', openapi_success_component())
 	doc.custom_schema('ApiErrorResponse', openapi_error_component())
 	doc.add_app[AliasApp, Context](app)!
-
-	for route in veb.route_info[AliasApp, Context](app)! {
-		for method in route.methods {
-			mode := app.openapi_security_mode(route.path)
-			mut parameters := []map[string]json2.Any{}
-			if mode == 'scoped' {
-				parameters = scoped_tenant_parameters()
-			}
-			doc.operation(route.path, method,
-				summary:    openapi_summary(route.name)
-				security:   openapi_security(mode)
-				parameters: parameters
-			)!
-
-			if app.openapi_has_envelope(route.path) {
-				if openapi_has_optional_body(method) {
-					// Most handlers decode ctx.req.data themselves. A permissive,
-					// optional JSON body keeps the contract useful until each DTO
-					// is registered below without incorrectly requiring a body.
-					doc.request[json2.Any](route.path, method, required: false)!
-				}
-				add_generic_api_response(mut doc, route.path, method)!
-			}
-		}
-	}
-
 	add_typed_endpoints(mut doc)!
 	// Validate operation IDs and security references during startup/export, not
 	// on the first request to /openapi.json.
 	_ = doc.json(false)!
 	return doc
+}
+
+fn openapi_secured_security() []map[string][]string {
+	return [
+		{
+			'bearerAuth': []string{}
+		},
+		{
+			'accessKeyAuth': []string{}
+			'timestampAuth': []string{}
+			'signatureAuth': []string{}
+		},
+	]
 }
 
 // setup_openapi_document builds and pins the document after conditional routes
@@ -139,17 +129,14 @@ fn add_typed_endpoints(mut doc veb.OpenApiDocument) ! {
 	add_typed_api_response[dto.CreatedResp](mut doc, '/platform/api/create_api', .post)!
 }
 
-fn add_generic_api_response(mut doc veb.OpenApiDocument, path string, method http.Method) ! {
-	success_schema := doc.schema[OpenApiSuccessResponse]()
-	error_schema := doc.schema[OpenApiErrorResponse]()
-	doc.raw_response(path, method, 200, api_response(openapi_api_response_schema(success_schema, error_schema)))!
-}
-
 fn add_typed_api_response[T](mut doc veb.OpenApiDocument, path string, method http.Method) ! {
 	data_schema := doc.schema[T]()
-	error_schema := doc.schema[OpenApiErrorResponse]()
 	success_schema := openapi_typed_success_schema(data_schema)
-	doc.raw_response(path, method, 200, api_response(openapi_api_response_schema(success_schema, error_schema)))!
+	error_schema := veb.OpenApiSchema({
+		'$ref': json2.Any('#/components/schemas/ApiErrorResponse')
+	})
+	doc.raw_response(path, method, 200,
+		api_response(openapi_api_response_schema(success_schema, error_schema)))!
 }
 
 fn api_response(schema veb.OpenApiSchema) map[string]json2.Any {
@@ -246,91 +233,4 @@ fn openapi_typed_success_schema(data_schema veb.OpenApiSchema) veb.OpenApiSchema
 			})
 		})
 	}
-}
-
-fn scoped_tenant_parameters() []map[string]json2.Any {
-	return [
-		{
-			'name':        json2.Any('X-Tenant-ID')
-			'in':          json2.Any('header')
-			'required':    json2.Any(false)
-			'description': json2.Any('Tenant scope. Required for Bearer JWT requests.')
-			'schema':      json2.Any({
-				'type': json2.Any('string')
-			})
-		},
-		{
-			'name':        json2.Any('X-Product-ID')
-			'in':          json2.Any('header')
-			'required':    json2.Any(false)
-			'description': json2.Any('Product scope. Required for Bearer JWT requests.')
-			'schema':      json2.Any({
-				'type': json2.Any('string')
-			})
-		},
-		{
-			'name':        json2.Any('X-Portal-ID')
-			'in':          json2.Any('header')
-			'required':    json2.Any(false)
-			'description': json2.Any('Portal scope. Required for Bearer JWT requests.')
-			'schema':      json2.Any({
-				'type': json2.Any('string')
-			})
-		},
-	]
-}
-
-fn openapi_security(mode string) []map[string][]string {
-	if mode == 'public' {
-		return []map[string][]string{}
-	}
-	return [
-		{
-			'bearerAuth': []string{}
-		},
-		{
-			'accessKeyAuth': []string{}
-			'timestampAuth': []string{}
-			'signatureAuth': []string{}
-		},
-	]
-}
-
-fn (app &AliasApp) openapi_security_mode(path string) string {
-	mut mode := 'public'
-	mut matched_len := 0
-	for prefix, candidate in app.openapi_route_security {
-		if (path == prefix || path.starts_with(prefix + '/')) && prefix.len > matched_len {
-			mode = candidate
-			matched_len = prefix.len
-		}
-	}
-	return mode
-}
-
-fn (app &AliasApp) openapi_has_envelope(path string) bool {
-	if path == '/get' {
-		return true
-	}
-	if path == '/mcp' || path.starts_with('/mcp/') {
-		return false
-	}
-	if path == '/database' || path.starts_with('/database/') {
-		return true
-	}
-	for prefix, _ in app.openapi_route_security {
-		if path == prefix || path.starts_with(prefix + '/') {
-			return true
-		}
-	}
-	return false
-}
-
-fn openapi_has_optional_body(method http.Method) bool {
-	return method in [.post, .put, .patch, .delete]
-}
-
-fn openapi_summary(name string) string {
-	clean := name.all_after_last('.').trim_left('&').replace('_handler', '').replace('_', ' ')
-	return if clean == '' { name } else { clean }
 }

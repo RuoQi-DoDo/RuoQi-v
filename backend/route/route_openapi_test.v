@@ -85,10 +85,11 @@ fn test_runtime_openapi_uses_registered_routes_and_typed_contracts() {
 
 	for route in veb.route_info[AliasApp, Context](app)! {
 		for method in route.methods {
-			tags := openapi_test_at(raw, 'paths', route.path, method.str().to_lower(),
-				'tags').as_array()
+			operation := openapi_test_at(raw, 'paths', route.path, method.str().to_lower())
+			tags := openapi_test_at(operation, 'tags').as_array()
 			assert tags.len == 1
 			assert tags[0].str() == route.controller
+			assert openapi_test_at(operation, 'security').as_array().len in [0, 2]
 		}
 	}
 

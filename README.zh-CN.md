@@ -36,7 +36,7 @@ example/    # 后端示例
 强类型 DTO、统一业务响应和 JWT/AK-SK 安全方案在
 `backend/route/route_openapi.v` 中集中配置；目前已接入货币 CRUD、账号登录、
 验证码、API Key、用户和平台 API 的代表性接口。未显式注册 DTO 的接口
-仍会生成真实路径和通用 JSON 契约。
+仍会生成真实路径和标准的 200 响应描述。
 
 ## 快速开始
 

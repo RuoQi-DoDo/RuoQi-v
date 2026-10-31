@@ -39,8 +39,8 @@ automatically. All four viewers consume this endpoint.
 Typed DTOs, the shared business response contract and JWT/AK-SK security are
 configured in `backend/route/route_openapi.v`. Representative endpoints for currency
 CRUD, account login, captcha, API keys, users and platform APIs are currently
-typed. Routes without explicit DTO metadata still expose their real paths and a
-generic JSON contract.
+typed. Routes without explicit DTO metadata still expose their real paths and the
+standard 200 response description.
 
 ## Quick Start
 

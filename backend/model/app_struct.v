@@ -1,7 +1,6 @@
 module model
 
 import veb
-import json2
 import os
 import net.http
 import common.api
@@ -40,27 +39,6 @@ pub mut:
 	request_id string
 
 	svc_iam ServiceContextIam
-}
-
-// OpenApiSuccessResponse is the documentation shape emitted by ctx.json(
-// api.json_success(...)). The runtime type stores `data` as encoded JSON, so a
-// generic OpenAPI schema must treat it as an unconstrained JSON value.
-pub struct OpenApiSuccessResponse {
-pub:
-	code       int
-	request_id string
-	data       json2.Any
-	msg        string
-}
-
-// OpenApiErrorResponse is the documentation shape emitted by api.json_error().
-// RuoQi returns business failures with HTTP 200, so this schema is normally a
-// branch of the operation's 200 response rather than a separate 4xx response.
-pub struct OpenApiErrorResponse {
-pub:
-	code       int
-	request_id string
-	msg        string
 }
 
 // ----- IAM 统一上下文 ---

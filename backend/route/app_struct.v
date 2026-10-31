@@ -12,9 +12,10 @@ pub mut:
 	mcp_server &mcp.Server = unsafe { nil }
 	// openapi_document is built after all conditional routes are registered.
 	// It is served directly by GET /openapi.json and never read from a stale file.
-	openapi_document       veb.OpenApiDocument
-	openapi_ready          bool
-	openapi_route_security map[string]string = map[string]string{}
+	openapi_document veb.OpenApiDocument
+	openapi_ready    bool
+	// Passed directly to veb.OpenApiConfig.controller_security.
+	openapi_controller_security map[string][]map[string][]string = map[string][]map[string][]string{}
 }
 
 // BaseMcp — 基础资料 MCP 服务的 HTTP 控制器（Streamable HTTP，挂载在 /mcp）。
