@@ -1,5 +1,6 @@
 module currency
 
+import dto
 import time
 import veb
 import log
@@ -13,7 +14,7 @@ import model { Context }
 pub fn (app &Currency) delete_currency_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeleteCurrencyReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -29,32 +30,23 @@ pub fn (app &Currency) delete_currency_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_currency_usecase(mut ctx Context, req DeleteCurrencyReq) !DeleteCurrencyResp {
+pub fn delete_currency_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	// Domain 校验
 	delete_currency_domain(&req)!
 
 	// Repository 执行删除
-	return delete_currency_repo(mut ctx, req.currency_ids)
+	return delete_currency_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_currency_domain(req &DeleteCurrencyReq) ! {
-	if req.currency_ids.len == 0 {
+fn delete_currency_domain(req &dto.DeleteIdsReq) ! {
+	if req.ids.len == 0 {
 		return error('No Currency ids provided')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteCurrencyReq {
-	currency_ids []string @[json: 'ids']
-}
-
-pub struct DeleteCurrencyResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_currency_repo(mut ctx Context, currency_ids []string) !DeleteCurrencyResp {
+fn delete_currency_repo(mut ctx Context, currency_ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -63,7 +55,7 @@ fn delete_currency_repo(mut ctx Context, currency_ids []string) !DeleteCurrencyR
 		where id in currency_ids && del_flag == 0
 	} or { return error('Failed to soft-delete currency: ${err}') }
 
-	return DeleteCurrencyResp{
+	return dto.MsgResp{
 		msg: '${currency_ids} token(s) deleted successfully'
 	}
 }

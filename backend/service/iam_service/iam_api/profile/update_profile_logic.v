@@ -1,5 +1,6 @@
 module profile
 
+import dto
 import veb
 import log
 import time
@@ -22,10 +23,10 @@ pub fn (app &Profile) update_profile_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_profile_usecase(mut ctx Context, req UpdateProfileReq) !UpdateProfileResp {
+pub fn update_profile_usecase(mut ctx Context, req UpdateProfileReq) !dto.MsgResp {
 	update_profile_domain(mut ctx)!
 	update_profile_repo(mut ctx, req)!
-	return UpdateProfileResp{
+	return dto.MsgResp{
 		msg: 'Profile updated successfully'
 	}
 }
@@ -39,15 +40,11 @@ fn update_profile_domain(mut ctx Context) ! {
 
 // ═══ DTO ═══
 pub struct UpdateProfileReq {
-	nickname    string @[json: 'nickname']
-	email       string @[json: 'email']
-	mobile      string @[json: 'mobile']
-	avatar      string @[json: 'avatar']
-	description string @[json: 'description']
-}
-
-pub struct UpdateProfileResp {
-	msg string @[json: 'msg']
+	nickname    string @[json: 'nickname'; description: '昵称']
+	email       string @[json: 'email'; description: '邮箱地址']
+	mobile      string @[json: 'mobile'; description: '手机号']
+	avatar      string @[json: 'avatar'; description: '头像地址']
+	description string @[json: 'description'; description: '描述']
 }
 
 // ═══ Repository ═══

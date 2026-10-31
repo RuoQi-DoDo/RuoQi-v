@@ -1,5 +1,6 @@
 module apikey
 
+import dto
 import veb
 import log
 import json2 as json
@@ -7,14 +8,10 @@ import model { Context }
 import common.api
 import model.schema_iam { IamApiKey }
 
-pub struct RevokeApiKeyReq {
-	id string @[json: 'id']
-}
-
 @['/revoke'; post]
 pub fn (app &ApiKey) revoke_apikey_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
-	req := json.decode[RevokeApiKeyReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 	result := revoke_apikey_usecase(mut ctx, req) or {
@@ -23,7 +20,7 @@ pub fn (app &ApiKey) revoke_apikey_handler(mut ctx Context) veb.Result {
 	return ctx.json(api.json_success(data: result))
 }
 
-fn revoke_apikey_usecase(mut ctx Context, req RevokeApiKeyReq) !map[string]string {
+fn revoke_apikey_usecase(mut ctx Context, req dto.IdReq) !map[string]string {
 	if req.id.len == 0 {
 		return error('id is required')
 	}

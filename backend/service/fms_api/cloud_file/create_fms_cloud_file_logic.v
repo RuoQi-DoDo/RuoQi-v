@@ -1,0 +1,94 @@
+module cloud_file
+
+import dto
+import veb
+import log
+import time
+import rand
+import json2 as json
+import model.schema_fms { FmsCloudFile }
+import common.api
+import model { Context }
+
+// ═══ Handler ═══
+@['/create'; post]
+pub fn (app &CloudFile) create_fms_cloud_file_handler(mut ctx Context) veb.Result {
+	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
+
+	req := json.decode[CreateFmsCloudFileReq](ctx.req.data) or {
+		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
+	}
+
+	result := create_fms_cloud_file_usecase(mut ctx, req) or {
+		return ctx.json(api.json_error(
+			code: api.err_common_server
+			msg:  'Internal Server Error: ${err}'
+		))
+	}
+
+	return ctx.json(api.json_success(data: result))
+}
+
+// ═══ Use Case ═══
+pub fn create_fms_cloud_file_usecase(mut ctx Context, req CreateFmsCloudFileReq) !dto.MsgResp {
+	create_fms_cloud_file_domain(&req)!
+	return create_fms_cloud_file_repo(mut ctx, req)
+}
+
+// ═══ Domain ═══
+fn create_fms_cloud_file_domain(req &CreateFmsCloudFileReq) ! {
+	if req.name == '' {
+		return error('file name is required')
+	}
+	if req.url == '' {
+		return error('file url is required')
+	}
+	if req.file_type == 0 {
+		return error('file type is required')
+	}
+	if req.size == 0 {
+		return error('file size is required')
+	}
+}
+
+// ═══ DTO ═══
+pub struct CreateFmsCloudFileReq {
+	name                         string  @[json: 'name'; description: '名称']
+	url                          string  @[json: 'url'; description: '资源地址']
+	size                         u64     @[json: 'size'; description: '大小']
+	file_type                    u8      @[json: 'fileType'; description: '文件类型']
+	cloud_file_storage_providers ?string @[json: 'cloudFileStorageProviders'; description: '云文件存储提供商 ID']
+	status                       u8      @[json: 'status'; description: '状态：0 禁用，1 启用']
+}
+
+// ═══ Repository ═══
+fn create_fms_cloud_file_repo(mut ctx Context, req CreateFmsCloudFileReq) !dto.MsgResp {
+	time_now := time.now()
+	file := FmsCloudFile{
+		id:                           rand.uuid_v7()
+		name:                         req.name
+		url:                          req.url
+		size:                         req.size
+		file_type:                    req.file_type
+		user_id:                      ctx.svc_iam.user_id
+		cloud_file_storage_providers: req.cloud_file_storage_providers
+		status:                       req.status
+		creator_id:                   ctx.svc_iam.user_id
+		updater_id:                   ctx.svc_iam.user_id
+		created_at:                   time_now
+		updated_at:                   time_now
+	}
+
+	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
+	defer {
+		ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') }
+	}
+
+	sql db {
+		insert file into FmsCloudFile
+	} or { return error('Failed to create FmsCloudFile: ${err}') }
+
+	return dto.MsgResp{
+		msg: 'FmsCloudFile created successfully'
+	}
+}

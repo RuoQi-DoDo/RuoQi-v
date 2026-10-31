@@ -17,7 +17,7 @@ pub fn (app &Token) refresh_token_handler(mut ctx Context) veb.Result {
 	result := refresh_token_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -36,17 +36,17 @@ fn refresh_token_usecase(mut ctx Context, req RefreshTokenReq) !RefreshTokenResp
 	} or { return error('Failed: ${err}') }
 	return RefreshTokenResp{
 		expired_at: time.now().add_days(30).str()
-		user_id: ctx.svc_iam.user_id
-		token_jwt: token_jwt
+		user_id:    ctx.svc_iam.user_id
+		token_jwt:  token_jwt
 	}
 }
 
 pub struct RefreshTokenReq {
-	username string @[json: 'username']
+	username string @[json: 'username'; description: '用户名']
 }
 
 pub struct RefreshTokenResp {
-	expired_at string @[json: 'expired_at']
-	user_id    string @[json: 'user_id']
-	token_jwt  string @[json: 'token_jwt']
+	expired_at string @[json: 'expired_at'; description: '过期时间']
+	user_id    string @[json: 'user_id'; description: '用户 ID']
+	token_jwt  string @[json: 'token_jwt'; description: 'JWT 令牌']
 }

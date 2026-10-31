@@ -1,5 +1,6 @@
 module token
 
+import dto
 import time
 import veb
 import log
@@ -12,7 +13,7 @@ import common.api
 @['/delete_token'; post]
 pub fn (app &Token) delete_token_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
-	req := json.decode[DeleteTokenReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 	result := delete_token_usecase(mut ctx, req) or {
@@ -22,7 +23,7 @@ pub fn (app &Token) delete_token_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_token_usecase(mut ctx Context, req DeleteTokenReq) !map[string]string {
+pub fn delete_token_usecase(mut ctx Context, req dto.IdReq) !map[string]string {
 	delete_token_domain(&req)!
 	delete_token_repo(mut ctx, req)!
 	return {
@@ -31,19 +32,14 @@ pub fn delete_token_usecase(mut ctx Context, req DeleteTokenReq) !map[string]str
 }
 
 // ═══ Domain ═══
-fn delete_token_domain(req &DeleteTokenReq) ! {
+fn delete_token_domain(req &dto.IdReq) ! {
 	if req.id == '' {
 		return error('token id is required')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteTokenReq {
-	id string @[json: 'id']
-}
-
 // ═══ Repository ═══
-fn delete_token_repo(mut ctx Context, req DeleteTokenReq) ! {
+fn delete_token_repo(mut ctx Context, req dto.IdReq) ! {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	sql db {

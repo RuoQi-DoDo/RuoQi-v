@@ -1,5 +1,6 @@
 module user
 
+import dto
 import veb
 import log
 import json2 as json
@@ -23,7 +24,7 @@ pub fn (app &User) update_user_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_user_usecase(mut ctx Context, req UpdateUserReq) !UpdateUserResp {
+pub fn update_user_usecase(mut ctx Context, req UpdateUserReq) !dto.MsgResp {
 	update_user_domain(&req)!
 	password_hash := if pwd := req.password {
 		encrypt.bcrypt_hash(pwd) or { return error('Failed to hash password') }
@@ -31,7 +32,7 @@ pub fn update_user_usecase(mut ctx Context, req UpdateUserReq) !UpdateUserResp {
 		''
 	}
 	update_user_repo(mut ctx, req, password_hash)!
-	return UpdateUserResp{
+	return dto.MsgResp{
 		msg: 'User updated'
 	}
 }
@@ -45,20 +46,16 @@ fn update_user_domain(req &UpdateUserReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateUserReq {
-	user_id     string  @[json: 'id']
-	avatar      ?string @[json: 'avatar']
-	description ?string @[json: 'description']
-	email       ?string @[json: 'email']
-	home_path   ?string @[json: 'homePath']
-	mobile      ?string @[json: 'mobile']
-	nickname    ?string @[json: 'nickname']
-	password    ?string @[json: 'password']
-	status      ?u8     @[json: 'status']
-	username    ?string @[json: 'username']
-}
-
-pub struct UpdateUserResp {
-	msg string @[json: 'msg']
+	user_id     string  @[json: 'id'; description: '用户 ID']
+	avatar      ?string @[json: 'avatar'; description: '头像地址']
+	description ?string @[json: 'description'; description: '描述']
+	email       ?string @[json: 'email'; description: '邮箱地址']
+	home_path   ?string @[json: 'homePath'; description: '默认首页路径']
+	mobile      ?string @[json: 'mobile'; description: '手机号']
+	nickname    ?string @[json: 'nickname'; description: '昵称']
+	password    ?string @[json: 'password'; description: '密码']
+	status      ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
+	username    ?string @[json: 'username'; description: '用户名']
 }
 
 // ═══ Repository ═══

@@ -1,5 +1,6 @@
 module region_adm_div
 
+import dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &RegionAdmDiv) create_adm_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_adm_usecase(mut ctx Context, req CreateAdmReq) !CreateAdmResp {
+pub fn create_adm_usecase(mut ctx Context, req CreateAdmReq) !dto.MsgResp {
 	// create_adm_domain(&req)!
 	return create_adm_repo(mut ctx, req)
 }
@@ -49,39 +50,35 @@ pub fn create_adm_usecase(mut ctx Context, req CreateAdmReq) !CreateAdmResp {
 
 // ═══ DTO ═══
 pub struct CreateAdmReq {
-	parent_id       string  @[json: 'parentId']
-	region_id       string  @[json: 'regionId']
-	sys_adm_code    string  @[json: 'sysAdmCode']
-	sys_adm_name    string  @[json: 'sysAdmName']
-	name_local      ?string @[json: 'nameLocal']
-	govt_code       ?string @[json: 'govtCode']
-	gid_zero        ?string @[json: 'gidZero']
-	hasc            ?string @[json: 'hasc']
-	iso_two         ?string @[json: 'isoTwo']
-	iso_three       ?string @[json: 'isoThree']
-	numeric         ?string @[json: 'numeric']
-	postal_code     ?string @[json: 'postalCode']
-	level           u8      @[json: 'level']
-	tree_id         string  @[json: 'treeId']
-	coord_bounds    ?string @[json: 'coordBounds']
-	sort            ?u64    @[json: 'sort']
-	status          u8      @[json: 'status']
-	adm_merger_name ?string @[json: 'admMergerName']
-	adm_short_name  ?string @[json: 'admShortName']
-	pinyin          ?string @[json: 'pinyin']
-	first           string  @[json: 'first']
-	name_en         ?string @[json: 'nameEn']
-	name_zh         ?string @[json: 'nameZh']
-	updater_id      ?string @[json: 'updaterId']
-	creator_id      ?string @[json: 'creatorId']
-}
-
-pub struct CreateAdmResp {
-	msg string @[json: 'msg']
+	parent_id       string  @[json: 'parentId'; description: '父级 ID']
+	region_id       string  @[json: 'regionId'; description: '地区 ID']
+	sys_adm_code    string  @[json: 'sysAdmCode'; description: '系统行政区划代码']
+	sys_adm_name    string  @[json: 'sysAdmName'; description: '系统行政区划名称']
+	name_local      ?string @[json: 'nameLocal'; description: '本地名称']
+	govt_code       ?string @[json: 'govtCode'; description: '政府行政区划代码']
+	gid_zero        ?string @[json: 'gidZero'; description: 'GID 零级代码']
+	hasc            ?string @[json: 'hasc'; description: 'HASC 行政区划代码']
+	iso_two         ?string @[json: 'isoTwo'; description: 'ISO 两位代码']
+	iso_three       ?string @[json: 'isoThree'; description: 'ISO 三位代码']
+	numeric         ?string @[json: 'numeric'; description: 'ISO 数字代码']
+	postal_code     ?string @[json: 'postalCode'; description: '邮政编码']
+	level           u8      @[json: 'level'; description: '层级']
+	tree_id         string  @[json: 'treeId'; description: '树形结构 ID']
+	coord_bounds    ?string @[json: 'coordBounds'; description: '坐标边界']
+	sort            ?u64    @[json: 'sort'; description: '排序值，数字越小越靠前']
+	status          u8      @[json: 'status'; description: '状态：0 禁用，1 启用']
+	adm_merger_name ?string @[json: 'admMergerName'; description: '行政区划完整名称']
+	adm_short_name  ?string @[json: 'admShortName'; description: '行政区划简称']
+	pinyin          ?string @[json: 'pinyin'; description: '拼音']
+	first           string  @[json: 'first'; description: '首字母']
+	name_en         ?string @[json: 'nameEn'; description: '英文名称']
+	name_zh         ?string @[json: 'nameZh'; description: '中文名称']
+	updater_id      ?string @[json: 'updaterId'; description: '更新者 ID']
+	creator_id      ?string @[json: 'creatorId'; description: '创建者 ID']
 }
 
 // ═══ Repository ═══
-fn create_adm_repo(mut ctx Context, req CreateAdmReq) !CreateAdmResp {
+fn create_adm_repo(mut ctx Context, req CreateAdmReq) !dto.MsgResp {
 	time_now := time.now()
 	base_region := BaseRegionAdmDiv{
 		id:              rand.uuid_v7()
@@ -123,7 +120,7 @@ fn create_adm_repo(mut ctx Context, req CreateAdmReq) !CreateAdmResp {
 		insert base_region into BaseRegionAdmDiv
 	} or { return error('Failed to create Region: ${err}') }
 
-	return CreateAdmResp{
+	return dto.MsgResp{
 		msg: 'Adm created successfully'
 	}
 }

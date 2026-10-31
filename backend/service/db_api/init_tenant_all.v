@@ -40,7 +40,7 @@ pub fn (app &Database) init_tenant(mut ctx Context) veb.Result {
 	app.init_tenant_tables(mut ctx.dbpool) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'init_tenant failed: ${err}'
+			msg:  'init_tenant failed: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: 'Tenant database init Successfull'))

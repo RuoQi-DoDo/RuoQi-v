@@ -1,5 +1,6 @@
 module region_adm_div
 
+import dto
 import time
 import veb
 import log
@@ -13,7 +14,7 @@ import model { Context }
 pub fn (app &RegionAdmDiv) delete_adm_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeleteAdmReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -29,32 +30,23 @@ pub fn (app &RegionAdmDiv) delete_adm_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_adm_usecase(mut ctx Context, req DeleteAdmReq) !DeleteAdmResp {
+pub fn delete_adm_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	// Domain 校验
 	delete_adm_domain(&req)!
 
 	// Repository 执行删除
-	return delete_adm_repo(mut ctx, req.adm_ids)
+	return delete_adm_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_adm_domain(req &DeleteAdmReq) ! {
-	if req.adm_ids.len == 0 {
+fn delete_adm_domain(req &dto.DeleteIdsReq) ! {
+	if req.ids.len == 0 {
 		return error('No Adm ids provided')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteAdmReq {
-	adm_ids []string @[json: 'ids']
-}
-
-pub struct DeleteAdmResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_adm_repo(mut ctx Context, adm_ids []string) !DeleteAdmResp {
+fn delete_adm_repo(mut ctx Context, adm_ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -63,7 +55,7 @@ fn delete_adm_repo(mut ctx Context, adm_ids []string) !DeleteAdmResp {
 		where id in adm_ids && del_flag == 0
 	} or { return error('Failed to soft-delete adm: ${err}') }
 
-	return DeleteAdmResp{
+	return dto.MsgResp{
 		msg: '${adm_ids} token(s) deleted successfully'
 	}
 }

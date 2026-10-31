@@ -1,5 +1,6 @@
 module utc
 
+import dto
 import log
 import time
 import rand
@@ -30,7 +31,7 @@ pub fn create_utc_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 }
 
 // ═══ Use Case ═══
-pub fn create_utc_usecase(pool &dbpool.DatabasePoolable, req CreateUtcReq) !CreateUtcResp {
+pub fn create_utc_usecase(pool &dbpool.DatabasePoolable, req CreateUtcReq) !dto.CreatedResp {
 	create_utc_domain(&req)!
 	return create_utc_repo(pool, req)
 }
@@ -51,13 +52,8 @@ pub struct CreateUtcReq {
 	lng_mid         f64    @[json: 'lngMid']
 }
 
-pub struct CreateUtcResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_utc_repo(pool &dbpool.DatabasePoolable, req CreateUtcReq) !CreateUtcResp {
+fn create_utc_repo(pool &dbpool.DatabasePoolable, req CreateUtcReq) !dto.CreatedResp {
 	time_now := time.now()
 	new_id := rand.uuid_v7()
 	base_utc := BaseUtc{
@@ -80,7 +76,7 @@ fn create_utc_repo(pool &dbpool.DatabasePoolable, req CreateUtcReq) !CreateUtcRe
 		insert base_utc into BaseUtc
 	} or { return error('Failed to create UTC: ${err}') }
 
-	return CreateUtcResp{
+	return dto.CreatedResp{
 		id:  new_id
 		msg: 'Utc created successfully'
 	}

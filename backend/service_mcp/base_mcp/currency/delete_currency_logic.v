@@ -1,5 +1,6 @@
 module currency
 
+import dto
 import log
 import time
 import json2 as json
@@ -30,7 +31,7 @@ pub fn delete_currency_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 }
 
 // ═══ Use Case ═══
-pub fn delete_currency_usecase(pool &dbpool.DatabasePoolable, req DeleteCurrencyReq) !DeleteCurrencyResp {
+pub fn delete_currency_usecase(pool &dbpool.DatabasePoolable, req DeleteCurrencyReq) !dto.MsgResp {
 	delete_currency_domain(&req)!
 	return delete_currency_repo(pool, req.currency_ids)
 }
@@ -47,12 +48,8 @@ pub struct DeleteCurrencyReq {
 	currency_ids []string @[json: 'ids']
 }
 
-pub struct DeleteCurrencyResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_currency_repo(pool &dbpool.DatabasePoolable, currency_ids []string) !DeleteCurrencyResp {
+fn delete_currency_repo(pool &dbpool.DatabasePoolable, currency_ids []string) !dto.MsgResp {
 	db, conn := pool.acquire() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		pool.release(conn) or { log.warn('Failed to release conn: ${err}') }
@@ -63,7 +60,7 @@ fn delete_currency_repo(pool &dbpool.DatabasePoolable, currency_ids []string) !D
 		where id in currency_ids && del_flag == 0
 	} or { return error('Failed to soft-delete currency: ${err}') }
 
-	return DeleteCurrencyResp{
+	return dto.MsgResp{
 		msg: '${currency_ids} currency(ies) deleted successfully'
 	}
 }

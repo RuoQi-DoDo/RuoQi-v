@@ -1,5 +1,6 @@
 module workspace_core
 
+import dto
 import veb
 import log
 import time
@@ -26,7 +27,7 @@ pub fn (app &WorkspaceCore) create_workspace_handler(mut ctx Context) veb.Result
 }
 
 // ═══ Use Case ═══
-pub fn create_workspace_usecase(mut ctx Context, req CreateWsReq) !CreateWsResp {
+pub fn create_workspace_usecase(mut ctx Context, req CreateWsReq) !dto.CreatedResp {
 	create_workspace_domain(&req)!
 	return create_workspace_repo(mut ctx, req)
 }
@@ -43,18 +44,13 @@ fn create_workspace_domain(req &CreateWsReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateWsReq {
-	tenant_id   string @[json: 'tenantId']
-	name        string @[json: 'name']
-	description string @[json: 'description']
-}
-
-pub struct CreateWsResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
+	tenant_id   string @[json: 'tenantId'; description: '租户 ID']
+	name        string @[json: 'name'; description: '名称']
+	description string @[json: 'description'; description: '描述']
 }
 
 // ═══ Repository ═══
-fn create_workspace_repo(mut ctx Context, req CreateWsReq) !CreateWsResp {
+fn create_workspace_repo(mut ctx Context, req CreateWsReq) !dto.CreatedResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	w := WsWorkspace{
@@ -69,7 +65,7 @@ fn create_workspace_repo(mut ctx Context, req CreateWsReq) !CreateWsResp {
 	sql db {
 		insert w into WsWorkspace
 	} or { return error('Failed: ${err}') }
-	return CreateWsResp{
+	return dto.CreatedResp{
 		id:  w.id
 		msg: 'Workspace created'
 	}

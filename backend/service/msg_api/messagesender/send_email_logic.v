@@ -1,5 +1,6 @@
 module messagesender
 
+import dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &MessageSender) send_email_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn send_email_usecase(mut ctx Context, req SendEmailReq) !SendEmailResp {
+pub fn send_email_usecase(mut ctx Context, req SendEmailReq) !dto.MsgResp {
 	send_email_domain(&req)!
 	return send_email_repo(mut ctx, req)
 }
@@ -49,18 +50,14 @@ fn send_email_domain(req &SendEmailReq) ! {
 
 // ═══ DTO ═══
 pub struct SendEmailReq {
-	target   string @[json: 'target']
-	subject  string @[json: 'subject']
-	content  string @[json: 'content']
-	provider string @[json: 'provider']
-}
-
-pub struct SendEmailResp {
-	msg string @[json: 'msg']
+	target   string @[json: 'target'; description: '目标']
+	subject  string @[json: 'subject'; description: '交易标题']
+	content  string @[json: 'content'; description: '内容']
+	provider string @[json: 'provider'; description: '服务提供商']
 }
 
 // ═══ Repository ═══
-fn send_email_repo(mut ctx Context, req SendEmailReq) !SendEmailResp {
+fn send_email_repo(mut ctx Context, req SendEmailReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -90,7 +87,7 @@ fn send_email_repo(mut ctx Context, req SendEmailReq) !SendEmailResp {
 		insert email_log into MsgEmailLog
 	} or { return error('Failed to create email send log: ${err}') }
 
-	return SendEmailResp{
+	return dto.MsgResp{
 		msg: 'Email queued successfully to ${req.target}'
 	}
 }

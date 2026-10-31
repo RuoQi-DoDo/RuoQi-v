@@ -1,5 +1,6 @@
 module workspace_department
 
+import dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &WorkspaceDepartment) update_department_handler(mut ctx Context) veb
 }
 
 // ═══ Use Case ═══
-pub fn update_department_usecase(mut ctx Context, req UpdateDepartmentReq) !UpdateDepartmentResp {
+pub fn update_department_usecase(mut ctx Context, req UpdateDepartmentReq) !dto.MsgResp {
 	update_department_domain(&req)!
 	return update_department_repo(mut ctx, req)
 }
@@ -36,21 +37,17 @@ fn update_department_domain(req &UpdateDepartmentReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateDepartmentReq {
-	id          string  @[json: 'id']
-	parent_id   ?string @[json: 'parentId']
-	name        ?string @[json: 'name']
-	code        ?string @[json: 'code']
-	description ?string @[json: 'description']
-	sort        ?u32    @[json: 'sort']
-	status      ?u8     @[json: 'status']
-}
-
-pub struct UpdateDepartmentResp {
-	msg string @[json: 'msg']
+	id          string  @[json: 'id'; description: '唯一标识']
+	parent_id   ?string @[json: 'parentId'; description: '父级 ID']
+	name        ?string @[json: 'name'; description: '名称']
+	code        ?string @[json: 'code'; description: '编码']
+	description ?string @[json: 'description'; description: '描述']
+	sort        ?u32    @[json: 'sort'; description: '排序值，数字越小越靠前']
+	status      ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══
-fn update_department_repo(mut ctx Context, req UpdateDepartmentReq) !UpdateDepartmentResp {
+fn update_department_repo(mut ctx Context, req UpdateDepartmentReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	// vfmt off
@@ -80,7 +77,7 @@ fn update_department_repo(mut ctx Context, req UpdateDepartmentReq) !UpdateDepar
 	sql db {
 		dynamic update WsDepartment set up_expr where id == req.id
 	}!
-	return UpdateDepartmentResp{
+	return dto.MsgResp{
 		msg: 'Department updated'
 	}
 }

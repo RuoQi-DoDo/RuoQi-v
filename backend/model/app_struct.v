@@ -1,6 +1,8 @@
 module model
 
 import veb
+import os
+import net.http
 import common.api
 import common.crypt { AuthPayload }
 import common.reqid
@@ -99,4 +101,31 @@ pub fn (mut ctx Context) json[T](j T) veb.Result {
 		v.request_id = ctx.request_id
 	}
 	return ctx.Context.json(v)
+}
+
+// not_found overrides veb's plain-text 404 response with the project error page.
+pub fn (mut ctx Context) not_found() veb.Result {
+	return ctx.error_page('404.html', .not_found)
+}
+
+// server_error overrides veb's plain-text panic response with the project page.
+pub fn (mut ctx Context) server_error(_msg string) veb.Result {
+	return ctx.error_page('500.html', .internal_server_error)
+}
+
+// forbidden renders the project 403 page for handlers that use HTTP 403.
+pub fn (mut ctx Context) forbidden() veb.Result {
+	return ctx.error_page('403.html', .forbidden)
+}
+
+fn (mut ctx Context) error_page(filename string, status http.Status) veb.Result {
+	ctx.res.set_status(status)
+	file_path := os.join_path(os.getwd(), 'static', filename)
+	html_content := os.read_file(file_path) or {
+		return ctx.html('<h1>${int(status)} ${status.str()}</h1><p>错误页面未找到</p>')
+	}
+	css_path := os.join_path(os.getwd(), 'static', 'styles.css')
+	css_content := os.read_file(css_path) or { '' }
+	final_html := html_content.replace('</head>', '<style>${css_content}</style></head>')
+	return ctx.html(final_html)
 }

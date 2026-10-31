@@ -1,5 +1,6 @@
 module language
 
+import dto
 import log
 import time
 import json2 as json
@@ -30,7 +31,7 @@ pub fn delete_language_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 }
 
 // ═══ Use Case ═══
-pub fn delete_language_usecase(pool &dbpool.DatabasePoolable, req DeleteLanguageReq) !DeleteLanguageResp {
+pub fn delete_language_usecase(pool &dbpool.DatabasePoolable, req DeleteLanguageReq) !dto.MsgResp {
 	delete_language_domain(&req)!
 	return delete_language_repo(pool, req.language_ids)
 }
@@ -47,12 +48,8 @@ pub struct DeleteLanguageReq {
 	language_ids []string @[json: 'ids']
 }
 
-pub struct DeleteLanguageResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_language_repo(pool &dbpool.DatabasePoolable, language_ids []string) !DeleteLanguageResp {
+fn delete_language_repo(pool &dbpool.DatabasePoolable, language_ids []string) !dto.MsgResp {
 	db, conn := pool.acquire() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		pool.release(conn) or { log.warn('Failed to release conn: ${err}') }
@@ -63,7 +60,7 @@ fn delete_language_repo(pool &dbpool.DatabasePoolable, language_ids []string) !D
 		where id in language_ids && del_flag == 0
 	} or { return error('Failed to soft-delete language: ${err}') }
 
-	return DeleteLanguageResp{
+	return dto.MsgResp{
 		msg: '${language_ids} language(s) deleted successfully'
 	}
 }

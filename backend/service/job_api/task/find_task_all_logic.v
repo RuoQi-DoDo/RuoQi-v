@@ -45,31 +45,31 @@ fn find_task_all_domain(req &TaskListReq) ! {
 
 // ═══ DTO ═══
 pub struct TaskListReq {
-	page       int    @[json: 'page']
-	page_size  int    @[json: 'pageSize']
-	name       string @[json: 'name']
-	task_group string @[json: 'taskGroup']
-	status     []u8   @[json: 'status']
+	page       int    @[json: 'page'; description: '页码，从 1 开始']
+	page_size  int    @[json: 'pageSize'; description: '每页记录数']
+	name       string @[json: 'name'; description: '名称']
+	task_group string @[json: 'taskGroup'; description: '任务分组']
+	status     []u8   @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 pub struct TaskData {
-	id              string  @[json: 'id']
-	name            string  @[json: 'name']
-	task_group      string  @[json: 'taskGroup']
-	cron_expression string  @[json: 'cronExpression']
-	pattern         string  @[json: 'pattern']
-	payload         string  @[json: 'payload']
-	status          u8      @[json: 'status']
-	updater_id      ?string @[json: 'updaterId']
-	creator_id      ?string @[json: 'creatorId']
-	created_at      string  @[json: 'createdAt']
-	updated_at      string  @[json: 'updatedAt']
-	deleted_at      string  @[json: 'deletedAt']
+	id              string  @[json: 'id'; description: '唯一标识']
+	name            string  @[json: 'name'; description: '任务名称']
+	task_group      string  @[json: 'taskGroup'; description: '任务分组']
+	cron_expression string  @[json: 'cronExpression'; description: 'Cron 表达式']
+	pattern         string  @[json: 'pattern'; description: '任务执行模式']
+	payload         string  @[json: 'payload'; description: '任务载荷']
+	status          u8      @[json: 'status'; description: '状态：0 禁用，1 启用']
+	updater_id      ?string @[json: 'updaterId'; description: '更新者 ID']
+	creator_id      ?string @[json: 'creatorId'; description: '创建者 ID']
+	created_at      string  @[json: 'createdAt'; description: '创建时间']
+	updated_at      string  @[json: 'updatedAt'; description: '更新时间']
+	deleted_at      string  @[json: 'deletedAt'; description: '删除时间']
 }
 
 pub struct TaskListResp {
-	total int
-	data  []TaskData
+	total int        @[description: '总记录数']
+	data  []TaskData @[description: '响应数据']
 }
 
 // ═══ Repository ═══

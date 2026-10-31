@@ -1,5 +1,6 @@
 module tenant_member
 
+import dto
 import veb
 import log
 import time
@@ -26,7 +27,7 @@ pub fn (app &TenantMember) invite_member_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn invite_member_usecase(mut ctx Context, req InviteMemberReq) !InviteMemberResp {
+pub fn invite_member_usecase(mut ctx Context, req InviteMemberReq) !dto.MsgResp {
 	invite_member_domain(mut ctx, &req)!
 	return invite_member_repo(mut ctx, req)
 }
@@ -46,15 +47,11 @@ fn invite_member_domain(mut ctx Context, req &InviteMemberReq) ! {
 
 // ═══ DTO ═══
 pub struct InviteMemberReq {
-	user_id string @[json: 'userId']
-}
-
-pub struct InviteMemberResp {
-	msg string @[json: 'msg']
+	user_id string @[json: 'userId'; description: '用户 ID']
 }
 
 // ═══ Repository ═══
-fn invite_member_repo(mut ctx Context, req InviteMemberReq) !InviteMemberResp {
+fn invite_member_repo(mut ctx Context, req InviteMemberReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -86,7 +83,7 @@ fn invite_member_repo(mut ctx Context, req InviteMemberReq) !InviteMemberResp {
 	sql db {
 		insert member into TnMember
 	} or { return error('Failed to invite member: ${err}') }
-	return InviteMemberResp{
+	return dto.MsgResp{
 		msg: '成员邀请成功'
 	}
 }

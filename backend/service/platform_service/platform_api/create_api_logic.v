@@ -1,5 +1,6 @@
 module platform_api
 
+import dto
 import veb
 import log
 import time
@@ -26,7 +27,7 @@ pub fn (app &PlatformApi) create_api_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_api_usecase(mut ctx Context, req CreateApiReq) !CreateApiResp {
+pub fn create_api_usecase(mut ctx Context, req CreateApiReq) !dto.CreatedResp {
 	create_api_domain(&req)!
 	return create_api_repo(mut ctx, req)
 }
@@ -40,21 +41,16 @@ fn create_api_domain(req &CreateApiReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateApiReq {
-	path         string  @[json: 'path']
-	description  ?string @[json: 'description']
-	api_group    string  @[json: 'apiGroup']
-	service_name string  @[json: 'serviceName']
-	method       string  @[json: 'method']
-	is_required  u8      @[json: 'isRequired']
-}
-
-pub struct CreateApiResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
+	path         string  @[json: 'path'; description: '路径']
+	description  ?string @[json: 'description'; description: '描述']
+	api_group    string  @[json: 'apiGroup'; description: 'API 分组']
+	service_name string  @[json: 'serviceName'; description: '服务名称']
+	method       string  @[json: 'method'; description: 'HTTP 方法']
+	is_required  u8      @[json: 'isRequired'; description: '是否必填']
 }
 
 // ═══ Repository ═══
-fn create_api_repo(mut ctx Context, req CreateApiReq) !CreateApiResp {
+fn create_api_repo(mut ctx Context, req CreateApiReq) !dto.CreatedResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	api := PfApi{
@@ -72,7 +68,7 @@ fn create_api_repo(mut ctx Context, req CreateApiReq) !CreateApiResp {
 	sql db {
 		insert api into PfApi
 	} or { return error('Failed: ${err}') }
-	return CreateApiResp{
+	return dto.CreatedResp{
 		id:  api.id
 		msg: 'API created'
 	}

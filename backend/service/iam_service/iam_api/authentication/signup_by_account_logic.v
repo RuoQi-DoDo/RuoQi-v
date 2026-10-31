@@ -54,18 +54,18 @@ fn signup_by_account_domain(req &SignupByAccountReq) ! {
 
 // ═══ DTO ═══
 pub struct SignupByAccountReq {
-	username     string @[json: 'username']
-	password     string @[json: 'password']
-	nickname     string @[json: 'nickname']
-	email        string @[json: 'email']
-	mobile       string @[json: 'mobile']
-	captcha_text string @[json: 'captcha_text']
-	captcha_id   string @[json: 'captcha_id']
+	username     string @[json: 'username'; description: '用户名']
+	password     string @[json: 'password'; description: '密码']
+	nickname     string @[json: 'nickname'; description: '昵称']
+	email        string @[json: 'email'; description: '邮箱地址']
+	mobile       string @[json: 'mobile'; description: '手机号']
+	captcha_text string @[json: 'captcha_text'; description: '验证码内容']
+	captcha_id   string @[json: 'captcha_id'; description: '验证码 ID']
 }
 
 pub struct SignupByAccountResp {
-	user_id string @[json: 'user_id']
-	msg     string @[json: 'msg']
+	user_id string @[json: 'user_id'; description: '用户 ID']
+	msg     string @[json: 'msg'; description: '提示消息']
 }
 
 // ═══ Repository ═══

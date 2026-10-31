@@ -27,7 +27,7 @@ pub fn find_department_all_usecase(mut ctx Context, req FindDepartmentAllReq) ![
 
 // ═══ DTO ═══
 pub struct FindDepartmentAllReq {
-	workspace_id string @[json: 'workspaceId']
+	workspace_id string @[json: 'workspaceId'; description: '工作区 ID']
 }
 
 // ═══ Repository ═══

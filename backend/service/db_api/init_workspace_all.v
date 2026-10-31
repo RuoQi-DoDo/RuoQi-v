@@ -42,7 +42,7 @@ pub fn (app &Database) init_workspace(mut ctx Context) veb.Result {
 	app.init_workspace_tables(mut ctx.dbpool) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'init_workspace failed: ${err}'
+			msg:  'init_workspace failed: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: 'Workspace database init Successfull'))

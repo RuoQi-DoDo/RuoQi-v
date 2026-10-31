@@ -1,5 +1,6 @@
 module region_adm_div
 
+import dto
 import log
 import time
 import json2 as json
@@ -29,7 +30,7 @@ pub fn update_adm_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 }
 
 // ═══ Use Case ═══
-pub fn update_adm_usecase(pool &dbpool.DatabasePoolable, req UpdateAdmReq) !UpdateAdmResp {
+pub fn update_adm_usecase(pool &dbpool.DatabasePoolable, req UpdateAdmReq) !dto.MsgResp {
 	update_adm_domain(&req)!
 	return update_adm_repo(pool, req)
 }
@@ -69,12 +70,8 @@ pub struct UpdateAdmReq {
 	name_zh         ?string @[json: 'nameZh']
 }
 
-pub struct UpdateAdmResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_adm_repo(pool &dbpool.DatabasePoolable, req UpdateAdmReq) !UpdateAdmResp {
+fn update_adm_repo(pool &dbpool.DatabasePoolable, req UpdateAdmReq) !dto.MsgResp {
 	db, conn := pool.acquire() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		pool.release(conn) or { log.warn('Failed to release conn: ${err}') }
@@ -159,7 +156,7 @@ fn update_adm_repo(pool &dbpool.DatabasePoolable, req UpdateAdmReq) !UpdateAdmRe
 		dynamic update BaseRegionAdmDiv set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateAdmResp{
+	return dto.MsgResp{
 		msg: 'Adm updated successfully'
 	}
 }

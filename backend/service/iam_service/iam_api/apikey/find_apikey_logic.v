@@ -1,5 +1,6 @@
 module apikey
 
+import dto
 import veb
 import log
 import json2 as json
@@ -24,8 +25,8 @@ pub struct ApiKeyItem {
 }
 
 pub struct ApiKeyListResp {
-	items []ApiKeyItem @[json: 'items']
-	total int          @[json: 'total']
+	items []ApiKeyItem @[json: 'items'; description: '数据列表']
+	total int          @[json: 'total'; description: '总记录数']
 }
 
 @['/list'; post]
@@ -64,7 +65,7 @@ fn find_apikey_all_repo(mut ctx Context) ![]IamApiKey {
 @['/detail'; post]
 pub fn (app &ApiKey) find_apikey_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
-	req := json.decode[FindApiKeyByIdReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 	result := find_apikey_by_id_usecase(mut ctx, req) or {
@@ -73,11 +74,7 @@ pub fn (app &ApiKey) find_apikey_by_id_handler(mut ctx Context) veb.Result {
 	return ctx.json(api.json_success(data: result))
 }
 
-pub struct FindApiKeyByIdReq {
-	id string @[json: 'id']
-}
-
-fn find_apikey_by_id_usecase(mut ctx Context, req FindApiKeyByIdReq) !ApiKeyItem {
+fn find_apikey_by_id_usecase(mut ctx Context, req dto.IdReq) !ApiKeyItem {
 	record := find_apikey_by_id_repo(mut ctx, req.id)!
 	return api_key_to_item(record)
 }

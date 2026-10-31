@@ -1,5 +1,6 @@
 module currency
 
+import dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Currency) create_currency_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_currency_usecase(mut ctx Context, req CreateCurrencyReq) !CreateCurrencyResp {
+pub fn create_currency_usecase(mut ctx Context, req CreateCurrencyReq) !dto.MsgResp {
 	create_currency_domain(&req)!
 	return create_currency_repo(mut ctx, req)
 }
@@ -51,24 +52,20 @@ fn create_currency_domain(req &CreateCurrencyReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateCurrencyReq {
-	english_name              string @[json: 'englishName']
-	simplified_name           string @[json: 'simplifiedName']
-	currency_code             string @[json: 'currencyCode']
-	currency_symbol           string @[json: 'currencySymbol']
-	decimal_place             u8     @[json: 'decimalPlace']
-	exchange_rate             f64    @[json: 'exchangeRate']
-	exchange_rate_fluctuation f64    @[json: 'exchangeRateFluctuation']
-	exchange_rate_used        f64    @[json: 'exchangeRateUsed']
-	sort                      ?int   @[json: 'sort']
-	status                    u8     @[json: 'status']
-}
-
-pub struct CreateCurrencyResp {
-	msg string @[json: 'msg']
+	english_name              string @[json: 'englishName'; description: '货币英文名称']
+	simplified_name           string @[json: 'simplifiedName'; description: '货币简体中文名称']
+	currency_code             string @[json: 'currencyCode'; description: 'ISO 货币代码，例如 CNY']
+	currency_symbol           string @[json: 'currencySymbol'; description: '货币符号，例如 ¥']
+	decimal_place             u8     @[json: 'decimalPlace'; description: '货币金额保留的小数位数']
+	exchange_rate             f64    @[json: 'exchangeRate'; description: '汇率']
+	exchange_rate_fluctuation f64    @[json: 'exchangeRateFluctuation'; description: '汇率波动值']
+	exchange_rate_used        f64    @[json: 'exchangeRateUsed'; description: '实际使用的汇率']
+	sort                      ?int   @[json: 'sort'; description: '排序值，数字越小越靠前']
+	status                    u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══
-fn create_currency_repo(mut ctx Context, req CreateCurrencyReq) !CreateCurrencyResp {
+fn create_currency_repo(mut ctx Context, req CreateCurrencyReq) !dto.MsgResp {
 	time_now := time.now()
 	base_currency := BaseCurrency{
 		id:                        rand.uuid_v7()
@@ -95,7 +92,7 @@ fn create_currency_repo(mut ctx Context, req CreateCurrencyReq) !CreateCurrencyR
 		insert base_currency into BaseCurrency
 	} or { return error('Failed to create Currency: ${err}') }
 
-	return CreateCurrencyResp{
+	return dto.MsgResp{
 		msg: 'Currency created successfully'
 	}
 }

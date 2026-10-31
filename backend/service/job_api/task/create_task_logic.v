@@ -1,5 +1,6 @@
 module task
 
+import dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Task) create_task_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_task_usecase(mut ctx Context, req CreateTaskReq) !CreateTaskResp {
+pub fn create_task_usecase(mut ctx Context, req CreateTaskReq) !dto.MsgResp {
 	create_task_domain(&req)!
 	return create_task_repo(mut ctx, req)
 }
@@ -105,20 +106,16 @@ fn is_valid_cron_number(s &string) bool {
 
 // ═══ DTO ═══
 pub struct CreateTaskReq {
-	name            string @[json: 'name']
-	task_group      string @[json: 'taskGroup']
-	cron_expression string @[json: 'cronExpression']
-	pattern         string @[json: 'pattern']
-	payload         string @[json: 'payload']
-	status          u8     @[json: 'status']
-}
-
-pub struct CreateTaskResp {
-	msg string @[json: 'msg']
+	name            string @[json: 'name'; description: '名称']
+	task_group      string @[json: 'taskGroup'; description: '任务分组']
+	cron_expression string @[json: 'cronExpression'; description: 'Cron 表达式']
+	pattern         string @[json: 'pattern'; description: '任务模式']
+	payload         string @[json: 'payload'; description: '任务载荷']
+	status          u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══
-fn create_task_repo(mut ctx Context, req CreateTaskReq) !CreateTaskResp {
+fn create_task_repo(mut ctx Context, req CreateTaskReq) !dto.MsgResp {
 	time_now := time.now()
 	task := JobTask{
 		id:              rand.uuid_v7()
@@ -143,7 +140,7 @@ fn create_task_repo(mut ctx Context, req CreateTaskReq) !CreateTaskResp {
 		insert task into JobTask
 	} or { return error('Failed to create Task: ${err}') }
 
-	return CreateTaskResp{
+	return dto.MsgResp{
 		msg: 'Task created successfully'
 	}
 }

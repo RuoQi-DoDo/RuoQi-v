@@ -8,12 +8,12 @@ import model.schema_iam { IamApiKey }
 import common.api
 
 pub struct UpdateApiKeyReq {
-	id             string @[json: 'id']
-	name           ?string @[json: 'name']
-	tenant_ids     ?[]string @[json: 'tenant_ids']
-	subproduct_ids ?[]string @[json: 'subproduct_ids']
-	subportal_ids  ?[]string @[json: 'subportal_ids']
-	scopes         ?[]string @[json: 'scopes']
+	id             string    @[json: 'id'; description: '唯一标识']
+	name           ?string   @[json: 'name'; description: '名称']
+	tenant_ids     ?[]string @[json: 'tenant_ids'; description: '租户 ID 列表']
+	subproduct_ids ?[]string @[json: 'subproduct_ids'; description: '子产品 ID 列表']
+	subportal_ids  ?[]string @[json: 'subportal_ids'; description: '子门户 ID 列表']
+	scopes         ?[]string @[json: 'scopes'; description: '权限范围列表']
 }
 
 @['/update'; post]

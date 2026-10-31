@@ -1,5 +1,6 @@
 module platform_dictionary
 
+import dto
 import veb
 import log
 import json2 as json
@@ -11,7 +12,7 @@ import common.api
 @['/delete_dictionary'; post]
 pub fn (app &PlatformDictionary) delete_dictionary_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
-	req := json.decode[DeleteDictionaryReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 	result := delete_dictionary_usecase(mut ctx, req) or {
@@ -21,35 +22,26 @@ pub fn (app &PlatformDictionary) delete_dictionary_handler(mut ctx Context) veb.
 }
 
 // ═══ Use Case ═══
-pub fn delete_dictionary_usecase(mut ctx Context, req DeleteDictionaryReq) !DeleteDictionaryResp {
+pub fn delete_dictionary_usecase(mut ctx Context, req dto.IdReq) !dto.MsgResp {
 	delete_dictionary_domain(&req)!
 	return delete_dictionary_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_dictionary_domain(req &DeleteDictionaryReq) ! {
+fn delete_dictionary_domain(req &dto.IdReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteDictionaryReq {
-	id string @[json: 'id']
-}
-
-pub struct DeleteDictionaryResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_dictionary_repo(mut ctx Context, req DeleteDictionaryReq) !DeleteDictionaryResp {
+fn delete_dictionary_repo(mut ctx Context, req dto.IdReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	sql db {
 		update PfDictionary set del_flag = -1 where id == req.id
 	}!
-	return DeleteDictionaryResp{
+	return dto.MsgResp{
 		msg: 'Dictionary deleted'
 	}
 }

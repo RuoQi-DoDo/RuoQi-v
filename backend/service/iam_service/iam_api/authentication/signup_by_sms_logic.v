@@ -48,17 +48,17 @@ fn signup_by_sms_domain(req &SignupBySmsReq) ! {
 
 // ═══ DTO ═══
 pub struct SignupBySmsReq {
-	username  string @[json: 'username']
-	password  string @[json: 'password']
-	nickname  string @[json: 'nickname']
-	mobile    string @[json: 'mobile']
-	opt_num   string @[json: 'optNum']
-	opt_token string @[json: 'optToken']
+	username  string @[json: 'username'; description: '用户名']
+	password  string @[json: 'password'; description: '密码']
+	nickname  string @[json: 'nickname'; description: '昵称']
+	mobile    string @[json: 'mobile'; description: '手机号']
+	opt_num   string @[json: 'optNum'; description: '一次性验证码']
+	opt_token string @[json: 'optToken'; description: '一次性验证码令牌']
 }
 
 pub struct SignupBySmsResp {
-	user_id string @[json: 'user_id']
-	msg     string @[json: 'msg']
+	user_id string @[json: 'user_id'; description: '用户 ID']
+	msg     string @[json: 'msg'; description: '提示消息']
 }
 
 // ═══ Repository ═══

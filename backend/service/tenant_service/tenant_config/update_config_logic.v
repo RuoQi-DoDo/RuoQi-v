@@ -1,5 +1,6 @@
 module tenant_config
 
+import dto
 import veb
 import log
 import time
@@ -26,7 +27,7 @@ pub fn (app &TenantConfig) update_config_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_config_usecase(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
+pub fn update_config_usecase(mut ctx Context, req UpdateConfigReq) !dto.MsgResp {
 	update_config_domain(&req)!
 	return update_config_repo(mut ctx, req)
 }
@@ -43,18 +44,14 @@ fn update_config_domain(req &UpdateConfigReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateConfigReq {
-	key         string @[json: 'key']
-	value       string @[json: 'value']
-	category    string @[json: 'category']
-	description string @[json: 'description']
-}
-
-pub struct UpdateConfigResp {
-	msg string @[json: 'msg']
+	key         string @[json: 'key'; description: '键']
+	value       string @[json: 'value'; description: '值']
+	category    string @[json: 'category'; description: '分类']
+	description string @[json: 'description'; description: '描述']
 }
 
 // ═══ Repository ═══
-fn update_config_repo(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
+fn update_config_repo(mut ctx Context, req UpdateConfigReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -102,7 +99,7 @@ fn update_config_repo(mut ctx Context, req UpdateConfigReq) !UpdateConfigResp {
 			insert config into TnConfig
 		}!
 	}
-	return UpdateConfigResp{
+	return dto.MsgResp{
 		msg: '配置已更新'
 	}
 }

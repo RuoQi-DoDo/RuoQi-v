@@ -1,5 +1,6 @@
 module utc
 
+import dto
 import log
 import time
 import json2 as json
@@ -29,7 +30,7 @@ pub fn update_utc_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 }
 
 // ═══ Use Case ═══
-pub fn update_utc_usecase(pool &dbpool.DatabasePoolable, req UpdateUtcReq) !UpdateUtcResp {
+pub fn update_utc_usecase(pool &dbpool.DatabasePoolable, req UpdateUtcReq) !dto.MsgResp {
 	update_utc_domain(&req)!
 	return update_utc_repo(pool, req)
 }
@@ -51,12 +52,8 @@ pub struct UpdateUtcReq {
 	lng_mid         ?f64    @[json: 'lngMid']
 }
 
-pub struct UpdateUtcResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn update_utc_repo(pool &dbpool.DatabasePoolable, req UpdateUtcReq) !UpdateUtcResp {
+fn update_utc_repo(pool &dbpool.DatabasePoolable, req UpdateUtcReq) !dto.MsgResp {
 	db, conn := pool.acquire() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		pool.release(conn) or { log.warn('Failed to release conn: ${err}') }
@@ -87,7 +84,7 @@ fn update_utc_repo(pool &dbpool.DatabasePoolable, req UpdateUtcReq) !UpdateUtcRe
 		dynamic update BaseUtc set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateUtcResp{
+	return dto.MsgResp{
 		msg: 'UTC updated successfully'
 	}
 }

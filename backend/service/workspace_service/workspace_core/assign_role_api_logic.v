@@ -1,5 +1,6 @@
 module workspace_core
 
+import dto
 import veb
 import log
 import json2 as json
@@ -24,7 +25,7 @@ pub fn (app &WorkspaceCore) assign_role_api_handler(mut ctx Context) veb.Result 
 }
 
 // ═══ Use Case ═══
-pub fn assign_role_api_usecase(mut ctx Context, req AssignRoleApiReq) !AssignRoleApiResp {
+pub fn assign_role_api_usecase(mut ctx Context, req AssignRoleApiReq) !dto.MsgResp {
 	assign_role_api_domain(&req)!
 	return assign_role_api_repo(mut ctx, req)
 }
@@ -41,17 +42,13 @@ fn assign_role_api_domain(req &AssignRoleApiReq) ! {
 
 // ═══ DTO ═══
 pub struct AssignRoleApiReq {
-	workspace_id string   @[json: 'workspaceId']
-	role_id      string   @[json: 'roleId']
-	api_ids      []string @[json: 'apiIds']
-}
-
-pub struct AssignRoleApiResp {
-	msg string @[json: 'msg']
+	workspace_id string   @[json: 'workspaceId'; description: '工作区 ID']
+	role_id      string   @[json: 'roleId'; description: '角色 ID']
+	api_ids      []string @[json: 'apiIds'; description: 'API ID 列表']
 }
 
 // ═══ Repository ═══
-fn assign_role_api_repo(mut ctx Context, req AssignRoleApiReq) !AssignRoleApiResp {
+fn assign_role_api_repo(mut ctx Context, req AssignRoleApiReq) !dto.MsgResp {
 	ctx.scope_sc.workspace_id = req.workspace_id
 	mut db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
@@ -81,7 +78,7 @@ fn assign_role_api_repo(mut ctx Context, req AssignRoleApiReq) !AssignRoleApiRes
 
 	db.execute('COMMIT') or { return error('Failed to commit transaction: ${err}') }
 
-	return AssignRoleApiResp{
+	return dto.MsgResp{
 		msg: 'Role API assigned'
 	}
 }

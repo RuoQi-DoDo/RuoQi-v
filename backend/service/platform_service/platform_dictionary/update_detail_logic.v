@@ -1,5 +1,6 @@
 module platform_dictionary
 
+import dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &PlatformDictionary) update_detail_handler(mut ctx Context) veb.Resu
 }
 
 // ═══ Use Case ═══
-pub fn update_detail_usecase(mut ctx Context, req UpdateDetailReq) !UpdateDetailResp {
+pub fn update_detail_usecase(mut ctx Context, req UpdateDetailReq) !dto.MsgResp {
 	update_detail_domain(&req)!
 	return update_detail_repo(mut ctx, req)
 }
@@ -36,19 +37,15 @@ fn update_detail_domain(req &UpdateDetailReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateDetailReq {
-	id     string  @[json: 'id']
-	label  ?string @[json: 'label']
-	value  ?string @[json: 'value']
-	sort   ?u32    @[json: 'sort']
-	status ?u8     @[json: 'status']
-}
-
-pub struct UpdateDetailResp {
-	msg string @[json: 'msg']
+	id     string  @[json: 'id'; description: '唯一标识']
+	label  ?string @[json: 'label'; description: '显示标签']
+	value  ?string @[json: 'value'; description: '值']
+	sort   ?u32    @[json: 'sort'; description: '排序值，数字越小越靠前']
+	status ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══
-fn update_detail_repo(mut ctx Context, req UpdateDetailReq) !UpdateDetailResp {
+fn update_detail_repo(mut ctx Context, req UpdateDetailReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	// vfmt off
@@ -72,7 +69,7 @@ fn update_detail_repo(mut ctx Context, req UpdateDetailReq) !UpdateDetailResp {
 	sql db {
 		dynamic update PfDictionaryDetail set up_expr where id == req.id
 	}!
-	return UpdateDetailResp{
+	return dto.MsgResp{
 		msg: 'Detail updated'
 	}
 }

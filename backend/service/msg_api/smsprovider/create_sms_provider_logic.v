@@ -1,5 +1,6 @@
 module smsprovider
 
+import dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &SmsProvider) create_sms_provider_handler(mut ctx Context) veb.Resul
 }
 
 // ═══ Use Case ═══
-pub fn create_sms_provider_usecase(mut ctx Context, req CreateSmsProviderReq) !CreateSmsProviderResp {
+pub fn create_sms_provider_usecase(mut ctx Context, req CreateSmsProviderReq) !dto.MsgResp {
 	create_sms_provider_domain(&req)!
 	return create_sms_provider_repo(mut ctx, req)
 }
@@ -49,19 +50,15 @@ fn create_sms_provider_domain(req &CreateSmsProviderReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateSmsProviderReq {
-	name       string @[json: 'name']
-	secret_id  string @[json: 'secretId']
-	secret_key string @[json: 'secretKey']
-	region     string @[json: 'region']
-	is_default u8     @[json: 'isDefault']
-}
-
-pub struct CreateSmsProviderResp {
-	msg string @[json: 'msg']
+	name       string @[json: 'name'; description: '名称']
+	secret_id  string @[json: 'secretId'; description: '密钥 ID']
+	secret_key string @[json: 'secretKey'; description: '密钥 Secret']
+	region     string @[json: 'region'; description: '地区']
+	is_default u8     @[json: 'isDefault'; description: '是否为默认项']
 }
 
 // ═══ Repository ═══
-fn create_sms_provider_repo(mut ctx Context, req CreateSmsProviderReq) !CreateSmsProviderResp {
+fn create_sms_provider_repo(mut ctx Context, req CreateSmsProviderReq) !dto.MsgResp {
 	time_now := time.now()
 	provider := MsgSmsProvider{
 		id:         rand.uuid_v7()
@@ -85,7 +82,7 @@ fn create_sms_provider_repo(mut ctx Context, req CreateSmsProviderReq) !CreateSm
 		insert provider into MsgSmsProvider
 	} or { return error('Failed to create SmsProvider: ${err}') }
 
-	return CreateSmsProviderResp{
+	return dto.MsgResp{
 		msg: 'SmsProvider created successfully'
 	}
 }

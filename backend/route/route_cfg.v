@@ -17,7 +17,8 @@ import model { Context }
 // | tenant   | 租户服务                  | tenant                                                |
 // | platform | 平台服务（Sys）           | platform                                              |
 // | mcp      | 基础资料服务              | sys_base、base_mcp（基础资料 API + MCP 工具）         |
-// | 无标志   | 单体（默认，All）         | db、sys_base、base_mcp、iam、platform、workspace、    |
+// | db       | 数据库初始化              | database                                              |
+// | 无标志   | 单体（默认，All）         | sys_base、iam、platform、workspace、                  |
 // |          |                           | msg、pay、fms、job、tenant                            |
 pub fn (mut app AliasApp) setup_conditional_routes(mut ctx Context) {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
@@ -56,12 +57,14 @@ pub fn (mut app AliasApp) setup_conditional_routes(mut ctx Context) {
 		log.warn('routes_ifdef - Mcp')
 		app.routes_sys_base(mut ctx)
 		app.routes_base_mcp(mut ctx)
+	} $else $if db ? {
+		// 数据库初始化服务：/database
+		log.warn('routes_ifdef - DB')
+		app.routes_db(mut ctx)
 	} $else {
 		// 单体：全部路由（开发/单实例部署）
 		log.warn('routes_ifdef - All')
-		app.routes_db(mut ctx)
 		app.routes_sys_base(mut ctx)
-		app.routes_base_mcp(mut ctx)
 		app.routes_iam(mut ctx)
 		app.routes_platform(mut ctx)
 		app.routes_workspace(mut ctx)

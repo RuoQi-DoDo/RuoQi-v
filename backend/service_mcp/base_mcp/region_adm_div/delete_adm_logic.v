@@ -1,5 +1,6 @@
 module region_adm_div
 
+import dto
 import log
 import time
 import json2 as json
@@ -30,7 +31,7 @@ pub fn delete_adm_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 }
 
 // ═══ Use Case ═══
-pub fn delete_adm_usecase(pool &dbpool.DatabasePoolable, req DeleteAdmReq) !DeleteAdmResp {
+pub fn delete_adm_usecase(pool &dbpool.DatabasePoolable, req DeleteAdmReq) !dto.MsgResp {
 	delete_adm_domain(&req)!
 	return delete_adm_repo(pool, req.adm_ids)
 }
@@ -47,12 +48,8 @@ pub struct DeleteAdmReq {
 	adm_ids []string @[json: 'ids']
 }
 
-pub struct DeleteAdmResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_adm_repo(pool &dbpool.DatabasePoolable, adm_ids []string) !DeleteAdmResp {
+fn delete_adm_repo(pool &dbpool.DatabasePoolable, adm_ids []string) !dto.MsgResp {
 	db, conn := pool.acquire() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		pool.release(conn) or { log.warn('Failed to release conn: ${err}') }
@@ -63,7 +60,7 @@ fn delete_adm_repo(pool &dbpool.DatabasePoolable, adm_ids []string) !DeleteAdmRe
 		where id in adm_ids && del_flag == 0
 	} or { return error('Failed to soft-delete adm: ${err}') }
 
-	return DeleteAdmResp{
+	return dto.MsgResp{
 		msg: '${adm_ids} adm(s) deleted successfully'
 	}
 }

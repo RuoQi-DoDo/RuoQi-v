@@ -1,5 +1,6 @@
 module smslog
 
+import dto
 import veb
 import log
 import json2 as json
@@ -12,7 +13,7 @@ import model { Context }
 pub fn (app &SmsLog) find_sms_log_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[SmsLogByIdReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -27,25 +28,20 @@ pub fn (app &SmsLog) find_sms_log_by_id_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn find_sms_log_by_id_usecase(mut ctx Context, req SmsLogByIdReq) !MsgSmsLog {
+pub fn find_sms_log_by_id_usecase(mut ctx Context, req dto.IdReq) !MsgSmsLog {
 	find_sms_log_by_id_domain(&req)!
 	return find_sms_log_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_sms_log_by_id_domain(req &SmsLogByIdReq) ! {
+fn find_sms_log_by_id_domain(req &dto.IdReq) ! {
 	if req.id == '' {
 		return error('sms log id is required')
 	}
 }
 
-// ═══ DTO ═══
-pub struct SmsLogByIdReq {
-	id string @[json: 'id']
-}
-
 // ═══ Repository ═══
-fn find_sms_log_by_id_repo(mut ctx Context, req SmsLogByIdReq) !MsgSmsLog {
+fn find_sms_log_by_id_repo(mut ctx Context, req dto.IdReq) !MsgSmsLog {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 

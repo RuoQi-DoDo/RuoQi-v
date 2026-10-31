@@ -1,5 +1,6 @@
 module task
 
+import dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &Task) update_task_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_task_usecase(mut ctx Context, req UpdateTaskReq) !UpdateTaskResp {
+pub fn update_task_usecase(mut ctx Context, req UpdateTaskReq) !dto.MsgResp {
 	update_task_domain(&req)!
 	return update_task_repo(mut ctx, req)
 }
@@ -42,21 +43,17 @@ fn update_task_domain(req &UpdateTaskReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateTaskReq {
-	id              string  @[json: 'id']
-	name            ?string @[json: 'name']
-	task_group      ?string @[json: 'taskGroup']
-	cron_expression ?string @[json: 'cronExpression']
-	pattern         ?string @[json: 'pattern']
-	payload         ?string @[json: 'payload']
-	status          ?u8     @[json: 'status']
-}
-
-pub struct UpdateTaskResp {
-	msg string @[json: 'msg']
+	id              string  @[json: 'id'; description: '唯一标识']
+	name            ?string @[json: 'name'; description: '名称']
+	task_group      ?string @[json: 'taskGroup'; description: '任务分组']
+	cron_expression ?string @[json: 'cronExpression'; description: 'Cron 表达式']
+	pattern         ?string @[json: 'pattern'; description: '任务模式']
+	payload         ?string @[json: 'payload'; description: '任务载荷']
+	status          ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══
-fn update_task_repo(mut ctx Context, req UpdateTaskReq) !UpdateTaskResp {
+fn update_task_repo(mut ctx Context, req UpdateTaskReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -89,7 +86,7 @@ fn update_task_repo(mut ctx Context, req UpdateTaskReq) !UpdateTaskResp {
 		dynamic update JobTask set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateTaskResp{
+	return dto.MsgResp{
 		msg: 'Task updated successfully'
 	}
 }

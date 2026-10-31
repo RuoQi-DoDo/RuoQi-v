@@ -45,19 +45,19 @@ fn login_by_sms_domain(req &LoginBySmsReq) ! {
 
 // ═══ DTO ═══
 pub struct LoginBySmsReq {
-	status    u8     @[json: 'status']
-	mobile    string @[json: 'mobile']
-	opt_num   string @[json: 'optNum']
-	opt_token string @[json: 'optToken']
-	source    string @[json: 'source']
-	login_ip  string @[json: 'loginIp']
-	device_id string @[json: 'deviceId']
+	status    u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
+	mobile    string @[json: 'mobile'; description: '手机号']
+	opt_num   string @[json: 'optNum'; description: '一次性验证码']
+	opt_token string @[json: 'optToken'; description: '一次性验证码令牌']
+	source    string @[json: 'source'; description: '来源']
+	login_ip  string @[json: 'loginIp'; description: '登录 IP 地址']
+	device_id string @[json: 'deviceId'; description: '设备 ID']
 }
 
 pub struct LoginBySmsResp {
-	expired_at string @[json: 'expire']
-	user_id    string @[json: 'userId']
-	token_jwt  string @[json: 'tokenJwt']
+	expired_at string @[json: 'expire'; description: '过期时间']
+	user_id    string @[json: 'userId'; description: '用户 ID']
+	token_jwt  string @[json: 'tokenJwt'; description: 'JWT 令牌']
 }
 
 // ═══ Repository ═══

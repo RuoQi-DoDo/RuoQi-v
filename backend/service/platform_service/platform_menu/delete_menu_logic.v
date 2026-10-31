@@ -1,5 +1,6 @@
 module platform_menu
 
+import dto
 import veb
 import log
 import json2 as json
@@ -11,7 +12,7 @@ import common.api
 @['/delete_menu'; post]
 pub fn (app &PlatformMenu) delete_menu_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
-	req := json.decode[DeleteMenuReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 	result := delete_menu_usecase(mut ctx, req) or {
@@ -21,35 +22,26 @@ pub fn (app &PlatformMenu) delete_menu_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_menu_usecase(mut ctx Context, req DeleteMenuReq) !DeleteMenuResp {
+pub fn delete_menu_usecase(mut ctx Context, req dto.IdReq) !dto.MsgResp {
 	delete_menu_domain(&req)!
 	return delete_menu_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_menu_domain(req &DeleteMenuReq) ! {
+fn delete_menu_domain(req &dto.IdReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteMenuReq {
-	id string @[json: 'id']
-}
-
-pub struct DeleteMenuResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_menu_repo(mut ctx Context, req DeleteMenuReq) !DeleteMenuResp {
+fn delete_menu_repo(mut ctx Context, req dto.IdReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	sql db {
 		update PfMenu set del_flag = -1 where id == req.id
 	}!
-	return DeleteMenuResp{
+	return dto.MsgResp{
 		msg: 'Menu deleted'
 	}
 }

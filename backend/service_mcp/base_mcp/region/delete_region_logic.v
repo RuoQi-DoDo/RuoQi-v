@@ -1,5 +1,6 @@
 module region
 
+import dto
 import log
 import time
 import json2 as json
@@ -30,7 +31,7 @@ pub fn delete_region_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) 
 }
 
 // ═══ Use Case ═══
-pub fn delete_region_usecase(pool &dbpool.DatabasePoolable, req DeleteRegionReq) !DeleteRegionResp {
+pub fn delete_region_usecase(pool &dbpool.DatabasePoolable, req DeleteRegionReq) !dto.MsgResp {
 	delete_region_domain(&req)!
 	return delete_region_repo(pool, req.region_ids)
 }
@@ -47,12 +48,8 @@ pub struct DeleteRegionReq {
 	region_ids []string @[json: 'ids']
 }
 
-pub struct DeleteRegionResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_region_repo(pool &dbpool.DatabasePoolable, region_ids []string) !DeleteRegionResp {
+fn delete_region_repo(pool &dbpool.DatabasePoolable, region_ids []string) !dto.MsgResp {
 	db, conn := pool.acquire() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		pool.release(conn) or { log.warn('Failed to release conn: ${err}') }
@@ -63,7 +60,7 @@ fn delete_region_repo(pool &dbpool.DatabasePoolable, region_ids []string) !Delet
 		where id in region_ids && del_flag == 0
 	} or { return error('Failed to soft-delete region: ${err}') }
 
-	return DeleteRegionResp{
+	return dto.MsgResp{
 		msg: '${region_ids} region(s) deleted successfully'
 	}
 }

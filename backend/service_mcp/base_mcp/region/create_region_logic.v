@@ -1,5 +1,6 @@
 module region
 
+import dto
 import log
 import time
 import rand
@@ -30,7 +31,7 @@ pub fn create_region_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) 
 }
 
 // ═══ Use Case ═══
-pub fn create_region_usecase(pool &dbpool.DatabasePoolable, req CreateRegionReq) !CreateRegionResp {
+pub fn create_region_usecase(pool &dbpool.DatabasePoolable, req CreateRegionReq) !dto.CreatedResp {
 	create_region_domain(&req)!
 	return create_region_repo(pool, req)
 }
@@ -69,13 +70,8 @@ pub struct CreateRegionReq {
 	name_zh              ?string @[json: 'nameZh']
 }
 
-pub struct CreateRegionResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_region_repo(pool &dbpool.DatabasePoolable, req CreateRegionReq) !CreateRegionResp {
+fn create_region_repo(pool &dbpool.DatabasePoolable, req CreateRegionReq) !dto.CreatedResp {
 	time_now := time.now()
 	new_id := rand.uuid_v7()
 	base_region := BaseRegion{
@@ -113,7 +109,7 @@ fn create_region_repo(pool &dbpool.DatabasePoolable, req CreateRegionReq) !Creat
 		insert base_region into BaseRegion
 	} or { return error('Failed to create Region: ${err}') }
 
-	return CreateRegionResp{
+	return dto.CreatedResp{
 		id:  new_id
 		msg: 'Region created successfully'
 	}

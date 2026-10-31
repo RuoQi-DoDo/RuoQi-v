@@ -1,5 +1,6 @@
 module workspace_department
 
+import dto
 import veb
 import log
 import time
@@ -12,7 +13,7 @@ import common.api
 @['/delete_department'; post]
 pub fn (app &WorkspaceDepartment) delete_department_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
-	req := json.decode[DeleteDepartmentReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 	result := delete_department_usecase(mut ctx, req) or {
@@ -25,36 +26,27 @@ pub fn (app &WorkspaceDepartment) delete_department_handler(mut ctx Context) veb
 }
 
 // ═══ Use Case ═══
-pub fn delete_department_usecase(mut ctx Context, req DeleteDepartmentReq) !DeleteDepartmentResp {
+pub fn delete_department_usecase(mut ctx Context, req dto.IdReq) !dto.MsgResp {
 	delete_department_domain(&req)!
 	return delete_department_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn delete_department_domain(req &DeleteDepartmentReq) ! {
+fn delete_department_domain(req &dto.IdReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteDepartmentReq {
-	id string @[json: 'id']
-}
-
-pub struct DeleteDepartmentResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_department_repo(mut ctx Context, req DeleteDepartmentReq) !DeleteDepartmentResp {
+fn delete_department_repo(mut ctx Context, req dto.IdReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	sql db {
 		update WsDepartment set del_flag = -1, updated_at = time.now() where id == req.id
 		&& del_flag == 0
 	} or { return error('Failed to delete department: ${err}') }
-	return DeleteDepartmentResp{
+	return dto.MsgResp{
 		msg: 'Department deleted'
 	}
 }

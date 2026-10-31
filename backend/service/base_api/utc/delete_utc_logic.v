@@ -1,5 +1,6 @@
 module utc
 
+import dto
 import time
 import veb
 import log
@@ -13,7 +14,7 @@ import model { Context }
 pub fn (app &Utc) delete_utc_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeleteUtcReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -29,32 +30,23 @@ pub fn (app &Utc) delete_utc_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_utc_usecase(mut ctx Context, req DeleteUtcReq) !DeleteUtcResp {
+pub fn delete_utc_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	// Domain 校验
 	delete_utc_domain(&req)!
 
 	// Repository 执行删除
-	return delete_utc_repo(mut ctx, req.utc_ids)
+	return delete_utc_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_utc_domain(req &DeleteUtcReq) ! {
-	if req.utc_ids.len == 0 {
+fn delete_utc_domain(req &dto.DeleteIdsReq) ! {
+	if req.ids.len == 0 {
 		return error('No Currency ids provided')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteUtcReq {
-	utc_ids []string @[json: 'ids']
-}
-
-pub struct DeleteUtcResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_utc_repo(mut ctx Context, utc_ids []string) !DeleteUtcResp {
+fn delete_utc_repo(mut ctx Context, utc_ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -63,7 +55,7 @@ fn delete_utc_repo(mut ctx Context, utc_ids []string) !DeleteUtcResp {
 		where id in utc_ids && del_flag == 0
 	} or { return error('Failed to soft-delete utc: ${err}') }
 
-	return DeleteUtcResp{
+	return dto.MsgResp{
 		msg: '${utc_ids} token(s) deleted successfully'
 	}
 }

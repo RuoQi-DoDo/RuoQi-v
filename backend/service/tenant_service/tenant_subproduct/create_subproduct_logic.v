@@ -44,13 +44,13 @@ fn create_subproduct_domain(req &CreateSubProductReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateSubProductReq {
-	product_id string @[json: 'productId']
-	plan_id    string @[json: 'planId']
+	product_id string @[json: 'productId'; description: '产品 ID']
+	plan_id    string @[json: 'planId'; description: '订阅计划 ID']
 }
 
 pub struct CreateSubProductResp {
-	subproduct_id string @[json: 'subproductId']
-	msg           string @[json: 'msg']
+	subproduct_id string @[json: 'subproductId'; description: '子产品 ID']
+	msg           string @[json: 'msg'; description: '提示消息']
 }
 
 // ═══ Repository ═══

@@ -1,5 +1,6 @@
 module tenant_subproduct
 
+import dto
 import veb
 import log
 import json2 as json
@@ -25,7 +26,7 @@ pub fn (app &TenantSubProduct) update_subproduct_handler(mut ctx Context) veb.Re
 }
 
 // ═══ Use Case ═══
-pub fn update_subproduct_usecase(mut ctx Context, req UpdateSubProductReq) !UpdateSubProductResp {
+pub fn update_subproduct_usecase(mut ctx Context, req UpdateSubProductReq) !dto.MsgResp {
 	update_subproduct_domain(&req)!
 	return update_subproduct_repo(mut ctx, req)
 }
@@ -39,17 +40,13 @@ fn update_subproduct_domain(req &UpdateSubProductReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateSubProductReq {
-	id      string  @[json: 'id']
-	plan_id ?string @[json: 'planId']
-	status  ?u8     @[json: 'status']
-}
-
-pub struct UpdateSubProductResp {
-	msg string @[json: 'msg']
+	id      string  @[json: 'id'; description: '唯一标识']
+	plan_id ?string @[json: 'planId'; description: '订阅计划 ID']
+	status  ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══
-fn update_subproduct_repo(mut ctx Context, req UpdateSubProductReq) !UpdateSubProductResp {
+fn update_subproduct_repo(mut ctx Context, req UpdateSubProductReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -68,7 +65,7 @@ fn update_subproduct_repo(mut ctx Context, req UpdateSubProductReq) !UpdateSubPr
 	sql db {
 		dynamic update TnSubProduct set up_expr where id == req.id
 	}!
-	return UpdateSubProductResp{
+	return dto.MsgResp{
 		msg: '订阅信息已更新'
 	}
 }

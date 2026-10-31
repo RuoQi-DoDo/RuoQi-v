@@ -1,5 +1,6 @@
 module smsprovider
 
+import dto
 import veb
 import log
 import json2 as json
@@ -12,7 +13,7 @@ import model { Context }
 pub fn (app &SmsProvider) find_sms_provider_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[SmsProviderByIdReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -27,25 +28,20 @@ pub fn (app &SmsProvider) find_sms_provider_by_id_handler(mut ctx Context) veb.R
 }
 
 // ═══ Use Case ═══
-pub fn find_sms_provider_by_id_usecase(mut ctx Context, req SmsProviderByIdReq) !MsgSmsProvider {
+pub fn find_sms_provider_by_id_usecase(mut ctx Context, req dto.IdReq) !MsgSmsProvider {
 	find_sms_provider_by_id_domain(&req)!
 	return find_sms_provider_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_sms_provider_by_id_domain(req &SmsProviderByIdReq) ! {
+fn find_sms_provider_by_id_domain(req &dto.IdReq) ! {
 	if req.id == '' {
 		return error('sms provider id is required')
 	}
 }
 
-// ═══ DTO ═══
-pub struct SmsProviderByIdReq {
-	id string @[json: 'id']
-}
-
 // ═══ Repository ═══
-fn find_sms_provider_by_id_repo(mut ctx Context, req SmsProviderByIdReq) !MsgSmsProvider {
+fn find_sms_provider_by_id_repo(mut ctx Context, req dto.IdReq) !MsgSmsProvider {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 

@@ -1,5 +1,6 @@
 module currency
 
+import dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &Currency) update_currency_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_currency_usecase(mut ctx Context, req UpdateCurrencyReq) !UpdateCurrencyResp {
+pub fn update_currency_usecase(mut ctx Context, req UpdateCurrencyReq) !dto.MsgResp {
 	// Domain 校验
 	update_currency_domain(&req)!
 
@@ -45,25 +46,21 @@ fn update_currency_domain(req &UpdateCurrencyReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateCurrencyReq {
-	id                        string  @[json: 'id']
-	english_name              ?string @[json: 'englishName']
-	simplified_name           ?string @[json: 'simplifiedName']
-	currency_code             ?string @[json: 'currencyCode']
-	currency_symbol           ?string @[json: 'currencySymbol']
-	decimal_place             ?u8     @[json: 'decimalPlace']
-	exchange_rate             ?f64    @[json: 'exchangeRate']
-	exchange_rate_fluctuation ?f64    @[json: 'exchangeRateFluctuation']
-	exchange_rate_used        ?f64    @[json: 'exchangeRateUsed']
-	sort                      ?int    @[json: 'sort']
-	status                    ?u8     @[json: 'status']
-}
-
-pub struct UpdateCurrencyResp {
-	msg string @[json: 'msg']
+	id                        string  @[json: 'id'; description: '唯一标识']
+	english_name              ?string @[json: 'englishName'; description: '英文名称']
+	simplified_name           ?string @[json: 'simplifiedName'; description: '简体中文名称']
+	currency_code             ?string @[json: 'currencyCode'; description: 'ISO 货币代码']
+	currency_symbol           ?string @[json: 'currencySymbol'; description: '货币符号']
+	decimal_place             ?u8     @[json: 'decimalPlace'; description: '金额小数位数']
+	exchange_rate             ?f64    @[json: 'exchangeRate'; description: '汇率']
+	exchange_rate_fluctuation ?f64    @[json: 'exchangeRateFluctuation'; description: '汇率波动值']
+	exchange_rate_used        ?f64    @[json: 'exchangeRateUsed'; description: '实际使用的汇率']
+	sort                      ?int    @[json: 'sort'; description: '排序值，数字越小越靠前']
+	status                    ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══
-fn update_currency_repo(mut ctx Context, req UpdateCurrencyReq) !UpdateCurrencyResp {
+fn update_currency_repo(mut ctx Context, req UpdateCurrencyReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -108,7 +105,7 @@ fn update_currency_repo(mut ctx Context, req UpdateCurrencyReq) !UpdateCurrencyR
 		dynamic update BaseCurrency set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateCurrencyResp{
+	return dto.MsgResp{
 		msg: 'Currency updated successfully'
 	}
 }

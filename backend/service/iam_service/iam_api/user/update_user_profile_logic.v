@@ -1,5 +1,6 @@
 module user
 
+import dto
 import veb
 import log
 import json2 as json
@@ -22,10 +23,10 @@ pub fn (app &User) update_user_profile_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_user_profile_usecase(mut ctx Context, req UpdateUserProfileReq) !UpdateUserProfileResp {
+pub fn update_user_profile_usecase(mut ctx Context, req UpdateUserProfileReq) !dto.MsgResp {
 	update_user_profile_domain(mut ctx)!
 	update_user_profile_repo(mut ctx, req)!
-	return UpdateUserProfileResp{
+	return dto.MsgResp{
 		msg: 'Profile updated'
 	}
 }
@@ -39,15 +40,11 @@ fn update_user_profile_domain(mut ctx Context) ! {
 
 // ═══ DTO ═══
 pub struct UpdateUserProfileReq {
-	nickname    ?string @[json: 'nickname']
-	email       ?string @[json: 'email']
-	mobile      ?string @[json: 'mobile']
-	description ?string @[json: 'description']
-	avatar      ?string @[json: 'avatar']
-}
-
-pub struct UpdateUserProfileResp {
-	msg string @[json: 'msg']
+	nickname    ?string @[json: 'nickname'; description: '昵称']
+	email       ?string @[json: 'email'; description: '邮箱地址']
+	mobile      ?string @[json: 'mobile'; description: '手机号']
+	description ?string @[json: 'description'; description: '描述']
+	avatar      ?string @[json: 'avatar'; description: '头像地址']
 }
 
 // ═══ Repository ═══

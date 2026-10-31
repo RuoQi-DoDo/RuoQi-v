@@ -1,5 +1,6 @@
 module tenant_member
 
+import dto
 import veb
 import log
 import time
@@ -25,7 +26,7 @@ pub fn (app &TenantMember) remove_member_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn remove_member_usecase(mut ctx Context, req RemoveMemberReq) !RemoveMemberResp {
+pub fn remove_member_usecase(mut ctx Context, req RemoveMemberReq) !dto.MsgResp {
 	remove_member_domain(&req)!
 	return remove_member_repo(mut ctx, req)
 }
@@ -39,15 +40,11 @@ fn remove_member_domain(req &RemoveMemberReq) ! {
 
 // ═══ DTO ═══
 pub struct RemoveMemberReq {
-	user_id string @[json: 'userId']
-}
-
-pub struct RemoveMemberResp {
-	msg string @[json: 'msg']
+	user_id string @[json: 'userId'; description: '用户 ID']
 }
 
 // ═══ Repository ═══
-fn remove_member_repo(mut ctx Context, req RemoveMemberReq) !RemoveMemberResp {
+fn remove_member_repo(mut ctx Context, req RemoveMemberReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -69,7 +66,7 @@ fn remove_member_repo(mut ctx Context, req RemoveMemberReq) !RemoveMemberResp {
 		where user_id == req.user_id && tenant_id == tenant_id && product_id == product_id
 		&& portal_id == portal_id && del_flag == 0
 	} or { return error('Failed to remove member: ${err}') }
-	return RemoveMemberResp{
+	return dto.MsgResp{
 		msg: '成员已移除'
 	}
 }

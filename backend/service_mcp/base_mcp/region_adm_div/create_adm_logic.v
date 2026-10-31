@@ -1,5 +1,6 @@
 module region_adm_div
 
+import dto
 import log
 import time
 import rand
@@ -30,7 +31,7 @@ pub fn create_adm_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable) ! {
 }
 
 // ═══ Use Case ═══
-pub fn create_adm_usecase(pool &dbpool.DatabasePoolable, req CreateAdmReq) !CreateAdmResp {
+pub fn create_adm_usecase(pool &dbpool.DatabasePoolable, req CreateAdmReq) !dto.CreatedResp {
 	create_adm_domain(&req)!
 	return create_adm_repo(pool, req)
 }
@@ -75,13 +76,8 @@ pub struct CreateAdmReq {
 	name_zh         ?string @[json: 'nameZh']
 }
 
-pub struct CreateAdmResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_adm_repo(pool &dbpool.DatabasePoolable, req CreateAdmReq) !CreateAdmResp {
+fn create_adm_repo(pool &dbpool.DatabasePoolable, req CreateAdmReq) !dto.CreatedResp {
 	time_now := time.now()
 	new_id := rand.uuid_v7()
 	level := if req.level == 0 { u8(1) } else { req.level }
@@ -124,7 +120,7 @@ fn create_adm_repo(pool &dbpool.DatabasePoolable, req CreateAdmReq) !CreateAdmRe
 		insert base_adm into BaseRegionAdmDiv
 	} or { return error('Failed to create Adm: ${err}') }
 
-	return CreateAdmResp{
+	return dto.CreatedResp{
 		id:  new_id
 		msg: 'Adm created successfully'
 	}

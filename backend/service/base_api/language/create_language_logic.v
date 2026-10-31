@@ -1,5 +1,6 @@
 module language
 
+import dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &Language) create_language_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_language_usecase(mut ctx Context, req CreateLanguageReq) !CreateLanguageResp {
+pub fn create_language_usecase(mut ctx Context, req CreateLanguageReq) !dto.MsgResp {
 	create_language_domain(&req)!
 	return create_language_repo(mut ctx, req)
 }
@@ -51,22 +52,18 @@ fn create_language_domain(req &CreateLanguageReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateLanguageReq {
-	language_self_proclaimed string @[json: 'languageSelfProclaimed']
-	language_code            string @[json: 'languageCode']
-	two_letter_code          string @[json: 'twoLetterCode']
-	three_letter_code        string @[json: 'threeLetterCode']
-	utf8_encoding            string @[json: 'utf8Encoding']
-	sort                     ?int   @[json: 'sort']
-	status                   u8     @[json: 'status']
-	is_basic                 u8     @[json: 'isBasic']
-}
-
-pub struct CreateLanguageResp {
-	msg string @[json: 'msg']
+	language_self_proclaimed string @[json: 'languageSelfProclaimed'; description: '语言自称']
+	language_code            string @[json: 'languageCode'; description: '语言代码']
+	two_letter_code          string @[json: 'twoLetterCode'; description: '两位字母代码']
+	three_letter_code        string @[json: 'threeLetterCode'; description: '三位字母代码']
+	utf8_encoding            string @[json: 'utf8Encoding'; description: 'UTF-8 编码']
+	sort                     ?int   @[json: 'sort'; description: '排序值，数字越小越靠前']
+	status                   u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
+	is_basic                 u8     @[json: 'isBasic'; description: '是否为基础数据']
 }
 
 // ═══ Repository ═══
-fn create_language_repo(mut ctx Context, req CreateLanguageReq) !CreateLanguageResp {
+fn create_language_repo(mut ctx Context, req CreateLanguageReq) !dto.MsgResp {
 	time_now := time.now()
 	base_language := BaseLanguage{
 		id:                       rand.uuid_v7()
@@ -91,7 +88,7 @@ fn create_language_repo(mut ctx Context, req CreateLanguageReq) !CreateLanguageR
 		insert base_language into BaseLanguage
 	} or { return error('Failed to create Currency: ${err}') }
 
-	return CreateLanguageResp{
+	return dto.MsgResp{
 		msg: 'Language created successfully'
 	}
 }

@@ -1,5 +1,6 @@
 module workspace_position
 
+import dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &WorkspacePosition) update_position_handler(mut ctx Context) veb.Res
 }
 
 // ═══ Use Case ═══
-pub fn update_position_usecase(mut ctx Context, req UpdatePositionReq) !UpdatePositionResp {
+pub fn update_position_usecase(mut ctx Context, req UpdatePositionReq) !dto.MsgResp {
 	update_position_domain(&req)!
 	return update_position_repo(mut ctx, req)
 }
@@ -36,20 +37,16 @@ fn update_position_domain(req &UpdatePositionReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdatePositionReq {
-	id          string  @[json: 'id']
-	name        ?string @[json: 'name']
-	code        ?string @[json: 'code']
-	description ?string @[json: 'description']
-	sort        ?u32    @[json: 'sort']
-	status      ?u8     @[json: 'status']
-}
-
-pub struct UpdatePositionResp {
-	msg string @[json: 'msg']
+	id          string  @[json: 'id'; description: '唯一标识']
+	name        ?string @[json: 'name'; description: '名称']
+	code        ?string @[json: 'code'; description: '编码']
+	description ?string @[json: 'description'; description: '描述']
+	sort        ?u32    @[json: 'sort'; description: '排序值，数字越小越靠前']
+	status      ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══
-fn update_position_repo(mut ctx Context, req UpdatePositionReq) !UpdatePositionResp {
+fn update_position_repo(mut ctx Context, req UpdatePositionReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	// vfmt off
@@ -76,7 +73,7 @@ fn update_position_repo(mut ctx Context, req UpdatePositionReq) !UpdatePositionR
 	sql db {
 		dynamic update WsPosition set up_expr where id == req.id
 	}!
-	return UpdatePositionResp{
+	return dto.MsgResp{
 		msg: 'Position updated'
 	}
 }

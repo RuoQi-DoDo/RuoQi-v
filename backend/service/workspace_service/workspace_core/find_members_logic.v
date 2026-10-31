@@ -39,7 +39,7 @@ fn find_members_domain(req &FindMembersReq) ! {
 
 // ═══ DTO ═══
 pub struct FindMembersReq {
-	workspace_id string @[json: 'workspaceId']
+	workspace_id string @[json: 'workspaceId'; description: '工作区 ID']
 }
 
 pub struct MemberInfo {
@@ -50,7 +50,7 @@ pub struct MemberInfo {
 }
 
 pub struct FindMembersResp {
-	members []MemberInfo @[json: 'members']
+	members []MemberInfo @[json: 'members'; description: '成员列表']
 }
 
 // ═══ Repository ═══

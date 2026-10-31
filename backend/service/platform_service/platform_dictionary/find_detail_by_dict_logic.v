@@ -35,7 +35,7 @@ fn find_detail_by_dict_domain(req &FindDetailByDictReq) ! {
 
 // ═══ DTO ═══
 pub struct FindDetailByDictReq {
-	dictionary_id string @[json: 'dictionaryId']
+	dictionary_id string @[json: 'dictionaryId'; description: '字典 ID']
 }
 
 // ═══ Repository ═══

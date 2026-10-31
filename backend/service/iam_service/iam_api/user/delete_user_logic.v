@@ -1,5 +1,6 @@
 module user
 
+import dto
 import veb
 import log
 import time
@@ -12,7 +13,7 @@ import common.api
 @['/delete_user'; post]
 pub fn (app &User) delete_user_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
-	req := json.decode[DeleteUserReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 	result := delete_user_usecase(mut ctx, req) or {
@@ -25,36 +26,27 @@ pub fn (app &User) delete_user_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_user_usecase(mut ctx Context, req DeleteUserReq) !DeleteUserResp {
+pub fn delete_user_usecase(mut ctx Context, req dto.IdReq) !dto.MsgResp {
 	delete_user_domain(&req)!
 	delete_user_repo(mut ctx, req) or { return error('Failed to delete user: ${err}') }
-	return DeleteUserResp{
+	return dto.MsgResp{
 		msg: 'User deleted'
 	}
 }
 
 // ═══ Domain ═══
-fn delete_user_domain(req &DeleteUserReq) ! {
-	if req.user_id == '' {
-		return error('user_id is required')
+fn delete_user_domain(req &dto.IdReq) ! {
+	if req.id == '' {
+		return error('id is required')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteUserReq {
-	user_id string @[json: 'id']
-}
-
-pub struct DeleteUserResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_user_repo(mut ctx Context, req DeleteUserReq) ! {
+fn delete_user_repo(mut ctx Context, req dto.IdReq) ! {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	sql db {
 		update IamUser set del_flag = -1, updated_at = time.now(), updater_id = ctx.svc_iam.user_id
-		where id == req.user_id && del_flag == 0
+		where id == req.id && del_flag == 0
 	} or { return error('Failed to delete user: ${err}') }
 }

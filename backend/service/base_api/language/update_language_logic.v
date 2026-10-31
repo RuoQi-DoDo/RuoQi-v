@@ -1,5 +1,6 @@
 module language
 
+import dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &Language) update_language_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_language_usecase(mut ctx Context, req UpdateLanguageReq) !UpdateLanguageResp {
+pub fn update_language_usecase(mut ctx Context, req UpdateLanguageReq) !dto.MsgResp {
 	// Domain 校验
 	update_language_domain(&req)!
 
@@ -45,23 +46,19 @@ fn update_language_domain(req &UpdateLanguageReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateLanguageReq {
-	id                       string  @[json: 'id']
-	language_self_proclaimed ?string @[json: 'languageSelfProclaimed']
-	language_code            ?string @[json: 'languageCode']
-	two_letter_code          ?string @[json: 'twoLetterCode']
-	three_letter_code        ?string @[json: 'threeLetterCode']
-	utf8_encoding            ?string @[json: 'utf8Encoding']
-	sort                     ?int    @[json: 'sort']
-	status                   ?u8     @[json: 'status']
-	is_basic                 ?u8     @[json: 'isBasic']
-}
-
-pub struct UpdateLanguageResp {
-	msg string @[json: 'msg']
+	id                       string  @[json: 'id'; description: '唯一标识']
+	language_self_proclaimed ?string @[json: 'languageSelfProclaimed'; description: '语言自称']
+	language_code            ?string @[json: 'languageCode'; description: '语言代码']
+	two_letter_code          ?string @[json: 'twoLetterCode'; description: '两位字母代码']
+	three_letter_code        ?string @[json: 'threeLetterCode'; description: '三位字母代码']
+	utf8_encoding            ?string @[json: 'utf8Encoding'; description: 'UTF-8 编码']
+	sort                     ?int    @[json: 'sort'; description: '排序值，数字越小越靠前']
+	status                   ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
+	is_basic                 ?u8     @[json: 'isBasic'; description: '是否为基础数据']
 }
 
 // ═══ Repository ═══
-fn update_language_repo(mut ctx Context, req UpdateLanguageReq) !UpdateLanguageResp {
+fn update_language_repo(mut ctx Context, req UpdateLanguageReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -100,7 +97,7 @@ fn update_language_repo(mut ctx Context, req UpdateLanguageReq) !UpdateLanguageR
 		dynamic update BaseLanguage set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateLanguageResp{
+	return dto.MsgResp{
 		msg: 'language updated successfully'
 	}
 }

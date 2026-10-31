@@ -1,5 +1,6 @@
 module smslog
 
+import dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &SmsLog) create_sms_log_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_sms_log_usecase(mut ctx Context, req CreateSmsLogReq) !CreateSmsLogResp {
+pub fn create_sms_log_usecase(mut ctx Context, req CreateSmsLogReq) !dto.MsgResp {
 	create_sms_log_domain(&req)!
 	return create_sms_log_repo(mut ctx, req)
 }
@@ -46,18 +47,14 @@ fn create_sms_log_domain(req &CreateSmsLogReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateSmsLogReq {
-	phone_number string @[json: 'phoneNumber']
-	content      string @[json: 'content']
-	send_status  u8     @[json: 'sendStatus']
-	provider     string @[json: 'provider']
-}
-
-pub struct CreateSmsLogResp {
-	msg string @[json: 'msg']
+	phone_number string @[json: 'phoneNumber'; description: '电话号码']
+	content      string @[json: 'content'; description: '内容']
+	send_status  u8     @[json: 'sendStatus'; description: '发送状态：0 未知，1 成功，2 失败']
+	provider     string @[json: 'provider'; description: '服务提供商']
 }
 
 // ═══ Repository ═══
-fn create_sms_log_repo(mut ctx Context, req CreateSmsLogReq) !CreateSmsLogResp {
+fn create_sms_log_repo(mut ctx Context, req CreateSmsLogReq) !dto.MsgResp {
 	time_now := time.now()
 	sms_log := MsgSmsLog{
 		id:           rand.uuid_v7()
@@ -80,7 +77,7 @@ fn create_sms_log_repo(mut ctx Context, req CreateSmsLogReq) !CreateSmsLogResp {
 		insert sms_log into MsgSmsLog
 	} or { return error('Failed to create SmsLog: ${err}') }
 
-	return CreateSmsLogResp{
+	return dto.MsgResp{
 		msg: 'SmsLog created successfully'
 	}
 }

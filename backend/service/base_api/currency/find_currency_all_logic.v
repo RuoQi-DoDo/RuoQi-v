@@ -20,7 +20,7 @@ pub fn (app &Currency) find_currency_all_handler(mut ctx Context) veb.Result {
 	result := find_currency_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -39,35 +39,35 @@ fn find_currency_all_domain() {
 
 // ═══ DTO ═══
 pub struct CurrencyListReq {
-	page          int @[json: 'page']
-	page_size     int @[json: 'pageSize']
-	english_name  string @[json: 'englishName']
-	currency_code string @[json: 'currencyCode']
-	status        []u8 @[json: 'status']
+	page          int    @[json: 'page'; description: '页码，从 1 开始']
+	page_size     int    @[json: 'pageSize'; description: '每页记录数']
+	english_name  string @[json: 'englishName'; description: '英文名称']
+	currency_code string @[json: 'currencyCode'; description: 'ISO 货币代码']
+	status        []u8   @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 pub struct CurrencyData {
-	id                        string @[json: 'id']
-	english_name              string @[json: 'englishName']
-	simplified_name           string @[json: 'simplifiedName']
-	currency_code             string @[json: 'currencyCode']
-	currency_symbol           string @[json: 'currencySymbol']
-	decimal_place             u8 @[json: 'decimalPlace']
-	exchange_rate             f64 @[json: 'exchangeRate']
-	exchange_rate_fluctuation f64 @[json: 'exchangeRateFluctuation']
-	exchange_rate_used        f64 @[json: 'exchangeRateUsed']
-	sort                      ?int @[json: 'sort']
-	status                    u8 @[json: 'status']
-	updater_id                ?string @[json: 'updaterId']
-	creator_id                ?string @[json: 'creatorId']
-	created_at                string @[json: 'createdAt']
-	updated_at                string @[json: 'updatedAt']
-	deleted_at                string @[json: 'deletedAt']
+	id                        string  @[json: 'id'; description: '唯一标识']
+	english_name              string  @[json: 'englishName'; description: '货币英文名称']
+	simplified_name           string  @[json: 'simplifiedName'; description: '货币简体中文名称']
+	currency_code             string  @[json: 'currencyCode'; description: 'ISO 货币代码']
+	currency_symbol           string  @[json: 'currencySymbol'; description: '货币符号']
+	decimal_place             u8      @[json: 'decimalPlace'; description: '金额小数位数']
+	exchange_rate             f64     @[json: 'exchangeRate'; description: '汇率']
+	exchange_rate_fluctuation f64     @[json: 'exchangeRateFluctuation'; description: '汇率波动值']
+	exchange_rate_used        f64     @[json: 'exchangeRateUsed'; description: '实际使用的汇率']
+	sort                      ?int    @[json: 'sort'; description: '排序值']
+	status                    u8      @[json: 'status'; description: '状态：0 禁用，1 启用']
+	updater_id                ?string @[json: 'updaterId'; description: '更新者 ID']
+	creator_id                ?string @[json: 'creatorId'; description: '创建者 ID']
+	created_at                string  @[json: 'createdAt'; description: '创建时间']
+	updated_at                string  @[json: 'updatedAt'; description: '更新时间']
+	deleted_at                string  @[json: 'deletedAt'; description: '删除时间']
 }
 
 pub struct CurrencyListResp {
-	total int
-	data  []CurrencyData
+	total int            @[description: '总记录数']
+	data  []CurrencyData @[description: '响应数据']
 }
 
 // ═══ Repository ═══
@@ -98,27 +98,27 @@ fn find_currency_all_repo(mut ctx Context, req CurrencyListReq) !CurrencyListRes
 	mut datalist := []CurrencyData{}
 	for row in result {
 		datalist << CurrencyData{
-			id: row.id
-			english_name: row.english_name
-			simplified_name: row.simplified_name
-			currency_code: row.currency_code
-			currency_symbol: row.currency_symbol
-			decimal_place: row.decimal_place
-			exchange_rate: row.exchange_rate
+			id:                        row.id
+			english_name:              row.english_name
+			simplified_name:           row.simplified_name
+			currency_code:             row.currency_code
+			currency_symbol:           row.currency_symbol
+			decimal_place:             row.decimal_place
+			exchange_rate:             row.exchange_rate
 			exchange_rate_fluctuation: row.exchange_rate_fluctuation
-			exchange_rate_used: row.exchange_rate_used
-			sort: row.sort
-			status: row.status
-			creator_id: row.creator_id
-			updater_id: row.updater_id
-			created_at: row.created_at.format_ss()
-			updated_at: row.updated_at.format_ss()
-			deleted_at: (row.deleted_at or { time.Time{} }).format_ss()
+			exchange_rate_used:        row.exchange_rate_used
+			sort:                      row.sort
+			status:                    row.status
+			creator_id:                row.creator_id
+			updater_id:                row.updater_id
+			created_at:                row.created_at.format_ss()
+			updated_at:                row.updated_at.format_ss()
+			deleted_at:                (row.deleted_at or { time.Time{} }).format_ss()
 		}
 	}
 
 	return CurrencyListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

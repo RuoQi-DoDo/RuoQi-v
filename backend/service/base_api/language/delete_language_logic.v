@@ -1,5 +1,6 @@
 module language
 
+import dto
 import time
 import veb
 import log
@@ -13,7 +14,7 @@ import model { Context }
 pub fn (app &Language) delete_language_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeleteLanguageReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -29,32 +30,23 @@ pub fn (app &Language) delete_language_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_language_usecase(mut ctx Context, req DeleteLanguageReq) !DeleteLanguageResp {
+pub fn delete_language_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	// Domain 校验
 	delete_language_domain(&req)!
 
 	// Repository 执行删除
-	return delete_language_repo(mut ctx, req.language_ids)
+	return delete_language_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_language_domain(req &DeleteLanguageReq) ! {
-	if req.language_ids.len == 0 {
+fn delete_language_domain(req &dto.DeleteIdsReq) ! {
+	if req.ids.len == 0 {
 		return error('No Language ids provided')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteLanguageReq {
-	language_ids []string @[json: 'ids']
-}
-
-pub struct DeleteLanguageResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_language_repo(mut ctx Context, language_ids []string) !DeleteLanguageResp {
+fn delete_language_repo(mut ctx Context, language_ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -63,7 +55,7 @@ fn delete_language_repo(mut ctx Context, language_ids []string) !DeleteLanguageR
 		where id in language_ids && del_flag == 0
 	} or { return error('Failed to soft-delete language: ${err}') }
 
-	return DeleteLanguageResp{
+	return dto.MsgResp{
 		msg: '${language_ids} language(s) deleted successfully'
 	}
 }

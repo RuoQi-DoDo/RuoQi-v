@@ -1,5 +1,6 @@
 module utc
 
+import dto
 import veb
 import log
 import json2 as json
@@ -28,7 +29,7 @@ pub fn (app &Utc) update_utc_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_utc_usecase(mut ctx Context, req UpdateUtcReq) !UpdateUtcResp {
+pub fn update_utc_usecase(mut ctx Context, req UpdateUtcReq) !dto.MsgResp {
 	// Domain 校验
 	update_utc_domain(&req)!
 
@@ -45,20 +46,16 @@ fn update_utc_domain(req &UpdateUtcReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateUtcReq {
-	id              string  @[json: 'id']
-	sort            ?int    @[json: 'sort']
-	name            ?string @[json: 'name']
-	lng_range_start ?f64    @[json: 'lngRangeStart']
-	lng_range_end   ?f64    @[json: 'lngRangeEnd']
-	lng_mid         ?f64    @[json: 'lngMid']
-}
-
-pub struct UpdateUtcResp {
-	msg string @[json: 'msg']
+	id              string  @[json: 'id'; description: '唯一标识']
+	sort            ?int    @[json: 'sort'; description: '排序值，数字越小越靠前']
+	name            ?string @[json: 'name'; description: '名称']
+	lng_range_start ?f64    @[json: 'lngRangeStart'; description: '经度范围起始值']
+	lng_range_end   ?f64    @[json: 'lngRangeEnd'; description: '经度范围结束值']
+	lng_mid         ?f64    @[json: 'lngMid'; description: '中心经度']
 }
 
 // ═══ Repository ═══
-fn update_utc_repo(mut ctx Context, req UpdateUtcReq) !UpdateUtcResp {
+fn update_utc_repo(mut ctx Context, req UpdateUtcReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -88,7 +85,7 @@ fn update_utc_repo(mut ctx Context, req UpdateUtcReq) !UpdateUtcResp {
 		dynamic update BaseUtc set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateUtcResp{
+	return dto.MsgResp{
 		msg: 'UTC updated successfully'
 	}
 }

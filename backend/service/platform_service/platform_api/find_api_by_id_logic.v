@@ -1,5 +1,6 @@
 module platform_api
 
+import dto
 import veb
 import log
 import json2 as json
@@ -11,7 +12,7 @@ import common.api as capi
 @['/find_api_by_id'; post]
 pub fn (app &PlatformApi) find_api_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
-	req := json.decode[FindApiByIdReq](ctx.req.data) or {
+	req := json.decode[dto.IdReq](ctx.req.data) or {
 		return ctx.json(capi.json_error(code: capi.err_common_param_invalid, msg: err.msg()))
 	}
 	result := find_api_by_id_usecase(mut ctx, req) or {
@@ -21,25 +22,20 @@ pub fn (app &PlatformApi) find_api_by_id_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn find_api_by_id_usecase(mut ctx Context, req FindApiByIdReq) !PfApi {
+pub fn find_api_by_id_usecase(mut ctx Context, req dto.IdReq) !PfApi {
 	find_api_by_id_domain(&req)!
 	return find_api_by_id_repo(mut ctx, req)
 }
 
 // ═══ Domain ═══
-fn find_api_by_id_domain(req &FindApiByIdReq) ! {
+fn find_api_by_id_domain(req &dto.IdReq) ! {
 	if req.id == '' {
 		return error('id is required')
 	}
 }
 
-// ═══ DTO ═══
-pub struct FindApiByIdReq {
-	id string @[json: 'id']
-}
-
 // ═══ Repository ═══
-fn find_api_by_id_repo(mut ctx Context, req FindApiByIdReq) !PfApi {
+fn find_api_by_id_repo(mut ctx Context, req dto.IdReq) !PfApi {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	apis := sql db {

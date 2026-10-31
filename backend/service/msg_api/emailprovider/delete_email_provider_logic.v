@@ -1,5 +1,6 @@
 module emailprovider
 
+import dto
 import time
 import veb
 import log
@@ -13,7 +14,7 @@ import model { Context }
 pub fn (app &EmailProvider) delete_email_provider_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeleteEmailProviderReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -28,29 +29,20 @@ pub fn (app &EmailProvider) delete_email_provider_handler(mut ctx Context) veb.R
 }
 
 // ═══ Use Case ═══
-pub fn delete_email_provider_usecase(mut ctx Context, req DeleteEmailProviderReq) !DeleteEmailProviderResp {
+pub fn delete_email_provider_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	delete_email_provider_domain(&req)!
 	return delete_email_provider_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_email_provider_domain(req &DeleteEmailProviderReq) ! {
+fn delete_email_provider_domain(req &dto.DeleteIdsReq) ! {
 	if req.ids.len == 0 {
 		return error('No EmailProvider ids provided')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteEmailProviderReq {
-	ids []string @[json: 'ids']
-}
-
-pub struct DeleteEmailProviderResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_email_provider_repo(mut ctx Context, ids []string) !DeleteEmailProviderResp {
+fn delete_email_provider_repo(mut ctx Context, ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -59,7 +51,7 @@ fn delete_email_provider_repo(mut ctx Context, ids []string) !DeleteEmailProvide
 		where id in ids && del_flag == 0
 	} or { return error('Failed to soft-delete email provider: ${err}') }
 
-	return DeleteEmailProviderResp{
+	return dto.MsgResp{
 		msg: '${ids.len} EmailProvider(s) deleted successfully'
 	}
 }

@@ -2,14 +2,15 @@
 # ─── 微服务选择 ─────────────────────────────────────
 # 服务名对应 backend/route/route_cfg.v 的条件编译分支，默认 all（单体，全部路由）：
 #   all 单体 / fms 文件 / iam 核心（身份+工作空间）/ job 任务 / mcms 消息 /
-#   pay 支付 / tenant 租户 / platform 平台 / mcp 基础资料（/base + /mcp）
+#   pay 支付 / tenant 租户 / platform 平台 / mcp 基础资料（/base + /mcp）/
+#   db 数据库初始化（/database）
 # 用法：just dev mcp、just build fms、SERVICE=iam just test、just build（默认 all）
 # 用 bash 执行 recipe：time 是 bash 保留字，默认的 sh(dash) 里不存在
 
 set shell := ["bash", "-uc"]
 
 service := env_var_or_default("SERVICE", "all")
-services := "all fms iam job mcms pay tenant platform mcp"
+services := "all fms iam job mcms pay tenant platform mcp db"
 
 # 校验服务名：拼错时直接报错，避免未知 -d 标志静默落到 All 分支
 _check_service s:
@@ -19,7 +20,7 @@ _check_service s:
 
 # 带 watch 的开发模式；可选服务名：just dev mcp
 dev s=service: (_check_service s)
-    cd backend && v -new-compiler -cc tcc -no-retry-compilation -d trace_orm -d veb_livereload {{ if s == "all" { "" } else { "-d " + s } }} watch run ./main -f etc/config_dev.toml
+    cd backend && env V3_PARALLEL_MONOMORPHIZE=1 v -new-compiler -cc tcc -no-retry-compilation -d trace_orm -d veb_livereload {{ if s == "all" { "" } else { "-d " + s } }} watch run ./main -f etc/config_dev.toml
 
 # 单次运行 dev 配置；可选服务名：just test mcp
 test s=service: (_check_service s)
@@ -48,10 +49,6 @@ build-vgc s=service: (_check_service s)
 # 生产编译；可选服务名：just build-prod pay
 build-prod s=service: (_check_service s)
     cd backend && time v -ownership -new-compiler -prod -stats -new-compiler {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
-
-# ─── OpenAPI ────────────────────────────────────────
-openapi:
-    cd backend && v run openapi/openapi_generate.vsh
 
 # ─── 前端 ──────────────────────────────────────────
 frontend_get:

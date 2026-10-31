@@ -31,14 +31,14 @@ fn find_user_profile_domain(mut ctx Context) ! {
 
 // ═══ DTO ═══
 pub struct UserProfileResp {
-	user_id     string @[json: 'user_id']
-	username    string @[json: 'username']
-	nickname    string @[json: 'nickname']
-	avatar      string @[json: 'avatar']
-	email       string @[json: 'email']
-	mobile      string @[json: 'mobile']
-	description string @[json: 'description']
-	home_path   string @[json: 'homePath']
+	user_id     string @[json: 'user_id'; description: '用户 ID']
+	username    string @[json: 'username'; description: '用户名']
+	nickname    string @[json: 'nickname'; description: '昵称']
+	avatar      string @[json: 'avatar'; description: '头像地址']
+	email       string @[json: 'email'; description: '邮箱地址']
+	mobile      string @[json: 'mobile'; description: '手机号']
+	description string @[json: 'description'; description: '描述']
+	home_path   string @[json: 'homePath'; description: '默认首页路径']
 }
 
 // ═══ Repository ═══
@@ -52,13 +52,13 @@ fn find_user_profile_repo(mut ctx Context) !UserProfileResp {
 		return error('user not found')
 	}
 	return UserProfileResp{
-		user_id: user[0].id
-		username: user[0].username
-		nickname: user[0].nickname
-		avatar: user[0].avatar
-		email: user[0].email
-		mobile: user[0].mobile
+		user_id:     user[0].id
+		username:    user[0].username
+		nickname:    user[0].nickname
+		avatar:      user[0].avatar
+		email:       user[0].email
+		mobile:      user[0].mobile
 		description: user[0].description
-		home_path: user[0].home_path
+		home_path:   user[0].home_path
 	}
 }

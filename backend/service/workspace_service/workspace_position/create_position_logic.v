@@ -1,5 +1,6 @@
 module workspace_position
 
+import dto
 import veb
 import log
 import time
@@ -23,7 +24,7 @@ pub fn (app &WorkspacePosition) create_position_handler(mut ctx Context) veb.Res
 }
 
 // ═══ Use Case ═══
-pub fn create_position_usecase(mut ctx Context, req CreatePositionReq) !CreatePositionResp {
+pub fn create_position_usecase(mut ctx Context, req CreatePositionReq) !dto.CreatedResp {
 	create_position_domain(&req)!
 	return create_position_repo(mut ctx, req)
 }
@@ -40,20 +41,15 @@ fn create_position_domain(req &CreatePositionReq) ! {
 
 // ═══ DTO ═══
 pub struct CreatePositionReq {
-	workspace_id string @[json: 'workspaceId']
-	name         string @[json: 'name']
-	code         string @[json: 'code']
-	description  string @[json: 'description']
-	sort         u32    @[json: 'sort']
-}
-
-pub struct CreatePositionResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
+	workspace_id string @[json: 'workspaceId'; description: '工作区 ID']
+	name         string @[json: 'name'; description: '名称']
+	code         string @[json: 'code'; description: '编码']
+	description  string @[json: 'description'; description: '描述']
+	sort         u32    @[json: 'sort'; description: '排序值，数字越小越靠前']
 }
 
 // ═══ Repository ═══
-fn create_position_repo(mut ctx Context, req CreatePositionReq) !CreatePositionResp {
+fn create_position_repo(mut ctx Context, req CreatePositionReq) !dto.CreatedResp {
 	ctx.scope_sc.workspace_id = req.workspace_id
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
@@ -71,7 +67,7 @@ fn create_position_repo(mut ctx Context, req CreatePositionReq) !CreatePositionR
 	sql db {
 		insert p into WsPosition
 	} or { return error('Failed: ${err}') }
-	return CreatePositionResp{
+	return dto.CreatedResp{
 		id:  p.id
 		msg: 'Position created'
 	}

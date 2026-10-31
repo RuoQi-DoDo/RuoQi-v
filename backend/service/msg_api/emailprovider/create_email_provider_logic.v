@@ -1,5 +1,6 @@
 module emailprovider
 
+import dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &EmailProvider) create_email_provider_handler(mut ctx Context) veb.R
 }
 
 // ═══ Use Case ═══
-pub fn create_email_provider_usecase(mut ctx Context, req CreateEmailProviderReq) !CreateEmailProviderResp {
+pub fn create_email_provider_usecase(mut ctx Context, req CreateEmailProviderReq) !dto.MsgResp {
 	create_email_provider_domain(&req)!
 	return create_email_provider_repo(mut ctx, req)
 }
@@ -49,24 +50,20 @@ fn create_email_provider_domain(req &CreateEmailProviderReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateEmailProviderReq {
-	name       string  @[json: 'name']
-	auth_type  u8      @[json: 'authType']
-	email_addr string  @[json: 'emailAddr']
-	password   ?string @[json: 'password']
-	host_name  string  @[json: 'hostName']
-	identify   ?string @[json: 'identify']
-	secret     ?string @[json: 'secret']
-	port       ?u32    @[json: 'port']
-	tls        u8      @[json: 'tls']
-	is_default u8      @[json: 'isDefault']
-}
-
-pub struct CreateEmailProviderResp {
-	msg string @[json: 'msg']
+	name       string  @[json: 'name'; description: '名称']
+	auth_type  u8      @[json: 'authType'; description: '认证类型']
+	email_addr string  @[json: 'emailAddr'; description: '邮箱地址']
+	password   ?string @[json: 'password'; description: '密码']
+	host_name  string  @[json: 'hostName'; description: '主机名']
+	identify   ?string @[json: 'identify'; description: '认证标识']
+	secret     ?string @[json: 'secret'; description: '认证密钥']
+	port       ?u32    @[json: 'port'; description: '端口']
+	tls        u8      @[json: 'tls'; description: 'TLS 配置']
+	is_default u8      @[json: 'isDefault'; description: '是否为默认项']
 }
 
 // ═══ Repository ═══
-fn create_email_provider_repo(mut ctx Context, req CreateEmailProviderReq) !CreateEmailProviderResp {
+fn create_email_provider_repo(mut ctx Context, req CreateEmailProviderReq) !dto.MsgResp {
 	time_now := time.now()
 	provider := MsgEmailProvider{
 		id:         rand.uuid_v7()
@@ -95,7 +92,7 @@ fn create_email_provider_repo(mut ctx Context, req CreateEmailProviderReq) !Crea
 		insert provider into MsgEmailProvider
 	} or { return error('Failed to create EmailProvider: ${err}') }
 
-	return CreateEmailProviderResp{
+	return dto.MsgResp{
 		msg: 'EmailProvider created successfully'
 	}
 }

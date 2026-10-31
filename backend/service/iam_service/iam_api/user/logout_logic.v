@@ -1,5 +1,6 @@
 module user
 
+import dto
 import veb
 import log
 import model { Context }
@@ -17,16 +18,11 @@ pub fn (app &User) logout_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn logout_usecase(mut ctx Context) !LogoutResp {
+pub fn logout_usecase(mut ctx Context) !dto.MsgResp {
 	logout_repo(mut ctx)!
-	return LogoutResp{
+	return dto.MsgResp{
 		msg: 'Logout successful'
 	}
-}
-
-// ═══ DTO ═══
-pub struct LogoutResp {
-	msg string @[json: 'msg']
 }
 
 // ═══ Repository ═══

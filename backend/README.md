@@ -146,13 +146,14 @@ v_project/
 │   └── mq/                         # 消息队列适配器
 │       └── tenant_channel.v
 │
-├── openapi/                        # OpenAPI 文档与查看器
-│   ├── openapi_generate.vsh        # 自动扫描 route/service 源码生成 openapi.json
-│   ├── openapi.md                  # 注释标注规范说明 (@summary / @tag / @security…)
-│   ├── rapidoc.html                # RapiDoc  交互式文档 (GET /rapidoc)
-│   ├── redoc.html                  # Redoc    静态文档   (GET /redoc)
-│   ├── stoplight_elements.html     # Stoplight Elements 文档 (GET /sleapidoc)
-│   └── scalar.html                 # Scalar   API 文档   (GET /scalar)
+├── static/                         # 运行时静态资源
+│   ├── index.html                  # 首页
+│   ├── styles.css                  # 公共样式
+│   └── openapi/                    # API 文档查看器
+│       ├── rapidoc.html            # RapiDoc  交互式文档 (GET /static/rapidoc)
+│       ├── redoc.html              # Redoc    静态文档   (GET /static/redoc)
+│       ├── stoplight_elements.html # Stoplight Elements 文档 (GET /static/sleapidoc)
+│       └── scalar.html             # Scalar   API 文档   (GET /static/scalar)
 │
 ├── common/                         # 通用基础库（非业务）
 │   ├── captcha/                    # 验证码模块
@@ -167,7 +168,6 @@ v_project/
 │
 ├── etc/                            # 配置文件目录
 │   ├── config.toml                 # 主配置文件
-│   ├── openapi.json                 # 生成的 OpenAPI 3.0.3 规范
 │   └── locales/                    # 语言资源目录
 │
 └── locale/                         # 国际化资源

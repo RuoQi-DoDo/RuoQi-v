@@ -1,5 +1,6 @@
 module tasklog
 
+import dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &TaskLog) create_task_log_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_task_log_usecase(mut ctx Context, req CreateTaskLogReq) !CreateTaskLogResp {
+pub fn create_task_log_usecase(mut ctx Context, req CreateTaskLogReq) !dto.MsgResp {
 	create_task_log_domain(&req)!
 	return create_task_log_repo(mut ctx, req)
 }
@@ -46,18 +47,14 @@ fn create_task_log_domain(req &CreateTaskLogReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateTaskLogReq {
-	started_at     time.Time @[json: 'startedAt']
-	finished_at    time.Time @[json: 'finishedAt']
-	result         u8        @[json: 'result']
-	task_task_logs string    @[json: 'taskTaskLogs']
-}
-
-pub struct CreateTaskLogResp {
-	msg string @[json: 'msg']
+	started_at     time.Time @[json: 'startedAt'; description: '开始时间']
+	finished_at    time.Time @[json: 'finishedAt'; description: '完成时间']
+	result         u8        @[json: 'result'; description: '执行结果']
+	task_task_logs string    @[json: 'taskTaskLogs'; description: '父任务 ID']
 }
 
 // ═══ Repository ═══
-fn create_task_log_repo(mut ctx Context, req CreateTaskLogReq) !CreateTaskLogResp {
+fn create_task_log_repo(mut ctx Context, req CreateTaskLogReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer {
 		ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') }
@@ -87,7 +84,7 @@ fn create_task_log_repo(mut ctx Context, req CreateTaskLogReq) !CreateTaskLogRes
 		insert task_log into JobTaskLog
 	} or { return error('Failed to create TaskLog: ${err}') }
 
-	return CreateTaskLogResp{
+	return dto.MsgResp{
 		msg: 'TaskLog created successfully'
 	}
 }

@@ -1,5 +1,6 @@
 module emaillog
 
+import dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &EmailLog) create_email_log_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_email_log_usecase(mut ctx Context, req CreateEmailLogReq) !CreateEmailLogResp {
+pub fn create_email_log_usecase(mut ctx Context, req CreateEmailLogReq) !dto.MsgResp {
 	create_email_log_domain(&req)!
 	return create_email_log_repo(mut ctx, req)
 }
@@ -49,19 +50,15 @@ fn create_email_log_domain(req &CreateEmailLogReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateEmailLogReq {
-	target      string @[json: 'target']
-	subject     string @[json: 'subject']
-	content     string @[json: 'content']
-	send_status u8     @[json: 'sendStatus']
-	provider    string @[json: 'provider']
-}
-
-pub struct CreateEmailLogResp {
-	msg string @[json: 'msg']
+	target      string @[json: 'target'; description: '目标']
+	subject     string @[json: 'subject'; description: '交易标题']
+	content     string @[json: 'content'; description: '内容']
+	send_status u8     @[json: 'sendStatus'; description: '发送状态：0 未知，1 成功，2 失败']
+	provider    string @[json: 'provider'; description: '服务提供商']
 }
 
 // ═══ Repository ═══
-fn create_email_log_repo(mut ctx Context, req CreateEmailLogReq) !CreateEmailLogResp {
+fn create_email_log_repo(mut ctx Context, req CreateEmailLogReq) !dto.MsgResp {
 	time_now := time.now()
 	email_log := MsgEmailLog{
 		id:          rand.uuid_v7()
@@ -85,7 +82,7 @@ fn create_email_log_repo(mut ctx Context, req CreateEmailLogReq) !CreateEmailLog
 		insert email_log into MsgEmailLog
 	} or { return error('Failed to create EmailLog: ${err}') }
 
-	return CreateEmailLogResp{
+	return dto.MsgResp{
 		msg: 'EmailLog created successfully'
 	}
 }

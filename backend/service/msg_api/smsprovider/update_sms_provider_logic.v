@@ -1,5 +1,6 @@
 module smsprovider
 
+import dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &SmsProvider) update_sms_provider_handler(mut ctx Context) veb.Resul
 }
 
 // ═══ Use Case ═══
-pub fn update_sms_provider_usecase(mut ctx Context, req UpdateSmsProviderReq) !UpdateSmsProviderResp {
+pub fn update_sms_provider_usecase(mut ctx Context, req UpdateSmsProviderReq) !dto.MsgResp {
 	update_sms_provider_domain(&req)!
 	return update_sms_provider_repo(mut ctx, req)
 }
@@ -42,20 +43,16 @@ fn update_sms_provider_domain(req &UpdateSmsProviderReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateSmsProviderReq {
-	id         string  @[json: 'id']
-	name       ?string @[json: 'name']
-	secret_id  ?string @[json: 'secretId']
-	secret_key ?string @[json: 'secretKey']
-	region     ?string @[json: 'region']
-	is_default ?u8     @[json: 'isDefault']
-}
-
-pub struct UpdateSmsProviderResp {
-	msg string @[json: 'msg']
+	id         string  @[json: 'id'; description: '唯一标识']
+	name       ?string @[json: 'name'; description: '名称']
+	secret_id  ?string @[json: 'secretId'; description: '密钥 ID']
+	secret_key ?string @[json: 'secretKey'; description: '密钥 Secret']
+	region     ?string @[json: 'region'; description: '地区']
+	is_default ?u8     @[json: 'isDefault'; description: '是否为默认项']
 }
 
 // ═══ Repository ═══
-fn update_sms_provider_repo(mut ctx Context, req UpdateSmsProviderReq) !UpdateSmsProviderResp {
+fn update_sms_provider_repo(mut ctx Context, req UpdateSmsProviderReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -85,7 +82,7 @@ fn update_sms_provider_repo(mut ctx Context, req UpdateSmsProviderReq) !UpdateSm
 		dynamic update MsgSmsProvider set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateSmsProviderResp{
+	return dto.MsgResp{
 		msg: 'SmsProvider updated successfully'
 	}
 }

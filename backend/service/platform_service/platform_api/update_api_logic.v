@@ -1,5 +1,6 @@
 module platform_api
 
+import dto
 import veb
 import log
 import json2 as json
@@ -22,7 +23,7 @@ pub fn (app &PlatformApi) update_api_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn update_api_usecase(mut ctx Context, req UpdateApiReq) !UpdateApiResp {
+pub fn update_api_usecase(mut ctx Context, req UpdateApiReq) !dto.MsgResp {
 	update_api_domain(&req)!
 	return update_api_repo(mut ctx, req)
 }
@@ -36,22 +37,18 @@ fn update_api_domain(req &UpdateApiReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateApiReq {
-	id           string  @[json: 'id']
-	path         ?string @[json: 'path']
-	description  ?string @[json: 'description']
-	api_group    ?string @[json: 'apiGroup']
-	service_name ?string @[json: 'serviceName']
-	method       ?string @[json: 'method']
-	is_required  ?u8     @[json: 'isRequired']
-	status       ?u8     @[json: 'status']
-}
-
-pub struct UpdateApiResp {
-	msg string @[json: 'msg']
+	id           string  @[json: 'id'; description: '唯一标识']
+	path         ?string @[json: 'path'; description: '路径']
+	description  ?string @[json: 'description'; description: '描述']
+	api_group    ?string @[json: 'apiGroup'; description: 'API 分组']
+	service_name ?string @[json: 'serviceName'; description: '服务名称']
+	method       ?string @[json: 'method'; description: 'HTTP 方法']
+	is_required  ?u8     @[json: 'isRequired'; description: '是否必填']
+	status       ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══
-fn update_api_repo(mut ctx Context, req UpdateApiReq) !UpdateApiResp {
+fn update_api_repo(mut ctx Context, req UpdateApiReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire scoped DB: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	// vfmt off
@@ -84,7 +81,7 @@ fn update_api_repo(mut ctx Context, req UpdateApiReq) !UpdateApiResp {
 	sql db {
 		dynamic update PfApi set up_expr where id == req.id
 	}!
-	return UpdateApiResp{
+	return dto.MsgResp{
 		msg: 'API updated'
 	}
 }

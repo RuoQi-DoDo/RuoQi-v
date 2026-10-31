@@ -15,11 +15,11 @@ pub fn (app &Authentication) find_email_opt_handler(mut ctx Context) veb.Result 
 		data: GetOptResp{
 			opt_token: opt_token
 		}
-		msg: 'email OTP generated'
+		msg:  'email OTP generated'
 	))
 }
 
 // ═══ DTO ═══
 pub struct GetOptResp {
-	opt_token string @[json: 'optToken']
+	opt_token string @[json: 'optToken'; description: '一次性验证码令牌']
 }

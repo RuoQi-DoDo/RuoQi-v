@@ -1,5 +1,6 @@
 module currency
 
+import dto
 import log
 import time
 import rand
@@ -30,7 +31,7 @@ pub fn create_currency_tool(mut server mcp.Server, pool &dbpool.DatabasePoolable
 }
 
 // ═══ Use Case ═══
-pub fn create_currency_usecase(pool &dbpool.DatabasePoolable, req CreateCurrencyReq) !CreateCurrencyResp {
+pub fn create_currency_usecase(pool &dbpool.DatabasePoolable, req CreateCurrencyReq) !dto.CreatedResp {
 	create_currency_domain(&req)!
 	return create_currency_repo(pool, req)
 }
@@ -59,13 +60,8 @@ pub struct CreateCurrencyReq {
 	status                    u8     @[json: 'status']
 }
 
-pub struct CreateCurrencyResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn create_currency_repo(pool &dbpool.DatabasePoolable, req CreateCurrencyReq) !CreateCurrencyResp {
+fn create_currency_repo(pool &dbpool.DatabasePoolable, req CreateCurrencyReq) !dto.CreatedResp {
 	time_now := time.now()
 	new_id := rand.uuid_v7()
 	base_currency := BaseCurrency{
@@ -93,7 +89,7 @@ fn create_currency_repo(pool &dbpool.DatabasePoolable, req CreateCurrencyReq) !C
 		insert base_currency into BaseCurrency
 	} or { return error('Failed to create Currency: ${err}') }
 
-	return CreateCurrencyResp{
+	return dto.CreatedResp{
 		id:  new_id
 		msg: 'Currency created successfully'
 	}

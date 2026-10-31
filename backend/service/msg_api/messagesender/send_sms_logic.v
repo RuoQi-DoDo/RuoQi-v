@@ -1,5 +1,6 @@
 module messagesender
 
+import dto
 import veb
 import log
 import time
@@ -29,7 +30,7 @@ pub fn (app &MessageSender) send_sms_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn send_sms_usecase(mut ctx Context, req SendSmsReq) !SendSmsResp {
+pub fn send_sms_usecase(mut ctx Context, req SendSmsReq) !dto.MsgResp {
 	send_sms_domain(&req)!
 	return send_sms_repo(mut ctx, req)
 }
@@ -49,17 +50,13 @@ fn send_sms_domain(req &SendSmsReq) ! {
 
 // ═══ DTO ═══
 pub struct SendSmsReq {
-	phone_number string @[json: 'phoneNumber']
-	content      string @[json: 'content']
-	provider     string @[json: 'provider']
-}
-
-pub struct SendSmsResp {
-	msg string @[json: 'msg']
+	phone_number string @[json: 'phoneNumber'; description: '电话号码']
+	content      string @[json: 'content'; description: '内容']
+	provider     string @[json: 'provider'; description: '服务提供商']
 }
 
 // ═══ Repository ═══
-fn send_sms_repo(mut ctx Context, req SendSmsReq) !SendSmsResp {
+fn send_sms_repo(mut ctx Context, req SendSmsReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -88,7 +85,7 @@ fn send_sms_repo(mut ctx Context, req SendSmsReq) !SendSmsResp {
 		insert sms_log into MsgSmsLog
 	} or { return error('Failed to create sms send log: ${err}') }
 
-	return SendSmsResp{
+	return dto.MsgResp{
 		msg: 'SMS queued successfully to ${req.phone_number}'
 	}
 }

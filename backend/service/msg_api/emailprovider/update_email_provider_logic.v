@@ -1,5 +1,6 @@
 module emailprovider
 
+import dto
 import veb
 import log
 import time
@@ -28,7 +29,7 @@ pub fn (app &EmailProvider) update_email_provider_handler(mut ctx Context) veb.R
 }
 
 // ═══ Use Case ═══
-pub fn update_email_provider_usecase(mut ctx Context, req UpdateEmailProviderReq) !UpdateEmailProviderResp {
+pub fn update_email_provider_usecase(mut ctx Context, req UpdateEmailProviderReq) !dto.MsgResp {
 	update_email_provider_domain(&req)!
 	return update_email_provider_repo(mut ctx, req)
 }
@@ -42,25 +43,21 @@ fn update_email_provider_domain(req &UpdateEmailProviderReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateEmailProviderReq {
-	id         string  @[json: 'id']
-	name       ?string @[json: 'name']
-	auth_type  ?u8     @[json: 'authType']
-	email_addr ?string @[json: 'emailAddr']
-	password   ?string @[json: 'password']
-	host_name  ?string @[json: 'hostName']
-	identify   ?string @[json: 'identify']
-	secret     ?string @[json: 'secret']
-	port       ?u32    @[json: 'port']
-	tls        ?u8     @[json: 'tls']
-	is_default ?u8     @[json: 'isDefault']
-}
-
-pub struct UpdateEmailProviderResp {
-	msg string @[json: 'msg']
+	id         string  @[json: 'id'; description: '唯一标识']
+	name       ?string @[json: 'name'; description: '名称']
+	auth_type  ?u8     @[json: 'authType'; description: '认证类型']
+	email_addr ?string @[json: 'emailAddr'; description: '邮箱地址']
+	password   ?string @[json: 'password'; description: '密码']
+	host_name  ?string @[json: 'hostName'; description: '主机名']
+	identify   ?string @[json: 'identify'; description: '认证标识']
+	secret     ?string @[json: 'secret'; description: '认证密钥']
+	port       ?u32    @[json: 'port'; description: '端口']
+	tls        ?u8     @[json: 'tls'; description: 'TLS 配置']
+	is_default ?u8     @[json: 'isDefault'; description: '是否为默认项']
 }
 
 // ═══ Repository ═══
-fn update_email_provider_repo(mut ctx Context, req UpdateEmailProviderReq) !UpdateEmailProviderResp {
+fn update_email_provider_repo(mut ctx Context, req UpdateEmailProviderReq) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -105,7 +102,7 @@ fn update_email_provider_repo(mut ctx Context, req UpdateEmailProviderReq) !Upda
 		dynamic update MsgEmailProvider set up_expr where id == req.id
 	} or { return error('Failed to execute SQL query: ${err}') }
 
-	return UpdateEmailProviderResp{
+	return dto.MsgResp{
 		msg: 'EmailProvider updated successfully'
 	}
 }

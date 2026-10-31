@@ -13,7 +13,7 @@ pub fn (app &Authentication) find_image_captcha_handler(mut ctx Context) veb.Res
 	captcha_token, captcha_image, _ := crypt.captcha_generate(ctx.config.crypt.jwt_secret) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(
@@ -21,12 +21,12 @@ pub fn (app &Authentication) find_image_captcha_handler(mut ctx Context) veb.Res
 			captcha_token: captcha_token
 			captcha_image: captcha_image
 		}
-		msg: 'captcha generated'
+		msg:  'captcha generated'
 	))
 }
 
 // ═══ DTO ═══
 pub struct GetCaptchaResp {
-	captcha_token string @[json: 'captchaToken']
-	captcha_image string @[json: 'captchaImage']
+	captcha_token string @[json: 'captchaToken'; description: '验证码令牌']
+	captcha_image string @[json: 'captchaImage'; description: '验证码图片']
 }

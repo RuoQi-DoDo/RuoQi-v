@@ -1,5 +1,6 @@
 module smslog
 
+import dto
 import time
 import veb
 import log
@@ -13,7 +14,7 @@ import model { Context }
 pub fn (app &SmsLog) delete_sms_log_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeleteSmsLogReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -28,29 +29,20 @@ pub fn (app &SmsLog) delete_sms_log_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_sms_log_usecase(mut ctx Context, req DeleteSmsLogReq) !DeleteSmsLogResp {
+pub fn delete_sms_log_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	delete_sms_log_domain(&req)!
 	return delete_sms_log_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_sms_log_domain(req &DeleteSmsLogReq) ! {
+fn delete_sms_log_domain(req &dto.DeleteIdsReq) ! {
 	if req.ids.len == 0 {
 		return error('No SmsLog ids provided')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteSmsLogReq {
-	ids []string @[json: 'ids']
-}
-
-pub struct DeleteSmsLogResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_sms_log_repo(mut ctx Context, ids []string) !DeleteSmsLogResp {
+fn delete_sms_log_repo(mut ctx Context, ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -59,7 +51,7 @@ fn delete_sms_log_repo(mut ctx Context, ids []string) !DeleteSmsLogResp {
 		where id in ids && del_flag == 0
 	} or { return error('Failed to soft-delete sms log: ${err}') }
 
-	return DeleteSmsLogResp{
+	return dto.MsgResp{
 		msg: '${ids.len} SmsLog(s) deleted successfully'
 	}
 }

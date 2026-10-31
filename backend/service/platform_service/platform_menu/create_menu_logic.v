@@ -1,5 +1,6 @@
 module platform_menu
 
+import dto
 import veb
 import log
 import time
@@ -26,7 +27,7 @@ pub fn (app &PlatformMenu) create_menu_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn create_menu_usecase(mut ctx Context, req CreateMenuReq) !CreateMenuResp {
+pub fn create_menu_usecase(mut ctx Context, req CreateMenuReq) !dto.CreatedResp {
 	create_menu_domain(&req)!
 	return create_menu_repo(mut ctx, req)
 }
@@ -40,25 +41,20 @@ fn create_menu_domain(req &CreateMenuReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateMenuReq {
-	parent_id  string @[json: 'parentId']
-	menu_level u8     @[json: 'menuLevel']
-	menu_type  u8     @[json: 'menuType']
-	path       string @[json: 'path']
-	name       string @[json: 'name']
-	redirect   string @[json: 'redirect']
-	component  string @[json: 'component']
-	order_no   u32    @[json: 'orderNo']
-	icon       string @[json: 'icon']
-	title      string @[json: 'title']
-}
-
-pub struct CreateMenuResp {
-	id  string @[json: 'id']
-	msg string @[json: 'msg']
+	parent_id  string @[json: 'parentId'; description: '父级 ID']
+	menu_level u8     @[json: 'menuLevel'; description: '菜单层级']
+	menu_type  u8     @[json: 'menuType'; description: '菜单类型']
+	path       string @[json: 'path'; description: '路径']
+	name       string @[json: 'name'; description: '名称']
+	redirect   string @[json: 'redirect'; description: '跳转地址']
+	component  string @[json: 'component'; description: '前端组件']
+	order_no   u32    @[json: 'orderNo'; description: '订单号']
+	icon       string @[json: 'icon'; description: '图标']
+	title      string @[json: 'title'; description: '标题']
 }
 
 // ═══ Repository ═══
-fn create_menu_repo(mut ctx Context, req CreateMenuReq) !CreateMenuResp {
+fn create_menu_repo(mut ctx Context, req CreateMenuReq) !dto.CreatedResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 	menu := PfMenu{
@@ -80,7 +76,7 @@ fn create_menu_repo(mut ctx Context, req CreateMenuReq) !CreateMenuResp {
 	sql db {
 		insert menu into PfMenu
 	} or { return error('Failed: ${err}') }
-	return CreateMenuResp{
+	return dto.CreatedResp{
 		id:  menu.id
 		msg: 'Menu created'
 	}

@@ -20,7 +20,7 @@ pub fn (app &SmsLog) find_sms_log_all_handler(mut ctx Context) veb.Result {
 	result := find_sms_log_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -39,29 +39,29 @@ fn find_sms_log_all_domain() {
 
 // ═══ DTO ═══
 pub struct SmsLogListReq {
-	page         int @[json: 'page']
-	page_size    int @[json: 'pageSize']
-	phone_number string @[json: 'phoneNumber']
-	provider     string @[json: 'provider']
-	send_status  []u8 @[json: 'sendStatus']
+	page         int    @[json: 'page'; description: '页码，从 1 开始']
+	page_size    int    @[json: 'pageSize'; description: '每页记录数']
+	phone_number string @[json: 'phoneNumber'; description: '电话号码']
+	provider     string @[json: 'provider'; description: '服务提供商']
+	send_status  []u8   @[json: 'sendStatus'; description: '发送状态：0 未知，1 成功，2 失败']
 }
 
 pub struct SmsLogData {
-	id           string @[json: 'id']
-	phone_number string @[json: 'phoneNumber']
-	content      string @[json: 'content']
-	send_status  u8 @[json: 'sendStatus']
-	provider     string @[json: 'provider']
-	updater_id   ?string @[json: 'updaterId']
-	creator_id   ?string @[json: 'creatorId']
-	created_at   string @[json: 'createdAt']
-	updated_at   string @[json: 'updatedAt']
-	deleted_at   string @[json: 'deletedAt']
+	id           string  @[json: 'id'; description: '唯一标识']
+	phone_number string  @[json: 'phoneNumber'; description: '目标手机号码']
+	content      string  @[json: 'content'; description: '短信内容']
+	send_status  u8      @[json: 'sendStatus'; description: '发送状态']
+	provider     string  @[json: 'provider'; description: '短信提供商']
+	updater_id   ?string @[json: 'updaterId'; description: '更新者 ID']
+	creator_id   ?string @[json: 'creatorId'; description: '创建者 ID']
+	created_at   string  @[json: 'createdAt'; description: '创建时间']
+	updated_at   string  @[json: 'updatedAt'; description: '更新时间']
+	deleted_at   string  @[json: 'deletedAt'; description: '删除时间']
 }
 
 pub struct SmsLogListResp {
-	total int
-	data  []SmsLogData
+	total int          @[description: '总记录数']
+	data  []SmsLogData @[description: '响应数据']
 }
 
 // ═══ Repository ═══
@@ -90,21 +90,21 @@ fn find_sms_log_all_repo(mut ctx Context, req SmsLogListReq) !SmsLogListResp {
 	mut datalist := []SmsLogData{}
 	for row in result {
 		datalist << SmsLogData{
-			id: row.id
+			id:           row.id
 			phone_number: row.phone_number
-			content: row.content
-			send_status: row.send_status
-			provider: row.provider
-			creator_id: row.creator_id
-			updater_id: row.updater_id
-			created_at: row.created_at.format_ss()
-			updated_at: row.updated_at.format_ss()
-			deleted_at: (row.deleted_at or { time.Time{} }).format_ss()
+			content:      row.content
+			send_status:  row.send_status
+			provider:     row.provider
+			creator_id:   row.creator_id
+			updater_id:   row.updater_id
+			created_at:   row.created_at.format_ss()
+			updated_at:   row.updated_at.format_ss()
+			deleted_at:   (row.deleted_at or { time.Time{} }).format_ss()
 		}
 	}
 
 	return SmsLogListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

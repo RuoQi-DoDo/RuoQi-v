@@ -1,5 +1,6 @@
 module task
 
+import dto
 import time
 import veb
 import log
@@ -13,7 +14,7 @@ import model { Context }
 pub fn (app &Task) delete_task_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeleteTaskReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -28,29 +29,20 @@ pub fn (app &Task) delete_task_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_task_usecase(mut ctx Context, req DeleteTaskReq) !DeleteTaskResp {
+pub fn delete_task_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	delete_task_domain(&req)!
 	return delete_task_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_task_domain(req &DeleteTaskReq) ! {
+fn delete_task_domain(req &dto.DeleteIdsReq) ! {
 	if req.ids.len == 0 {
 		return error('No Task ids provided')
 	}
 }
 
-// ═══ DTO ═══
-pub struct DeleteTaskReq {
-	ids []string @[json: 'ids']
-}
-
-pub struct DeleteTaskResp {
-	msg string @[json: 'msg']
-}
-
 // ═══ Repository ═══
-fn delete_task_repo(mut ctx Context, ids []string) !DeleteTaskResp {
+fn delete_task_repo(mut ctx Context, ids []string) !dto.MsgResp {
 	db, conn := ctx.acquire_scoped() or { return error('Failed to acquire DB conn: ${err}') }
 	defer { ctx.dbpool.release(conn) or { log.warn('Failed to release conn: ${err}') } }
 
@@ -59,7 +51,7 @@ fn delete_task_repo(mut ctx Context, ids []string) !DeleteTaskResp {
 		where id in ids && del_flag == 0
 	} or { return error('Failed to delete task: ${err}') }
 
-	return DeleteTaskResp{
+	return dto.MsgResp{
 		msg: '${ids.len} Task(s) deleted successfully'
 	}
 }

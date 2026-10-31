@@ -12,27 +12,27 @@ import common.api
 import common.crypt
 
 pub struct CreateApiKeyReq {
-	name           string   @[json: 'name']
-	tenant_ids     []string @[json: 'tenant_ids']
-	subproduct_ids []string @[json: 'subproduct_ids']
-	subportal_ids  []string @[json: 'subportal_ids']
-	scopes         []string @[json: 'scopes']
-	expired_at     ?string  @[json: 'expired_at']
+	name           string   @[json: 'name'; description: '名称']
+	tenant_ids     []string @[json: 'tenant_ids'; description: '租户 ID 列表']
+	subproduct_ids []string @[json: 'subproduct_ids'; description: '子产品 ID 列表']
+	subportal_ids  []string @[json: 'subportal_ids'; description: '子门户 ID 列表']
+	scopes         []string @[json: 'scopes'; description: '权限范围列表']
+	expired_at     ?string  @[json: 'expired_at'; description: '过期时间']
 }
 
 pub struct CreateApiKeyResp {
-	id             string   @[json: 'id']
-	name           string   @[json: 'name']
-	plain_sk       string   @[json: 'plain_sk']
-	access_key_id  string   @[json: 'access_key_id']
-	key_prefix     string   @[json: 'key_prefix']
-	key_last_four  string   @[json: 'key_last_four']
-	tenant_ids     []string @[json: 'tenant_ids']
-	subproduct_ids []string @[json: 'subproduct_ids']
-	subportal_ids  []string @[json: 'subportal_ids']
-	scopes         []string @[json: 'scopes']
-	expired_at     ?string  @[json: 'expired_at']
-	created_at     string   @[json: 'created_at']
+	id             string   @[json: 'id'; description: '唯一标识']
+	name           string   @[json: 'name'; description: '名称']
+	plain_sk       string   @[json: 'plain_sk'; description: '明文 Secret Key，仅在创建时返回']
+	access_key_id  string   @[json: 'access_key_id'; description: 'Access Key ID']
+	key_prefix     string   @[json: 'key_prefix'; description: 'Access Key 前缀']
+	key_last_four  string   @[json: 'key_last_four'; description: 'Secret Key 后四位']
+	tenant_ids     []string @[json: 'tenant_ids'; description: '租户 ID 列表']
+	subproduct_ids []string @[json: 'subproduct_ids'; description: '子产品 ID 列表']
+	subportal_ids  []string @[json: 'subportal_ids'; description: '子门户 ID 列表']
+	scopes         []string @[json: 'scopes'; description: '权限范围列表']
+	expired_at     ?string  @[json: 'expired_at'; description: '过期时间']
+	created_at     string   @[json: 'created_at'; description: '创建时间']
 }
 
 @['/create'; post]
