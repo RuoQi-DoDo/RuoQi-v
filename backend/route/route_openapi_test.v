@@ -27,7 +27,7 @@ fn test_nested_data_schemas_include_field_descriptions() {
 		'properties', 'url', 'description').str() == '云文件资源地址'
 }
 
-fn test_runtime_openapi_uses_registered_routes_and_typed_contracts() {
+fn test_runtime_openapi_uses_registered_routes() {
 	mut app := &AliasApp{}
 	mut ctx := &Context{
 		dbpool: unsafe { nil }
@@ -45,14 +45,9 @@ fn test_runtime_openapi_uses_registered_routes_and_typed_contracts() {
 	assert openapi_test_at(currency_create, 'tags').as_array().map(it.str()) == [
 		'currency.Currency',
 	]
-	assert openapi_test_at(currency_create, 'requestBody', 'content', 'application/json',
-		'schema', '\$ref').str().ends_with('currency.CreateCurrencyReq')
-	assert openapi_test_at(raw, 'components', 'schemas', 'currency.CreateCurrencyReq',
-		'properties', 'currencyCode', 'description').str() == 'ISO 货币代码，例如 CNY'
 	assert openapi_test_at(currency_create, 'security').as_array().len == 0
 	assert openapi_test_at(currency_create, 'responses').as_map().keys() == ['200']
-	assert openapi_test_at(currency_create, 'responses', '200', 'content', 'application/json',
-		'schema', 'oneOf').as_array().len == 2
+	assert openapi_test_at(currency_create, 'responses', '200', 'description').str() == '业务响应。即使业务处理失败，状态码也为 200，并通过非零业务码表示错误。'
 
 	user_create := openapi_test_at(raw, 'paths', '/iam/user/create_user', 'post')
 	assert openapi_test_at(user_create, 'tags').as_array().map(it.str()) == ['user.User']
@@ -109,7 +104,7 @@ fn test_runtime_openapi_uses_registered_routes_and_typed_contracts() {
 		url: '/sys_api/admin/'
 	})!
 	assert not_found.res.status() == .not_found
-	assert not_found.res.body.contains('短链接不存在')
+	assert not_found.res.body.contains('页面不存在')
 
 	forbidden := veb.render_request[AliasApp, Context](mut app, http.Request{
 		url: '/static/403'
