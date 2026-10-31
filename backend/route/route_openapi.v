@@ -9,7 +9,6 @@ import service.base_api.currency {
 	CreateCurrencyReq,
 	CurrencyListReq,
 	CurrencyListResp,
-	DeleteCurrencyReq,
 	UpdateCurrencyReq,
 }
 import service.iam_service.iam_api.apikey {
@@ -110,7 +109,7 @@ fn add_typed_endpoints(mut doc veb.OpenApiDocument) ! {
 	add_typed_api_response[CurrencyListResp](mut doc, '/base/currency/all', .get)!
 	doc.request[UpdateCurrencyReq]('/base/currency/update', .post)!
 	add_typed_api_response[dto.MsgResp](mut doc, '/base/currency/update', .post)!
-	doc.request[DeleteCurrencyReq]('/base/currency/delete', .post)!
+	doc.request[dto.DeleteIdsReq]('/base/currency/delete', .post)!
 	add_typed_api_response[dto.MsgResp](mut doc, '/base/currency/delete', .post)!
 
 	// Public IAM authentication endpoints.

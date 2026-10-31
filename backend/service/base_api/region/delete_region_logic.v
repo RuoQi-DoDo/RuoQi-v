@@ -14,7 +14,7 @@ import model { Context }
 pub fn (app &Region) delete_region_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeleteRegionReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -30,24 +30,19 @@ pub fn (app &Region) delete_region_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_region_usecase(mut ctx Context, req DeleteRegionReq) !dto.MsgResp {
+pub fn delete_region_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	// Domain 校验
 	delete_region_domain(&req)!
 
 	// Repository 执行删除
-	return delete_region_repo(mut ctx, req.region_ids)
+	return delete_region_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_region_domain(req &DeleteRegionReq) ! {
-	if req.region_ids.len == 0 {
+fn delete_region_domain(req &dto.DeleteIdsReq) ! {
+	if req.ids.len == 0 {
 		return error('No Region ids provided')
 	}
-}
-
-// ═══ DTO ═══
-pub struct DeleteRegionReq {
-	region_ids []string @[json: 'ids'; description: '地区 ID 列表']
 }
 
 // ═══ Repository ═══

@@ -14,7 +14,7 @@ import model { Context }
 pub fn (app &Utc) delete_utc_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeleteUtcReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -30,24 +30,19 @@ pub fn (app &Utc) delete_utc_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_utc_usecase(mut ctx Context, req DeleteUtcReq) !dto.MsgResp {
+pub fn delete_utc_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	// Domain 校验
 	delete_utc_domain(&req)!
 
 	// Repository 执行删除
-	return delete_utc_repo(mut ctx, req.utc_ids)
+	return delete_utc_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_utc_domain(req &DeleteUtcReq) ! {
-	if req.utc_ids.len == 0 {
+fn delete_utc_domain(req &dto.DeleteIdsReq) ! {
+	if req.ids.len == 0 {
 		return error('No Currency ids provided')
 	}
-}
-
-// ═══ DTO ═══
-pub struct DeleteUtcReq {
-	utc_ids []string @[json: 'ids'; description: '时区 ID 列表']
 }
 
 // ═══ Repository ═══

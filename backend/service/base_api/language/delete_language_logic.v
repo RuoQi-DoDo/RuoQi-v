@@ -14,7 +14,7 @@ import model { Context }
 pub fn (app &Language) delete_language_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
 
-	req := json.decode[DeleteLanguageReq](ctx.req.data) or {
+	req := json.decode[dto.DeleteIdsReq](ctx.req.data) or {
 		return ctx.json(api.json_error(code: api.err_common_param_invalid, msg: err.msg()))
 	}
 
@@ -30,24 +30,19 @@ pub fn (app &Language) delete_language_handler(mut ctx Context) veb.Result {
 }
 
 // ═══ Use Case ═══
-pub fn delete_language_usecase(mut ctx Context, req DeleteLanguageReq) !dto.MsgResp {
+pub fn delete_language_usecase(mut ctx Context, req dto.DeleteIdsReq) !dto.MsgResp {
 	// Domain 校验
 	delete_language_domain(&req)!
 
 	// Repository 执行删除
-	return delete_language_repo(mut ctx, req.language_ids)
+	return delete_language_repo(mut ctx, req.ids)
 }
 
 // ═══ Domain ═══
-fn delete_language_domain(req &DeleteLanguageReq) ! {
-	if req.language_ids.len == 0 {
+fn delete_language_domain(req &dto.DeleteIdsReq) ! {
+	if req.ids.len == 0 {
 		return error('No Language ids provided')
 	}
-}
-
-// ═══ DTO ═══
-pub struct DeleteLanguageReq {
-	language_ids []string @[json: 'ids'; description: '语言 ID 列表']
 }
 
 // ═══ Repository ═══
