@@ -49,20 +49,20 @@ fn login_by_account_domain(req &LoginByAccountReq) ! {
 
 // ═══ DTO ═══
 pub struct LoginByAccountReq {
-	username     string  @[json: 'username']
-	password     string  @[json: 'password']
-	captcha_text string  @[json: 'captcha_text']
-	captcha_id   string  @[json: 'captcha_id']
-	status       u8      @[json: 'status']
-	source       string  @[json: 'source']
-	login_ip     ?string @[json: 'login_ip']
-	device_id    ?string @[json: 'device_id']
+	username     string  @[json: 'username'; description: '用户名']
+	password     string  @[json: 'password'; description: '密码']
+	captcha_text string  @[json: 'captcha_text'; description: '验证码内容']
+	captcha_id   string  @[json: 'captcha_id'; description: '验证码 ID']
+	status       u8      @[json: 'status'; description: '状态：0 禁用，1 启用']
+	source       string  @[json: 'source'; description: '来源']
+	login_ip     ?string @[json: 'login_ip'; description: '登录 IP 地址']
+	device_id    ?string @[json: 'device_id'; description: '设备 ID']
 }
 
 pub struct LoginByAccountResp {
-	expired_at string @[json: 'expired_at']
-	user_id    string @[json: 'user_id']
-	token_jwt  string @[json: 'token_jwt']
+	expired_at string @[json: 'expired_at'; description: '过期时间']
+	user_id    string @[json: 'user_id'; description: '用户 ID']
+	token_jwt  string @[json: 'token_jwt'; description: 'JWT 令牌']
 }
 
 // ═══ Repository ═══

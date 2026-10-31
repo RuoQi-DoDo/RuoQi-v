@@ -44,9 +44,9 @@ fn create_workspace_domain(req &CreateWsReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateWsReq {
-	tenant_id   string @[json: 'tenantId']
-	name        string @[json: 'name']
-	description string @[json: 'description']
+	tenant_id   string @[json: 'tenantId'; description: '租户 ID']
+	name        string @[json: 'name'; description: '名称']
+	description string @[json: 'description'; description: '描述']
 }
 
 // ═══ Repository ═══

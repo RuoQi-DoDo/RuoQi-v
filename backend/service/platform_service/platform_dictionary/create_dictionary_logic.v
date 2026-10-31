@@ -38,9 +38,9 @@ fn create_dictionary_domain(req &CreateDictionaryReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateDictionaryReq {
-	name        string @[json: 'name']
-	code        string @[json: 'code']
-	description string @[json: 'description']
+	name        string @[json: 'name'; description: '名称']
+	code        string @[json: 'code'; description: '编码']
+	description string @[json: 'description'; description: '描述']
 }
 
 // ═══ Repository ═══

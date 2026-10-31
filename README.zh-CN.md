@@ -22,23 +22,27 @@ example/    # 后端示例
 
 | 端点                                 | 查看器             | 特点                                  |
 | ------------------------------------ | ------------------ | ------------------------------------- |
-| `http://localhost:9009/rapidoc`      | RapiDoc            | 交互式调试、暗色主题、Schema 表格视图 |
-| `http://localhost:9009/redoc`        | Redoc              | 三栏经典布局、搜索深度展开            |
-| `http://localhost:9009/sleapidoc`    | Stoplight Elements | 现代化 UI、侧边栏导航、Try It 面板    |
-| `http://localhost:9009/scalar`       | Scalar             | 现代化 UI、内置 API 测试、代码示例    |
-| `http://localhost:9009/openapi.json` | OpenAPI 3.0.3 JSON | 原始规范数据，四种查看器共用此数据源  |
+| `http://localhost:9009/static/rapidoc`      | RapiDoc            | 交互式调试、暗色主题、Schema 表格视图 |
+| `http://localhost:9009/static/redoc`        | Redoc              | 三栏经典布局、搜索深度展开            |
+| `http://localhost:9009/static/sleapidoc`    | Stoplight Elements | 现代化 UI、侧边栏导航、Try It 面板    |
+| `http://localhost:9009/static/scalar`       | Scalar             | 现代化 UI、内置 API 测试、代码示例    |
+| `http://localhost:9009/static/openapi.json` | OpenAPI 3.0.3 JSON | veb 从已注册路由实时生成的规范数据     |
 
-### 生成 OpenAPI 规范
+### 运行时 OpenAPI 规范
 
-```bash
-v run openapi/openapi_generate.vsh
-```
+服务启动时会把当前条件编译分支实际注册的路由构造成 `veb.OpenApiDocument`，
+因此 `/static/openapi.json` 不需要提前生成，增删路由会自动同步。四个查看器共用该端点。
+
+强类型 DTO、统一业务响应和 JWT/AK-SK 安全方案在
+`backend/route/route_openapi.v` 中集中配置；目前已接入货币 CRUD、账号登录、
+验证码、API Key、用户和平台 API 的代表性接口。未显式注册 DTO 的接口
+仍会生成真实路径和通用 JSON 契约。
 
 ## 快速开始
 
 ### 环境要求
 
-- **V 语言**: 0.5.0+
+- **V 语言**: 0.5.2+（支持强类型 `veb.OpenApiDocument`）
 - **数据库**: MySQL 8.0+ / PostgreSQL 18+
 - **缓存**: Redis 7.0+ (可选)
 
@@ -105,7 +109,7 @@ git subtree split --prefix=frontend -b frontend-export
 - [x] Database Connection Pool Middleware (MySQL, PostgreSQL)
 - [x] locale
 - [x] Multitenancy (tenant / subproduct / subportal / workspace isolation) [租户 → 应用 → 门户 → 空间]
-- [x] OpenAPI: automatic spec generation (openapi_generate.vsh)
+- [x] OpenAPI: dispatcher-backed runtime document + typed DTO metadata
 - [x] RBAC Permission Control
 
 ## 特性

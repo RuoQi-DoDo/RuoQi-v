@@ -40,9 +40,9 @@ fn update_subproduct_domain(req &UpdateSubProductReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateSubProductReq {
-	id      string  @[json: 'id']
-	plan_id ?string @[json: 'planId']
-	status  ?u8     @[json: 'status']
+	id      string  @[json: 'id'; description: '唯一标识']
+	plan_id ?string @[json: 'planId'; description: '订阅计划 ID']
+	status  ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══

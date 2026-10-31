@@ -54,17 +54,17 @@ fn signup_by_email_domain(req &SignupByEmailReq) ! {
 
 // ═══ DTO ═══
 pub struct SignupByEmailReq {
-	username  string @[json: 'username']
-	password  string @[json: 'password']
-	nickname  string @[json: 'nickname']
-	email     string @[json: 'email']
-	opt_num   string @[json: 'optNum']
-	opt_token string @[json: 'optToken']
+	username  string @[json: 'username'; description: '用户名']
+	password  string @[json: 'password'; description: '密码']
+	nickname  string @[json: 'nickname'; description: '昵称']
+	email     string @[json: 'email'; description: '邮箱地址']
+	opt_num   string @[json: 'optNum'; description: '一次性验证码']
+	opt_token string @[json: 'optToken'; description: '一次性验证码令牌']
 }
 
 pub struct SignupByEmailResp {
-	user_id string @[json: 'user_id']
-	msg     string @[json: 'msg']
+	user_id string @[json: 'user_id'; description: '用户 ID']
+	msg     string @[json: 'msg'; description: '提示消息']
 }
 
 // ═══ Repository ═══

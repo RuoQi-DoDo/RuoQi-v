@@ -46,18 +46,18 @@ fn create_user_domain(req &CreateUserReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateUserReq {
-	avatar       string    @[json: 'avatar']
-	description  string    @[json: 'description']
-	mobile       string    @[json: 'mobile']
-	email        string    @[json: 'email']
-	home_path    string    @[json: 'homePath']
-	nickname     string    @[json: 'nickname']
-	password     string    @[json: 'password']
-	status       u8        @[json: 'status']
-	username     string    @[json: 'username']
-	position_ids []string  @[json: 'positionIds']
-	created_at   time.Time @[json: 'createdAt']
-	updated_at   time.Time @[json: 'updatedAt']
+	avatar       string    @[json: 'avatar'; description: '头像地址']
+	description  string    @[json: 'description'; description: '描述']
+	mobile       string    @[json: 'mobile'; description: '手机号']
+	email        string    @[json: 'email'; description: '邮箱地址']
+	home_path    string    @[json: 'homePath'; description: '默认首页路径']
+	nickname     string    @[json: 'nickname'; description: '昵称']
+	password     string    @[json: 'password'; description: '密码']
+	status       u8        @[json: 'status'; description: '状态：0 禁用，1 启用']
+	username     string    @[json: 'username'; description: '用户名']
+	position_ids []string  @[json: 'positionIds'; description: '岗位 ID 列表']
+	created_at   time.Time @[json: 'createdAt'; description: '创建时间']
+	updated_at   time.Time @[json: 'updatedAt'; description: '更新时间']
 }
 
 // ═══ Repository ═══

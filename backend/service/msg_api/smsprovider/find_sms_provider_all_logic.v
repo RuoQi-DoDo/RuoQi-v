@@ -20,7 +20,7 @@ pub fn (app &SmsProvider) find_sms_provider_all_handler(mut ctx Context) veb.Res
 	result := find_sms_provider_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -39,26 +39,26 @@ fn find_sms_provider_all_domain() {
 
 // ═══ DTO ═══
 pub struct SmsProviderListReq {
-	page      int @[json: 'page']
-	page_size int @[json: 'pageSize']
-	name      string @[json: 'name']
+	page      int    @[json: 'page'; description: '页码，从 1 开始']
+	page_size int    @[json: 'pageSize'; description: '每页记录数']
+	name      string @[json: 'name'; description: '名称']
 }
 
 pub struct SmsProviderData {
-	id         string @[json: 'id']
-	name       string @[json: 'name']
-	region     string @[json: 'region']
-	is_default u8 @[json: 'isDefault']
-	updater_id ?string @[json: 'updaterId']
-	creator_id ?string @[json: 'creatorId']
-	created_at string @[json: 'createdAt']
-	updated_at string @[json: 'updatedAt']
-	deleted_at string @[json: 'deletedAt']
+	id         string  @[json: 'id'; description: '唯一标识']
+	name       string  @[json: 'name'; description: '短信提供商名称']
+	region     string  @[json: 'region'; description: '服务区域']
+	is_default u8      @[json: 'isDefault'; description: '是否默认提供商：0 否，1 是']
+	updater_id ?string @[json: 'updaterId'; description: '更新者 ID']
+	creator_id ?string @[json: 'creatorId'; description: '创建者 ID']
+	created_at string  @[json: 'createdAt'; description: '创建时间']
+	updated_at string  @[json: 'updatedAt'; description: '更新时间']
+	deleted_at string  @[json: 'deletedAt'; description: '删除时间']
 }
 
 pub struct SmsProviderListResp {
-	total int
-	data  []SmsProviderData
+	total int               @[description: '总记录数']
+	data  []SmsProviderData @[description: '响应数据']
 }
 
 // ═══ Repository ═══
@@ -85,9 +85,9 @@ fn find_sms_provider_all_repo(mut ctx Context, req SmsProviderListReq) !SmsProvi
 	mut datalist := []SmsProviderData{}
 	for row in result {
 		datalist << SmsProviderData{
-			id: row.id
-			name: row.name
-			region: row.region
+			id:         row.id
+			name:       row.name
+			region:     row.region
 			is_default: row.is_default
 			creator_id: row.creator_id
 			updater_id: row.updater_id
@@ -99,6 +99,6 @@ fn find_sms_provider_all_repo(mut ctx Context, req SmsProviderListReq) !SmsProvi
 
 	return SmsProviderListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

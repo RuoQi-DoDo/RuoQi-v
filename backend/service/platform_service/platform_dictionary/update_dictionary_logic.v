@@ -37,11 +37,11 @@ fn update_dictionary_domain(req &UpdateDictionaryReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateDictionaryReq {
-	id          string  @[json: 'id']
-	name        ?string @[json: 'name']
-	code        ?string @[json: 'code']
-	description ?string @[json: 'description']
-	status      ?u8     @[json: 'status']
+	id          string  @[json: 'id'; description: '唯一标识']
+	name        ?string @[json: 'name'; description: '名称']
+	code        ?string @[json: 'code'; description: '编码']
+	description ?string @[json: 'description'; description: '描述']
+	status      ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══

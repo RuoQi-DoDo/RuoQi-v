@@ -47,7 +47,7 @@ fn delete_region_domain(req &DeleteRegionReq) ! {
 
 // ═══ DTO ═══
 pub struct DeleteRegionReq {
-	region_ids []string @[json: 'ids']
+	region_ids []string @[json: 'ids'; description: '地区 ID 列表']
 }
 
 // ═══ Repository ═══

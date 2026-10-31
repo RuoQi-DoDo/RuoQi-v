@@ -27,7 +27,7 @@ pub fn find_position_all_usecase(mut ctx Context, req FindPositionAllReq) ![]WsP
 
 // ═══ DTO ═══
 pub struct FindPositionAllReq {
-	workspace_id string @[json: 'workspaceId']
+	workspace_id string @[json: 'workspaceId'; description: '工作区 ID']
 }
 
 // ═══ Repository ═══

@@ -47,10 +47,10 @@ fn create_task_log_domain(req &CreateTaskLogReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateTaskLogReq {
-	started_at     time.Time @[json: 'startedAt']
-	finished_at    time.Time @[json: 'finishedAt']
-	result         u8        @[json: 'result']
-	task_task_logs string    @[json: 'taskTaskLogs']
+	started_at     time.Time @[json: 'startedAt'; description: '开始时间']
+	finished_at    time.Time @[json: 'finishedAt'; description: '完成时间']
+	result         u8        @[json: 'result'; description: '执行结果']
+	task_task_logs string    @[json: 'taskTaskLogs'; description: '父任务 ID']
 }
 
 // ═══ Repository ═══

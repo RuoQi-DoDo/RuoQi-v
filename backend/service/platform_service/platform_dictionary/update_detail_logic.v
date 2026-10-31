@@ -37,11 +37,11 @@ fn update_detail_domain(req &UpdateDetailReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateDetailReq {
-	id     string  @[json: 'id']
-	label  ?string @[json: 'label']
-	value  ?string @[json: 'value']
-	sort   ?u32    @[json: 'sort']
-	status ?u8     @[json: 'status']
+	id     string  @[json: 'id'; description: '唯一标识']
+	label  ?string @[json: 'label'; description: '显示标签']
+	value  ?string @[json: 'value'; description: '值']
+	sort   ?u32    @[json: 'sort'; description: '排序值，数字越小越靠前']
+	status ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══

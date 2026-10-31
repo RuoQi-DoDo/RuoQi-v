@@ -50,12 +50,12 @@ pub fn create_utc_usecase(mut ctx Context, req CreateUtcReq) !dto.MsgResp {
 
 // ═══ DTO ═══
 pub struct CreateUtcReq {
-	id              string @[json: 'id']
-	sort            ?int   @[json: 'sort']
-	name            string @[json: 'name']
-	lng_range_start f64    @[json: 'lngRangeStart']
-	lng_range_end   f64    @[json: 'lngRangeEnd']
-	lng_mid         f64    @[json: 'lngMid']
+	id              string @[json: 'id'; description: '唯一标识']
+	sort            ?int   @[json: 'sort'; description: '排序值，数字越小越靠前']
+	name            string @[json: 'name'; description: '名称']
+	lng_range_start f64    @[json: 'lngRangeStart'; description: '经度范围起始值']
+	lng_range_end   f64    @[json: 'lngRangeEnd'; description: '经度范围结束值']
+	lng_mid         f64    @[json: 'lngMid'; description: '中心经度']
 }
 
 // ═══ Repository ═══

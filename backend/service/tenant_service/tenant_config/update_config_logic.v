@@ -44,10 +44,10 @@ fn update_config_domain(req &UpdateConfigReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateConfigReq {
-	key         string @[json: 'key']
-	value       string @[json: 'value']
-	category    string @[json: 'category']
-	description string @[json: 'description']
+	key         string @[json: 'key'; description: '键']
+	value       string @[json: 'value'; description: '值']
+	category    string @[json: 'category'; description: '分类']
+	description string @[json: 'description'; description: '描述']
 }
 
 // ═══ Repository ═══

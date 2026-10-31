@@ -50,11 +50,11 @@ fn create_sms_provider_domain(req &CreateSmsProviderReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateSmsProviderReq {
-	name       string @[json: 'name']
-	secret_id  string @[json: 'secretId']
-	secret_key string @[json: 'secretKey']
-	region     string @[json: 'region']
-	is_default u8     @[json: 'isDefault']
+	name       string @[json: 'name'; description: '名称']
+	secret_id  string @[json: 'secretId'; description: '密钥 ID']
+	secret_key string @[json: 'secretKey'; description: '密钥 Secret']
+	region     string @[json: 'region'; description: '地区']
+	is_default u8     @[json: 'isDefault'; description: '是否为默认项']
 }
 
 // ═══ Repository ═══

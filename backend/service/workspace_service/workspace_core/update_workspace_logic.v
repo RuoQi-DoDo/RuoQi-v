@@ -40,10 +40,10 @@ fn update_workspace_domain(req &UpdateWsReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateWsReq {
-	id          string  @[json: 'id']
-	name        ?string @[json: 'name']
-	description ?string @[json: 'description']
-	status      ?u8     @[json: 'status']
+	id          string  @[json: 'id'; description: '唯一标识']
+	name        ?string @[json: 'name'; description: '名称']
+	description ?string @[json: 'description'; description: '描述']
+	status      ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══

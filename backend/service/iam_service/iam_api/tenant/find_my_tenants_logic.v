@@ -14,7 +14,7 @@ pub fn (app &Tenant) find_my_tenants_handler(mut ctx Context) veb.Result {
 	result := find_my_tenants_usecase(mut ctx) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 	return ctx.json(api.json_success(data: result))
@@ -41,12 +41,12 @@ pub struct PortalBrief {
 	portal_id    string @[json: 'portalId']
 	portal_code  string @[json: 'portalCode']
 	portal_name  string @[json: 'portalName']
-	portal_type  u8 @[json: 'portalType']
+	portal_type  u8     @[json: 'portalType']
 }
 
 pub struct MyTenantPortals {
-	tenant_id   string @[json: 'tenantId']
-	tenant_name string @[json: 'tenantName']
+	tenant_id   string        @[json: 'tenantId']
+	tenant_name string        @[json: 'tenantName']
 	portals     []PortalBrief @[json: 'portals']
 }
 
@@ -96,13 +96,13 @@ fn find_my_tenants_repo(mut ctx Context) ![]MyTenantPortals {
 		pr := product_map[m.product_id] or { continue }
 		pp := portal_map[m.portal_id] or { continue }
 		tenant_portals[m.tenant_id] << PortalBrief{
-			product_id: pr.id
+			product_id:   pr.id
 			product_code: pr.product_code
 			product_name: pr.product_name
-			portal_id: pp.id
-			portal_code: pp.portal_code
-			portal_name: pp.portal_name
-			portal_type: pp.portal_type
+			portal_id:    pp.id
+			portal_code:  pp.portal_code
+			portal_name:  pp.portal_name
+			portal_type:  pp.portal_type
 		}
 	}
 
@@ -110,9 +110,9 @@ fn find_my_tenants_repo(mut ctx Context) ![]MyTenantPortals {
 	for t in tenants {
 		portal_list := tenant_portals[t.id] or { []PortalBrief{} }
 		result << MyTenantPortals{
-			tenant_id: t.id
+			tenant_id:   t.id
 			tenant_name: t.name
-			portals: portal_list
+			portals:     portal_list
 		}
 	}
 	return result

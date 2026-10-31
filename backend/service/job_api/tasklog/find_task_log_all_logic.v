@@ -44,22 +44,22 @@ fn find_task_log_all_domain(req &TaskLogListReq) ! {
 
 // ═══ DTO ═══
 pub struct TaskLogListReq {
-	page      int  @[json: 'page']
-	page_size int  @[json: 'pageSize']
-	result    []u8 @[json: 'result']
+	page      int  @[json: 'page'; description: '页码，从 1 开始']
+	page_size int  @[json: 'pageSize'; description: '每页记录数']
+	result    []u8 @[json: 'result'; description: '执行结果']
 }
 
 pub struct TaskLogData {
-	id             string  @[json: 'id']
-	started_at     string  @[json: 'startedAt']
-	finished_at    string  @[json: 'finishedAt']
-	result         u8      @[json: 'result']
-	task_task_logs ?string @[json: 'taskTaskLogs']
+	id             string  @[json: 'id'; description: '唯一标识']
+	started_at     string  @[json: 'startedAt'; description: '开始时间']
+	finished_at    string  @[json: 'finishedAt'; description: '完成时间']
+	result         u8      @[json: 'result'; description: '执行结果']
+	task_task_logs ?string @[json: 'taskTaskLogs'; description: '父任务 ID']
 }
 
 pub struct TaskLogListResp {
-	total int
-	data  []TaskLogData
+	total int           @[description: '总记录数']
+	data  []TaskLogData @[description: '响应数据']
 }
 
 // ═══ Repository ═══

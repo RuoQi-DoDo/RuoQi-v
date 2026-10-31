@@ -42,9 +42,9 @@ fn assign_role_api_domain(req &AssignRoleApiReq) ! {
 
 // ═══ DTO ═══
 pub struct AssignRoleApiReq {
-	workspace_id string   @[json: 'workspaceId']
-	role_id      string   @[json: 'roleId']
-	api_ids      []string @[json: 'apiIds']
+	workspace_id string   @[json: 'workspaceId'; description: '工作区 ID']
+	role_id      string   @[json: 'roleId'; description: '角色 ID']
+	api_ids      []string @[json: 'apiIds'; description: 'API ID 列表']
 }
 
 // ═══ Repository ═══

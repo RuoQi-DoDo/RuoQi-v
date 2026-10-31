@@ -20,7 +20,7 @@ pub fn (app &EmailProvider) find_email_provider_all_handler(mut ctx Context) veb
 	result := find_email_provider_all_usecase(mut ctx, req) or {
 		return ctx.json(api.json_error(
 			code: api.err_common_server
-			msg: 'Internal Server Error: ${err}'
+			msg:  'Internal Server Error: ${err}'
 		))
 	}
 
@@ -39,31 +39,31 @@ fn find_email_provider_all_domain() {
 
 // ═══ DTO ═══
 pub struct EmailProviderListReq {
-	page       int @[json: 'page']
-	page_size  int @[json: 'pageSize']
-	name       string @[json: 'name']
-	email_addr string @[json: 'emailAddr']
+	page       int    @[json: 'page'; description: '页码，从 1 开始']
+	page_size  int    @[json: 'pageSize'; description: '每页记录数']
+	name       string @[json: 'name'; description: '名称']
+	email_addr string @[json: 'emailAddr'; description: '邮箱地址']
 }
 
 pub struct EmailProviderData {
-	id         string @[json: 'id']
-	name       string @[json: 'name']
-	auth_type  u8 @[json: 'authType']
-	email_addr string @[json: 'emailAddr']
-	host_name  string @[json: 'hostName']
-	port       ?u32 @[json: 'port']
-	tls        u8 @[json: 'tls']
-	is_default u8 @[json: 'isDefault']
-	updater_id ?string @[json: 'updaterId']
-	creator_id ?string @[json: 'creatorId']
-	created_at string @[json: 'createdAt']
-	updated_at string @[json: 'updatedAt']
-	deleted_at string @[json: 'deletedAt']
+	id         string  @[json: 'id'; description: '唯一标识']
+	name       string  @[json: 'name'; description: '邮件提供商名称']
+	auth_type  u8      @[json: 'authType'; description: '认证类型']
+	email_addr string  @[json: 'emailAddr'; description: '发件邮箱地址']
+	host_name  string  @[json: 'hostName'; description: '邮件服务器主机名']
+	port       ?u32    @[json: 'port'; description: '邮件服务器端口']
+	tls        u8      @[json: 'tls'; description: '是否启用 TLS：0 否，1 是']
+	is_default u8      @[json: 'isDefault'; description: '是否默认提供商：0 否，1 是']
+	updater_id ?string @[json: 'updaterId'; description: '更新者 ID']
+	creator_id ?string @[json: 'creatorId'; description: '创建者 ID']
+	created_at string  @[json: 'createdAt'; description: '创建时间']
+	updated_at string  @[json: 'updatedAt'; description: '更新时间']
+	deleted_at string  @[json: 'deletedAt'; description: '删除时间']
 }
 
 pub struct EmailProviderListResp {
-	total int
-	data  []EmailProviderData
+	total int                 @[description: '总记录数']
+	data  []EmailProviderData @[description: '响应数据']
 }
 
 // ═══ Repository ═══
@@ -91,13 +91,13 @@ fn find_email_provider_all_repo(mut ctx Context, req EmailProviderListReq) !Emai
 	mut datalist := []EmailProviderData{}
 	for row in result {
 		datalist << EmailProviderData{
-			id: row.id
-			name: row.name
-			auth_type: row.auth_type
+			id:         row.id
+			name:       row.name
+			auth_type:  row.auth_type
 			email_addr: row.email_addr
-			host_name: row.host_name
-			port: row.port
-			tls: row.tls
+			host_name:  row.host_name
+			port:       row.port
+			tls:        row.tls
 			is_default: row.is_default
 			creator_id: row.creator_id
 			updater_id: row.updater_id
@@ -109,6 +109,6 @@ fn find_email_provider_all_repo(mut ctx Context, req EmailProviderListReq) !Emai
 
 	return EmailProviderListResp{
 		total: count
-		data: datalist
+		data:  datalist
 	}
 }

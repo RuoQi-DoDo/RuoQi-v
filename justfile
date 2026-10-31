@@ -50,10 +50,6 @@ build-vgc s=service: (_check_service s)
 build-prod s=service: (_check_service s)
     cd backend && time v -ownership -new-compiler -prod -stats -new-compiler {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
-# ─── OpenAPI ────────────────────────────────────────
-openapi:
-    cd backend && v run openapi/openapi_generate.vsh
-
 # ─── 前端 ──────────────────────────────────────────
 frontend_get:
     cd frontend && flutter pub get

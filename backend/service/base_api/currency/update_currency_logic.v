@@ -46,17 +46,17 @@ fn update_currency_domain(req &UpdateCurrencyReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateCurrencyReq {
-	id                        string  @[json: 'id']
-	english_name              ?string @[json: 'englishName']
-	simplified_name           ?string @[json: 'simplifiedName']
-	currency_code             ?string @[json: 'currencyCode']
-	currency_symbol           ?string @[json: 'currencySymbol']
-	decimal_place             ?u8     @[json: 'decimalPlace']
-	exchange_rate             ?f64    @[json: 'exchangeRate']
-	exchange_rate_fluctuation ?f64    @[json: 'exchangeRateFluctuation']
-	exchange_rate_used        ?f64    @[json: 'exchangeRateUsed']
-	sort                      ?int    @[json: 'sort']
-	status                    ?u8     @[json: 'status']
+	id                        string  @[json: 'id'; description: '唯一标识']
+	english_name              ?string @[json: 'englishName'; description: '英文名称']
+	simplified_name           ?string @[json: 'simplifiedName'; description: '简体中文名称']
+	currency_code             ?string @[json: 'currencyCode'; description: 'ISO 货币代码']
+	currency_symbol           ?string @[json: 'currencySymbol'; description: '货币符号']
+	decimal_place             ?u8     @[json: 'decimalPlace'; description: '金额小数位数']
+	exchange_rate             ?f64    @[json: 'exchangeRate'; description: '汇率']
+	exchange_rate_fluctuation ?f64    @[json: 'exchangeRateFluctuation'; description: '汇率波动值']
+	exchange_rate_used        ?f64    @[json: 'exchangeRateUsed'; description: '实际使用的汇率']
+	sort                      ?int    @[json: 'sort'; description: '排序值，数字越小越靠前']
+	status                    ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══

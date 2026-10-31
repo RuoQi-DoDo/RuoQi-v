@@ -41,8 +41,8 @@ fn find_role_apis_domain(req &FindRolePermReq) ! {
 
 // ═══ DTO ═══
 pub struct FindRolePermReq {
-	workspace_id string @[json: 'workspaceId']
-	role_id      string @[json: 'roleId']
+	workspace_id string @[json: 'workspaceId'; description: '工作区 ID']
+	role_id      string @[json: 'roleId'; description: '角色 ID']
 }
 
 // ═══ Repository ═══

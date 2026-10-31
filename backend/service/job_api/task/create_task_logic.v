@@ -106,12 +106,12 @@ fn is_valid_cron_number(s &string) bool {
 
 // ═══ DTO ═══
 pub struct CreateTaskReq {
-	name            string @[json: 'name']
-	task_group      string @[json: 'taskGroup']
-	cron_expression string @[json: 'cronExpression']
-	pattern         string @[json: 'pattern']
-	payload         string @[json: 'payload']
-	status          u8     @[json: 'status']
+	name            string @[json: 'name'; description: '名称']
+	task_group      string @[json: 'taskGroup'; description: '任务分组']
+	cron_expression string @[json: 'cronExpression'; description: 'Cron 表达式']
+	pattern         string @[json: 'pattern'; description: '任务模式']
+	payload         string @[json: 'payload'; description: '任务载荷']
+	status          u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══

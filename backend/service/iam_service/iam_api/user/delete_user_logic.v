@@ -43,7 +43,7 @@ fn delete_user_domain(req &DeleteUserReq) ! {
 
 // ═══ DTO ═══
 pub struct DeleteUserReq {
-	user_id string @[json: 'id']
+	user_id string @[json: 'id'; description: '用户 ID']
 }
 
 // ═══ Repository ═══

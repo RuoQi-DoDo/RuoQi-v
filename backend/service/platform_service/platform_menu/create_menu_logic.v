@@ -41,16 +41,16 @@ fn create_menu_domain(req &CreateMenuReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateMenuReq {
-	parent_id  string @[json: 'parentId']
-	menu_level u8     @[json: 'menuLevel']
-	menu_type  u8     @[json: 'menuType']
-	path       string @[json: 'path']
-	name       string @[json: 'name']
-	redirect   string @[json: 'redirect']
-	component  string @[json: 'component']
-	order_no   u32    @[json: 'orderNo']
-	icon       string @[json: 'icon']
-	title      string @[json: 'title']
+	parent_id  string @[json: 'parentId'; description: '父级 ID']
+	menu_level u8     @[json: 'menuLevel'; description: '菜单层级']
+	menu_type  u8     @[json: 'menuType'; description: '菜单类型']
+	path       string @[json: 'path'; description: '路径']
+	name       string @[json: 'name'; description: '名称']
+	redirect   string @[json: 'redirect'; description: '跳转地址']
+	component  string @[json: 'component'; description: '前端组件']
+	order_no   u32    @[json: 'orderNo'; description: '订单号']
+	icon       string @[json: 'icon'; description: '图标']
+	title      string @[json: 'title'; description: '标题']
 }
 
 // ═══ Repository ═══

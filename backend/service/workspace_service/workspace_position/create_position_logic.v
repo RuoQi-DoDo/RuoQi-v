@@ -41,11 +41,11 @@ fn create_position_domain(req &CreatePositionReq) ! {
 
 // ═══ DTO ═══
 pub struct CreatePositionReq {
-	workspace_id string @[json: 'workspaceId']
-	name         string @[json: 'name']
-	code         string @[json: 'code']
-	description  string @[json: 'description']
-	sort         u32    @[json: 'sort']
+	workspace_id string @[json: 'workspaceId'; description: '工作区 ID']
+	name         string @[json: 'name'; description: '名称']
+	code         string @[json: 'code'; description: '编码']
+	description  string @[json: 'description'; description: '描述']
+	sort         u32    @[json: 'sort'; description: '排序值，数字越小越靠前']
 }
 
 // ═══ Repository ═══

@@ -15,7 +15,7 @@ pub fn (app &Authentication) find_sms_opt_handler(mut ctx Context) veb.Result {
 		data: GetOptResp{
 			opt_token: opt_token
 		}
-		msg: 'sms OTP generated'
+		msg:  'sms OTP generated'
 	))
 }
 

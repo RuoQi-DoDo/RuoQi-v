@@ -47,7 +47,7 @@ fn invite_member_domain(mut ctx Context, req &InviteMemberReq) ! {
 
 // ═══ DTO ═══
 pub struct InviteMemberReq {
-	user_id string @[json: 'userId']
+	user_id string @[json: 'userId'; description: '用户 ID']
 }
 
 // ═══ Repository ═══

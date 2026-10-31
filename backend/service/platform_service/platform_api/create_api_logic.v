@@ -41,12 +41,12 @@ fn create_api_domain(req &CreateApiReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateApiReq {
-	path         string  @[json: 'path']
-	description  ?string @[json: 'description']
-	api_group    string  @[json: 'apiGroup']
-	service_name string  @[json: 'serviceName']
-	method       string  @[json: 'method']
-	is_required  u8      @[json: 'isRequired']
+	path         string  @[json: 'path'; description: '路径']
+	description  ?string @[json: 'description'; description: '描述']
+	api_group    string  @[json: 'apiGroup'; description: 'API 分组']
+	service_name string  @[json: 'serviceName'; description: '服务名称']
+	method       string  @[json: 'method'; description: 'HTTP 方法']
+	is_required  u8      @[json: 'isRequired'; description: '是否必填']
 }
 
 // ═══ Repository ═══

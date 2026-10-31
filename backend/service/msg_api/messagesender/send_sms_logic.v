@@ -50,9 +50,9 @@ fn send_sms_domain(req &SendSmsReq) ! {
 
 // ═══ DTO ═══
 pub struct SendSmsReq {
-	phone_number string @[json: 'phoneNumber']
-	content      string @[json: 'content']
-	provider     string @[json: 'provider']
+	phone_number string @[json: 'phoneNumber'; description: '电话号码']
+	content      string @[json: 'content'; description: '内容']
+	provider     string @[json: 'provider'; description: '服务提供商']
 }
 
 // ═══ Repository ═══

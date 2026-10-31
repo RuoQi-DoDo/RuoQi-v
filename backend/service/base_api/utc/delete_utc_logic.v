@@ -47,7 +47,7 @@ fn delete_utc_domain(req &DeleteUtcReq) ! {
 
 // ═══ DTO ═══
 pub struct DeleteUtcReq {
-	utc_ids []string @[json: 'ids']
+	utc_ids []string @[json: 'ids'; description: '时区 ID 列表']
 }
 
 // ═══ Repository ═══

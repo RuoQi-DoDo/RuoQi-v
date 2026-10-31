@@ -16,53 +16,17 @@ pub fn (mut app AliasApp) get(mut ctx Context) veb.Result {
 
 @['/static/403'; get; post]
 fn (mut app AliasApp) index_403(mut ctx Context) veb.Result {
-	file_path := os.join_path(os.getwd(), 'static/403.html')
-	html_content := os.read_file(file_path) or {
-		return ctx.html('<h1>403 Forbidden</h1><p>错误页面未找到</p>')
-	}
-
-	// 读取CSS文件并内联
-	css_path := os.join_path(os.getwd(), 'static/styles.css')
-	css_content := os.read_file(css_path) or { '' }
-
-	// 将CSS内联到HTML中
-	final_html := html_content.replace('</head>', '<style>${css_content}</style></head>')
-
-	return ctx.html(final_html)
+	return ctx.forbidden()
 }
 
 @['/static/404'; get; post]
 fn (mut app AliasApp) index_404(mut ctx Context) veb.Result {
-	file_path := os.join_path(os.getwd(), 'static/404.html')
-	html_content := os.read_file(file_path) or {
-		return ctx.html('<h1>404 Not Found</h1><p>错误页面未找到</p>')
-	}
-
-	// 读取CSS文件并内联
-	css_path := os.join_path(os.getwd(), 'static/styles.css')
-	css_content := os.read_file(css_path) or { '' }
-
-	// 将CSS内联到HTML中
-	final_html := html_content.replace('</head>', '<style>${css_content}</style></head>')
-
-	return ctx.html(final_html)
+	return ctx.not_found()
 }
 
 @['/static/500'; get; post]
 fn (mut app AliasApp) index_500(mut ctx Context) veb.Result {
-	file_path := os.join_path(os.getwd(), 'static/500.html')
-	html_content := os.read_file(file_path) or {
-		return ctx.html('<h1>500 Internal Server Error</h1><p>服务器内部错误</p>')
-	}
-
-	// 读取CSS文件并内联
-	css_path := os.join_path(os.getwd(), 'static/styles.css')
-	css_content := os.read_file(css_path) or { '' }
-
-	// 将CSS内联到HTML中
-	final_html := html_content.replace('</head>', '<style>${css_content}</style></head>')
-
-	return ctx.html(final_html)
+	return ctx.server_error('Internal Server Error')
 }
 
 @['/index'; get; post]
@@ -94,56 +58,44 @@ pub fn (app &AliasApp) locale(mut ctx Context) veb.Result {
 	return ctx.json(result)
 }
 
-// http://localhost:9009/rapidoc 打开 RapiDoc API 文档
-@['/rapidoc'; get]
-fn (mut app AliasApp) rapidoc(mut ctx Context) veb.Result {
-	file_path := os.join_path(os.getwd(), 'openapi/rapidoc.html')
-	html_content := os.read_file(file_path) or {
-		return ctx.html('<h1>OpenAPI 文档未生成</h1><p>请先运行: v run openapi/openapi_generate.vsh</p>')
-	}
-	return ctx.html(html_content)
+// API 文档查看器；HTML 属于可部署静态资源，文档生成逻辑在 route_openapi.v。
+@['/static/rapidoc'; get]
+fn (app &AliasApp) rapidoc(mut ctx Context) veb.Result {
+	return ctx.file(os.join_path(os.getwd(), 'static', 'openapi', 'rapidoc.html'))
 }
 
-// http://localhost:9009/redoc 打开 Redoc API 文档
-@['/redoc'; get]
-fn (mut app AliasApp) redoc(mut ctx Context) veb.Result {
-	file_path := os.join_path(os.getwd(), 'openapi/redoc.html')
-	html_content := os.read_file(file_path) or { return ctx.html('<h1>Redoc 页面未找到</h1>') }
-	return ctx.html(html_content)
+@['/static/redoc'; get]
+fn (app &AliasApp) redoc(mut ctx Context) veb.Result {
+	return ctx.file(os.join_path(os.getwd(), 'static', 'openapi', 'redoc.html'))
 }
 
-// http://localhost:9009/elements 打开 Stoplight Elements API 文档
-@['/sleapidoc'; get]
-fn (mut app AliasApp) stoplight_elements(mut ctx Context) veb.Result {
-	file_path := os.join_path(os.getwd(), 'openapi/stoplight_elements.html')
-	html_content := os.read_file(file_path) or {
-		return ctx.html('<h1>Elements 页面未找到</h1>')
-	}
-	return ctx.html(html_content)
+@['/static/sleapidoc'; get]
+fn (app &AliasApp) stoplight_elements(mut ctx Context) veb.Result {
+	return ctx.file(os.join_path(os.getwd(), 'static', 'openapi', 'stoplight_elements.html'))
 }
 
-// http://localhost:9009/scalar 打开 Scalar API 文档
-@['/scalar'; get]
-fn (mut app AliasApp) scalar(mut ctx Context) veb.Result {
-	file_path := os.join_path(os.getwd(), 'openapi/scalar.html')
-	html_content := os.read_file(file_path) or {
-		return ctx.html('<h1>Scalar 页面未找到</h1>')
-	}
-	return ctx.html(html_content)
+@['/static/scalar'; get]
+fn (app &AliasApp) scalar(mut ctx Context) veb.Result {
+	return ctx.file(os.join_path(os.getwd(), 'static', 'openapi', 'scalar.html'))
 }
 
-// http://localhost:9009/openapi.json 获取 OpenAPI JSON 数据
-@['/openapi.json'; get]
-fn (mut app AliasApp) openapi_json(mut ctx Context) veb.Result {
-	file_path := os.join_path(os.getwd(), 'etc/openapi.json')
-	content := os.read_file(file_path) or {
+// http://localhost:9009/static/openapi.json 获取由 veb 路由元数据实时生成的 OpenAPI 文档
+@['/static/openapi.json'; get]
+fn (app &AliasApp) openapi_json(mut ctx Context) veb.Result {
+	if !app.openapi_ready {
+		ctx.res.set_status(.service_unavailable)
 		return ctx.json(api.json_error(
-			code: api.err_common_not_found
-			msg: 'OpenAPI spec not found. Run: v run openapi/openapi_generate.vsh'
+			code: api.err_common_server
+			msg:  'OpenAPI document is not initialized'
 		))
 	}
-	ctx.set_content_type('application/json')
-	return ctx.text(content)
+	return app.openapi_document.serve(mut ctx.Context, true) or {
+		ctx.res.set_status(.internal_server_error)
+		return ctx.json(api.json_error(
+			code: api.err_common_server
+			msg:  'Failed to render OpenAPI document: ${err}'
+		))
+	}
 }
 
 // curl -H "Accept-Language: zh" --compressed http://localhost:9009/locale/debug

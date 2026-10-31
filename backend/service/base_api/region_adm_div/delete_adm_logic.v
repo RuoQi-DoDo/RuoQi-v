@@ -47,7 +47,7 @@ fn delete_adm_domain(req &DeleteAdmReq) ! {
 
 // ═══ DTO ═══
 pub struct DeleteAdmReq {
-	adm_ids []string @[json: 'ids']
+	adm_ids []string @[json: 'ids'; description: '行政区划 ID 列表']
 }
 
 // ═══ Repository ═══

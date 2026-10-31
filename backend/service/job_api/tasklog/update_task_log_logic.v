@@ -43,10 +43,10 @@ fn update_task_log_domain(req &UpdateTaskLogReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateTaskLogReq {
-	id             string     @[json: 'id']
-	finished_at    ?time.Time @[json: 'finishedAt']
-	result         ?u8        @[json: 'result']
-	task_task_logs ?string    @[json: 'taskTaskLogs']
+	id             string     @[json: 'id'; description: '唯一标识']
+	finished_at    ?time.Time @[json: 'finishedAt'; description: '完成时间']
+	result         ?u8        @[json: 'result'; description: '执行结果']
+	task_task_logs ?string    @[json: 'taskTaskLogs'; description: '父任务 ID']
 }
 
 // ═══ Repository ═══

@@ -47,7 +47,7 @@ fn delete_currency_domain(req &DeleteCurrencyReq) ! {
 
 // ═══ DTO ═══
 pub struct DeleteCurrencyReq {
-	currency_ids []string @[json: 'ids']
+	currency_ids []string @[json: 'ids'; description: '货币 ID 列表']
 }
 
 // ═══ Repository ═══

@@ -25,8 +25,8 @@ pub struct ApiKeyItem {
 }
 
 pub struct ApiKeyListResp {
-	items []ApiKeyItem @[json: 'items']
-	total int          @[json: 'total']
+	items []ApiKeyItem @[json: 'items'; description: '数据列表']
+	total int          @[json: 'total'; description: '总记录数']
 }
 
 @['/list'; post]

@@ -47,7 +47,7 @@ fn delete_language_domain(req &DeleteLanguageReq) ! {
 
 // ═══ DTO ═══
 pub struct DeleteLanguageReq {
-	language_ids []string @[json: 'ids']
+	language_ids []string @[json: 'ids'; description: '语言 ID 列表']
 }
 
 // ═══ Repository ═══

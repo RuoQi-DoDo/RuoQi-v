@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>RuoQi-v API 文档 - Redoc</title>
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4c4/512.webp"
+        />
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .rq-topbar {
+                height: 56px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 20px;
+                box-sizing: border-box;
+                background: #1e1e2e;
+                color: #eee;
+                font: 500 14px system-ui, -apple-system, sans-serif;
+            }
+
+            .rq-brand {
+                color: #fff;
+                font-weight: 700;
+                text-decoration: none;
+            }
+
+            .rq-nav {
+                display: flex;
+                gap: 18px;
+            }
+
+            .rq-nav a {
+                color: #cbd5e1;
+                text-decoration: none;
+            }
+
+            .rq-nav a:hover,
+            .rq-nav a.active {
+                color: #fff;
+            }
+
+            #redoc-container {
+                min-height: calc(100vh - 56px);
+            }
+
+            #redoc-loading {
+                min-height: calc(100vh - 56px);
+                display: grid;
+                place-items: center;
+                padding: 2rem;
+                font-family:
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                color: #475569;
+                text-align: center;
+            }
+
+            #redoc-loading.error {
+                color: #b42318;
+            }
+        </style>
+    </head>
+    <body>
+        <header class="rq-topbar">
+            <a class="rq-brand" href="/index" title="RuoQi-v 首页">RuoQi-v</a>
+            <nav class="rq-nav">
+                <a href="/index">Home</a>
+                <a href="/static/redoc" class="active">Docs</a>
+            </nav>
+        </header>
+        <div id="redoc-container">
+            <div id="redoc-loading">正在加载 API 文档…</div>
+        </div>
+        <script>
+            const container = document.getElementById("redoc-container");
+            const loading = document.getElementById("redoc-loading");
+            const options = {
+                scrollYOffset: 56,
+                hideHostname: false,
+                expandResponses: "200",
+                requiredPropsFirst: true,
+                sortPropsAlphabetically: false,
+                sortTagsAlphabetically: true,
+                sortOperationsAlphabetically: false,
+                showObjectSchemaExamples: true,
+                theme: {
+                    colors: {
+                        primary: {
+                            main: "#4f46e5",
+                        },
+                    },
+                    typography: {
+                        fontSize: "14px",
+                        fontFamily: "system-ui, -apple-system, sans-serif",
+                    },
+                    sidebar: {
+                        backgroundColor: "#1e1e2e",
+                    },
+                    rightPanel: {
+                        backgroundColor: "#1e1e2e",
+                    },
+                },
+            };
+
+            function showError(message) {
+                loading.textContent = message;
+                loading.classList.add("error");
+            }
+
+            async function initRedoc() {
+                try {
+                    const redoc = await import(
+                        "https://unpkg.com/redoc@3.0.1/bundles/redoc.standalone.js"
+                    );
+                    const response = await fetch("/static/openapi.json", {
+                        cache: "no-store",
+                    });
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP ${response.status} ${response.statusText}`,
+                        );
+                    }
+                    const spec = await response.json();
+                    loading.remove();
+                    redoc.init(spec, options, container);
+                } catch (error) {
+                    console.error("Failed to initialize Redoc:", error);
+                    showError(`API 文档加载失败：${error.message}`);
+                }
+            }
+
+            initRedoc();
+        </script>
+    </body>
+</html>

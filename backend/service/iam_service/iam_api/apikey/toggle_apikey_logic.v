@@ -8,8 +8,8 @@ import common.api
 import model.schema_iam { IamApiKey }
 
 pub struct ToggleApiKeyReq {
-	id     string @[json: 'id']
-	action string @[json: 'action']
+	id     string @[json: 'id'; description: '唯一标识']
+	action string @[json: 'action'; description: '操作类型']
 }
 
 @['/toggle'; post]

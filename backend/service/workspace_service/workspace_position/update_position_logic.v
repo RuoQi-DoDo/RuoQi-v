@@ -37,12 +37,12 @@ fn update_position_domain(req &UpdatePositionReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdatePositionReq {
-	id          string  @[json: 'id']
-	name        ?string @[json: 'name']
-	code        ?string @[json: 'code']
-	description ?string @[json: 'description']
-	sort        ?u32    @[json: 'sort']
-	status      ?u8     @[json: 'status']
+	id          string  @[json: 'id'; description: '唯一标识']
+	name        ?string @[json: 'name'; description: '名称']
+	code        ?string @[json: 'code'; description: '编码']
+	description ?string @[json: 'description'; description: '描述']
+	sort        ?u32    @[json: 'sort'; description: '排序值，数字越小越靠前']
+	status      ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══

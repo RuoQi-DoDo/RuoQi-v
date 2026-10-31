@@ -40,7 +40,7 @@ fn remove_member_domain(req &RemoveMemberReq) ! {
 
 // ═══ DTO ═══
 pub struct RemoveMemberReq {
-	user_id string @[json: 'userId']
+	user_id string @[json: 'userId'; description: '用户 ID']
 }
 
 // ═══ Repository ═══

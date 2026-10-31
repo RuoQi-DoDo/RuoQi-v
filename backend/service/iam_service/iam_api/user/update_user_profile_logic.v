@@ -40,11 +40,11 @@ fn update_user_profile_domain(mut ctx Context) ! {
 
 // ═══ DTO ═══
 pub struct UpdateUserProfileReq {
-	nickname    ?string @[json: 'nickname']
-	email       ?string @[json: 'email']
-	mobile      ?string @[json: 'mobile']
-	description ?string @[json: 'description']
-	avatar      ?string @[json: 'avatar']
+	nickname    ?string @[json: 'nickname'; description: '昵称']
+	email       ?string @[json: 'email'; description: '邮箱地址']
+	mobile      ?string @[json: 'mobile'; description: '手机号']
+	description ?string @[json: 'description'; description: '描述']
+	avatar      ?string @[json: 'avatar'; description: '头像地址']
 }
 
 // ═══ Repository ═══

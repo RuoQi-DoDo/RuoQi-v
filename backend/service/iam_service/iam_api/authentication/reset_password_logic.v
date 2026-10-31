@@ -46,9 +46,9 @@ fn reset_password_domain(req &ResetPasswordReq) ! {
 
 // ═══ DTO ═══
 pub struct ResetPasswordReq {
-	user_id      string @[json: 'user_id']
-	old_password string @[json: 'old_password']
-	new_password string @[json: 'new_password']
+	user_id      string @[json: 'user_id'; description: '用户 ID']
+	old_password string @[json: 'old_password'; description: '原密码']
+	new_password string @[json: 'new_password'; description: '新密码']
 }
 
 // ═══ Repository ═══

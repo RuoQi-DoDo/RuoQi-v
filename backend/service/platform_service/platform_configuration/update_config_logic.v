@@ -37,12 +37,12 @@ fn update_config_domain(req &UpdateConfigReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateConfigReq {
-	id          string  @[json: 'id']
-	key         ?string @[json: 'key']
-	value       ?string @[json: 'value']
-	category    ?string @[json: 'category']
-	description ?string @[json: 'description']
-	status      ?u8     @[json: 'status']
+	id          string  @[json: 'id'; description: '唯一标识']
+	key         ?string @[json: 'key'; description: '键']
+	value       ?string @[json: 'value'; description: '值']
+	category    ?string @[json: 'category'; description: '分类']
+	description ?string @[json: 'description'; description: '描述']
+	status      ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══

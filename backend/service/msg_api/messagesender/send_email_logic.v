@@ -50,10 +50,10 @@ fn send_email_domain(req &SendEmailReq) ! {
 
 // ═══ DTO ═══
 pub struct SendEmailReq {
-	target   string @[json: 'target']
-	subject  string @[json: 'subject']
-	content  string @[json: 'content']
-	provider string @[json: 'provider']
+	target   string @[json: 'target'; description: '目标']
+	subject  string @[json: 'subject'; description: '交易标题']
+	content  string @[json: 'content'; description: '内容']
+	provider string @[json: 'provider'; description: '服务提供商']
 }
 
 // ═══ Repository ═══

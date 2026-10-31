@@ -42,9 +42,9 @@ fn assign_role_menu_domain(req &AssignRoleMenuReq) ! {
 
 // ═══ DTO ═══
 pub struct AssignRoleMenuReq {
-	workspace_id string   @[json: 'workspaceId']
-	role_id      string   @[json: 'roleId']
-	menu_ids     []string @[json: 'menuIds']
+	workspace_id string   @[json: 'workspaceId'; description: '工作区 ID']
+	role_id      string   @[json: 'roleId'; description: '角色 ID']
+	menu_ids     []string @[json: 'menuIds'; description: '菜单 ID 列表']
 }
 
 // ═══ Repository ═══

@@ -37,14 +37,14 @@ fn update_api_domain(req &UpdateApiReq) ! {
 
 // ═══ DTO ═══
 pub struct UpdateApiReq {
-	id           string  @[json: 'id']
-	path         ?string @[json: 'path']
-	description  ?string @[json: 'description']
-	api_group    ?string @[json: 'apiGroup']
-	service_name ?string @[json: 'serviceName']
-	method       ?string @[json: 'method']
-	is_required  ?u8     @[json: 'isRequired']
-	status       ?u8     @[json: 'status']
+	id           string  @[json: 'id'; description: '唯一标识']
+	path         ?string @[json: 'path'; description: '路径']
+	description  ?string @[json: 'description'; description: '描述']
+	api_group    ?string @[json: 'apiGroup'; description: 'API 分组']
+	service_name ?string @[json: 'serviceName'; description: '服务名称']
+	method       ?string @[json: 'method'; description: 'HTTP 方法']
+	is_required  ?u8     @[json: 'isRequired'; description: '是否必填']
+	status       ?u8     @[json: 'status'; description: '状态：0 禁用，1 启用']
 }
 
 // ═══ Repository ═══

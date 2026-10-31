@@ -43,9 +43,9 @@ fn remove_member_domain(req &RemoveMemberReq) ! {
 
 // ═══ DTO ═══
 pub struct RemoveMemberReq {
-	workspace_id string  @[json: 'workspaceId']
-	user_id      string  @[json: 'userId']
-	role_id      ?string @[json: 'roleId']
+	workspace_id string  @[json: 'workspaceId'; description: '工作区 ID']
+	user_id      string  @[json: 'userId'; description: '用户 ID']
+	role_id      ?string @[json: 'roleId'; description: '角色 ID']
 }
 
 // ═══ Repository ═══

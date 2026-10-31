@@ -38,10 +38,10 @@ fn create_detail_domain(req &CreateDetailReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateDetailReq {
-	dictionary_id string @[json: 'dictionaryId']
-	label         string @[json: 'label']
-	value         string @[json: 'value']
-	sort          u32    @[json: 'sort']
+	dictionary_id string @[json: 'dictionaryId'; description: '字典 ID']
+	label         string @[json: 'label'; description: '显示标签']
+	value         string @[json: 'value'; description: '值']
+	sort          u32    @[json: 'sort'; description: '排序值，数字越小越靠前']
 }
 
 // ═══ Repository ═══

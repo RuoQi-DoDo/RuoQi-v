@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>RuoQi-v API 文档 - Stoplight Elements</title>
+	<link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
+	<style>
+		body { margin: 0; background: #fff; }
+		.rq-topbar {
+			height: 56px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0 20px;
+			box-sizing: border-box;
+			background: #1e1e2e;
+			color: #eee;
+			font: 500 14px system-ui, -apple-system, sans-serif;
+		}
+		.rq-brand { color: #fff; font-weight: 700; text-decoration: none; }
+		.rq-nav { display: flex; gap: 18px; }
+		.rq-nav a { color: #cbd5e1; text-decoration: none; }
+		.rq-nav a:hover, .rq-nav a.active { color: #fff; }
+		elements-api { display: block; height: calc(100vh - 56px); }
+	</style>
+</head>
+<body>
+	<header class="rq-topbar">
+		<a class="rq-brand" href="/index" title="RuoQi-v 首页">RuoQi-v</a>
+		<nav class="rq-nav">
+			<a href="/index">Home</a>
+			<a href="/static/sleapidoc" class="active">Docs</a>
+		</nav>
+	</header>
+	<elements-api
+		apiDescriptionUrl="/static/openapi.json"
+		layout="sidebar"
+		router="hash"
+		hideInternal="false"
+	/>
+	<script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
+</body>
+</html>

@@ -110,6 +110,9 @@ pub fn new_app(registry &reqid.Registry) {
 	// 8. 注册按条件启用的子路由控制器。
 	app.setup_conditional_routes(mut ctx)
 
-	// 9. 启动 HTTP 服务，并阻塞等待 Ctrl+C 或 SIGTERM 后优雅关闭。
+	// 9. 从刚刚注册的真实路由表构建 OpenAPI，避免文档和 dispatcher 漂移。
+	app.setup_openapi_document() or { panic('Failed to build OpenAPI document: ${err}') }
+
+	// 10. 启动 HTTP 服务，并阻塞等待 Ctrl+C 或 SIGTERM 后优雅关闭。
 	serve_until_shutdown(mut app, doc.web)
 }

@@ -50,11 +50,11 @@ fn create_email_log_domain(req &CreateEmailLogReq) ! {
 
 // ═══ DTO ═══
 pub struct CreateEmailLogReq {
-	target      string @[json: 'target']
-	subject     string @[json: 'subject']
-	content     string @[json: 'content']
-	send_status u8     @[json: 'sendStatus']
-	provider    string @[json: 'provider']
+	target      string @[json: 'target'; description: '目标']
+	subject     string @[json: 'subject'; description: '交易标题']
+	content     string @[json: 'content'; description: '内容']
+	send_status u8     @[json: 'sendStatus'; description: '发送状态：0 未知，1 成功，2 失败']
+	provider    string @[json: 'provider'; description: '服务提供商']
 }
 
 // ═══ Repository ═══
