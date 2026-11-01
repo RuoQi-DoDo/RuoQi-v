@@ -20,7 +20,7 @@ _check_service s:
 
 # 带 watch 的开发模式（x64）；可选服务名：just run-dev-x64 mcp
 run-dev-x64 s=service: (_check_service s)
-    cd backend && env V3_PARALLEL_MONOMORPHIZE=1 v -new-compiler -d x64 -no-retry-compilation -d trace_orm -d veb_livereload {{ if s == "all" { "" } else { "-d " + s } }} watch run ./main -f etc/config_dev.toml
+    cd backend && env V3_PARALLEL_MONOMORPHIZE=1 v -b x64 -new-compiler -no-retry-compilation -d trace_orm -d veb_livereload {{ if s == "all" { "" } else { "-d " + s } }} watch run ./main -f etc/config_dev.toml
 
 # 带 watch 的开发模式（tcc）；可选服务名：just run-dev-tcc mcp
 run-dev-tcc s=service: (_check_service s)
@@ -28,7 +28,7 @@ run-dev-tcc s=service: (_check_service s)
 
 # 单次运行 dev 配置（x64）；可选服务名：just run-test-x64 mcp
 run-test-x64 s=service: (_check_service s)
-    cd backend && v -new-compiler -d x64 -no-retry-compilation -d trace_orm {{ if s == "all" { "" } else { "-d " + s } }} run ./main -f etc/config_dev.toml
+    cd backend && v -b x64 -new-compiler -no-retry-compilation -d trace_orm {{ if s == "all" { "" } else { "-d " + s } }} run ./main -f etc/config_dev.toml
 
 # 单次运行 dev 配置（tcc）；可选服务名：just run-test-tcc mcp
 run-test-tcc s=service: (_check_service s)
@@ -36,7 +36,7 @@ run-test-tcc s=service: (_check_service s)
 
 # 编译到 backend/app（x64）；可选服务名：just build-x64 fms
 build-x64 s=service: (_check_service s)
-    cd backend && time v -no-prealloc -new-compiler -stats -d x64 -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time v -b x64 -no-prealloc -new-compiler -stats -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 编译到 backend/app（tcc）；可选服务名：just build-tcc fms
 build-tcc s=service: (_check_service s)
@@ -44,7 +44,7 @@ build-tcc s=service: (_check_service s)
 
 # 编译到 backend/app（x64 + ownership）；可选服务名：just build-x64-owership fms
 build-x64-owership s=service: (_check_service s)
-    cd backend && time v -ownership -autofree -gc none -no-prealloc -new-compiler -stats -d x64 -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time v -b x64 -ownership -autofree -gc none -no-prealloc -new-compiler -stats -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 编译到 backend/app（tcc + V 自带 GC）；可选服务名：just build-tcc-vgc fms
 build-tcc-vgc s=service: (_check_service s)
@@ -52,7 +52,7 @@ build-tcc-vgc s=service: (_check_service s)
 
 # 编译到 backend/app（x64 + V 自带 GC）；可选服务名：just build-x64-vgc fms
 build-x64-vgc s=service: (_check_service s)
-    cd backend && time v -autofree -gc vgc -no-prealloc -new-compiler -stats -d x64 -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time v -b x64 -autofree -gc vgc -no-prealloc -new-compiler -stats -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 生产编译（默认 C 后端）；可选服务名：just build-prod-c pay
 build-prod-c s=service: (_check_service s)
@@ -60,7 +60,7 @@ build-prod-c s=service: (_check_service s)
 
 # 生产编译（x64）；可选服务名：just build-prod-x64 pay
 build-prod-x64 s=service: (_check_service s)
-    cd backend && time v -ownership -new-compiler -prod -stats -d x64 {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+    cd backend && time v -b x64 -ownership -new-compiler -prod -stats {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # ─── 前端 ──────────────────────────────────────────
 frontend_get:
