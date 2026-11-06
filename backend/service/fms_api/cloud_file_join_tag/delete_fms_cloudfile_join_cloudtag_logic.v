@@ -8,6 +8,7 @@ import model.schema_fms { FmsCloudFileCloudFileTag }
 import common.api
 import model { Context }
 
+@[description: '删除云文件标签关联。']
 @['/delete'; post]
 pub fn (app &CloudFileJoinTag) delete_fms_cloudfile_join_cloudtag_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

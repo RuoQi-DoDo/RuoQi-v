@@ -10,6 +10,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '按 ID 列表软删除国家或地区。']
 @['/delete'; post]
 pub fn (app &Region) delete_region_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

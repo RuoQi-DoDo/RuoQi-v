@@ -8,6 +8,7 @@ import model.schema_workspace { WsRoleMenu }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询角色已分配的菜单。']
 @['/find_role_menus'; post]
 pub fn (app &WorkspaceCore) find_role_menus_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

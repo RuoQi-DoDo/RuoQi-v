@@ -9,6 +9,7 @@ import model { Context }
 import json2 as json
 
 // ═══ Handler ═══
+@[description: '查询订单扩展列表。']
 @['/all'; get]
 pub fn (app &OrderExtension) find_pay_order_extension_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

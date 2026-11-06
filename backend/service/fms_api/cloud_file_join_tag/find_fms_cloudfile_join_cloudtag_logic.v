@@ -7,6 +7,7 @@ import common.api
 import model { Context }
 import json2 as json
 
+@[description: '查询云文件标签关联列表。']
 @['/all'; get]
 pub fn (app &CloudFileJoinTag) find_fms_cloudfile_join_cloudtag_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

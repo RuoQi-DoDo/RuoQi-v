@@ -29,6 +29,7 @@ pub struct ApiKeyListResp {
 	total int          @[json: 'total'; description: '总记录数']
 }
 
+@[description: '查询 API Key 列表。']
 @['/list'; post]
 pub fn (app &ApiKey) find_apikey_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
@@ -62,6 +63,7 @@ fn find_apikey_all_repo(mut ctx Context) ![]IamApiKey {
 	} or { return error('Failed: ${err}') }
 }
 
+@[description: '查询 API Key 详情。']
 @['/detail'; post]
 pub fn (app &ApiKey) find_apikey_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

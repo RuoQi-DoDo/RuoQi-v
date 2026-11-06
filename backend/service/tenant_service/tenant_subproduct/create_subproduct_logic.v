@@ -11,6 +11,7 @@ import model.schema_platform { PfPlan, PfProduct }
 import common.api as capi
 
 // ═══ Handler ═══
+@[description: '创建租户产品订阅。']
 @['/create_subproduct'; post]
 pub fn (app &TenantSubProduct) create_subproduct_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

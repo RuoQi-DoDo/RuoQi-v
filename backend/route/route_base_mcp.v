@@ -6,6 +6,7 @@ import veb
 import model { Context }
 
 // index — /mcp 上的 GET / POST / DELETE（MCP Streamable HTTP）。
+@[description: 'MCP Streamable HTTP 入口。']
 @['/'; post; get; delete]
 fn (c &BaseMcp) index(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
@@ -49,4 +50,16 @@ fn (mut app AliasApp) routes_base_mcp(mut ctx Context) {
 		mcp_server: app.mcp_server
 	}
 	app.register_routes_no_auth[BaseMcp](mut ctrl, '/mcp', mut ctx)
+}
+
+fn openapi_tags_base_mcp() []veb.OpenApiTagConfig {
+	return [
+		veb.OpenApiTagConfig{
+			name:        'system.mcp'
+			summary:     'MCP'
+			description: '基础资料 MCP Streamable HTTP 入口。'
+			parent:      'system'
+			controllers: [typeof(BaseMcp{}).name.trim_left('&')]
+		},
+	]
 }

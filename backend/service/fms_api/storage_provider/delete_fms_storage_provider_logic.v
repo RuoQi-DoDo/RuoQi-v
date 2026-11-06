@@ -9,6 +9,7 @@ import model.schema_fms { FmsStorageProvider }
 import common.api
 import model { Context }
 
+@[description: '删除存储提供商。']
 @['/delete'; post]
 pub fn (app &StorageProvider) delete_fms_storage_provider_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

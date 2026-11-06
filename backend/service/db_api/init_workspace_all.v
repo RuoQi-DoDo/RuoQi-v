@@ -36,6 +36,7 @@ fn (app &Database) init_workspace_tables(mut pool dbpool.DatabasePoolable) ! {
 	return
 }
 
+@[description: '初始化工作区数据库表。']
 @['/init/init_workspace'; get]
 pub fn (app &Database) init_workspace(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

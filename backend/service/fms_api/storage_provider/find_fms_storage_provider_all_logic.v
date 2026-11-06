@@ -8,6 +8,7 @@ import common.api
 import model { Context }
 import json2 as json
 
+@[description: '查询存储提供商列表。']
 @['/all'; get]
 pub fn (app &StorageProvider) find_fms_storage_provider_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

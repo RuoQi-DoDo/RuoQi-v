@@ -10,6 +10,7 @@ import model.schema_iam { IamUser }
 import common.api
 
 // ═══ Handler ═══
+@[description: '更新个人资料。']
 @['/update_profile'; post]
 pub fn (app &Profile) update_profile_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

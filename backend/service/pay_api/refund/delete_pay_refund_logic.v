@@ -10,6 +10,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '删除退款。']
 @['/delete'; post]
 pub fn (app &Refund) delete_pay_refund_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -12,6 +12,7 @@ pub struct ToggleApiKeyReq {
 	action string @[json: 'action'; description: '操作类型']
 }
 
+@[description: '启用或禁用 API Key。']
 @['/toggle'; post]
 pub fn (app &ApiKey) toggle_apikey_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

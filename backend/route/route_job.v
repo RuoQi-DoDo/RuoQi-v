@@ -1,6 +1,7 @@
 module route
 
 import log
+import veb
 import model { Context }
 import service.job_api.task { Task }
 import service.job_api.tasklog { TaskLog }
@@ -20,4 +21,28 @@ fn (mut app AliasApp) routes_job(mut ctx Context) {
 
 	// Task log management
 	app.register_routes_platform[TaskLog](mut &TaskLog{}, '/job/tasklog', mut ctx)
+}
+
+fn openapi_tags_job() []veb.OpenApiTagConfig {
+	return [
+		veb.OpenApiTagConfig{
+			name:        'job'
+			summary:     '定时任务'
+			description: '定时任务配置与执行日志。'
+		},
+		veb.OpenApiTagConfig{
+			name:        'job.task'
+			summary:     '任务'
+			description: '定时任务配置。'
+			parent:      'job'
+			controllers: [typeof(Task{}).name.trim_left('&')]
+		},
+		veb.OpenApiTagConfig{
+			name:        'job.task_log'
+			summary:     '任务日志'
+			description: '定时任务执行记录。'
+			parent:      'job'
+			controllers: [typeof(TaskLog{}).name.trim_left('&')]
+		},
+	]
 }

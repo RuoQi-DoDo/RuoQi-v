@@ -10,6 +10,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '删除短信提供商。']
 @['/delete'; post]
 pub fn (app &SmsProvider) delete_sms_provider_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

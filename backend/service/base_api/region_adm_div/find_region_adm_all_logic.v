@@ -9,6 +9,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '按国家地区和上级行政区划分页查询下级区划。']
 @['/all'; get]
 pub fn (app &RegionAdmDiv) find_region_adm_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

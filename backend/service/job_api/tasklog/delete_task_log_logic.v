@@ -10,6 +10,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '删除任务日志。']
 @['/delete'; post]
 pub fn (app &TaskLog) delete_task_log_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

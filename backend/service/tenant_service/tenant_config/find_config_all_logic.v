@@ -7,6 +7,7 @@ import model.schema_tenant { TnConfig }
 import common.api as capi
 
 // ═══ Handler ═══
+@[description: '查询配置列表。']
 @['/find_config_all'; get]
 pub fn (app &TenantConfig) find_config_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -5,6 +5,7 @@ import log
 import common.api
 import model { Context }
 
+@[description: '初始化全部数据库表。']
 @['/init/all_database'; get]
 pub fn (app &Database) init_all(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

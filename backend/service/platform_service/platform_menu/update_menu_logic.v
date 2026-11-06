@@ -10,6 +10,7 @@ import common.api
 import time
 
 // ═══ Handler ═══
+@[description: '更新平台菜单。']
 @['/update_menu'; post]
 pub fn (app &PlatformMenu) update_menu_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

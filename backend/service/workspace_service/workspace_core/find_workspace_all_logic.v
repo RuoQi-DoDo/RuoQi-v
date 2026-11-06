@@ -7,6 +7,7 @@ import model.schema_workspace { WsWorkspace }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询工作区列表。']
 @['/find_workspace_all'; post]
 pub fn (app &WorkspaceCore) find_workspace_all_handler(mut ctx Context) veb.Result {
 	result := find_workspace_all_usecase(mut ctx) or {

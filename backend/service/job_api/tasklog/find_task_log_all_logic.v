@@ -8,6 +8,7 @@ import model { Context }
 import json2 as json
 
 // ═══ Handler ═══
+@[description: '查询任务日志列表。']
 @['/all'; get]
 pub fn (app &TaskLog) find_task_log_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -10,6 +10,7 @@ import common.api as capi
 import time
 
 // ═══ Handler ═══
+@[description: '更新租户产品订阅。']
 @['/update_subproduct'; post]
 pub fn (app &TenantSubProduct) update_subproduct_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

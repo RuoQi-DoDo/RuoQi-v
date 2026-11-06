@@ -9,6 +9,7 @@ import model.schema_platform { PfMenu }
 import common.api
 
 // ═══ Handler ═══
+@[description: '删除平台菜单。']
 @['/delete_menu'; post]
 pub fn (app &PlatformMenu) delete_menu_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

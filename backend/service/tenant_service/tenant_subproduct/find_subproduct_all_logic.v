@@ -7,6 +7,7 @@ import model.schema_tenant { TnSubProduct }
 import common.api as capi
 
 // ═══ Handler ═══
+@[description: '查询租户产品订阅列表。']
 @['/find_subproduct_all'; get]
 pub fn (app &TenantSubProduct) find_subproduct_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -9,6 +9,7 @@ import model { Context }
 import json2 as json
 
 // ═══ Handler ═══
+@[description: '查询云文件列表。']
 @['/all'; get]
 pub fn (app &CloudFile) find_fms_cloud_file_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

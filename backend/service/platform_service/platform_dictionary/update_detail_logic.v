@@ -10,6 +10,7 @@ import common.api
 import time
 
 // ═══ Handler ═══
+@[description: '更新平台数据字典。']
 @['/update_detail'; post]
 pub fn (app &PlatformDictionary) update_detail_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -9,6 +9,7 @@ import model { Context }
 import json2 as json
 
 // ═══ Handler ═══
+@[description: '查询短信提供商列表。']
 @['/all'; get]
 pub fn (app &SmsProvider) find_sms_provider_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

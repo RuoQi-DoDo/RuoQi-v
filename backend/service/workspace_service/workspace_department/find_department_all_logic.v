@@ -8,6 +8,7 @@ import model.schema_workspace { WsDepartment }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询部门列表。']
 @['/find_department_all'; post]
 pub fn (app &WorkspaceDepartment) find_department_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

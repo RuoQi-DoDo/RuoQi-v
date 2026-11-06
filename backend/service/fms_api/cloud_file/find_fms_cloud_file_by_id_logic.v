@@ -10,6 +10,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '按 ID 查询云文件详情。']
 @['/by_id'; post]
 pub fn (app &CloudFile) find_fms_cloud_file_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

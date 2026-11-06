@@ -11,6 +11,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '创建 UTC 时区偏移资料。']
 @['/create'; post]
 pub fn (app &Utc) create_utc_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

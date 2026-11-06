@@ -9,6 +9,7 @@ import model { Context }
 import json2 as json
 
 // ═══ Handler ═══
+@[description: '分页查询系统语言。']
 @['/all'; get]
 pub fn (app &Language) find_language_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

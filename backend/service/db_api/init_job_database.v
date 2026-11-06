@@ -28,6 +28,7 @@ fn (app &Database) init_job_tables(mut pool dbpool.DatabasePoolable) ! {
 	return
 }
 
+@[description: '初始化任务服务数据库表。']
 @['/init/init_job'; get]
 pub fn (app &Database) init_job(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

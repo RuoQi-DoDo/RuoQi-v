@@ -9,6 +9,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '按 ID 查询退款详情。']
 @['/by_id'; post]
 pub fn (app &Refund) find_pay_refund_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

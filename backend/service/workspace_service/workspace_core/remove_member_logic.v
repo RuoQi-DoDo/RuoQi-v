@@ -10,6 +10,7 @@ import model.schema_workspace { WsMember, WsMemberRole }
 import common.api
 
 // ═══ Handler ═══
+@[description: '移除工作区成员。']
 @['/remove_member'; post]
 pub fn (app &WorkspaceCore) remove_member_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

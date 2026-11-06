@@ -10,6 +10,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '按 ID 查询文件标签详情。']
 @['/by_id'; post]
 pub fn (app &FileTag) find_fms_file_tag_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -1,6 +1,7 @@
 module route
 
 import log
+import veb
 import model { Context }
 import service.tenant_service.tenant_subproduct { TenantSubProduct }
 import service.tenant_service.tenant_member { TenantMember }
@@ -28,4 +29,42 @@ fn (mut app AliasApp) routes_tenant(mut ctx Context) {
 
 	// 租户配置
 	app.register_routes_scoped[TenantConfig](mut &TenantConfig{}, '/tenant/config', mut ctx)
+}
+
+fn openapi_tags_tenant() []veb.OpenApiTagConfig {
+	return [
+		veb.OpenApiTagConfig{
+			name:        'tenant'
+			summary:     '租户服务'
+			description: '租户产品订阅、成员、账单和配置。'
+		},
+		veb.OpenApiTagConfig{
+			name:        'tenant.subproduct'
+			summary:     '产品订阅'
+			description: '租户产品及套餐订阅。'
+			parent:      'tenant'
+			controllers: [typeof(TenantSubProduct{}).name.trim_left('&')]
+		},
+		veb.OpenApiTagConfig{
+			name:        'tenant.member'
+			summary:     '租户成员'
+			description: '租户成员邀请、查询和移除。'
+			parent:      'tenant'
+			controllers: [typeof(TenantMember{}).name.trim_left('&')]
+		},
+		veb.OpenApiTagConfig{
+			name:        'tenant.invoice'
+			summary:     '账单'
+			description: '租户账单查询。'
+			parent:      'tenant'
+			controllers: [typeof(TenantInvoice{}).name.trim_left('&')]
+		},
+		veb.OpenApiTagConfig{
+			name:        'tenant.config'
+			summary:     '租户配置'
+			description: '租户产品运行配置。'
+			parent:      'tenant'
+			controllers: [typeof(TenantConfig{}).name.trim_left('&')]
+		},
+	]
 }

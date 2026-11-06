@@ -10,6 +10,7 @@ import common.api
 import common.encrypt
 
 // ═══ Handler ═══
+@[description: '重置用户密码。']
 @['/reset_password'; post]
 pub fn (app &Authentication) reset_password_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -7,6 +7,7 @@ import model.schema_platform { PfConfig }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询配置列表。']
 @['/find_config_all'; post]
 pub fn (app &PlatformConfiguration) find_config_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

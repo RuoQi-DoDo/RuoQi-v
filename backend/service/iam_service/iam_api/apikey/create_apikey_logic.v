@@ -35,6 +35,7 @@ pub struct CreateApiKeyResp {
 	created_at     string   @[json: 'created_at'; description: '创建时间']
 }
 
+@[description: '创建 API Key。']
 @['/create'; post]
 pub fn (app &ApiKey) create_apikey_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

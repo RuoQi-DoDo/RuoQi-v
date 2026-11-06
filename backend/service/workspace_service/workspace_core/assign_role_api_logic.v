@@ -9,6 +9,7 @@ import model.schema_workspace { WsRoleApi }
 import common.api
 
 // ═══ Handler ═══
+@[description: '为角色分配 API。']
 @['/assign_role_api'; post]
 pub fn (app &WorkspaceCore) assign_role_api_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

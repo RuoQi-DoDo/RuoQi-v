@@ -34,6 +34,7 @@ fn (app &Database) init_iam_tables(mut pool dbpool.DatabasePoolable) ! {
 	return
 }
 
+@[description: '初始化身份服务数据库表。']
 @['/init/init_iam'; get]
 pub fn (app &Database) init_iam(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

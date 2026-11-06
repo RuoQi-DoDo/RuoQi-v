@@ -10,6 +10,7 @@ import model.schema_workspace { WsPosition }
 import common.api
 
 // ═══ Handler ═══
+@[description: '删除工作区岗位。']
 @['/delete_position'; post]
 pub fn (app &WorkspacePosition) delete_position_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

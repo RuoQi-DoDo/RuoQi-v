@@ -11,6 +11,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '创建File。']
 @['/create'; post]
 pub fn (app &File) create_fms_file_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

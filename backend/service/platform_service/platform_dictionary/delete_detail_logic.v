@@ -9,6 +9,7 @@ import model.schema_platform { PfDictionaryDetail }
 import common.api
 
 // ═══ Handler ═══
+@[description: '删除平台数据字典。']
 @['/delete_detail'; post]
 pub fn (app &PlatformDictionary) delete_detail_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

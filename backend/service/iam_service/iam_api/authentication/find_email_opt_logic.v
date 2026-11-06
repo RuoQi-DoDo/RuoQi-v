@@ -7,6 +7,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '发送邮箱验证码。']
 @['/email_opt'; post]
 pub fn (app &Authentication) find_email_opt_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

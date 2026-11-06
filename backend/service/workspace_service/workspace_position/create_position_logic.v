@@ -11,6 +11,7 @@ import model.schema_workspace { WsPosition }
 import common.api
 
 // ═══ Handler ═══
+@[description: '创建工作区岗位。']
 @['/create_position'; post]
 pub fn (app &WorkspacePosition) create_position_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

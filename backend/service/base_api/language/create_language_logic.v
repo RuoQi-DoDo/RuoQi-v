@@ -11,6 +11,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '创建系统支持的语言。']
 @['/create'; post]
 pub fn (app &Language) create_language_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -10,6 +10,7 @@ import model.schema_tenant { TnSubProduct }
 import common.api as capi
 
 // ═══ Handler ═══
+@[description: '取消租户产品订阅。']
 @['/cancel_subproduct'; post]
 pub fn (app &TenantSubProduct) cancel_subproduct_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

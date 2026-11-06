@@ -10,6 +10,7 @@ import model.schema_workspace { WsWorkspace }
 import common.api
 
 // ═══ Handler ═══
+@[description: '更新工作区。']
 @['/update_workspace'; post]
 pub fn (app &WorkspaceCore) update_workspace_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

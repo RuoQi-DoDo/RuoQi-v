@@ -10,6 +10,7 @@ import common.api
 import time
 
 // ═══ Handler ═══
+@[description: '更新平台系统配置。']
 @['/update_config'; post]
 pub fn (app &PlatformConfiguration) update_config_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -10,6 +10,7 @@ import common.api as capi
 import time
 
 // ═══ Handler ═══
+@[description: '更新平台接口。']
 @['/update_api'; post]
 pub fn (app &PlatformApi) update_api_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

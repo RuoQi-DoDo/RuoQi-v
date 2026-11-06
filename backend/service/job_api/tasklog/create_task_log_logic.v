@@ -11,6 +11,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '创建任务日志。']
 @['/create'; post]
 pub fn (app &TaskLog) create_task_log_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

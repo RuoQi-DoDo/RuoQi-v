@@ -7,6 +7,7 @@ import model.schema_iam { IamUser }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询当前用户资料。']
 @['/profile'; get]
 pub fn (app &User) find_user_profile_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -12,6 +12,7 @@ import common.crypt
 import common.encrypt
 
 // ═══ Handler ═══
+@[description: '使用邮箱验证码注册。']
 @['/signup_by_email'; post]
 pub fn (app &Authentication) signup_by_email_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -10,6 +10,7 @@ import model.schema_fms { FmsStorageProvider }
 import common.api
 import model { Context }
 
+@[description: '创建存储提供商。']
 @['/create'; post]
 pub fn (app &StorageProvider) create_fms_storage_provider_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

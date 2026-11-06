@@ -33,6 +33,7 @@ fn (app &Database) init_fms_tables(mut pool dbpool.DatabasePoolable) ! {
 	return
 }
 
+@[description: '初始化文件服务数据库表。']
 @['/init/init_fms'; get]
 pub fn (app &Database) init_fms(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

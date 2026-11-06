@@ -11,6 +11,7 @@ import common.api as capi
 import service.iam_service.iam_api.tenant
 
 // ═══ Handler ═══
+@[description: '邀请租户成员。']
 @['/invite_member'; post]
 pub fn (app &TenantMember) invite_member_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

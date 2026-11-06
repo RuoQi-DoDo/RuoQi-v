@@ -8,6 +8,7 @@ import model { Context }
 import model.schema_iam { IamToken }
 import common.api
 
+@[description: '刷新访问令牌。']
 @['/refresh_token'; post]
 pub fn (app &Token) refresh_token_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

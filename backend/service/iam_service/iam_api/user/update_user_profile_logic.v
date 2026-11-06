@@ -10,6 +10,7 @@ import common.api
 import time
 
 // ═══ Handler ═══
+@[description: '更新当前用户资料。']
 @['/update_user_profile'; post]
 pub fn (app &User) update_user_profile_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

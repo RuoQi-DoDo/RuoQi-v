@@ -7,6 +7,7 @@ import model.schema_iam { IamUser }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询用户列表。']
 @['/find_user_all'; post]
 pub fn (app &User) find_user_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

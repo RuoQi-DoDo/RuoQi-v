@@ -9,6 +9,7 @@ import model.schema_platform { PfApi }
 import common.api as capi
 
 // ═══ Handler ═══
+@[description: '查询平台 API 详情。']
 @['/find_api_by_id'; post]
 pub fn (app &PlatformApi) find_api_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -8,6 +8,7 @@ import model.schema_platform { PfDictionaryDetail }
 import common.api
 
 // ═══ Handler ═══
+@[description: '按字典查询明细列表。']
 @['/find_detail_by_dict'; post]
 pub fn (app &PlatformDictionary) find_detail_by_dict_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

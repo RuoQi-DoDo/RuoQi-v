@@ -10,6 +10,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '按 ID 更新基础货币资料，未提供的字段保持原值。']
 @['/update'; post]
 pub fn (app &Currency) update_currency_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

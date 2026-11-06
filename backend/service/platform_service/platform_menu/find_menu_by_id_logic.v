@@ -9,6 +9,7 @@ import model.schema_platform { PfMenu }
 import common.api
 
 // ═══ Handler ═══
+@[description: '按 ID 查询平台菜单详情。']
 @['/find_menu_by_id'; post]
 pub fn (app &PlatformMenu) find_menu_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

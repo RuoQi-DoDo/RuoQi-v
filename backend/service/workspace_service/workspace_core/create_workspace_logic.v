@@ -11,6 +11,7 @@ import model.schema_workspace { WsWorkspace }
 import common.api
 
 // ═══ Handler ═══
+@[description: '创建工作区。']
 @['/create_workspace'; post]
 pub fn (app &WorkspaceCore) create_workspace_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
