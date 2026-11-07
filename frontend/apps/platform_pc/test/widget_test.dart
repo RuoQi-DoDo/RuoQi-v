@@ -18,6 +18,8 @@ void main() {
     expect(find.text('系统全局管理'), findsOneWidget);
     expect(find.text('运营后台'), findsOneWidget);
     expect(find.text('租户管理后台'), findsOneWidget);
+    expect(find.text('WMS管理'), findsOneWidget);
+    expect(find.text('仓库管理后台'), findsOneWidget);
     expect(find.text('platform_pc · v1.0.0'), findsOneWidget);
 
     // 整页文案可选中复制：页头、卡片、页脚都在 SelectionArea 内。

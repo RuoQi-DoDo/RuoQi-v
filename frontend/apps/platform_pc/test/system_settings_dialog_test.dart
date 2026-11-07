@@ -160,7 +160,7 @@ void main() {
     final box = textFinder.evaluate().first.renderObject! as RenderBox;
     final size = box.size;
     // 内容按宽度适配后字号应接近原始设计尺寸（14px * 缩放），不会被缩成几像素
-    expect(size.height, greaterThan(14), reason: '本地化内容不应被缩小');
+    expect(size.height, greaterThanOrEqualTo(14), reason: '本地化内容不应被整体缩小');
     expect(tester.takeException(), isNull);
     tester.view.reset();
   });

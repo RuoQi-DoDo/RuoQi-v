@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:common/common.dart';
 
+import '../console_content_theme.dart';
 import 'package:ruoqi_platform_pc/admin_pages/settings_module/auth_login_settings_page/index.dart';
 import 'package:ruoqi_platform_pc/admin_pages/settings_module/email_settings_page/index.dart';
 import 'package:ruoqi_platform_pc/admin_pages/settings_module/encoding_rules_page/index.dart';
@@ -107,12 +108,8 @@ const _sections = [
     _SidebarItem('用户', 'StMQ4cWti'),
     _SidebarItem('角色', 'c11sjQSJ1'),
   ]),
-  _SidebarSection('权限', [
-    _SidebarItem('权限', 'c50tDa7pFz'),
-  ]),
-  _SidebarSection('菜单', [
-    _SidebarItem('菜单', 'XdvqIaB7_'),
-  ]),
+  _SidebarSection('权限', [_SidebarItem('权限', 'c50tDa7pFz')]),
+  _SidebarSection('菜单', [_SidebarItem('菜单', 'XdvqIaB7_')]),
   _SidebarSection('基础', [
     _SidebarItem('世界地理规划', 'xZC4jWHWG'),
     _SidebarItem('地区&国家', 'X0RCGzKUh'),
@@ -206,9 +203,11 @@ class _SystemSettingsDialogState extends State<_SystemSettingsDialog> {
                     onSelected: _selectItem,
                   ),
                 Expanded(
-                  child: _PageContentView(
-                    key: ValueKey(item.pageId),
-                    body: _bodyFor(context, item),
+                  child: ConsoleContentTheme(
+                    child: _PageContentView(
+                      key: ValueKey(item.pageId),
+                      body: _bodyFor(context, item),
+                    ),
                   ),
                 ),
               ],
@@ -328,10 +327,7 @@ class _LeftMenuState extends State<_LeftMenu> {
 
 /// 内容区：展示业务页正文。
 class _PageContentView extends StatelessWidget {
-  const _PageContentView({
-    super.key,
-    this.body,
-  });
+  const _PageContentView({super.key, this.body});
 
   /// 业务页正文；
   final Widget? body;
