@@ -23,7 +23,13 @@ apps/business_pc/
   lib/api/customer/           # 客户域 DTO + 客户端（本端一份）
   lib/api/merchant/           # 商户域 DTO + 客户端
   lib/api/partner/            # 伙伴域 DTO + 客户端
-  lib/customer|merchant|partner/   # 对应域的 UI 页面
+  lib/customer|merchant|partner/  # 对应域的 UI 页面
+
+apps/business_app/
+  lib/pages/                  # 客户宿主首页与登录页
+  lib/mini-program/hr/        # 企业直聘 HR 小程序页面
+  lib/mini-program/merchant/  # 商户小程序页面
+  lib/mini-program/partner/   # 伙伴小程序页面
 ```
 
 > 说明：App 包名用 `ruoqi_` 前缀 + `_app` / `_pc` 后缀——`platform` 之类的名字与
