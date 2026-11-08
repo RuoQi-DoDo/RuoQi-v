@@ -1,4 +1,4 @@
-/// WMS 规则页的展示方式。
+/// 规则设置页的展示方式。
 enum WmsRuleDisplayMode { cards, table }
 
 /// 不同规则类型使用的编辑表单差异。
@@ -248,7 +248,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'coding',
     categoryId: 'basic',
     categoryLabel: '基础规则',
-    label: '单据编码规则',
+    label: '单据编码',
     description: '维护各业务单据的编码格式、流水号字符集与模块绑定关系。',
     editorKind: WmsEditorKind.coding,
     displayMode: WmsRuleDisplayMode.table,
@@ -258,7 +258,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'wave_picker',
     categoryId: 'basic',
     categoryLabel: '基础规则',
-    label: '波次拣货人分配规则',
+    label: '波次拣货人分配',
     description: '按仓库、库区和任务量，为波次自动分配拣货人员。',
     editorKind: WmsEditorKind.assignment,
     displayMode: WmsRuleDisplayMode.table,
@@ -284,7 +284,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'task_operator',
     categoryId: 'basic',
     categoryLabel: '基础规则',
-    label: '出库任务操作人规则',
+    label: '出库任务操作人',
     description: '配置出库任务的执行人员分配方式与生效条件。',
     editorKind: WmsEditorKind.assignment,
     displayMode: WmsRuleDisplayMode.table,
@@ -310,7 +310,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'exact_fields',
     categoryId: 'basic',
     categoryLabel: '基础规则',
-    label: '搜索精确匹配字段规则',
+    label: '搜索精确匹配字段',
     description: '配置业务搜索中优先执行的精确匹配字段。',
     editorKind: WmsEditorKind.conditionAction,
   ),
@@ -318,7 +318,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'serial_parser',
     categoryId: 'basic',
     categoryLabel: '基础规则',
-    label: '序列号解析规则',
+    label: '序列号解析',
     description: '按商品属性与条码格式解析序列号中的关键信息。',
     editorKind: WmsEditorKind.serialParsing,
   ),
@@ -350,7 +350,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'taboo',
     categoryId: 'basic',
     categoryLabel: '基础规则',
-    label: '智能禁忌规则',
+    label: '智能禁忌',
     description: '配置商品、货位和批次之间需要规避的组合。',
     editorKind: WmsEditorKind.conditionAction,
     initialRules: [
@@ -374,7 +374,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'analysis',
     categoryId: 'basic',
     categoryLabel: '基础规则',
-    label: '智能分析规则',
+    label: '智能分析',
     description: '基于商品属性和业务条件生成智能分析动作。',
     editorKind: WmsEditorKind.conditionAction,
     initialRules: [
@@ -398,7 +398,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'external_erp',
     categoryId: 'basic',
     categoryLabel: '基础规则',
-    label: '外部ERP规则',
+    label: '外部ERP',
     description: '维护与外部 ERP 系统之间的字段映射和同步约束。',
     editorKind: WmsEditorKind.conditionAction,
   ),
@@ -406,7 +406,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'slot_recommend',
     categoryId: 'inbound',
     categoryLabel: '入库规则',
-    label: '货位推荐规则',
+    label: '货位推荐',
     description: '根据商品体积、库存与仓库属性推荐入库货位。',
     editorKind: WmsEditorKind.conditionAction,
     initialRules: [
@@ -430,7 +430,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'quality_check',
     categoryId: 'inbound',
     categoryLabel: '入库规则',
-    label: '质检规则',
+    label: '质检',
     description: '定义入库商品的质检触发条件、方式与抽检比例。',
     editorKind: WmsEditorKind.qualityCheck,
     initialRules: [
@@ -454,7 +454,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'receive_verify',
     categoryId: 'inbound',
     categoryLabel: '入库规则',
-    label: '收货验证规则',
+    label: '收货验证',
     description: '配置收货数量、重量与生产日期的校验策略。',
     editorKind: WmsEditorKind.receiveVerification,
     initialRules: [
@@ -478,7 +478,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'advance_receipt',
     categoryId: 'inbound',
     categoryLabel: '入库规则',
-    label: '预到货单规则',
+    label: '预到货单',
     description: '控制预到货单生成批次、上架单和托盘数据的执行方式。',
     editorKind: WmsEditorKind.advanceReceipt,
     initialRules: [
@@ -502,7 +502,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'purchase_suggestion',
     categoryId: 'inbound',
     categoryLabel: '入库规则',
-    label: '采购建议规则',
+    label: '采购建议',
     description: '依据销量、库存与在途数据计算采购建议量。',
     editorKind: WmsEditorKind.purchaseSuggestion,
     displayMode: WmsRuleDisplayMode.table,
@@ -511,7 +511,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'restock',
     categoryId: 'inventory',
     categoryLabel: '库内操作',
-    label: '补货规则',
+    label: '补货',
     description: '根据库存下限和整箱数量自动生成补货任务。',
     editorKind: WmsEditorKind.restock,
     initialRules: [
@@ -535,7 +535,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'inventory_check',
     categoryId: 'inventory',
     categoryLabel: '库内操作',
-    label: '盘点规则',
+    label: '盘点',
     description: '配置盘点范围、冻结库存和差异复盘的执行策略。',
     editorKind: WmsEditorKind.inventoryCheck,
     initialRules: [
@@ -559,7 +559,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'inventory_difference',
     categoryId: 'inventory',
     categoryLabel: '库内操作',
-    label: '盘点差异规则',
+    label: '盘点差异',
     description: '定义盘点差异按库存、批次和盘盈盘亏的处理方式。',
     editorKind: WmsEditorKind.inventoryDifference,
     initialRules: [
@@ -583,7 +583,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'random_inventory',
     categoryId: 'inventory',
     categoryLabel: '库内操作',
-    label: '随机盘点规则',
+    label: '随机盘点',
     description: '按库区、商品数量与随机维度生成随机盘点任务。',
     editorKind: WmsEditorKind.randomInventory,
     initialRules: [
@@ -607,7 +607,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'outbound_allocation',
     categoryId: 'outbound',
     categoryLabel: '出库规则',
-    label: '出库分配规则',
+    label: '出库分配',
     description: '按出库单类型、商品范围与库区优先级分配库存。',
     editorKind: WmsEditorKind.conditionAction,
     initialRules: [
@@ -631,7 +631,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'outbound_wave',
     categoryId: 'outbound',
     categoryLabel: '出库规则',
-    label: '波次生成规则',
+    label: '波次生成',
     description: '配置订单合并、生成时段与波次拣货人分配方式。',
     editorKind: WmsEditorKind.outboundWave,
     initialRules: [
@@ -655,7 +655,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'outbound_verify',
     categoryId: 'outbound',
     categoryLabel: '出库规则',
-    label: '出库验证规则',
+    label: '出库验证',
     description: '控制出库、拣货和打包复核环节的放行策略。',
     editorKind: WmsEditorKind.outboundVerification,
     initialRules: [
@@ -679,7 +679,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'packing',
     categoryId: 'outbound',
     categoryLabel: '出库规则',
-    label: '复核装箱规则',
+    label: '复核装箱',
     description: '配置复核装箱校验、装箱模式与打印模板。',
     editorKind: WmsEditorKind.packing,
     initialRules: [
@@ -703,7 +703,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'box_recommend',
     categoryId: 'outbound',
     categoryLabel: '出库规则',
-    label: '箱型推荐规则',
+    label: '箱型推荐',
     description: '根据订单商品和容器尺寸推荐出库箱型。',
     editorKind: WmsEditorKind.boxRecommendation,
     initialRules: [
@@ -727,7 +727,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'cross_dock',
     categoryId: 'outbound',
     categoryLabel: '出库规则',
-    label: '越库匹配规则',
+    label: '越库匹配',
     description: '配置越库计划与预到货单数据之间的匹配字段。',
     editorKind: WmsEditorKind.crossDocking,
   ),
@@ -735,7 +735,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'outbound_order',
     categoryId: 'outbound',
     categoryLabel: '出库规则',
-    label: '出库单规则',
+    label: '出库单',
     description: '定义出库单来源范围与部分分配时的占位处理。',
     editorKind: WmsEditorKind.outboundOrder,
   ),
@@ -743,7 +743,7 @@ final wmsRulePages = <WmsRulePageDefinition>[
     id: 'slot_match',
     categoryId: 'outbound',
     categoryLabel: '出库规则',
-    label: '配货位匹配规则',
+    label: '配货位匹配',
     description: '按照货位状态和播种墙推荐配货位。',
     editorKind: WmsEditorKind.conditionAction,
     initialRules: [

@@ -3,11 +3,11 @@ import 'dart:math' as math;
 import 'package:common/common.dart';
 import 'package:flutter/material.dart';
 
-import '../admin_pages/shared/status_badge.dart';
-import '../admin_pages/shared/table_card.dart';
-import 'wms_coding_rules_page.dart';
-import 'wms_rule_editor_view.dart';
-import 'wms_rule_models.dart';
+import '../../../admin_pages/shared/status_badge.dart';
+import '../../../admin_pages/shared/table_card.dart';
+import 'coding_rules_page.dart';
+import 'rule_editor_view.dart';
+import 'rule_models.dart';
 
 class WmsRulePage extends StatefulWidget {
   const WmsRulePage({
@@ -16,12 +16,16 @@ class WmsRulePage extends StatefulWidget {
     required this.rules,
     required this.onRulesChanged,
     required this.onNotify,
+    this.codingGroups = const [],
+    this.onCodingGroupsChanged,
   });
 
   final WmsRulePageDefinition page;
   final List<WmsRule> rules;
   final ValueChanged<List<WmsRule>> onRulesChanged;
   final ValueChanged<String> onNotify;
+  final List<String> codingGroups;
+  final ValueChanged<List<String>>? onCodingGroupsChanged;
 
   @override
   State<WmsRulePage> createState() => _WmsRulePageState();
@@ -73,6 +77,8 @@ class _WmsRulePageState extends State<WmsRulePage> {
     if (widget.page.id == 'coding') {
       return WmsCodingRulesPage(
         rules: widget.rules,
+        customGroups: widget.codingGroups,
+        onCustomGroupsChanged: widget.onCodingGroupsChanged,
         onRulesChanged: widget.onRulesChanged,
         onNotify: widget.onNotify,
       );

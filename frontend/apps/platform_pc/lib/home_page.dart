@@ -256,7 +256,7 @@ const _entries = <_ConsoleEntry>[
     icon: Icons.warehouse_outlined,
     title: 'WMS管理',
     subtitle: '仓库管理后台',
-    modules: '基础规则 · 入库 · 库内 · 出库',
+    modules: '规则设置 · 出库作业 · 入库作业 · 仓内作业',
     tags: ['WMS', '规则引擎'],
     onOpen: WmsConsoleDialog.show,
   ),

@@ -1,11 +1,11 @@
 import 'package:common/common.dart';
 import 'package:flutter/material.dart';
 
-import '../console_content_theme.dart';
-import 'wms_rule_models.dart';
-import 'wms_rule_page.dart';
+import '../../../console_content_theme.dart';
+import 'rule_models.dart';
+import 'rule_page.dart';
 
-/// WMS管理主体。可直接嵌入页面，也可由 [WmsConsoleDialog] 放在弹窗中。
+/// 规则设置主体，作为 WMS 一级菜单下的规则二级导航与内容区。
 class WmsRuleSettingsPage extends StatefulWidget {
   const WmsRuleSettingsPage({super.key});
 
@@ -15,6 +15,7 @@ class WmsRuleSettingsPage extends StatefulWidget {
 
 class _WmsRuleSettingsPageState extends State<WmsRuleSettingsPage> {
   late final Map<String, List<WmsRule>> _rules;
+  List<String> _codingGroups = const [];
   String _selectedPageId = 'constraint';
 
   @override
@@ -48,6 +49,10 @@ class _WmsRuleSettingsPageState extends State<WmsRuleSettingsPage> {
                 key: ValueKey(page.id),
                 page: page,
                 rules: _rules[page.id] ?? const [],
+                codingGroups: _codingGroups,
+                onCodingGroupsChanged: (groups) {
+                  setState(() => _codingGroups = [...groups]);
+                },
                 onRulesChanged: (rules) {
                   setState(() => _rules[page.id] = rules);
                 },
@@ -74,6 +79,8 @@ class WmsRuleSidebar extends StatefulWidget {
     required this.selectedPageId,
     required this.onSelected,
   });
+
+  static const double width = 232;
 
   final String selectedPageId;
   final ValueChanged<WmsRulePageDefinition> onSelected;
@@ -120,7 +127,8 @@ class _WmsRuleSidebarState extends State<WmsRuleSidebar> {
           ),
     ];
     return Container(
-      width: 268,
+      key: const ValueKey('wms-rule-sidebar'),
+      width: WmsRuleSidebar.width,
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
@@ -131,42 +139,7 @@ class _WmsRuleSidebarState extends State<WmsRuleSidebar> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(
-              RuQiSpacing.lg,
-              RuQiSpacing.md,
-              RuQiSpacing.lg,
-              RuQiSpacing.sm,
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.warehouse_outlined,
-                    size: 19,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: RuQiSpacing.xs),
-                Expanded(
-                  child: Text(
-                    '规则设置',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: RuQiSpacing.md),
+            padding: const EdgeInsets.all(RuQiSpacing.md),
             child: RuQiSearchField(
               hintText: '搜索规则',
               onChanged: (value) => setState(() => _query = value),
@@ -297,7 +270,7 @@ class _SidebarPageItem extends StatelessWidget {
       child: Container(
         height: 40,
         padding: const EdgeInsets.only(
-          left: RuQiSpacing.xxl,
+          left: RuQiSpacing.xl,
           right: RuQiSpacing.sm,
         ),
         color: selected ? theme.colorScheme.primaryContainer : null,

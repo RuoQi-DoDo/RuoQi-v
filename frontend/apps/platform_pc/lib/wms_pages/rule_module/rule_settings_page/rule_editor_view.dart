@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:common/common.dart';
 import 'package:flutter/material.dart';
 
-import 'wms_rule_models.dart';
+import 'rule_models.dart';
 
 /// WMS 新建/编辑规则子视图。
 ///
@@ -525,26 +525,6 @@ class _WmsRuleEditorViewState extends State<WmsRuleEditorView> {
                   controller: _text('coding_sort', '0'),
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(labelText: '排序号'),
-                ),
-              ],
-            ),
-            const SizedBox(height: RuQiSpacing.md),
-            _ChoiceRow<int>(
-              label: '迁移状态',
-              value: 0,
-              options: const [(0, '兼容旧模式'), (1, '分段规则')],
-              onChanged: (_) {},
-            ),
-            const SizedBox(height: RuQiSpacing.md),
-            ExpansionTile(
-              tilePadding: EdgeInsets.zero,
-              childrenPadding: const EdgeInsets.only(bottom: RuQiSpacing.sm),
-              title: const Text('旧版：编码模式串（code）与取号 SQL'),
-              children: [
-                TextFormField(
-                  controller: _text('coding_legacy'),
-                  maxLines: 4,
-                  decoration: const InputDecoration(hintText: '兼容旧版编码规则时填写。'),
                 ),
               ],
             ),
