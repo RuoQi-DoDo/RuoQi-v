@@ -9,6 +9,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '按 ID 查询任务日志详情。']
 @['/find_task_log_by_id'; post]
 pub fn (app &TaskLog) find_task_log_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

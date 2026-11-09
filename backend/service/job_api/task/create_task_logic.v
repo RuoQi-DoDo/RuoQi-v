@@ -11,6 +11,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '创建定时任务。']
 @['/create'; post]
 pub fn (app &Task) create_task_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -9,6 +9,7 @@ import model.schema_workspace { WsMember, WsMemberRole }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询工作区成员。']
 @['/find_members'; post]
 pub fn (app &WorkspaceCore) find_members_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

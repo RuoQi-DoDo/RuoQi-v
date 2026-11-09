@@ -10,6 +10,7 @@ import model.schema_workspace { WsWorkspace }
 import common.api
 
 // ═══ Handler ═══
+@[description: '删除工作区。']
 @['/delete_workspace'; post]
 pub fn (app &WorkspaceCore) delete_workspace_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

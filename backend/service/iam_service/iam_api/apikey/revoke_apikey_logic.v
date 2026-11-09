@@ -8,6 +8,7 @@ import model { Context }
 import common.api
 import model.schema_iam { IamApiKey }
 
+@[description: '撤销 API Key。']
 @['/revoke'; post]
 pub fn (app &ApiKey) revoke_apikey_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

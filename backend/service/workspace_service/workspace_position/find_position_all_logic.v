@@ -8,6 +8,7 @@ import model.schema_workspace { WsPosition }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询岗位列表。']
 @['/find_position_all'; post]
 pub fn (app &WorkspacePosition) find_position_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

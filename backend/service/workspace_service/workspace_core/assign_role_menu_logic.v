@@ -9,6 +9,7 @@ import model.schema_workspace { WsRoleMenu }
 import common.api
 
 // ═══ Handler ═══
+@[description: '为角色分配菜单。']
 @['/assign_role_menu'; post]
 pub fn (app &WorkspaceCore) assign_role_menu_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -11,6 +11,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '创建国家或地区下级行政区划。']
 @['/create'; post]
 pub fn (app &RegionAdmDiv) create_adm_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

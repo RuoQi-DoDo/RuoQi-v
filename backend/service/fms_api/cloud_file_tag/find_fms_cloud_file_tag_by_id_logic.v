@@ -9,6 +9,7 @@ import model.schema_fms { FmsCloudFileTag }
 import common.api
 import model { Context }
 
+@[description: '按 ID 查询云文件标签详情。']
 @['/by_id'; post]
 pub fn (app &CloudFileTag) find_fms_cloud_file_tag_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

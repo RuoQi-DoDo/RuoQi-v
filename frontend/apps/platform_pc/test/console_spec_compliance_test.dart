@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:common/common.dart';
 import 'package:ruoqi_platform_pc/admin_pages/system_settings_dialog.dart';
 import 'package:ruoqi_platform_pc/ops_pages/operations_console_dialog.dart';
+import 'package:ruoqi_platform_pc/wms_pages/wms_console_dialog.dart';
 
 /// 控制台外壳按 DESIGN-consensus.md 规范落地：surface 导航栏、
 /// 无紫色原型色、选中菜单项 primaryContainer、内容区 surface。
@@ -15,6 +16,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     await tester.pumpWidget(
       MaterialApp(
+        key: UniqueKey(),
         theme: ruoQiTheme(),
         home: const Scaffold(body: SizedBox()),
       ),
@@ -112,6 +114,22 @@ void main() {
 
   testWidgets('运营后台退出按钮贴右上角', (tester) async {
     await expectExitAtTopRight(tester, OperationsConsoleDialog.show);
+    tester.view.reset();
+  });
+
+  testWidgets('三类控制台右侧内容区使用统一紧凑字号', (tester) async {
+    await open(tester, SystemSettingsDialog.show);
+    final systemDescription = tester.widget<Text>(find.text('实例的基础信息与备案信息。'));
+    expect(systemDescription.style?.fontSize, 13);
+
+    await open(tester, OperationsConsoleDialog.show);
+    final operationsFooter = tester.widget<Text>(find.text('共 23 条，第 1 / 5 页'));
+    expect(operationsFooter.style?.fontSize, 11);
+
+    await open(tester, WmsConsoleDialog.show);
+    final wmsBreadcrumb = tester.widget<Text>(find.text('规则设置 / 基础规则 / 约束设置'));
+    expect(wmsBreadcrumb.style?.fontSize, 11);
+    expect(tester.takeException(), isNull);
     tester.view.reset();
   });
 }

@@ -7,6 +7,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '发送短信验证码。']
 @['/sms_opt'; post]
 pub fn (app &Authentication) find_sms_opt_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

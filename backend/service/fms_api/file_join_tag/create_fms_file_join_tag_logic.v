@@ -9,6 +9,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '创建文件标签关联。']
 @['/create'; post]
 pub fn (app &FileJoinTag) create_fms_file_join_tag_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

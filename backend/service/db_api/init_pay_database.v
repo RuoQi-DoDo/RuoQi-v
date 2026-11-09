@@ -30,6 +30,7 @@ fn (app &Database) init_pay_tables(mut pool dbpool.DatabasePoolable) ! {
 	return
 }
 
+@[description: '初始化支付服务数据库表。']
 @['/init/init_pay'; get]
 pub fn (app &Database) init_pay(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

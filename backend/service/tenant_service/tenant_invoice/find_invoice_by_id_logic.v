@@ -9,6 +9,7 @@ import model.schema_tenant { TnInvoice }
 import common.api as capi
 
 // ═══ Handler ═══
+@[description: '查询租户账单详情。']
 @['/find_invoice_by_id'; post]
 pub fn (app &TenantInvoice) find_invoice_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

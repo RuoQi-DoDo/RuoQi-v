@@ -12,6 +12,7 @@ import common.crypt
 import common.encrypt
 
 // ═══ Handler ═══
+@[description: '使用短信验证码注册。']
 @['/signup_by_sms'; post]
 pub fn (app &Authentication) signup_by_sms_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

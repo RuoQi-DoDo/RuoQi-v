@@ -16,6 +16,7 @@ pub struct UpdateApiKeyReq {
 	scopes         ?[]string @[json: 'scopes'; description: '权限范围列表']
 }
 
+@[description: '更新 API Key。']
 @['/update'; post]
 pub fn (app &ApiKey) update_apikey_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

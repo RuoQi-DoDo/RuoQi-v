@@ -9,6 +9,7 @@ import model.schema_platform { PfApi }
 import common.api as capi
 
 // ═══ Handler ═══
+@[description: '删除平台接口。']
 @['/delete_api'; post]
 pub fn (app &PlatformApi) delete_api_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

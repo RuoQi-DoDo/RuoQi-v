@@ -7,6 +7,7 @@ import model.schema_platform { PfDictionary }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询字典列表。']
 @['/find_dictionary_all'; post]
 pub fn (app &PlatformDictionary) find_dictionary_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

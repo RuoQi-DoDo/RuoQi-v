@@ -11,6 +11,7 @@ import model.schema_platform { PfApi }
 import common.api as capi
 
 // ═══ Handler ═══
+@[description: '创建平台接口。']
 @['/create_api'; post]
 pub fn (app &PlatformApi) create_api_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

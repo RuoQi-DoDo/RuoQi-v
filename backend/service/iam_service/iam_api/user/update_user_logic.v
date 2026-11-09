@@ -11,6 +11,7 @@ import common.encrypt
 import time
 
 // ═══ Handler ═══
+@[description: '更新用户账号。']
 @['/update_user'; post]
 pub fn (app &User) update_user_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -12,6 +12,7 @@ import common.crypt
 import service.iam_service.iam_api.token
 
 // ═══ Handler ═══
+@[description: '使用短信验证码登录。']
 @['/login_by_sms'; post]
 pub fn (app &Authentication) login_by_sms_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

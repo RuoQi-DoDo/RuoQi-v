@@ -8,6 +8,7 @@ import model.schema_workspace { WsRoleApi }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询角色已分配的 API。']
 @['/find_role_apis'; post]
 pub fn (app &WorkspaceCore) find_role_apis_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

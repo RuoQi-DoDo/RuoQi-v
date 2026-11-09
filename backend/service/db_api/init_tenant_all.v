@@ -34,6 +34,7 @@ fn (app &Database) init_tenant_tables(mut pool dbpool.DatabasePoolable) ! {
 	return
 }
 
+@[description: '初始化租户服务数据库表。']
 @['/init/init_tenant'; get]
 pub fn (app &Database) init_tenant(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

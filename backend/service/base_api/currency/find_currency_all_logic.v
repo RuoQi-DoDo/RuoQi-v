@@ -9,6 +9,7 @@ import model { Context }
 import json2 as json
 
 // ═══ Handler ═══
+@[description: '按名称、ISO 代码和状态分页查询基础货币。']
 @['/all'; get]
 pub fn (app &Currency) find_currency_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

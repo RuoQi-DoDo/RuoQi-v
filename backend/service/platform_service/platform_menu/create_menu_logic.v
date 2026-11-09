@@ -11,6 +11,7 @@ import model.schema_platform { PfMenu }
 import common.api
 
 // ═══ Handler ═══
+@[description: '创建平台菜单。']
 @['/create_menu'; post]
 pub fn (app &PlatformMenu) create_menu_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

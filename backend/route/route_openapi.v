@@ -17,9 +17,11 @@ pub fn (app &AliasApp) build_openapi_document() !veb.OpenApiDocument {
 		title:                 'RuoQi-v API'
 		description:           '本服务后端接口。路径由当前运行的路由表实时生成；业务失败时仍返回状态码 200，并通过非零业务码表示错误。'
 		version:               api_version
+		openapi_version:       '3.2.0'
 		default_errors:        false
 		security_errors:       false
 		controller_security:   controller_security
+		tag_definitions:       openapi_tags()
 		response_descriptions: {
 			'200': '业务响应。即使业务处理失败，状态码也为 200，并通过非零业务码表示错误。'
 		}

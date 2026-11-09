@@ -10,6 +10,7 @@ import model.schema_tenant { TnMember }
 import common.api as capi
 
 // ═══ Handler ═══
+@[description: '移除租户成员。']
 @['/remove_member'; post]
 pub fn (app &TenantMember) remove_member_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

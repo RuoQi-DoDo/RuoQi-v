@@ -7,6 +7,7 @@ import model.schema_tenant { TnMember }
 import common.api as capi
 
 // ═══ Handler ═══
+@[description: '查询租户成员列表。']
 @['/find_member_all'; get]
 pub fn (app &TenantMember) find_member_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -9,6 +9,7 @@ import model.schema_platform { PfConfig }
 import common.api
 
 // ═══ Handler ═══
+@[description: '删除平台系统配置。']
 @['/delete_config'; post]
 pub fn (app &PlatformConfiguration) delete_config_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

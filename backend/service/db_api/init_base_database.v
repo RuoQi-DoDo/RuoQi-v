@@ -32,6 +32,7 @@ fn (app &Database) init_base_tables(mut pool dbpool.DatabasePoolable) ! {
 	return
 }
 
+@[description: '初始化基础数据数据库表。']
 @['/init/init_base'; get]
 pub fn (app &Database) init_base(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

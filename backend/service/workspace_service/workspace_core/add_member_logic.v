@@ -9,6 +9,7 @@ import model.schema_workspace { WsMember, WsMemberRole }
 import common.api
 
 // ═══ Handler ═══
+@[description: '添加工作区成员。']
 @['/add_member'; post]
 pub fn (app &WorkspaceCore) add_member_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

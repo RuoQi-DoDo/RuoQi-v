@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ruoqi_business_app/merchant/business/account_frozen_dialog.dart';
-import 'package:ruoqi_business_app/merchant/business/account_links_page.dart';
-import 'package:ruoqi_business_app/merchant/business/account_log_page.dart';
-import 'package:ruoqi_business_app/merchant/business/account_security_page.dart';
-import 'package:ruoqi_business_app/merchant/business/agreement_dialog.dart';
-import 'package:ruoqi_business_app/merchant/business/device_list_page.dart';
-import 'package:ruoqi_business_app/merchant/business/edit_profile_page.dart';
-import 'package:ruoqi_business_app/merchant/business/forgot_password_page.dart';
-import 'package:ruoqi_business_app/merchant/business/login_methods_page.dart';
-import 'package:ruoqi_business_app/merchant/business/phone_not_registered_dialog.dart';
-import 'package:ruoqi_business_app/merchant/business/profile_page.dart';
-import 'package:ruoqi_business_app/merchant/business/register_page.dart';
-import 'package:ruoqi_business_app/merchant/business/set_password_page.dart';
-import 'package:ruoqi_business_app/merchant/business/sms_login_page.dart';
-import 'package:ruoqi_business_app/merchant/business/third_party_login_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/account_frozen_dialog.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/account_links_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/account_log_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/account_security_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/agreement_dialog.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/device_list_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/edit_profile_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/forgot_password_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/login_methods_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/phone_not_registered_dialog.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/profile_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/register_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/set_password_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/sms_login_page.dart';
+import 'package:ruoqi_business_app/mini-program/merchant/business/third_party_login_page.dart';
 
 void main() {
   testWidgets('merchant business pages render without exceptions', (

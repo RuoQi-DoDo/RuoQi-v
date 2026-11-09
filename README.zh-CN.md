@@ -26,17 +26,18 @@ example/    # 后端示例
 | `http://localhost:9009/static/redoc`        | Redoc              | 三栏经典布局、搜索深度展开            |
 | `http://localhost:9009/static/sleapidoc`    | Stoplight Elements | 现代化 UI、侧边栏导航、Try It 面板    |
 | `http://localhost:9009/static/scalar`       | Scalar             | 现代化 UI、内置 API 测试、代码示例    |
-| `http://localhost:9009/static/openapi.json` | OpenAPI 3.0.3 JSON | veb 从已注册路由实时生成的规范数据     |
+| `http://localhost:9009/static/openapi.json` | OpenAPI 3.2 JSON | veb 从已注册路由实时生成的规范数据     |
 
 ### 运行时 OpenAPI 规范
 
 服务启动时会把当前条件编译分支实际注册的路由构造成 `veb.OpenApiDocument`，
 因此 `/static/openapi.json` 不需要提前生成，增删路由会自动同步。四个查看器共用该端点。
 
-强类型 DTO、统一业务响应和 JWT/AK-SK 安全方案在
-`backend/route/route_openapi.v` 中集中配置；目前已接入货币 CRUD、账号登录、
-验证码、API Key、用户和平台 API 的代表性接口。未显式注册 DTO 的接口
-仍会生成真实路径和标准的 200 响应描述。
+公开 API 层级、统一业务响应和 JWT/AK-SK 安全方案在
+`backend/route/route_openapi.v` 中集中配置。所有已注册接口都有说明，控制器会归入
+显式的公开导航标签，不再直接暴露内部模块名。接口说明由各路由处理器上的
+`@[description]` 提供，当前接口会生成真实路径和标准的业务响应说明；逐处理器的
+DTO 元数据将在 OpenAPI 元数据 API 调整后重新接入。
 
 ## 快速开始
 

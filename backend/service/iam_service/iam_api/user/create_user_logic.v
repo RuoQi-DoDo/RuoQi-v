@@ -12,6 +12,7 @@ import common.api
 import common.encrypt
 
 // ═══ Handler ═══
+@[description: '创建用户账号。']
 @['/create_user'; post]
 pub fn (app &User) create_user_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -1,6 +1,7 @@
 module route
 
 import log
+import veb
 import model { Context }
 import middleware
 import service.db_api { Database }
@@ -15,4 +16,16 @@ fn (mut app AliasApp) routes_db(mut ctx Context) {
 	db_app.use(middleware.config_middle(ctx.config))
 	db_app.use(middleware.db_middleware(ctx.dbpool))
 	app.register_controller[Database, Context]('/database', mut db_app) or { log.error('${err}') }
+}
+
+fn openapi_tags_database() []veb.OpenApiTagConfig {
+	return [
+		veb.OpenApiTagConfig{
+			name:        'system.database'
+			summary:     '数据库维护'
+			description: '数据库初始化与维护接口。'
+			parent:      'system'
+			controllers: [typeof(Database{}).name.trim_left('&')]
+		},
+	]
 }

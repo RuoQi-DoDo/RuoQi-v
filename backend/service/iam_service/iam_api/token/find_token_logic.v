@@ -7,6 +7,7 @@ import model.schema_iam { IamToken }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询令牌列表。']
 @['/find_token_all'; post]
 pub fn (app &Token) find_token_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

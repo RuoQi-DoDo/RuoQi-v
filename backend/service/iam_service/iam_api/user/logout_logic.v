@@ -8,6 +8,7 @@ import model.schema_iam { IamToken }
 import common.api
 
 // ═══ Handler ═══
+@[description: '退出当前登录会话。']
 @['/logout'; get; post]
 pub fn (app &User) logout_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

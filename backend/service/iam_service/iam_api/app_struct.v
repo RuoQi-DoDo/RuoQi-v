@@ -9,6 +9,7 @@ pub struct Iam {
 	App
 }
 
+@[description: 'IAM 服务入口。']
 @['/'; get; post]
 fn (app &Iam) index(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

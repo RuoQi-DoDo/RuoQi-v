@@ -1,6 +1,7 @@
 module route
 
 import log
+import veb
 import model { Context }
 import service.workspace_service.workspace_core { WorkspaceCore }
 import service.workspace_service.workspace_department { WorkspaceDepartment }
@@ -21,4 +22,35 @@ fn (mut app AliasApp) routes_workspace(mut ctx Context) {
 
 	// 岗位管理
 	app.register_routes_workspace[WorkspacePosition](mut &WorkspacePosition{}, '/workspace/position', mut ctx)
+}
+
+fn openapi_tags_workspace() []veb.OpenApiTagConfig {
+	return [
+		veb.OpenApiTagConfig{
+			name:        'workspace'
+			summary:     '工作区'
+			description: '工作区、成员、部门、岗位和权限管理。'
+		},
+		veb.OpenApiTagConfig{
+			name:        'workspace.core'
+			summary:     '工作区核心'
+			description: '工作区、成员和角色权限。'
+			parent:      'workspace'
+			controllers: [typeof(WorkspaceCore{}).name.trim_left('&')]
+		},
+		veb.OpenApiTagConfig{
+			name:        'workspace.department'
+			summary:     '部门'
+			description: '工作区部门维护。'
+			parent:      'workspace'
+			controllers: [typeof(WorkspaceDepartment{}).name.trim_left('&')]
+		},
+		veb.OpenApiTagConfig{
+			name:        'workspace.position'
+			summary:     '岗位'
+			description: '工作区岗位维护。'
+			parent:      'workspace'
+			controllers: [typeof(WorkspacePosition{}).name.trim_left('&')]
+		},
+	]
 }

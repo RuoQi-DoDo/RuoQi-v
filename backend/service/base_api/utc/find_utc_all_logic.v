@@ -8,6 +8,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '按排序号查询全部 UTC 时区偏移。']
 @['/all'; get]
 pub fn (app &Utc) find_utc_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

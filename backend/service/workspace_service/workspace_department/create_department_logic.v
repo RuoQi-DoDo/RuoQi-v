@@ -11,6 +11,7 @@ import model.schema_workspace { WsDepartment }
 import common.api
 
 // ═══ Handler ═══
+@[description: '创建工作区部门。']
 @['/create_department'; post]
 pub fn (app &WorkspaceDepartment) create_department_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

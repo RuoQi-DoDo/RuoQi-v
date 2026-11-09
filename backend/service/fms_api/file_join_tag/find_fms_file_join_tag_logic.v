@@ -8,6 +8,7 @@ import model { Context }
 import json2 as json
 
 // ═══ Handler ═══
+@[description: '查询文件标签关联列表。']
 @['/all'; get]
 pub fn (app &FileJoinTag) find_fms_file_join_tag_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

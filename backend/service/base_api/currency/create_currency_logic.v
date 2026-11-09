@@ -11,6 +11,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '创建基础货币，写入 ISO 代码、名称、汇率和启用状态。']
 @['/create'; post]
 pub fn (app &Currency) create_currency_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

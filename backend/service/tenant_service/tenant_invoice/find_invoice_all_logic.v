@@ -7,6 +7,7 @@ import model.schema_tenant { TnInvoice }
 import common.api as capi
 
 // ═══ Handler ═══
+@[description: '查询租户账单列表。']
 @['/find_invoice_all'; get]
 pub fn (app &TenantInvoice) find_invoice_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -10,6 +10,7 @@ import model { Context }
 import time
 
 // ═══ Handler ═══
+@[description: '按 ID 更新 UTC 时区偏移资料。']
 @['/update'; post]
 pub fn (app &Utc) update_utc_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -9,6 +9,7 @@ import model.schema_fms { FmsCloudFileTag }
 import common.api
 import model { Context }
 
+@[description: '更新云文件标签。']
 @['/update'; post]
 pub fn (app &CloudFileTag) update_fms_cloud_file_tag_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

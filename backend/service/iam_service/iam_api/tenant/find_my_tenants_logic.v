@@ -8,6 +8,7 @@ import model.schema_platform { PfPortal, PfProduct }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询当前用户可访问的租户。']
 @['/my_tenants'; get]
 pub fn (app &Tenant) find_my_tenants_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

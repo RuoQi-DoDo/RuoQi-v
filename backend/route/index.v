@@ -6,6 +6,7 @@ import common.api
 import model { Context }
 import os
 
+@[description: '服务健康检查入口。']
 @['/get'; get]
 pub fn (mut app AliasApp) get(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
@@ -14,21 +15,25 @@ pub fn (mut app AliasApp) get(mut ctx Context) veb.Result {
 	return ctx.json(api.json_success(data: 'req success'))
 }
 
+@[description: '返回 403 状态演示页面。']
 @['/static/403'; get; post]
 fn (mut app AliasApp) index_403(mut ctx Context) veb.Result {
 	return ctx.forbidden()
 }
 
+@[description: '返回 404 状态演示页面。']
 @['/static/404'; get; post]
 fn (mut app AliasApp) index_404(mut ctx Context) veb.Result {
 	return ctx.not_found()
 }
 
+@[description: '返回 500 状态演示页面。']
 @['/static/500'; get; post]
 fn (mut app AliasApp) index_500(mut ctx Context) veb.Result {
 	return ctx.server_error('Internal Server Error')
 }
 
+@[description: '服务首页。']
 @['/index'; get; post]
 fn (mut app AliasApp) index(mut ctx Context) veb.Result {
 	file_path := os.join_path(os.getwd(), 'static/index.html')
@@ -48,6 +53,7 @@ fn (mut app AliasApp) index(mut ctx Context) veb.Result {
 
 // curl -H "Accept-Language: en" --compressed http://localhost:9009/locale
 // curl -H "Accept-Language: zh" --compressed http://localhost:9009/locale
+@[description: '返回当前请求语言的翻译数据。']
 @['/locale'; get]
 pub fn (app &AliasApp) locale(mut ctx Context) veb.Result {
 	result := {
@@ -59,27 +65,32 @@ pub fn (app &AliasApp) locale(mut ctx Context) veb.Result {
 }
 
 // API 文档查看器；HTML 属于可部署静态资源，文档生成逻辑在 route_openapi.v。
+@[description: '打开 RapiDoc API 文档页面。']
 @['/static/rapidoc'; get]
 fn (app &AliasApp) rapidoc(mut ctx Context) veb.Result {
 	return ctx.file(os.join_path(os.getwd(), 'static', 'openapi', 'rapidoc.html'))
 }
 
+@[description: '打开 Redoc API 文档页面。']
 @['/static/redoc'; get]
 fn (app &AliasApp) redoc(mut ctx Context) veb.Result {
 	return ctx.file(os.join_path(os.getwd(), 'static', 'openapi', 'redoc.html'))
 }
 
+@[description: '打开 Stoplight Elements API 文档页面。']
 @['/static/sleapidoc'; get]
 fn (app &AliasApp) stoplight_elements(mut ctx Context) veb.Result {
 	return ctx.file(os.join_path(os.getwd(), 'static', 'openapi', 'stoplight_elements.html'))
 }
 
+@[description: '打开 Scalar API 文档页面。']
 @['/static/scalar'; get]
 fn (app &AliasApp) scalar(mut ctx Context) veb.Result {
 	return ctx.file(os.join_path(os.getwd(), 'static', 'openapi', 'scalar.html'))
 }
 
 // http://localhost:9009/static/openapi.json 获取由 veb 路由元数据实时生成的 OpenAPI 文档
+@[description: '返回当前进程实时生成的 OpenAPI 3.2 文档。']
 @['/static/openapi.json'; get]
 fn (app &AliasApp) openapi_json(mut ctx Context) veb.Result {
 	if !app.openapi_ready {
@@ -89,6 +100,9 @@ fn (app &AliasApp) openapi_json(mut ctx Context) veb.Result {
 			msg:  'OpenAPI document is not initialized'
 		))
 	}
+	// The document is rebuilt from the routes registered by this process.
+	// Never let a browser or API viewer keep a document from a previous build.
+	ctx.set_header(.cache_control, 'no-store')
 	return app.openapi_document.serve(mut ctx.Context, true) or {
 		ctx.res.set_status(.internal_server_error)
 		return ctx.json(api.json_error(
@@ -99,6 +113,7 @@ fn (app &AliasApp) openapi_json(mut ctx Context) veb.Result {
 }
 
 // curl -H "Accept-Language: zh" --compressed http://localhost:9009/locale/debug
+@[description: '返回完整的语言翻译调试数据。']
 @['/locale/debug'; get]
 pub fn (app &AliasApp) locale_debug(mut ctx Context) veb.Result {
 	// 获取语言，如果请求头中没有语言，则回退到默认语言
@@ -118,4 +133,16 @@ pub fn (app &AliasApp) locale_debug(mut ctx Context) veb.Result {
 	}
 
 	return ctx.json(result)
+}
+
+fn openapi_tags_system_docs() []veb.OpenApiTagConfig {
+	return [
+		veb.OpenApiTagConfig{
+			name:        'system.docs'
+			summary:     '文档与入口'
+			description: 'API 文档、健康入口和本地化辅助接口。'
+			parent:      'system'
+			controllers: [typeof(AliasApp{}).name.trim_left('&')]
+		},
+	]
 }

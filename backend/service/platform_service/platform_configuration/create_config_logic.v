@@ -11,6 +11,7 @@ import model.schema_platform { PfConfig }
 import common.api
 
 // ═══ Handler ═══
+@[description: '创建平台系统配置。']
 @['/create_config'; post]
 pub fn (app &PlatformConfiguration) create_config_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

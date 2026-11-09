@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:common/common.dart';
 
+import '../console_content_theme.dart';
 import 'operations_nav.dart';
 import 'operations_sidebar.dart';
 
@@ -64,13 +65,17 @@ class _OperationsConsoleDialogState extends State<_OperationsConsoleDialog> {
                 ),
                 // 右侧内容区：展示选中菜单项对应的真实业务页
                 Expanded(
-                  child: selected == null
-                      ? ColoredBox(color: Theme.of(context).colorScheme.surface)
-                      : ColoredBox(
-                          key: ValueKey(selected.label),
-                          color: Theme.of(context).colorScheme.surface,
-                          child: selected.builder(context),
-                        ),
+                  child: ConsoleContentTheme(
+                    child: selected == null
+                        ? ColoredBox(
+                            color: Theme.of(context).colorScheme.surface,
+                          )
+                        : ColoredBox(
+                            key: ValueKey(selected.label),
+                            color: Theme.of(context).colorScheme.surface,
+                            child: selected.builder(context),
+                          ),
+                  ),
                 ),
               ],
             ),

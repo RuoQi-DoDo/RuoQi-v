@@ -8,6 +8,7 @@ import model.schema_iam { IamToken }
 import common.api
 
 // ═══ Handler ═══
+@[description: '删除指定用户的令牌。']
 @['/delete_token_by_user'; post]
 pub fn (app &Token) delete_token_by_user_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -8,6 +8,7 @@ import model { Context }
 import common.api
 import model.schema_iam { IamApiKey }
 
+@[description: '删除 API Key。']
 @['/delete'; post]
 pub fn (app &ApiKey) delete_apikey_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

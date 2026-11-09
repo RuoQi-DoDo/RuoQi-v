@@ -7,6 +7,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '获取图形验证码。']
 @['/captcha'; get; post]
 pub fn (app &Authentication) find_image_captcha_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

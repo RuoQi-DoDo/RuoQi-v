@@ -6,6 +6,7 @@ import 'admin_pages/system_settings_dialog.dart';
 import 'ops_pages/operations_console_dialog.dart';
 import 'personal_pages/personal_console_dialog.dart';
 import 'user_menu.dart';
+import 'wms_pages/wms_console_dialog.dart';
 
 /// 平台端（PC）首页：控制台入口。
 ///
@@ -59,7 +60,9 @@ class HomePage extends StatelessWidget {
             titleSpacing: 0,
             // 规范 §6.7 顶部导航无阴影；用 1px 细线把顶栏与画布分开
             // （与入口页 `.doc-topbar` 的 border-bottom、ConsoleTopBar 一致）。
-            shape: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
+            shape: Border(
+              bottom: BorderSide(color: colorScheme.outlineVariant),
+            ),
             title: _TopBar(
               themeMode: themeMode,
               onThemeModeChanged: onThemeModeChanged,
@@ -86,24 +89,23 @@ class HomePage extends StatelessWidget {
                         for (final entry in _entries)
                           _ConsoleEntryCard(entry: entry),
                       ];
-                      if (constraints.maxWidth < _twoColumnBreakpoint) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            cards[0],
-                            const SizedBox(height: RuQiSpacing.sm),
-                            cards[1],
-                          ],
-                        );
-                      }
-                      // 注意：这里不能用 IntrinsicHeight + stretch 强行等高——
-                      // 文本的 intrinsic 高度与真实字体渲染会差 1–2px，会把卡片撑溢出。
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      final columns = constraints.maxWidth >= 900
+                          ? 3
+                          : constraints.maxWidth >= _twoColumnBreakpoint
+                          ? 2
+                          : 1;
+                      const gap = RuQiSpacing.sm;
+                      final cardWidth =
+                          (constraints.maxWidth - gap * (columns - 1)) /
+                          columns;
+                      // 每张卡保持自然高度；窄屏自动降为一列，避免能力标签溢出。
+                      return Wrap(
+                        spacing: gap,
+                        runSpacing: gap,
+                        crossAxisAlignment: WrapCrossAlignment.start,
                         children: [
-                          Expanded(child: cards[0]),
-                          const SizedBox(width: RuQiSpacing.sm),
-                          Expanded(child: cards[1]),
+                          for (final card in cards)
+                            SizedBox(width: cardWidth, child: card),
                         ],
                       );
                     },
@@ -232,7 +234,7 @@ class _TopBar extends StatelessWidget {
   }
 }
 
-/// 首页的两个控制台入口。
+/// 首页的三个控制台入口。
 const _entries = <_ConsoleEntry>[
   _ConsoleEntry(
     icon: Icons.admin_panel_settings_outlined,
@@ -249,6 +251,14 @@ const _entries = <_ConsoleEntry>[
     modules: '租户 · 团队空间 · 项目 · API 授权 · 个人中心',
     tags: ['运营端', 'SSO'],
     onOpen: OperationsConsoleDialog.show,
+  ),
+  _ConsoleEntry(
+    icon: Icons.warehouse_outlined,
+    title: 'WMS管理',
+    subtitle: '仓库管理后台',
+    modules: '规则设置 · 出库作业 · 入库作业 · 仓内作业',
+    tags: ['WMS', '规则引擎'],
+    onOpen: WmsConsoleDialog.show,
   ),
 ];
 
@@ -300,8 +310,9 @@ class _PageHeader extends StatelessWidget {
         ),
         const SizedBox(height: RuQiSpacing.sm),
         Text(
-          '两个控制台入口：系统管理面向系统全局管理，'
-          '运营后台面向租户管理后台。入口在弹窗内打开，关闭后回到本页。',
+          '三个工作入口：系统管理面向系统全局管理，'
+          '运营后台面向租户管理后台，WMS管理提供仓库管理后台。'
+          '入口在弹窗内打开，关闭后回到本页。',
           style: theme.textTheme.bodyMedium?.copyWith(
             color: muted,
             height: 1.6,

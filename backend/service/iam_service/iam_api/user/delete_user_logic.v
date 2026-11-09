@@ -10,6 +10,7 @@ import model.schema_iam { IamUser }
 import common.api
 
 // ═══ Handler ═══
+@[description: '删除用户账号。']
 @['/delete_user'; post]
 pub fn (app &User) delete_user_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

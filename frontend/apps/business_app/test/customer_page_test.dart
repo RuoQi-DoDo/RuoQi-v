@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ruoqi_business_app/customer/login_page.dart';
+import 'package:ruoqi_business_app/pages/login_page.dart';
 
 void main() {
   testWidgets('客户 App 登录页渲染', (tester) async {

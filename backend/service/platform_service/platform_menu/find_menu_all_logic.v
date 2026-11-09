@@ -7,6 +7,7 @@ import model.schema_platform { PfMenu }
 import common.api
 
 // ═══ Handler ═══
+@[description: '查询菜单列表。']
 @['/find_menu_all'; post]
 pub fn (app &PlatformMenu) find_menu_all_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -9,6 +9,7 @@ import common.api
 import model { Context }
 
 // ═══ Handler ═══
+@[description: '按 ID 查询邮件提供商详情。']
 @['/find_email_provider_by_id'; post]
 pub fn (app &EmailProvider) find_email_provider_by_id_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')

@@ -11,6 +11,7 @@ import model.schema_platform { PfDictionaryDetail }
 import common.api
 
 // ═══ Handler ═══
+@[description: '创建平台数据字典。']
 @['/create_detail'; post]
 pub fn (app &PlatformDictionary) create_detail_handler(mut ctx Context) veb.Result {
 	log.debug('${@METHOD}  ${@MOD}.${@FILE_LINE}')
