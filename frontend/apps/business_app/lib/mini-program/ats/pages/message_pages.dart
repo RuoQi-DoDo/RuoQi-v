@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../hr_models.dart';
-import '../hr_routes.dart';
-import '../hr_style.dart';
+import '../ats_models.dart';
+import '../ats_routes.dart';
+import '../ats_style.dart';
 
-class HrMessagesPage extends StatelessWidget {
-  const HrMessagesPage({super.key, required this.controller});
+class AtsMessagesPage extends StatelessWidget {
+  const AtsMessagesPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
   Widget build(BuildContext context) {
-    final isRecruiter = controller.role == HrUserRole.recruiter;
+    final isRecruiter = controller.role == AtsUserRole.recruiter;
     final actions = isRecruiter
         ? const [
             _ServiceAction(
@@ -46,10 +46,10 @@ class HrMessagesPage extends StatelessWidget {
                   child: InkWell(
                     onTap: () {
                       final route = switch (i) {
-                        0 => HrRoute.notices,
-                        1 => HrRoute.applications,
-                        2 => isRecruiter ? HrRoute.connected : HrRoute.browse,
-                        _ => HrRoute.connected,
+                        0 => AtsRoute.notices,
+                        1 => AtsRoute.applications,
+                        2 => isRecruiter ? AtsRoute.connected : AtsRoute.browse,
+                        _ => AtsRoute.connected,
                       };
                       controller.open(route);
                     },
@@ -66,16 +66,16 @@ class HrMessagesPage extends StatelessWidget {
                                 height: 42,
                                 decoration: BoxDecoration(
                                   color: i == 0
-                                      ? HrColors.mint
-                                      : HrColors.background,
+                                      ? AtsColors.mint
+                                      : AtsColors.background,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
                                   actions[i].icon,
                                   size: 21,
                                   color: i == 0
-                                      ? HrColors.primary
-                                      : HrColors.textSecondary,
+                                      ? AtsColors.primary
+                                      : AtsColors.textSecondary,
                                 ),
                               ),
                               if (actions[i].badge != null)
@@ -88,7 +88,7 @@ class HrMessagesPage extends StatelessWidget {
                                       vertical: 1,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: HrColors.red,
+                                      color: AtsColors.red,
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
                                         color: Colors.white,
@@ -111,7 +111,7 @@ class HrMessagesPage extends StatelessWidget {
                           Text(
                             actions[i].label,
                             style: const TextStyle(
-                              color: HrColors.textSecondary,
+                              color: AtsColors.textSecondary,
                               fontSize: 11,
                             ),
                           ),
@@ -127,7 +127,7 @@ class HrMessagesPage extends StatelessWidget {
         Material(
           color: Colors.white,
           child: InkWell(
-            onTap: () => controller.open(HrRoute.notices),
+            onTap: () => controller.open(AtsRoute.notices),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
               child: Row(
@@ -137,7 +137,7 @@ class HrMessagesPage extends StatelessWidget {
                     height: 46,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [HrColors.primary, Color(0xFF50CFAE)],
+                        colors: [AtsColors.primary, Color(0xFF50CFAE)],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -162,9 +162,9 @@ class HrMessagesPage extends StatelessWidget {
                               ),
                             ),
                             SizedBox(width: 7),
-                            HrTag(
+                            AtsTag(
                               '1条新消息',
-                              foreground: HrColors.red,
+                              foreground: AtsColors.red,
                               background: Color(0xFFFFF0F0),
                             ),
                           ],
@@ -175,7 +175,7 @@ class HrMessagesPage extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: HrColors.textMuted,
+                            color: AtsColors.textMuted,
                             fontSize: 12,
                           ),
                         ),
@@ -184,16 +184,16 @@ class HrMessagesPage extends StatelessWidget {
                   ),
                   const Text(
                     '刚刚',
-                    style: TextStyle(color: HrColors.textMuted, fontSize: 10),
+                    style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
                   ),
                 ],
               ),
             ),
           ),
         ),
-        const HrSectionHeader(title: '最近聊天'),
-        if (hrConversations.isEmpty)
-          const HrEmptyState(
+        const AtsSectionHeader(title: '最近聊天'),
+        if (atsConversations.isEmpty)
+          const AtsEmptyState(
             icon: Icons.chat_bubble_outline_rounded,
             title: '暂无消息',
           )
@@ -202,12 +202,12 @@ class HrMessagesPage extends StatelessWidget {
             color: Colors.white,
             child: Column(
               children: [
-                for (var i = 0; i < hrConversations.length; i++) ...[
+                for (var i = 0; i < atsConversations.length; i++) ...[
                   _ConversationTile(
-                    conversation: hrConversations[i],
-                    onTap: () => controller.open(HrRoute.privateChat),
+                    conversation: atsConversations[i],
+                    onTap: () => controller.open(AtsRoute.privateChat),
                   ),
-                  if (i != hrConversations.length - 1)
+                  if (i != atsConversations.length - 1)
                     const Divider(height: 1, indent: 70, endIndent: 14),
                 ],
               ],
@@ -222,7 +222,7 @@ class HrMessagesPage extends StatelessWidget {
 class _ConversationTile extends StatelessWidget {
   const _ConversationTile({required this.conversation, required this.onTap});
 
-  final HrConversation conversation;
+  final AtsConversation conversation;
   final VoidCallback onTap;
 
   @override
@@ -236,12 +236,12 @@ class _ConversationTile extends StatelessWidget {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                HrAvatar(
+                AtsAvatar(
                   label: conversation.name,
                   size: 45,
                   color: conversation.name == '李经理'
-                      ? HrColors.blue
-                      : HrColors.primary,
+                      ? AtsColors.blue
+                      : AtsColors.primary,
                 ),
                 Positioned(
                   right: -1,
@@ -279,7 +279,7 @@ class _ConversationTile extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: HrColors.textMuted,
+                            color: AtsColors.textMuted,
                             fontSize: 10,
                           ),
                         ),
@@ -288,7 +288,7 @@ class _ConversationTile extends StatelessWidget {
                       Text(
                         conversation.time,
                         style: const TextStyle(
-                          color: HrColors.textMuted,
+                          color: AtsColors.textMuted,
                           fontSize: 10,
                         ),
                       ),
@@ -303,7 +303,7 @@ class _ConversationTile extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: HrColors.textMuted,
+                            color: AtsColors.textMuted,
                             fontSize: 12,
                           ),
                         ),
@@ -315,7 +315,7 @@ class _ConversationTile extends StatelessWidget {
                           height: 17,
                           padding: const EdgeInsets.symmetric(horizontal: 5),
                           decoration: BoxDecoration(
-                            color: HrColors.red,
+                            color: AtsColors.red,
                             borderRadius: BorderRadius.circular(9),
                           ),
                           alignment: Alignment.center,
@@ -340,16 +340,16 @@ class _ConversationTile extends StatelessWidget {
   }
 }
 
-class HrPrivateChatPage extends StatefulWidget {
-  const HrPrivateChatPage({super.key, required this.controller});
+class AtsPrivateChatPage extends StatefulWidget {
+  const AtsPrivateChatPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrPrivateChatPage> createState() => _HrPrivateChatPageState();
+  State<AtsPrivateChatPage> createState() => _AtsPrivateChatPageState();
 }
 
-class _HrPrivateChatPageState extends State<HrPrivateChatPage> {
+class _AtsPrivateChatPageState extends State<AtsPrivateChatPage> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   final _messages = <_ChatMessage>[
@@ -418,12 +418,12 @@ class _HrPrivateChatPageState extends State<HrPrivateChatPage> {
           color: const Color(0xFFFFFAF4),
           child: const Row(
             children: [
-              Icon(Icons.lock_outline, size: 15, color: HrColors.orange),
+              Icon(Icons.lock_outline, size: 15, color: AtsColors.orange),
               SizedBox(width: 5),
               Expanded(
                 child: Text(
                   '请勿向招聘方转账或支付任何费用',
-                  style: TextStyle(color: HrColors.orange, fontSize: 11),
+                  style: TextStyle(color: AtsColors.orange, fontSize: 11),
                 ),
               ),
             ],
@@ -437,7 +437,7 @@ class _HrPrivateChatPageState extends State<HrPrivateChatPage> {
               const Center(
                 child: Text(
                   '10:20',
-                  style: TextStyle(color: HrColors.textMuted, fontSize: 10),
+                  style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
                 ),
               ),
               const SizedBox(height: 14),
@@ -450,7 +450,11 @@ class _HrPrivateChatPageState extends State<HrPrivateChatPage> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const HrAvatar(label: '李', size: 34, color: HrColors.blue),
+                    const AtsAvatar(
+                      label: '李',
+                      size: 34,
+                      color: AtsColors.blue,
+                    ),
                     const SizedBox(width: 8),
                     Container(
                       width: 230,
@@ -458,7 +462,7 @@ class _HrPrivateChatPageState extends State<HrPrivateChatPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: HrColors.divider),
+                        border: Border.all(color: AtsColors.divider),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -468,7 +472,7 @@ class _HrPrivateChatPageState extends State<HrPrivateChatPage> {
                               Icon(
                                 Icons.description_outlined,
                                 size: 24,
-                                color: HrColors.primary,
+                                color: AtsColors.primary,
                               ),
                               SizedBox(width: 8),
                               Expanded(
@@ -488,7 +492,7 @@ class _HrPrivateChatPageState extends State<HrPrivateChatPage> {
                           const Text(
                             '点击可预览简历内容',
                             style: TextStyle(
-                              color: HrColors.textMuted,
+                              color: AtsColors.textMuted,
                               fontSize: 10,
                             ),
                           ),
@@ -515,7 +519,7 @@ class _HrPrivateChatPageState extends State<HrPrivateChatPage> {
                     visualDensity: VisualDensity.compact,
                     icon: Icon(
                       _voiceMode ? Icons.keyboard_alt_outlined : Icons.mic_none,
-                      color: HrColors.text,
+                      color: AtsColors.text,
                     ),
                   ),
                   Expanded(
@@ -528,7 +532,7 @@ class _HrPrivateChatPageState extends State<HrPrivateChatPage> {
                       child: _voiceMode
                           ? InkWell(
                               onLongPress: () {
-                                hrToast(context, '正在录音，松开后发送');
+                                atsToast(context, '正在录音，松开后发送');
                               },
                               child: const SizedBox(
                                 height: 38,
@@ -568,7 +572,7 @@ class _HrPrivateChatPageState extends State<HrPrivateChatPage> {
                     visualDensity: VisualDensity.compact,
                     icon: const Icon(
                       Icons.add_circle_outline_rounded,
-                      color: HrColors.text,
+                      color: AtsColors.text,
                     ),
                   ),
                   if (_messageController.text.trim().isNotEmpty)
@@ -582,12 +586,12 @@ class _HrPrivateChatPageState extends State<HrPrivateChatPage> {
                     _AttachmentAction(
                       icon: Icons.image_outlined,
                       label: '图片',
-                      onTap: () => hrToast(context, '已选择本地图片'),
+                      onTap: () => atsToast(context, '已选择本地图片'),
                     ),
                     _AttachmentAction(
                       icon: Icons.videocam_outlined,
                       label: '视频',
-                      onTap: () => hrToast(context, '已选择本地视频'),
+                      onTap: () => atsToast(context, '已选择本地视频'),
                     ),
                     _AttachmentAction(
                       icon: Icons.description_outlined,
@@ -621,7 +625,7 @@ class _MessageBubble extends StatelessWidget {
       constraints: const BoxConstraints(maxWidth: 250),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: message.mine ? HrColors.primary : Colors.white,
+        color: message.mine ? AtsColors.primary : Colors.white,
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(10),
           topRight: const Radius.circular(10),
@@ -632,7 +636,7 @@ class _MessageBubble extends StatelessWidget {
       child: Text(
         message.text,
         style: TextStyle(
-          color: message.mine ? Colors.white : HrColors.text,
+          color: message.mine ? Colors.white : AtsColors.text,
           fontSize: 13,
           height: 1.55,
         ),
@@ -645,13 +649,13 @@ class _MessageBubble extends StatelessWidget {
           : MainAxisAlignment.start,
       children: [
         if (!message.mine) ...[
-          const HrAvatar(label: '李', size: 34, color: HrColors.blue),
+          const AtsAvatar(label: '李', size: 34, color: AtsColors.blue),
           const SizedBox(width: 8),
         ],
         bubble,
         if (message.mine) ...[
           const SizedBox(width: 8),
-          const HrAvatar(label: '林', size: 34),
+          const AtsAvatar(label: '林', size: 34),
         ],
       ],
     );
@@ -686,12 +690,15 @@ class _AttachmentAction extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: HrColors.textSecondary, size: 21),
+                child: Icon(icon, color: AtsColors.textSecondary, size: 21),
               ),
               const SizedBox(height: 5),
               Text(
                 label,
-                style: const TextStyle(color: HrColors.textMuted, fontSize: 10),
+                style: const TextStyle(
+                  color: AtsColors.textMuted,
+                  fontSize: 10,
+                ),
               ),
             ],
           ),
@@ -713,23 +720,23 @@ class _ChatMessage {
   final String time;
 }
 
-class HrNoticesPage extends StatelessWidget {
-  const HrNoticesPage({super.key, required this.controller});
+class AtsNoticesPage extends StatelessWidget {
+  const AtsNoticesPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: HrColors.background,
+      color: AtsColors.background,
       child: ListView.separated(
         padding: const EdgeInsets.all(12),
-        itemCount: hrNotices.length,
+        itemCount: atsNotices.length,
         separatorBuilder: (_, _) => const SizedBox(height: 9),
         itemBuilder: (context, index) {
-          final notice = hrNotices[index];
-          return HrCard(
-            onTap: () => controller.open(HrRoute.noticeDetail),
+          final notice = atsNotices[index];
+          return AtsCard(
+            onTap: () => controller.open(AtsRoute.noticeDetail),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -737,7 +744,9 @@ class HrNoticesPage extends StatelessWidget {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: notice.unread ? HrColors.mint : HrColors.background,
+                    color: notice.unread
+                        ? AtsColors.mint
+                        : AtsColors.background,
                     borderRadius: BorderRadius.circular(11),
                   ),
                   child: Icon(
@@ -746,7 +755,7 @@ class HrNoticesPage extends StatelessWidget {
                         : notice.title.contains('简历')
                         ? Icons.assignment_turned_in_outlined
                         : Icons.notifications_none,
-                    color: HrColors.primary,
+                    color: AtsColors.primary,
                     size: 21,
                   ),
                 ),
@@ -770,7 +779,7 @@ class HrNoticesPage extends StatelessWidget {
                               width: 6,
                               height: 6,
                               decoration: const BoxDecoration(
-                                color: HrColors.red,
+                                color: AtsColors.red,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -779,7 +788,7 @@ class HrNoticesPage extends StatelessWidget {
                           Text(
                             notice.time,
                             style: const TextStyle(
-                              color: HrColors.textMuted,
+                              color: AtsColors.textMuted,
                               fontSize: 10,
                             ),
                           ),
@@ -791,7 +800,7 @@ class HrNoticesPage extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: HrColors.textSecondary,
+                          color: AtsColors.textSecondary,
                           fontSize: 12,
                           height: 1.5,
                         ),
@@ -808,16 +817,16 @@ class HrNoticesPage extends StatelessWidget {
   }
 }
 
-class HrNoticeDetailPage extends StatelessWidget {
-  const HrNoticeDetailPage({super.key});
+class AtsNoticeDetailPage extends StatelessWidget {
+  const AtsNoticeDetailPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final notice = hrNotices.first;
+    final notice = atsNotices.first;
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        HrCard(
+        AtsCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -831,7 +840,10 @@ class HrNoticeDetailPage extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 '${notice.time} · 企业直聘',
-                style: const TextStyle(color: HrColors.textMuted, fontSize: 11),
+                style: const TextStyle(
+                  color: AtsColors.textMuted,
+                  fontSize: 11,
+                ),
               ),
               const SizedBox(height: 18),
               const Divider(height: 1),
@@ -839,7 +851,7 @@ class HrNoticeDetailPage extends StatelessWidget {
               Text(
                 notice.content,
                 style: const TextStyle(
-                  color: HrColors.textSecondary,
+                  color: AtsColors.textSecondary,
                   fontSize: 14,
                   height: 1.85,
                 ),
@@ -848,7 +860,7 @@ class HrNoticeDetailPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: HrColors.mint,
+                  color: AtsColors.mint,
                   borderRadius: BorderRadius.circular(9),
                 ),
                 child: const Row(
@@ -857,14 +869,14 @@ class HrNoticeDetailPage extends StatelessWidget {
                     Icon(
                       Icons.tips_and_updates_outlined,
                       size: 17,
-                      color: HrColors.primary,
+                      color: AtsColors.primary,
                     ),
                     SizedBox(width: 7),
                     Expanded(
                       child: Text(
                         '如需调整面试时间，请直接在消息中与招聘方沟通。',
                         style: TextStyle(
-                          color: HrColors.primaryDark,
+                          color: AtsColors.primaryDark,
                           fontSize: 12,
                           height: 1.55,
                         ),
@@ -881,14 +893,14 @@ class HrNoticeDetailPage extends StatelessWidget {
   }
 }
 
-class HrRobotPage extends StatefulWidget {
-  const HrRobotPage({super.key});
+class AtsRobotPage extends StatefulWidget {
+  const AtsRobotPage({super.key});
 
   @override
-  State<HrRobotPage> createState() => _HrRobotPageState();
+  State<AtsRobotPage> createState() => _AtsRobotPageState();
 }
 
-class _HrRobotPageState extends State<HrRobotPage> {
+class _AtsRobotPageState extends State<AtsRobotPage> {
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
   final _messages = <_RobotMessage>[
@@ -960,7 +972,7 @@ class _HrRobotPageState extends State<HrRobotPage> {
               const Center(
                 child: Text(
                   '智能客服 · 7×24小时在线',
-                  style: TextStyle(color: HrColors.textMuted, fontSize: 10),
+                  style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
                 ),
               ),
               const SizedBox(height: 16),
@@ -978,7 +990,7 @@ class _HrRobotPageState extends State<HrRobotPage> {
                 const SizedBox(height: 16),
                 const Text(
                   '猜你想问',
-                  style: TextStyle(color: HrColors.textMuted, fontSize: 11),
+                  style: TextStyle(color: AtsColors.textMuted, fontSize: 11),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -993,7 +1005,7 @@ class _HrRobotPageState extends State<HrRobotPage> {
                       ActionChip(
                         onPressed: () => _send(question),
                         label: Text(question),
-                        backgroundColor: HrColors.mint,
+                        backgroundColor: AtsColors.mint,
                         side: BorderSide.none,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -1011,11 +1023,11 @@ class _HrRobotPageState extends State<HrRobotPage> {
           child: Row(
             children: [
               IconButton(
-                onPressed: () => hrToast(context, '已为你连接人工客服'),
+                onPressed: () => atsToast(context, '已为你连接人工客服'),
                 tooltip: '人工客服',
                 icon: const Icon(
                   Icons.support_agent,
-                  color: HrColors.textSecondary,
+                  color: AtsColors.textSecondary,
                 ),
               ),
               Expanded(
@@ -1042,7 +1054,7 @@ class _HrRobotPageState extends State<HrRobotPage> {
                   height: 38,
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   decoration: BoxDecoration(
-                    color: HrColors.primary,
+                    color: AtsColors.primary,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   alignment: Alignment.center,
@@ -1086,7 +1098,7 @@ class _RobotBubble extends StatelessWidget {
               height: 34,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [HrColors.primary, Color(0xFF54CFAD)],
+                  colors: [AtsColors.primary, Color(0xFF54CFAD)],
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -1103,13 +1115,13 @@ class _RobotBubble extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 280),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: mine ? HrColors.primary : Colors.white,
+                color: mine ? AtsColors.primary : Colors.white,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 text,
                 style: TextStyle(
-                  color: mine ? Colors.white : HrColors.text,
+                  color: mine ? Colors.white : AtsColors.text,
                   fontSize: 13,
                   height: 1.6,
                 ),
@@ -1118,7 +1130,7 @@ class _RobotBubble extends StatelessWidget {
           ),
           if (mine) ...[
             const SizedBox(width: 8),
-            const HrAvatar(label: '林', size: 34),
+            const AtsAvatar(label: '林', size: 34),
           ],
         ],
       ),
@@ -1167,7 +1179,7 @@ class _TypingDot extends StatelessWidget {
       width: 5,
       height: 5,
       decoration: const BoxDecoration(
-        color: HrColors.textMuted,
+        color: AtsColors.textMuted,
         shape: BoxShape.circle,
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ruoqi_business_app/mini-program/hr/hr_mini_program.dart';
-import 'package:ruoqi_business_app/mini-program/hr/hr_routes.dart';
+import 'package:ruoqi_business_app/mini-program/ats/ats_mini_program.dart';
+import 'package:ruoqi_business_app/mini-program/ats/ats_routes.dart';
 import 'package:ruoqi_business_app/main.dart';
 
 void main() {
@@ -19,7 +19,7 @@ void main() {
     expect(find.text('搜索'), findsNothing);
     expect(find.text('搜索岗位或关键词'), findsNothing);
 
-    await _openHrFromCustomer(tester);
+    await _openAtsFromCustomer(tester);
 
     expect(find.text('欢迎来到企业直聘'), findsNothing);
     expect(find.text('搜索岗位或关键词'), findsOneWidget);
@@ -65,7 +65,7 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp());
     await tester.pumpAndSettle();
-    await _openHr(tester);
+    await _openAts(tester);
 
     await tester.tap(find.text('我的'));
     await tester.pumpAndSettle();
@@ -82,14 +82,14 @@ void main() {
     expect(find.text('公司管理'), findsOneWidget);
   });
 
-  testWidgets('HR 右上角胶囊退出按钮返回客户首页', (tester) async {
+  testWidgets('ATS 右上角胶囊退出按钮返回客户首页', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const BusinessApp());
     await tester.pumpAndSettle();
-    await _openHr(tester);
+    await _openAts(tester);
 
     await tester.tap(find.byTooltip('退出小程序'));
     await tester.pumpAndSettle();
@@ -116,7 +116,7 @@ void main() {
     expect(find.byType(Dialog), findsNothing);
     expect(find.byTooltip('关闭'), findsNothing);
 
-    await tester.tap(find.byKey(const Key('mini-program-picker-hr')));
+    await tester.tap(find.byKey(const Key('mini-program-picker-ats')));
     await tester.pumpAndSettle();
     expect(find.text('搜索岗位或关键词'), findsOneWidget);
   });
@@ -150,15 +150,15 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    for (final route in HrRoute.values) {
-      final controller = HrAppController();
+    for (final route in AtsRoute.values) {
+      final controller = AtsAppController();
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: SizedBox(
               width: 390,
               height: 760,
-              child: HrPageRouter.build(route, controller),
+              child: AtsPageRouter.build(route, controller),
             ),
           ),
         ),
@@ -170,16 +170,16 @@ void main() {
   });
 }
 
-Future<void> _openHr(WidgetTester tester) async {
-  await _openHrFromCustomer(tester);
+Future<void> _openAts(WidgetTester tester) async {
+  await _openAtsFromCustomer(tester);
 }
 
-Future<void> _openHrFromCustomer(WidgetTester tester) async {
+Future<void> _openAtsFromCustomer(WidgetTester tester) async {
   await tester.drag(
     find.byKey(const Key('customer-home-scroll')),
     const Offset(0, 320),
   );
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const Key('mini-program-picker-hr')));
+  await tester.tap(find.byKey(const Key('mini-program-picker-ats')));
   await tester.pumpAndSettle();
 }

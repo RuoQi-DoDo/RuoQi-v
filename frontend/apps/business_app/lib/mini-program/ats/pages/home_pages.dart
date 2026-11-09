@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../hr_models.dart';
-import '../hr_routes.dart';
-import '../hr_style.dart';
+import '../ats_models.dart';
+import '../ats_routes.dart';
+import '../ats_style.dart';
 
 const _banners = <_BannerData>[
   _BannerData(
@@ -28,16 +28,16 @@ const _banners = <_BannerData>[
   ),
 ];
 
-class HrHomePage extends StatefulWidget {
-  const HrHomePage({super.key, required this.controller});
+class AtsHomePage extends StatefulWidget {
+  const AtsHomePage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrHomePage> createState() => _HrHomePageState();
+  State<AtsHomePage> createState() => _AtsHomePageState();
 }
 
-class _HrHomePageState extends State<HrHomePage> {
+class _AtsHomePageState extends State<AtsHomePage> {
   late final PageController _bannerController;
   int _bannerIndex = 0;
 
@@ -56,28 +56,28 @@ class _HrHomePageState extends State<HrHomePage> {
   @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
-    final isRecruiter = controller.role == HrUserRole.recruiter;
+    final isRecruiter = controller.role == AtsUserRole.recruiter;
     return RefreshIndicator(
-      color: HrColors.primary,
+      color: AtsColors.primary,
       onRefresh: () async {
         await Future<void>.delayed(const Duration(milliseconds: 500));
         if (!context.mounted) {
           return;
         }
-        hrToast(context, '已为你刷新最新内容');
+        atsToast(context, '已为你刷新最新内容');
       },
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
         children: [
           Container(
-            color: HrColors.primary,
+            color: AtsColors.primary,
             padding: const EdgeInsets.fromLTRB(14, 6, 14, 18),
             child: Material(
               color: Colors.white,
               borderRadius: BorderRadius.circular(22),
               child: InkWell(
-                onTap: () => controller.open(HrRoute.search),
+                onTap: () => controller.open(AtsRoute.search),
                 borderRadius: BorderRadius.circular(22),
                 child: const SizedBox(
                   height: 40,
@@ -87,13 +87,13 @@ class _HrHomePageState extends State<HrHomePage> {
                       Icon(
                         Icons.search_rounded,
                         size: 20,
-                        color: HrColors.textMuted,
+                        color: AtsColors.textMuted,
                       ),
                       SizedBox(width: 8),
                       Text(
                         '搜索岗位或关键词',
                         style: TextStyle(
-                          color: HrColors.textMuted,
+                          color: AtsColors.textMuted,
                           fontSize: 14,
                         ),
                       ),
@@ -124,7 +124,7 @@ class _HrHomePageState extends State<HrHomePage> {
                       _HomeGridItem(
                         icon: Icons.new_releases_outlined,
                         label: '最新发布',
-                        onTap: () => controller.open(HrRoute.jobList),
+                        onTap: () => controller.open(AtsRoute.jobList),
                       ),
                       _HomeGridItem(
                         icon: Icons.grid_view_rounded,
@@ -134,7 +134,7 @@ class _HrHomePageState extends State<HrHomePage> {
                       _HomeGridItem(
                         icon: Icons.paid_outlined,
                         label: '高薪优选',
-                        onTap: () => controller.open(HrRoute.jobList),
+                        onTap: () => controller.open(AtsRoute.jobList),
                       ),
                       _HomeGridItem(
                         icon: isRecruiter
@@ -143,26 +143,26 @@ class _HrHomePageState extends State<HrHomePage> {
                         label: isRecruiter ? '简历列表' : '热门公司',
                         onTap: () => controller.open(
                           isRecruiter
-                              ? HrRoute.resumeList
-                              : HrRoute.companyList,
+                              ? AtsRoute.resumeList
+                              : AtsRoute.companyList,
                         ),
                       ),
                     ],
                   ),
                 ),
-                HrCard(
+                AtsCard(
                   margin: const EdgeInsets.fromLTRB(12, 10, 12, 0),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 13,
                     vertical: 11,
                   ),
-                  onTap: () => controller.open(HrRoute.jobDetail),
+                  onTap: () => controller.open(AtsRoute.jobDetail),
                   child: const Row(
                     children: [
                       Icon(
                         Icons.campaign_outlined,
                         size: 18,
-                        color: HrColors.orange,
+                        color: AtsColors.orange,
                       ),
                       SizedBox(width: 8),
                       Expanded(
@@ -172,7 +172,7 @@ class _HrHomePageState extends State<HrHomePage> {
                               TextSpan(
                                 text: '北京世佳科技',
                                 style: TextStyle(
-                                  color: HrColors.primary,
+                                  color: AtsColors.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -180,7 +180,7 @@ class _HrHomePageState extends State<HrHomePage> {
                               TextSpan(
                                 text: '项目经理',
                                 style: TextStyle(
-                                  color: HrColors.primary,
+                                  color: AtsColors.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -190,7 +190,7 @@ class _HrHomePageState extends State<HrHomePage> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: HrColors.textSecondary,
+                            color: AtsColors.textSecondary,
                             fontSize: 12,
                           ),
                         ),
@@ -198,7 +198,7 @@ class _HrHomePageState extends State<HrHomePage> {
                       Icon(
                         Icons.chevron_right,
                         size: 18,
-                        color: HrColors.textMuted,
+                        color: AtsColors.textMuted,
                       ),
                     ],
                   ),
@@ -216,7 +216,7 @@ class _HrHomePageState extends State<HrHomePage> {
                       const Text(
                         '热门岗位',
                         style: TextStyle(
-                          color: HrColors.text,
+                          color: AtsColors.text,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -225,7 +225,7 @@ class _HrHomePageState extends State<HrHomePage> {
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: hrHotPosts.length,
+                        itemCount: atsHotPosts.length,
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 4,
@@ -236,21 +236,21 @@ class _HrHomePageState extends State<HrHomePage> {
                         itemBuilder: (context, index) {
                           return Material(
                             color: index.isEven
-                                ? HrColors.mint
-                                : HrColors.background,
+                                ? AtsColors.mint
+                                : AtsColors.background,
                             borderRadius: BorderRadius.circular(6),
                             child: InkWell(
-                              onTap: () => controller.open(HrRoute.post),
+                              onTap: () => controller.open(AtsRoute.post),
                               borderRadius: BorderRadius.circular(6),
                               child: Center(
                                 child: Text(
-                                  hrHotPosts[index],
+                                  atsHotPosts[index],
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: index.isEven
-                                        ? HrColors.primary
-                                        : HrColors.textSecondary,
+                                        ? AtsColors.primary
+                                        : AtsColors.textSecondary,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -261,7 +261,7 @@ class _HrHomePageState extends State<HrHomePage> {
                       ),
                       const SizedBox(height: 12),
                       InkWell(
-                        onTap: () => controller.open(HrRoute.post),
+                        onTap: () => controller.open(AtsRoute.post),
                         child: const Padding(
                           padding: EdgeInsets.symmetric(vertical: 2),
                           child: Row(
@@ -270,14 +270,14 @@ class _HrHomePageState extends State<HrHomePage> {
                               Text(
                                 '查看全部职位',
                                 style: TextStyle(
-                                  color: HrColors.textMuted,
+                                  color: AtsColors.textMuted,
                                   fontSize: 12,
                                 ),
                               ),
                               Icon(
                                 Icons.chevron_right,
                                 size: 16,
-                                color: HrColors.textMuted,
+                                color: AtsColors.textMuted,
                               ),
                             ],
                           ),
@@ -286,26 +286,26 @@ class _HrHomePageState extends State<HrHomePage> {
                     ],
                   ),
                 ),
-                HrSectionHeader(
+                AtsSectionHeader(
                   title: isRecruiter ? '推荐简历' : '热门工作',
                   action: '更多',
                   onAction: () => controller.open(
-                    isRecruiter ? HrRoute.resumeList : HrRoute.jobList,
+                    isRecruiter ? AtsRoute.resumeList : AtsRoute.jobList,
                   ),
                 ),
                 if (isRecruiter)
-                  for (final resume in hrResumes)
-                    HrResumeCard(
+                  for (final resume in atsResumes)
+                    AtsResumeCard(
                       resume: resume,
                       margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                      onTap: () => controller.open(HrRoute.resumeDetail),
+                      onTap: () => controller.open(AtsRoute.resumeDetail),
                     )
                 else
-                  for (final job in hrJobs.take(3))
-                    HrJobCard(
+                  for (final job in atsJobs.take(3))
+                    AtsJobCard(
                       job: job,
                       margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                      onTap: () => controller.open(HrRoute.jobDetail),
+                      onTap: () => controller.open(AtsRoute.jobDetail),
                     ),
                 const Padding(
                   padding: EdgeInsets.fromLTRB(0, 10, 0, 28),
@@ -314,21 +314,21 @@ class _HrHomePageState extends State<HrHomePage> {
                     children: [
                       SizedBox(
                         width: 20,
-                        child: Divider(color: HrColors.divider),
+                        child: Divider(color: AtsColors.divider),
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         child: Text(
                           '已经到底啦',
                           style: TextStyle(
-                            color: HrColors.textMuted,
+                            color: AtsColors.textMuted,
                             fontSize: 11,
                           ),
                         ),
                       ),
                       SizedBox(
                         width: 20,
-                        child: Divider(color: HrColors.divider),
+                        child: Divider(color: AtsColors.divider),
                       ),
                     ],
                   ),
@@ -503,15 +503,15 @@ class _HomeGridItem extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: const BoxDecoration(
-                  color: HrColors.mint,
+                  color: AtsColors.mint,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: 20, color: HrColors.primary),
+                child: Icon(icon, size: 20, color: AtsColors.primary),
               ),
               const SizedBox(height: 6),
               Text(
                 label,
-                style: const TextStyle(color: HrColors.text, fontSize: 12),
+                style: const TextStyle(color: AtsColors.text, fontSize: 12),
               ),
             ],
           ),
@@ -521,16 +521,16 @@ class _HomeGridItem extends StatelessWidget {
   }
 }
 
-class HrSearchPage extends StatefulWidget {
-  const HrSearchPage({super.key, required this.controller});
+class AtsSearchPage extends StatefulWidget {
+  const AtsSearchPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrSearchPage> createState() => _HrSearchPageState();
+  State<AtsSearchPage> createState() => _AtsSearchPageState();
 }
 
-class _HrSearchPageState extends State<HrSearchPage> {
+class _AtsSearchPageState extends State<AtsSearchPage> {
   final _searchController = TextEditingController();
   bool _searched = false;
 
@@ -543,7 +543,7 @@ class _HrSearchPageState extends State<HrSearchPage> {
   void _search([String? value]) {
     final query = (value ?? _searchController.text).trim();
     if (query.isEmpty) {
-      hrToast(context, '请输入搜索关键词');
+      atsToast(context, '请输入搜索关键词');
       return;
     }
     _searchController.text = query;
@@ -554,7 +554,7 @@ class _HrSearchPageState extends State<HrSearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    final results = hrJobs
+    final results = atsJobs
         .where(
           (job) =>
               job.title.contains(_searchController.text) ||
@@ -563,7 +563,7 @@ class _HrSearchPageState extends State<HrSearchPage> {
         )
         .toList();
     return Container(
-      color: HrColors.background,
+      color: AtsColors.background,
       child: Column(
         children: [
           Container(
@@ -593,7 +593,7 @@ class _HrSearchPageState extends State<HrSearchPage> {
                 TextButton(
                   onPressed: () => _search(),
                   style: TextButton.styleFrom(
-                    foregroundColor: HrColors.primary,
+                    foregroundColor: AtsColors.primary,
                     visualDensity: VisualDensity.compact,
                   ),
                   child: const Text('搜索'),
@@ -612,11 +612,11 @@ class _HrSearchPageState extends State<HrSearchPage> {
                       ),
                       const SizedBox(height: 9),
                       for (final job in results)
-                        HrJobCard(
+                        AtsJobCard(
                           job: job,
                           margin: const EdgeInsets.only(bottom: 10),
                           onTap: () =>
-                              widget.controller.open(HrRoute.jobDetail),
+                              widget.controller.open(AtsRoute.jobDetail),
                         ),
                     ],
                   )
@@ -638,13 +638,16 @@ class _HrSearchPageState extends State<HrSearchPage> {
                             icon: const Icon(
                               Icons.delete_outline,
                               size: 19,
-                              color: HrColors.textMuted,
+                              color: AtsColors.textMuted,
                             ),
                           ),
                         ],
                       ),
                       if (widget.controller.searchHistory.isEmpty)
-                        const HrEmptyState(icon: Icons.history, title: '暂无搜索历史')
+                        const AtsEmptyState(
+                          icon: Icons.history,
+                          title: '暂无搜索历史',
+                        )
                       else
                         Wrap(
                           spacing: 8,
@@ -655,7 +658,9 @@ class _HrSearchPageState extends State<HrSearchPage> {
                                 onPressed: () => _search(item),
                                 label: Text(item),
                                 backgroundColor: Colors.white,
-                                side: const BorderSide(color: HrColors.divider),
+                                side: const BorderSide(
+                                  color: AtsColors.divider,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -679,7 +684,7 @@ class _HrSearchPageState extends State<HrSearchPage> {
                             ActionChip(
                               onPressed: () => _search(item),
                               label: Text(item),
-                              backgroundColor: HrColors.mint,
+                              backgroundColor: AtsColors.mint,
                               side: BorderSide.none,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -706,27 +711,27 @@ const brHotSearches = <String>[
   '应届生',
 ];
 
-class HrJobListPage extends StatefulWidget {
-  const HrJobListPage({super.key, required this.controller});
+class AtsJobListPage extends StatefulWidget {
+  const AtsJobListPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrJobListPage> createState() => _HrJobListPageState();
+  State<AtsJobListPage> createState() => _AtsJobListPageState();
 }
 
-class _HrJobListPageState extends State<HrJobListPage> {
+class _AtsJobListPageState extends State<AtsJobListPage> {
   int _filter = 0;
 
   @override
   Widget build(BuildContext context) {
     final filtered = switch (_filter) {
-      1 => hrJobs.take(3).toList(),
-      2 => hrJobs.reversed.take(3).toList(),
-      _ => hrJobs,
+      1 => atsJobs.take(3).toList(),
+      2 => atsJobs.reversed.take(3).toList(),
+      _ => atsJobs,
     };
     return Container(
-      color: HrColors.background,
+      color: AtsColors.background,
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -735,7 +740,7 @@ class _HrJobListPageState extends State<HrJobListPage> {
               padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [HrColors.primary, Color(0xFF42C7A5)],
+                  colors: [AtsColors.primary, Color(0xFF42C7A5)],
                 ),
               ),
               child: const Row(
@@ -793,7 +798,7 @@ class _HrJobListPageState extends State<HrJobListPage> {
                             padding: const EdgeInsets.symmetric(vertical: 7),
                             decoration: BoxDecoration(
                               color: _filter == i
-                                  ? HrColors.mint
+                                  ? AtsColors.mint
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(7),
                             ),
@@ -801,8 +806,8 @@ class _HrJobListPageState extends State<HrJobListPage> {
                               ['综合排序', '最新发布', '高薪优选'][i],
                               style: TextStyle(
                                 color: _filter == i
-                                    ? HrColors.primary
-                                    : HrColors.textSecondary,
+                                    ? AtsColors.primary
+                                    : AtsColors.textSecondary,
                                 fontSize: 13,
                                 fontWeight: _filter == i
                                     ? FontWeight.w600
@@ -816,7 +821,7 @@ class _HrJobListPageState extends State<HrJobListPage> {
                         Container(
                           width: 1,
                           height: 12,
-                          color: HrColors.divider,
+                          color: AtsColors.divider,
                         ),
                     ],
                   ],
@@ -829,9 +834,9 @@ class _HrJobListPageState extends State<HrJobListPage> {
             sliver: SliverList.separated(
               itemCount: filtered.length,
               separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemBuilder: (context, index) => HrJobCard(
+              itemBuilder: (context, index) => AtsJobCard(
                 job: filtered[index],
-                onTap: () => widget.controller.open(HrRoute.jobDetail),
+                onTap: () => widget.controller.open(AtsRoute.jobDetail),
               ),
             ),
           ),
@@ -841,7 +846,7 @@ class _HrJobListPageState extends State<HrJobListPage> {
               child: Text(
                 '没有更多了',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: HrColors.textMuted, fontSize: 11),
+                style: TextStyle(color: AtsColors.textMuted, fontSize: 11),
               ),
             ),
           ),
@@ -875,14 +880,14 @@ class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant _FilterHeaderDelegate oldDelegate) => true;
 }
 
-class HrJobDetailPage extends StatelessWidget {
-  const HrJobDetailPage({super.key, required this.controller});
+class AtsJobDetailPage extends StatelessWidget {
+  const AtsJobDetailPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
   Widget build(BuildContext context) {
-    final job = hrJobs.first;
+    final job = atsJobs.first;
     final isFavorite = controller.favorites.contains(job.id);
     final isApplied = controller.applications.contains(job.id);
     return Column(
@@ -891,7 +896,7 @@ class HrJobDetailPage extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(12),
             children: [
-              HrCard(
+              AtsCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -902,7 +907,7 @@ class HrJobDetailPage extends StatelessWidget {
                           child: Text(
                             job.title,
                             style: const TextStyle(
-                              color: HrColors.text,
+                              color: AtsColors.text,
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
                             ),
@@ -911,7 +916,7 @@ class HrJobDetailPage extends StatelessWidget {
                         Text(
                           job.salary,
                           style: const TextStyle(
-                            color: HrColors.primary,
+                            color: AtsColors.primary,
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                           ),
@@ -923,29 +928,29 @@ class HrJobDetailPage extends StatelessWidget {
                       spacing: 7,
                       runSpacing: 7,
                       children: [
-                        HrTag(job.experience),
-                        HrTag(job.education),
-                        HrTag(job.location),
-                        HrTag(
+                        AtsTag(job.experience),
+                        AtsTag(job.education),
+                        AtsTag(job.location),
+                        AtsTag(
                           '刚刚活跃',
-                          foreground: HrColors.primary,
-                          background: HrColors.mint,
+                          foreground: AtsColors.primary,
+                          background: AtsColors.mint,
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     const Divider(height: 1),
                     const SizedBox(height: 14),
-                    HrCard(
+                    AtsCard(
                       padding: EdgeInsets.zero,
                       margin: EdgeInsets.zero,
-                      onTap: () => controller.open(HrRoute.companyDetail),
+                      onTap: () => controller.open(AtsRoute.companyDetail),
                       child: Row(
                         children: [
-                          const HrAvatar(
+                          const AtsAvatar(
                             label: '李',
                             size: 44,
-                            color: HrColors.blue,
+                            color: AtsColors.blue,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -963,7 +968,7 @@ class HrJobDetailPage extends StatelessWidget {
                                 Text(
                                   '${job.company} · 招聘经理',
                                   style: const TextStyle(
-                                    color: HrColors.textMuted,
+                                    color: AtsColors.textMuted,
                                     fontSize: 11,
                                   ),
                                 ),
@@ -972,7 +977,7 @@ class HrJobDetailPage extends StatelessWidget {
                           ),
                           const Icon(
                             Icons.chevron_right,
-                            color: HrColors.textMuted,
+                            color: AtsColors.textMuted,
                           ),
                         ],
                       ),
@@ -981,7 +986,7 @@ class HrJobDetailPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -996,7 +1001,7 @@ class HrJobDetailPage extends StatelessWidget {
                     Text(
                       job.description,
                       style: const TextStyle(
-                        color: HrColors.textSecondary,
+                        color: AtsColors.textSecondary,
                         fontSize: 13,
                         height: 1.75,
                       ),
@@ -1005,14 +1010,14 @@ class HrJobDetailPage extends StatelessWidget {
                     Wrap(
                       spacing: 7,
                       runSpacing: 7,
-                      children: [for (final tag in job.tags) HrTag(tag)],
+                      children: [for (final tag in job.tags) AtsTag(tag)],
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
-                onTap: () => controller.open(HrRoute.companyDetail),
+              AtsCard(
+                onTap: () => controller.open(AtsRoute.companyDetail),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1023,13 +1028,13 @@ class HrJobDetailPage extends StatelessWidget {
                           height: 44,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: HrColors.mint,
+                            color: AtsColors.mint,
                             borderRadius: BorderRadius.circular(11),
                           ),
                           child: const Text(
                             '世',
                             style: TextStyle(
-                              color: HrColors.primary,
+                              color: AtsColors.primary,
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
                             ),
@@ -1051,7 +1056,7 @@ class HrJobDetailPage extends StatelessWidget {
                               Text(
                                 '${job.industry} · ${job.staffSize}',
                                 style: const TextStyle(
-                                  color: HrColors.textMuted,
+                                  color: AtsColors.textMuted,
                                   fontSize: 11,
                                 ),
                               ),
@@ -1060,7 +1065,7 @@ class HrJobDetailPage extends StatelessWidget {
                         ),
                         const Icon(
                           Icons.chevron_right,
-                          color: HrColors.textMuted,
+                          color: AtsColors.textMuted,
                         ),
                       ],
                     ),
@@ -1071,14 +1076,14 @@ class HrJobDetailPage extends StatelessWidget {
                         Icon(
                           Icons.location_on_outlined,
                           size: 16,
-                          color: HrColors.textMuted,
+                          color: AtsColors.textMuted,
                         ),
                         SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             '上海市浦东新区张江路 88 号世佳中心',
                             style: TextStyle(
-                              color: HrColors.textSecondary,
+                              color: AtsColors.textSecondary,
                               fontSize: 12,
                               height: 1.5,
                             ),
@@ -1090,7 +1095,7 @@ class HrJobDetailPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 color: const Color(0xFFFFFAF4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1100,7 +1105,7 @@ class HrJobDetailPage extends StatelessWidget {
                         Icon(
                           Icons.shield_outlined,
                           size: 17,
-                          color: HrColors.orange,
+                          color: AtsColors.orange,
                         ),
                         SizedBox(width: 6),
                         Text(
@@ -1120,14 +1125,14 @@ class HrJobDetailPage extends StatelessWidget {
                           TextSpan(
                             text: '请立即举报',
                             style: TextStyle(
-                              color: HrColors.orange,
+                              color: AtsColors.orange,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                       style: const TextStyle(
-                        color: HrColors.textSecondary,
+                        color: AtsColors.textSecondary,
                         fontSize: 12,
                         height: 1.55,
                       ),
@@ -1135,12 +1140,12 @@ class HrJobDetailPage extends StatelessWidget {
                   ],
                 ),
               ),
-              const HrSectionHeader(title: '该公司其他岗位'),
-              for (final other in hrJobs.skip(1).take(2))
-                HrJobCard(
+              const AtsSectionHeader(title: '该公司其他岗位'),
+              for (final other in atsJobs.skip(1).take(2))
+                AtsJobCard(
                   job: other,
                   margin: const EdgeInsets.only(bottom: 10),
-                  onTap: () => controller.open(HrRoute.jobDetail),
+                  onTap: () => controller.open(AtsRoute.jobDetail),
                 ),
               const SizedBox(height: 10),
             ],
@@ -1150,7 +1155,7 @@ class HrJobDetailPage extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           decoration: const BoxDecoration(
             color: Colors.white,
-            border: Border(top: BorderSide(color: HrColors.divider)),
+            border: Border(top: BorderSide(color: AtsColors.divider)),
           ),
           child: Row(
             children: [
@@ -1160,23 +1165,23 @@ class HrJobDetailPage extends StatelessWidget {
                 label: isFavorite ? '已收藏' : '收藏',
                 onTap: () {
                   controller.toggleFavorite(job.id);
-                  hrToast(context, isFavorite ? '已取消收藏' : '已收藏该职位');
+                  atsToast(context, isFavorite ? '已取消收藏' : '已收藏该职位');
                 },
               ),
               const SizedBox(width: 4),
               _BottomIcon(
                 icon: Icons.chat_bubble_outline,
                 label: '聊一聊',
-                onTap: () => controller.open(HrRoute.privateChat),
+                onTap: () => controller.open(AtsRoute.privateChat),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: HrPrimaryButton(
+                child: AtsPrimaryButton(
                   label: isApplied ? '已投递' : '立即投递',
                   icon: isApplied ? Icons.check : Icons.send_outlined,
                   onPressed: () {
                     controller.toggleApplication(job.id);
-                    hrToast(context, isApplied ? '已取消投递' : '简历投递成功');
+                    atsToast(context, isApplied ? '已取消投递' : '简历投递成功');
                   },
                 ),
               ),
@@ -1214,12 +1219,12 @@ class _BottomIcon extends StatelessWidget {
             Icon(
               icon,
               size: 21,
-              color: active ? HrColors.orange : HrColors.textSecondary,
+              color: active ? AtsColors.orange : AtsColors.textSecondary,
             ),
             const SizedBox(height: 2),
             Text(
               label,
-              style: const TextStyle(color: HrColors.textMuted, fontSize: 10),
+              style: const TextStyle(color: AtsColors.textMuted, fontSize: 10),
             ),
           ],
         ),
@@ -1228,10 +1233,10 @@ class _BottomIcon extends StatelessWidget {
   }
 }
 
-class HrCompanyListPage extends StatelessWidget {
-  const HrCompanyListPage({super.key, required this.controller});
+class AtsCompanyListPage extends StatelessWidget {
+  const AtsCompanyListPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -1274,12 +1279,12 @@ class HrCompanyListPage extends StatelessWidget {
             ],
           ),
         ),
-        const HrSectionHeader(title: '精选认证企业'),
-        for (final company in hrCompanies)
-          HrCompanyCard(
+        const AtsSectionHeader(title: '精选认证企业'),
+        for (final company in atsCompanies)
+          AtsCompanyCard(
             company: company,
             margin: const EdgeInsets.only(bottom: 10),
-            onTap: () => controller.open(HrRoute.companyDetail),
+            onTap: () => controller.open(AtsRoute.companyDetail),
           ),
         const SizedBox(height: 20),
       ],
@@ -1287,18 +1292,18 @@ class HrCompanyListPage extends StatelessWidget {
   }
 }
 
-class HrCompanyDetailPage extends StatelessWidget {
-  const HrCompanyDetailPage({super.key, required this.controller});
+class AtsCompanyDetailPage extends StatelessWidget {
+  const AtsCompanyDetailPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
   Widget build(BuildContext context) {
-    final company = hrCompanies.first;
+    final company = atsCompanies.first;
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        HrCard(
+        AtsCard(
           child: Row(
             children: [
               Container(
@@ -1307,7 +1312,7 @@ class HrCompanyDetailPage extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [HrColors.primary, Color(0xFF54CFAD)],
+                    colors: [AtsColors.primary, Color(0xFF54CFAD)],
                   ),
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -1336,15 +1341,15 @@ class HrCompanyDetailPage extends StatelessWidget {
                     Text(
                       '${company.industry} · ${company.staffSize}',
                       style: const TextStyle(
-                        color: HrColors.textMuted,
+                        color: AtsColors.textMuted,
                         fontSize: 12,
                       ),
                     ),
                     const SizedBox(height: 7),
-                    const HrTag(
+                    const AtsTag(
                       '已认证',
-                      foreground: HrColors.primary,
-                      background: HrColors.mint,
+                      foreground: AtsColors.primary,
+                      background: AtsColors.mint,
                     ),
                   ],
                 ),
@@ -1353,7 +1358,7 @@ class HrCompanyDetailPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        HrCard(
+        AtsCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1385,10 +1390,10 @@ class HrCompanyDetailPage extends StatelessWidget {
                 runSpacing: 7,
                 children: [
                   for (final item in company.welfare)
-                    HrTag(
+                    AtsTag(
                       item,
-                      foreground: HrColors.primary,
-                      background: HrColors.mint,
+                      foreground: AtsColors.primary,
+                      background: AtsColors.mint,
                     ),
                 ],
               ),
@@ -1396,7 +1401,7 @@ class HrCompanyDetailPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        HrCard(
+        AtsCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1411,25 +1416,25 @@ class HrCompanyDetailPage extends StatelessWidget {
                   const Icon(
                     Icons.location_on_outlined,
                     size: 18,
-                    color: HrColors.textMuted,
+                    color: AtsColors.textMuted,
                   ),
                   const SizedBox(width: 5),
                   Expanded(
                     child: Text(
                       company.address,
                       style: const TextStyle(
-                        color: HrColors.textSecondary,
+                        color: AtsColors.textSecondary,
                         fontSize: 13,
                         height: 1.55,
                       ),
                     ),
                   ),
                   TextButton.icon(
-                    onPressed: () => hrToast(context, '正在打开地图导航'),
+                    onPressed: () => atsToast(context, '正在打开地图导航'),
                     icon: const Icon(Icons.navigation_outlined, size: 16),
                     label: const Text('导航'),
                     style: TextButton.styleFrom(
-                      foregroundColor: HrColors.primary,
+                      foregroundColor: AtsColors.primary,
                       visualDensity: VisualDensity.compact,
                     ),
                   ),
@@ -1439,7 +1444,7 @@ class HrCompanyDetailPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        HrCard(
+        AtsCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1451,7 +1456,7 @@ class HrCompanyDetailPage extends StatelessWidget {
               Text(
                 company.introduce,
                 style: const TextStyle(
-                  color: HrColors.textSecondary,
+                  color: AtsColors.textSecondary,
                   fontSize: 13,
                   height: 1.75,
                 ),
@@ -1459,12 +1464,12 @@ class HrCompanyDetailPage extends StatelessWidget {
             ],
           ),
         ),
-        const HrSectionHeader(title: '招聘岗位'),
-        for (final job in hrJobs.take(3))
-          HrJobCard(
+        const AtsSectionHeader(title: '招聘岗位'),
+        for (final job in atsJobs.take(3))
+          AtsJobCard(
             job: job,
             margin: const EdgeInsets.only(bottom: 10),
-            onTap: () => controller.open(HrRoute.jobDetail),
+            onTap: () => controller.open(AtsRoute.jobDetail),
           ),
         const SizedBox(height: 16),
       ],
@@ -1487,23 +1492,26 @@ class _InfoLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 17, color: HrColors.primary),
+        Icon(icon, size: 17, color: AtsColors.primary),
         const SizedBox(width: 8),
         Text(
           label,
-          style: const TextStyle(color: HrColors.textSecondary, fontSize: 12),
+          style: const TextStyle(color: AtsColors.textSecondary, fontSize: 12),
         ),
         const Spacer(),
-        Text(value, style: const TextStyle(color: HrColors.text, fontSize: 12)),
+        Text(
+          value,
+          style: const TextStyle(color: AtsColors.text, fontSize: 12),
+        ),
       ],
     );
   }
 }
 
-class HrResumeListPage extends StatelessWidget {
-  const HrResumeListPage({super.key, required this.controller});
+class AtsResumeListPage extends StatelessWidget {
+  const AtsResumeListPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -1548,12 +1556,12 @@ class HrResumeListPage extends StatelessWidget {
             ],
           ),
         ),
-        const HrSectionHeader(title: '最新简历'),
-        for (final resume in hrResumes)
-          HrResumeCard(
+        const AtsSectionHeader(title: '最新简历'),
+        for (final resume in atsResumes)
+          AtsResumeCard(
             resume: resume,
             margin: const EdgeInsets.only(bottom: 10),
-            onTap: () => controller.open(HrRoute.resumeDetail),
+            onTap: () => controller.open(AtsRoute.resumeDetail),
           ),
         const SizedBox(height: 18),
       ],
@@ -1561,16 +1569,16 @@ class HrResumeListPage extends StatelessWidget {
   }
 }
 
-class HrCategoryPage extends StatefulWidget {
-  const HrCategoryPage({super.key, required this.controller});
+class AtsCategoryPage extends StatefulWidget {
+  const AtsCategoryPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrCategoryPage> createState() => _HrCategoryPageState();
+  State<AtsCategoryPage> createState() => _AtsCategoryPageState();
 }
 
-class _HrCategoryPageState extends State<HrCategoryPage> {
+class _AtsCategoryPageState extends State<AtsCategoryPage> {
   int _selected = 0;
   final _categories = <String>[
     '全部职位',
@@ -1605,7 +1613,9 @@ class _HrCategoryPageState extends State<HrCategoryPage> {
                     border: Border(
                       left: BorderSide(
                         width: 3,
-                        color: selected ? HrColors.primary : Colors.transparent,
+                        color: selected
+                            ? AtsColors.primary
+                            : Colors.transparent,
                       ),
                     ),
                   ),
@@ -1614,8 +1624,8 @@ class _HrCategoryPageState extends State<HrCategoryPage> {
                     _categories[index],
                     style: TextStyle(
                       color: selected
-                          ? HrColors.primary
-                          : HrColors.textSecondary,
+                          ? AtsColors.primary
+                          : AtsColors.textSecondary,
                       fontSize: 13,
                       fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                     ),
@@ -1641,11 +1651,11 @@ class _HrCategoryPageState extends State<HrCategoryPage> {
                     ),
                   ),
                   TextButton.icon(
-                    onPressed: () => widget.controller.open(HrRoute.post),
+                    onPressed: () => widget.controller.open(AtsRoute.post),
                     icon: const Icon(Icons.tune, size: 16),
                     label: const Text('筛选'),
                     style: TextButton.styleFrom(
-                      foregroundColor: HrColors.textSecondary,
+                      foregroundColor: AtsColors.textSecondary,
                       visualDensity: VisualDensity.compact,
                     ),
                   ),
@@ -1655,16 +1665,16 @@ class _HrCategoryPageState extends State<HrCategoryPage> {
                 spacing: 7,
                 runSpacing: 7,
                 children: [
-                  for (final tag in const ['不限经验', '不限学历', '薪资优先']) HrTag(tag),
+                  for (final tag in const ['不限经验', '不限学历', '薪资优先']) AtsTag(tag),
                 ],
               ),
               const SizedBox(height: 10),
-              for (final job in hrJobs.skip(_selected % 2).take(5))
-                HrJobCard(
+              for (final job in atsJobs.skip(_selected % 2).take(5))
+                AtsJobCard(
                   job: job,
                   margin: const EdgeInsets.only(bottom: 9),
                   showBorder: false,
-                  onTap: () => widget.controller.open(HrRoute.jobDetail),
+                  onTap: () => widget.controller.open(AtsRoute.jobDetail),
                 ),
               const SizedBox(height: 16),
             ],

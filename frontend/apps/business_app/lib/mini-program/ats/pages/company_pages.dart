@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-import '../hr_models.dart';
-import '../hr_routes.dart';
-import '../hr_style.dart';
+import '../ats_models.dart';
+import '../ats_routes.dart';
+import '../ats_style.dart';
 
-class HrCompanyEditPage extends StatefulWidget {
-  const HrCompanyEditPage({super.key, required this.controller});
+class AtsCompanyEditPage extends StatefulWidget {
+  const AtsCompanyEditPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrCompanyEditPage> createState() => _HrCompanyEditPageState();
+  State<AtsCompanyEditPage> createState() => _AtsCompanyEditPageState();
 }
 
-class _HrCompanyEditPageState extends State<HrCompanyEditPage> {
+class _AtsCompanyEditPageState extends State<AtsCompanyEditPage> {
   late final TextEditingController _name;
   late final TextEditingController _address;
   late final TextEditingController _introduce;
@@ -24,7 +24,7 @@ class _HrCompanyEditPageState extends State<HrCompanyEditPage> {
   @override
   void initState() {
     super.initState();
-    final company = hrCompanies.first;
+    final company = atsCompanies.first;
     _name = TextEditingController(text: company.name);
     _address = TextEditingController(text: company.address);
     _introduce = TextEditingController(text: company.introduce);
@@ -46,17 +46,17 @@ class _HrCompanyEditPageState extends State<HrCompanyEditPage> {
           child: ListView(
             padding: const EdgeInsets.all(12),
             children: [
-              HrCard(
+              AtsCard(
                 child: Row(
                   children: [
                     GestureDetector(
-                      onTap: () => hrToast(context, '请选择新的企业 Logo'),
+                      onTap: () => atsToast(context, '请选择新的企业 Logo'),
                       child: Container(
                         width: 72,
                         height: 72,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [HrColors.primary, Color(0xFF54CFAD)],
+                            colors: [AtsColors.primary, Color(0xFF54CFAD)],
                           ),
                           borderRadius: BorderRadius.circular(15),
                         ),
@@ -92,16 +92,16 @@ class _HrCompanyEditPageState extends State<HrCompanyEditPage> {
                           Text(
                             '完善资料可以提升企业可信度和职位曝光',
                             style: TextStyle(
-                              color: HrColors.textMuted,
+                              color: AtsColors.textMuted,
                               fontSize: 10,
                               height: 1.5,
                             ),
                           ),
                           SizedBox(height: 6),
-                          HrTag(
+                          AtsTag(
                             '已认证',
-                            foreground: HrColors.primary,
-                            background: HrColors.mint,
+                            foreground: AtsColors.primary,
+                            background: AtsColors.mint,
                           ),
                         ],
                       ),
@@ -110,30 +110,30 @@ class _HrCompanyEditPageState extends State<HrCompanyEditPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Column(
                   children: [
-                    HrFormRow(
+                    AtsFormRow(
                       label: '公司名称',
                       required: true,
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _name,
                         hintText: '请输入公司全称',
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '所属行业',
                       required: true,
                       child: _CompanyDropdown(
                         value: _industry,
-                        values: hrIndustries,
+                        values: atsIndustries,
                         onChanged: (value) => setState(() => _industry = value),
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '公司规模',
                       required: true,
                       child: _CompanyDropdown(
@@ -150,34 +150,34 @@ class _HrCompanyEditPageState extends State<HrCompanyEditPage> {
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '工作时间',
                       child: _CompanyPicker(
                         value: '09:00 - 18:00',
-                        onTap: () => hrToast(context, '设置工作时间'),
+                        onTap: () => atsToast(context, '设置工作时间'),
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '休息时间',
                       child: _CompanyPicker(
                         value: '周末双休',
-                        onTap: () => hrToast(context, '设置休息时间'),
+                        onTap: () => atsToast(context, '设置休息时间'),
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '加班情况',
                       child: _CompanyPicker(
                         value: '弹性工作',
-                        onTap: () => hrToast(context, '设置加班情况'),
+                        onTap: () => atsToast(context, '设置加班情况'),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,14 +218,14 @@ class _HrCompanyEditPageState extends State<HrCompanyEditPage> {
                                 }
                               });
                             },
-                            selectedColor: HrColors.mint,
-                            checkmarkColor: HrColors.primary,
-                            backgroundColor: HrColors.background,
+                            selectedColor: AtsColors.mint,
+                            checkmarkColor: AtsColors.primary,
+                            backgroundColor: AtsColors.background,
                             side: BorderSide.none,
                             labelStyle: TextStyle(
                               color: _welfare.contains(item)
-                                  ? HrColors.primary
-                                  : HrColors.textSecondary,
+                                  ? AtsColors.primary
+                                  : AtsColors.textSecondary,
                               fontSize: 11,
                             ),
                             shape: RoundedRectangleBorder(
@@ -239,22 +239,22 @@ class _HrCompanyEditPageState extends State<HrCompanyEditPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Column(
                   children: [
-                    HrFormRow(
+                    AtsFormRow(
                       label: '公司地址',
                       required: true,
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _address,
                         hintText: '请输入公司地址',
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '公司介绍',
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _introduce,
                         hintText: '介绍公司的业务、团队和文化',
                         maxLines: 5,
@@ -264,7 +264,7 @@ class _HrCompanyEditPageState extends State<HrCompanyEditPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -281,19 +281,21 @@ class _HrCompanyEditPageState extends State<HrCompanyEditPage> {
                         for (var i = 0; i < 3; i++) ...[
                           Expanded(
                             child: InkWell(
-                              onTap: () => hrToast(context, '请选择办公环境照片'),
+                              onTap: () => atsToast(context, '请选择办公环境照片'),
                               borderRadius: BorderRadius.circular(9),
                               child: AspectRatio(
                                 aspectRatio: 1.25,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: HrColors.background,
+                                    color: AtsColors.background,
                                     borderRadius: BorderRadius.circular(9),
-                                    border: Border.all(color: HrColors.divider),
+                                    border: Border.all(
+                                      color: AtsColors.divider,
+                                    ),
                                   ),
                                   child: const Icon(
                                     Icons.add_photo_alternate_outlined,
-                                    color: HrColors.textMuted,
+                                    color: AtsColors.textMuted,
                                     size: 25,
                                   ),
                                 ),
@@ -313,23 +315,23 @@ class _HrCompanyEditPageState extends State<HrCompanyEditPage> {
         ),
         _CompanyBottomBar(
           label: '保存公司资料',
-          onPressed: () => hrToast(context, '公司资料已保存'),
+          onPressed: () => atsToast(context, '公司资料已保存'),
         ),
       ],
     );
   }
 }
 
-class HrCompanyEnterPage extends StatefulWidget {
-  const HrCompanyEnterPage({super.key, required this.controller});
+class AtsCompanyEnterPage extends StatefulWidget {
+  const AtsCompanyEnterPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrCompanyEnterPage> createState() => _HrCompanyEnterPageState();
+  State<AtsCompanyEnterPage> createState() => _AtsCompanyEnterPageState();
 }
 
-class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
+class _AtsCompanyEnterPageState extends State<AtsCompanyEnterPage> {
   final _companyName = TextEditingController();
   final _contactName = TextEditingController();
   final _phone = TextEditingController();
@@ -351,17 +353,21 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
     if (_companyName.text.trim().isEmpty ||
         _contactName.text.trim().isEmpty ||
         _phone.text.trim().isEmpty) {
-      hrToast(context, '请填写公司和联系人信息');
+      atsToast(context, '请填写公司和联系人信息');
       return;
     }
     if (!_agreed) {
-      hrToast(context, '请先阅读并同意入驻协议');
+      atsToast(context, '请先阅读并同意入驻协议');
       return;
     }
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        icon: const Icon(Icons.check_circle, color: HrColors.primary, size: 48),
+        icon: const Icon(
+          Icons.check_circle,
+          color: AtsColors.primary,
+          size: 48,
+        ),
         title: const Text('入驻资料已提交'),
         content: const Text(
           '工作人员将在 1-2 个工作日内完成审核，审核结果会通过系统消息通知你。',
@@ -371,7 +377,7 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
-              widget.controller.open(HrRoute.companyEdit);
+              widget.controller.open(AtsRoute.companyEdit);
             },
             child: const Text('进入企业主页'),
           ),
@@ -388,14 +394,14 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
           child: ListView(
             padding: const EdgeInsets.all(12),
             children: [
-              HrCard(
-                color: HrColors.mint,
+              AtsCard(
+                color: AtsColors.mint,
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
                       Icons.storefront_outlined,
-                      color: HrColors.primary,
+                      color: AtsColors.primary,
                       size: 28,
                     ),
                     SizedBox(width: 11),
@@ -406,7 +412,7 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
                           Text(
                             '免费入驻，开始招聘',
                             style: TextStyle(
-                              color: HrColors.primaryDark,
+                              color: AtsColors.primaryDark,
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
@@ -415,7 +421,7 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
                           Text(
                             '提交企业基本信息后即可发布职位，认证企业将获得更多曝光。',
                             style: TextStyle(
-                              color: HrColors.primary,
+                              color: AtsColors.primary,
                               fontSize: 11,
                               height: 1.55,
                             ),
@@ -427,30 +433,30 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Column(
                   children: [
-                    HrFormRow(
+                    AtsFormRow(
                       label: '企业名称',
                       required: true,
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _companyName,
                         hintText: '请输入营业执照上的名称',
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '所属行业',
                       required: true,
                       child: _CompanyDropdown(
                         value: _industry,
-                        values: hrIndustries,
+                        values: atsIndustries,
                         onChanged: (value) => setState(() => _industry = value),
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '企业规模',
                       child: _CompanyDropdown(
                         value: _staffSize,
@@ -466,28 +472,28 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '联系人',
                       required: true,
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _contactName,
                         hintText: '请输入联系人姓名',
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '联系电话',
                       required: true,
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _phone,
                         hintText: '请输入手机号',
                         keyboardType: TextInputType.phone,
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '办公地址',
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _address,
                         hintText: '请输入详细办公地址',
                       ),
@@ -496,7 +502,7 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -509,19 +515,19 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
                     ),
                     const SizedBox(height: 11),
                     InkWell(
-                      onTap: () => hrToast(context, '请选择企业 Logo'),
+                      onTap: () => atsToast(context, '请选择企业 Logo'),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         width: 82,
                         height: 82,
                         decoration: BoxDecoration(
-                          color: HrColors.background,
+                          color: AtsColors.background,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: HrColors.divider),
+                          border: Border.all(color: AtsColors.divider),
                         ),
                         child: const Icon(
                           Icons.add_a_photo_outlined,
-                          color: HrColors.textMuted,
+                          color: AtsColors.textMuted,
                           size: 28,
                         ),
                       ),
@@ -543,7 +549,7 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(3),
                       ),
-                      activeColor: HrColors.primary,
+                      activeColor: AtsColors.primary,
                     ),
                   ),
                   const SizedBox(width: 7),
@@ -554,17 +560,17 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
                           TextSpan(text: '我已阅读并同意'),
                           TextSpan(
                             text: '《企业入驻协议》',
-                            style: TextStyle(color: HrColors.primary),
+                            style: TextStyle(color: AtsColors.primary),
                           ),
                           TextSpan(text: '和'),
                           TextSpan(
                             text: '《隐私政策》',
-                            style: TextStyle(color: HrColors.primary),
+                            style: TextStyle(color: AtsColors.primary),
                           ),
                         ],
                       ),
                       style: TextStyle(
-                        color: HrColors.textMuted,
+                        color: AtsColors.textMuted,
                         fontSize: 10,
                         height: 1.7,
                       ),
@@ -582,16 +588,16 @@ class _HrCompanyEnterPageState extends State<HrCompanyEnterPage> {
   }
 }
 
-class HrPositionsPage extends StatefulWidget {
-  const HrPositionsPage({super.key, required this.controller});
+class AtsPositionsPage extends StatefulWidget {
+  const AtsPositionsPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrPositionsPage> createState() => _HrPositionsPageState();
+  State<AtsPositionsPage> createState() => _AtsPositionsPageState();
 }
 
-class _HrPositionsPageState extends State<HrPositionsPage> {
+class _AtsPositionsPageState extends State<AtsPositionsPage> {
   int _tab = 0;
   final _offline = <String>{};
 
@@ -599,10 +605,10 @@ class _HrPositionsPageState extends State<HrPositionsPage> {
   Widget build(BuildContext context) {
     final tabs = ['招聘中', '待审核', '已下线', '全部'];
     final jobs = switch (_tab) {
-      1 => <HrJob>[],
-      2 => hrJobs.where((job) => _offline.contains(job.id)).toList(),
-      3 => hrJobs.take(3).toList(),
-      _ => hrJobs.take(3).where((job) => !_offline.contains(job.id)).toList(),
+      1 => <AtsJob>[],
+      2 => atsJobs.where((job) => _offline.contains(job.id)).toList(),
+      3 => atsJobs.take(3).toList(),
+      _ => atsJobs.take(3).where((job) => !_offline.contains(job.id)).toList(),
     };
     return Column(
       children: [
@@ -621,7 +627,7 @@ class _HrPositionsPageState extends State<HrPositionsPage> {
                           bottom: BorderSide(
                             width: 2,
                             color: _tab == i
-                                ? HrColors.primary
+                                ? AtsColors.primary
                                 : Colors.transparent,
                           ),
                         ),
@@ -631,8 +637,8 @@ class _HrPositionsPageState extends State<HrPositionsPage> {
                         tabs[i],
                         style: TextStyle(
                           color: _tab == i
-                              ? HrColors.primary
-                              : HrColors.textSecondary,
+                              ? AtsColors.primary
+                              : AtsColors.textSecondary,
                           fontSize: 13,
                           fontWeight: _tab == i
                               ? FontWeight.w600
@@ -647,26 +653,26 @@ class _HrPositionsPageState extends State<HrPositionsPage> {
         ),
         Expanded(
           child: jobs.isEmpty
-              ? HrEmptyState(
+              ? AtsEmptyState(
                   icon: Icons.post_add_outlined,
                   title: _tab == 1 ? '暂无待审核职位' : '暂无下线职位',
                   subtitle: '发布新职位后将在这里展示',
-                  action: HrPrimaryButton(
+                  action: AtsPrimaryButton(
                     label: '发布新职位',
                     onPressed: () =>
-                        widget.controller.open(HrRoute.positionEdit),
+                        widget.controller.open(AtsRoute.positionEdit),
                   ),
                 )
               : ListView(
                   padding: const EdgeInsets.all(12),
                   children: [
-                    HrCard(
-                      color: HrColors.mint,
+                    AtsCard(
+                      color: AtsColors.mint,
                       child: Row(
                         children: [
                           const Icon(
                             Icons.insights_outlined,
-                            color: HrColors.primary,
+                            color: AtsColors.primary,
                             size: 25,
                           ),
                           const SizedBox(width: 10),
@@ -674,14 +680,14 @@ class _HrPositionsPageState extends State<HrPositionsPage> {
                             child: Text(
                               '今日职位曝光 328 次，收到 6 份新简历',
                               style: TextStyle(
-                                color: HrColors.primaryDark,
+                                color: AtsColors.primaryDark,
                                 fontSize: 11,
                               ),
                             ),
                           ),
                           TextButton(
                             onPressed: () =>
-                                widget.controller.open(HrRoute.resumeList),
+                                widget.controller.open(AtsRoute.resumeList),
                             child: const Text('查看'),
                           ),
                         ],
@@ -693,14 +699,14 @@ class _HrPositionsPageState extends State<HrPositionsPage> {
                         job: job,
                         offline: _offline.contains(job.id),
                         onEdit: () =>
-                            widget.controller.open(HrRoute.positionEdit),
+                            widget.controller.open(AtsRoute.positionEdit),
                         onToggle: () {
                           setState(() {
                             if (!_offline.add(job.id)) {
                               _offline.remove(job.id);
                             }
                           });
-                          hrToast(
+                          atsToast(
                             context,
                             _offline.contains(job.id) ? '职位已下线' : '职位已上线',
                           );
@@ -712,10 +718,10 @@ class _HrPositionsPageState extends State<HrPositionsPage> {
         Container(
           color: Colors.white,
           padding: const EdgeInsets.fromLTRB(12, 9, 12, 10),
-          child: HrPrimaryButton(
+          child: AtsPrimaryButton(
             label: '发布新职位',
             icon: Icons.add,
-            onPressed: () => widget.controller.open(HrRoute.positionEdit),
+            onPressed: () => widget.controller.open(AtsRoute.positionEdit),
           ),
         ),
       ],
@@ -731,14 +737,14 @@ class _ManagedJobCard extends StatelessWidget {
     required this.onToggle,
   });
 
-  final HrJob job;
+  final AtsJob job;
   final bool offline;
   final VoidCallback onEdit;
   final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
-    return HrCard(
+    return AtsCard(
       margin: const EdgeInsets.only(bottom: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -754,17 +760,17 @@ class _ManagedJobCard extends StatelessWidget {
                   ),
                 ),
               ),
-              HrTag(
+              AtsTag(
                 offline ? '已下线' : '招聘中',
-                foreground: offline ? HrColors.textMuted : HrColors.primary,
-                background: offline ? HrColors.background : HrColors.mint,
+                foreground: offline ? AtsColors.textMuted : AtsColors.primary,
+                background: offline ? AtsColors.background : AtsColors.mint,
               ),
             ],
           ),
           const SizedBox(height: 7),
           Text(
             '${job.salary} · ${job.location} · ${job.experience}',
-            style: const TextStyle(color: HrColors.textMuted, fontSize: 11),
+            style: const TextStyle(color: AtsColors.textMuted, fontSize: 11),
           ),
           const SizedBox(height: 13),
           const Divider(height: 1),
@@ -778,7 +784,7 @@ class _ManagedJobCard extends StatelessWidget {
               TextButton(
                 onPressed: onToggle,
                 style: TextButton.styleFrom(
-                  foregroundColor: HrColors.textSecondary,
+                  foregroundColor: AtsColors.textSecondary,
                   visualDensity: VisualDensity.compact,
                 ),
                 child: Text(offline ? '上线' : '下线'),
@@ -787,8 +793,8 @@ class _ManagedJobCard extends StatelessWidget {
               OutlinedButton(
                 onPressed: onEdit,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: HrColors.primary,
-                  side: const BorderSide(color: HrColors.primary),
+                  foregroundColor: AtsColors.primary,
+                  side: const BorderSide(color: AtsColors.primary),
                   visualDensity: VisualDensity.compact,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(7),
@@ -823,7 +829,7 @@ class _JobStat extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(color: HrColors.textMuted, fontSize: 9),
+            style: const TextStyle(color: AtsColors.textMuted, fontSize: 9),
           ),
         ],
       ),
@@ -831,16 +837,16 @@ class _JobStat extends StatelessWidget {
   }
 }
 
-class HrPositionEditPage extends StatefulWidget {
-  const HrPositionEditPage({super.key, required this.controller});
+class AtsPositionEditPage extends StatefulWidget {
+  const AtsPositionEditPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrPositionEditPage> createState() => _HrPositionEditPageState();
+  State<AtsPositionEditPage> createState() => _AtsPositionEditPageState();
 }
 
-class _HrPositionEditPageState extends State<HrPositionEditPage> {
+class _AtsPositionEditPageState extends State<AtsPositionEditPage> {
   final _title = TextEditingController();
   final _salary = TextEditingController();
   final _address = TextEditingController();
@@ -894,10 +900,10 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
 
   void _save() {
     if (_title.text.trim().isEmpty || _salary.text.trim().isEmpty) {
-      hrToast(context, '请填写职位名称和薪资范围');
+      atsToast(context, '请填写职位名称和薪资范围');
       return;
     }
-    hrToast(context, '职位已保存并发布');
+    atsToast(context, '职位已保存并发布');
   }
 
   @override
@@ -908,20 +914,20 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
           child: ListView(
             padding: const EdgeInsets.all(12),
             children: [
-              HrCard(
+              AtsCard(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Column(
                   children: [
-                    HrFormRow(
+                    AtsFormRow(
                       label: '职位名称',
                       required: true,
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _title,
                         hintText: '例如：Flutter 开发工程师',
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '招聘类型',
                       required: true,
                       child: SegmentedButton<String>(
@@ -938,16 +944,16 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '薪资范围',
                       required: true,
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _salary,
                         hintText: '例如：20-35K·14薪',
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '经验要求',
                       child: _CompanyDropdown(
                         value: _experience,
@@ -957,7 +963,7 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '学历要求',
                       child: _CompanyDropdown(
                         value: _education,
@@ -967,17 +973,17 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '工作地点',
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _address,
                         hintText: '请输入工作地点',
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '所属部门',
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _department,
                         hintText: '请输入部门名称',
                       ),
@@ -986,7 +992,7 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1011,11 +1017,11 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
                             label: Text(_skills[i]),
                             onDeleted: () =>
                                 setState(() => _skills.removeAt(i)),
-                            deleteIconColor: HrColors.primary,
-                            backgroundColor: HrColors.mint,
+                            deleteIconColor: AtsColors.primary,
+                            backgroundColor: AtsColors.mint,
                             side: BorderSide.none,
                             labelStyle: const TextStyle(
-                              color: HrColors.primary,
+                              color: AtsColors.primary,
                               fontSize: 11,
                             ),
                             shape: RoundedRectangleBorder(
@@ -1026,7 +1032,7 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
                           onPressed: _addSkill,
                           avatar: const Icon(Icons.add, size: 15),
                           label: const Text('添加'),
-                          side: const BorderSide(color: HrColors.divider),
+                          side: const BorderSide(color: AtsColors.divider),
                           backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(7),
@@ -1039,7 +1045,7 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1054,7 +1060,7 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
                         ),
                       ),
                     ),
-                    HrFormTextField(
+                    AtsFormTextField(
                       controller: _description,
                       hintText: '请描述岗位职责、任职要求、团队情况等，建议分行填写',
                       maxLines: 8,
@@ -1070,7 +1076,7 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
         _CompanyBottomBar(
           label: '保存并发布',
           secondaryLabel: '预览',
-          onSecondaryPressed: () => hrToast(context, '预览已生成'),
+          onSecondaryPressed: () => atsToast(context, '预览已生成'),
           onPressed: _save,
         ),
       ],
@@ -1078,16 +1084,16 @@ class _HrPositionEditPageState extends State<HrPositionEditPage> {
   }
 }
 
-class HrCompanyAuthPage extends StatefulWidget {
-  const HrCompanyAuthPage({super.key, required this.controller});
+class AtsCompanyAuthPage extends StatefulWidget {
+  const AtsCompanyAuthPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrCompanyAuthPage> createState() => _HrCompanyAuthPageState();
+  State<AtsCompanyAuthPage> createState() => _AtsCompanyAuthPageState();
 }
 
-class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
+class _AtsCompanyAuthPageState extends State<AtsCompanyAuthPage> {
   final _companyName = TextEditingController(text: '上海世佳科技有限公司');
   final _creditCode = TextEditingController();
   final _legalName = TextEditingController();
@@ -1109,8 +1115,8 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
           child: ListView(
             padding: const EdgeInsets.all(12),
             children: [
-              HrCard(
-                color: _submitted ? const Color(0xFFFFFAF4) : HrColors.mint,
+              AtsCard(
+                color: _submitted ? const Color(0xFFFFFAF4) : AtsColors.mint,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1118,7 +1124,7 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
                       _submitted
                           ? Icons.hourglass_top_rounded
                           : Icons.verified_user_outlined,
-                      color: _submitted ? HrColors.orange : HrColors.primary,
+                      color: _submitted ? AtsColors.orange : AtsColors.primary,
                       size: 28,
                     ),
                     const SizedBox(width: 11),
@@ -1131,7 +1137,7 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
                             style: TextStyle(
                               color: _submitted
                                   ? const Color(0xFF9A5B16)
-                                  : HrColors.primaryDark,
+                                  : AtsColors.primaryDark,
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
@@ -1143,8 +1149,8 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
                                 : '认证后可获得企业标识，提升求职者信任和职位曝光。',
                             style: TextStyle(
                               color: _submitted
-                                  ? HrColors.orange
-                                  : HrColors.primary,
+                                  ? AtsColors.orange
+                                  : AtsColors.primary,
                               fontSize: 11,
                               height: 1.55,
                             ),
@@ -1156,34 +1162,34 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Column(
                   children: [
-                    HrFormRow(
+                    AtsFormRow(
                       label: '企业名称',
                       required: true,
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _companyName,
                         hintText: '请输入企业全称',
                         readOnly: _submitted,
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '信用代码',
                       required: true,
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _creditCode,
                         hintText: '请输入统一社会信用代码',
                         readOnly: _submitted,
                       ),
                     ),
                     const Divider(height: 1),
-                    HrFormRow(
+                    AtsFormRow(
                       label: '法人姓名',
                       required: true,
-                      child: HrFormTextField(
+                      child: AtsFormTextField(
                         controller: _legalName,
                         hintText: '请输入法人姓名',
                         readOnly: _submitted,
@@ -1193,7 +1199,7 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              HrCard(
+              AtsCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1207,9 +1213,9 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
                           ),
                         ),
                         SizedBox(width: 7),
-                        HrTag(
+                        AtsTag(
                           '必传',
-                          foreground: HrColors.red,
+                          foreground: AtsColors.red,
                           background: Color(0xFFFFF0F0),
                         ),
                       ],
@@ -1218,7 +1224,7 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
                     const Text(
                       '请上传清晰完整的营业执照照片，仅用于企业资质审核。',
                       style: TextStyle(
-                        color: HrColors.textMuted,
+                        color: AtsColors.textMuted,
                         fontSize: 10,
                         height: 1.5,
                       ),
@@ -1227,14 +1233,14 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
                     GestureDetector(
                       onTap: _submitted
                           ? null
-                          : () => hrToast(context, '请选择营业执照照片'),
+                          : () => atsToast(context, '请选择营业执照照片'),
                       child: Container(
                         height: 118,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: HrColors.background,
+                          color: AtsColors.background,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: HrColors.divider),
+                          border: Border.all(color: AtsColors.divider),
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -1244,15 +1250,15 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
                                   ? Icons.description_outlined
                                   : Icons.add_a_photo_outlined,
                               color: _submitted
-                                  ? HrColors.primary
-                                  : HrColors.textMuted,
+                                  ? AtsColors.primary
+                                  : AtsColors.textMuted,
                               size: 30,
                             ),
                             const SizedBox(height: 7),
                             Text(
                               _submitted ? '营业执照已上传' : '点击上传营业执照',
                               style: const TextStyle(
-                                color: HrColors.textMuted,
+                                color: AtsColors.textMuted,
                                 fontSize: 11,
                               ),
                             ),
@@ -1264,14 +1270,14 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              const HrCard(
+              const AtsCard(
                 color: Color(0xFFFFFAF4),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
                       Icons.shield_outlined,
-                      color: HrColors.orange,
+                      color: AtsColors.orange,
                       size: 18,
                     ),
                     SizedBox(width: 7),
@@ -1279,7 +1285,7 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
                       child: Text(
                         '平台将对认证材料严格保密，仅用于核验企业主体真实性，不会向其他用户公开。',
                         style: TextStyle(
-                          color: HrColors.textSecondary,
+                          color: AtsColors.textSecondary,
                           fontSize: 11,
                           height: 1.55,
                         ),
@@ -1298,11 +1304,11 @@ class _HrCompanyAuthPageState extends State<HrCompanyAuthPage> {
               : () {
                   if (_creditCode.text.trim().isEmpty ||
                       _legalName.text.trim().isEmpty) {
-                    hrToast(context, '请完整填写认证信息');
+                    atsToast(context, '请完整填写认证信息');
                     return;
                   }
                   setState(() => _submitted = true);
-                  hrToast(context, '认证资料已提交');
+                  atsToast(context, '认证资料已提交');
                 },
         ),
       ],
@@ -1329,13 +1335,13 @@ class _CompanyBottomBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 9, 12, 10),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: HrColors.divider)),
+        border: Border(top: BorderSide(color: AtsColors.divider)),
       ),
       child: Row(
         children: [
           if (secondaryLabel != null) ...[
             Expanded(
-              child: HrOutlineButton(
+              child: AtsOutlineButton(
                 label: secondaryLabel!,
                 onPressed: onSecondaryPressed,
               ),
@@ -1344,7 +1350,7 @@ class _CompanyBottomBar extends StatelessWidget {
           ],
           Expanded(
             flex: 2,
-            child: HrPrimaryButton(label: label, onPressed: onPressed),
+            child: AtsPrimaryButton(label: label, onPressed: onPressed),
           ),
         ],
       ),
@@ -1365,7 +1371,7 @@ class _CompanyPicker extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 11),
         decoration: BoxDecoration(
-          color: HrColors.background,
+          color: AtsColors.background,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -1374,7 +1380,7 @@ class _CompanyPicker extends StatelessWidget {
             const Icon(
               Icons.chevron_right,
               size: 18,
-              color: HrColors.textMuted,
+              color: AtsColors.textMuted,
             ),
           ],
         ),
@@ -1399,7 +1405,7 @@ class _CompanyDropdown extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: HrColors.background,
+        color: AtsColors.background,
         borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButtonHideUnderline(
@@ -1422,9 +1428,9 @@ class _CompanyDropdown extends StatelessWidget {
           icon: const Icon(
             Icons.chevron_right,
             size: 18,
-            color: HrColors.textMuted,
+            color: AtsColors.textMuted,
           ),
-          style: const TextStyle(color: HrColors.text),
+          style: const TextStyle(color: AtsColors.text),
         ),
       ),
     );

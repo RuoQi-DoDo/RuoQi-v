@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-import '../hr_models.dart';
-import '../hr_routes.dart';
-import '../hr_style.dart';
+import '../ats_models.dart';
+import '../ats_routes.dart';
+import '../ats_style.dart';
 
-class HrSettingsPage extends StatefulWidget {
-  const HrSettingsPage({super.key, required this.controller});
+class AtsSettingsPage extends StatefulWidget {
+  const AtsSettingsPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrSettingsPage> createState() => _HrSettingsPageState();
+  State<AtsSettingsPage> createState() => _AtsSettingsPageState();
 }
 
-class _HrSettingsPageState extends State<HrSettingsPage> {
+class _AtsSettingsPageState extends State<AtsSettingsPage> {
   bool _notifications = true;
   bool _recommendations = true;
   bool _wifiOnly = false;
@@ -23,42 +23,42 @@ class _HrSettingsPageState extends State<HrSettingsPage> {
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        HrCard(
+        AtsCard(
           padding: EdgeInsets.zero,
           child: Column(
             children: [
               SwitchListTile(
                 value: _notifications,
                 onChanged: (value) => setState(() => _notifications = value),
-                activeTrackColor: HrColors.primary,
+                activeTrackColor: AtsColors.primary,
                 title: const Text(
                   '消息通知',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                 ),
                 subtitle: const Text(
                   '接收面试、投递和聊天消息提醒',
-                  style: TextStyle(color: HrColors.textMuted, fontSize: 10),
+                  style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
                 ),
               ),
               const Divider(height: 1, indent: 16, endIndent: 16),
               SwitchListTile(
                 value: _recommendations,
                 onChanged: (value) => setState(() => _recommendations = value),
-                activeTrackColor: HrColors.primary,
+                activeTrackColor: AtsColors.primary,
                 title: const Text(
                   '个性化推荐',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                 ),
                 subtitle: const Text(
                   '根据简历和浏览记录推荐职位',
-                  style: TextStyle(color: HrColors.textMuted, fontSize: 10),
+                  style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
                 ),
               ),
               const Divider(height: 1, indent: 16, endIndent: 16),
               SwitchListTile(
                 value: _wifiOnly,
                 onChanged: (value) => setState(() => _wifiOnly = value),
-                activeTrackColor: HrColors.primary,
+                activeTrackColor: AtsColors.primary,
                 title: const Text(
                   '仅 Wi-Fi 下载',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
@@ -67,56 +67,56 @@ class _HrSettingsPageState extends State<HrSettingsPage> {
             ],
           ),
         ),
-        const HrSectionHeader(title: '账号与偏好'),
-        HrCard(
+        const AtsSectionHeader(title: '账号与偏好'),
+        AtsCard(
           padding: EdgeInsets.zero,
           child: Column(
             children: [
-              HrListRow(
+              AtsListRow(
                 icon: Icons.person_outline,
                 title: '账号与安全',
-                onTap: () => widget.controller.open(HrRoute.userInfo),
+                onTap: () => widget.controller.open(AtsRoute.userInfo),
               ),
-              HrListRow(
+              AtsListRow(
                 icon: Icons.delete_outline,
                 title: '清除缓存',
                 trailing: const Text(
                   '28.6 MB',
-                  style: TextStyle(color: HrColors.textMuted, fontSize: 11),
+                  style: TextStyle(color: AtsColors.textMuted, fontSize: 11),
                 ),
                 onTap: () => _showClearCache(context),
               ),
-              HrListRow(
+              AtsListRow(
                 icon: Icons.description_outlined,
                 title: '用户协议',
-                onTap: () => widget.controller.open(HrRoute.terms),
+                onTap: () => widget.controller.open(AtsRoute.terms),
               ),
-              HrListRow(
+              AtsListRow(
                 icon: Icons.privacy_tip_outlined,
                 title: '隐私政策',
-                onTap: () => widget.controller.open(HrRoute.privacy),
+                onTap: () => widget.controller.open(AtsRoute.privacy),
               ),
-              HrListRow(
+              AtsListRow(
                 icon: Icons.info_outline,
                 title: '关于我们',
-                onTap: () => widget.controller.open(HrRoute.aboutUs),
+                onTap: () => widget.controller.open(AtsRoute.aboutUs),
                 showDivider: false,
               ),
             ],
           ),
         ),
         const SizedBox(height: 18),
-        HrPrimaryButton(
+        AtsPrimaryButton(
           label: '退出登录',
           backgroundColor: const Color(0xFFFFF0F0),
-          foregroundColor: HrColors.red,
+          foregroundColor: AtsColors.red,
           onPressed: () => _showLogout(context),
         ),
         const SizedBox(height: 22),
         const Text(
           '企业直聘 v1.0.0',
           textAlign: TextAlign.center,
-          style: TextStyle(color: HrColors.textMuted, fontSize: 10),
+          style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
         ),
       ],
     );
@@ -136,7 +136,7 @@ class _HrSettingsPageState extends State<HrSettingsPage> {
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
-              hrToast(context, '缓存已清除');
+              atsToast(context, '缓存已清除');
             },
             child: const Text('清除'),
           ),
@@ -161,7 +161,7 @@ class _HrSettingsPageState extends State<HrSettingsPage> {
               Navigator.of(dialogContext).pop();
               widget.controller.logout();
             },
-            style: TextButton.styleFrom(foregroundColor: HrColors.red),
+            style: TextButton.styleFrom(foregroundColor: AtsColors.red),
             child: const Text('退出登录'),
           ),
         ],
@@ -170,19 +170,19 @@ class _HrSettingsPageState extends State<HrSettingsPage> {
   }
 }
 
-class HrAboutPage extends StatelessWidget {
-  const HrAboutPage({
+class AtsAboutPage extends StatelessWidget {
+  const AtsAboutPage({
     super.key,
     this.controller,
-    this.type = HrAboutType.about,
+    this.type = AtsAboutType.about,
   });
 
-  final HrAppController? controller;
-  final HrAboutType type;
+  final AtsAppController? controller;
+  final AtsAboutType type;
 
   @override
   Widget build(BuildContext context) {
-    if (type == HrAboutType.about) {
+    if (type == AtsAboutType.about) {
       return ListView(
         padding: const EdgeInsets.fromLTRB(22, 36, 22, 24),
         children: [
@@ -194,12 +194,12 @@ class HrAboutPage extends StatelessWidget {
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [HrColors.primary, Color(0xFF59D2B2)],
+                  colors: [AtsColors.primary, Color(0xFF59D2B2)],
                 ),
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: HrColors.primary.withValues(alpha: 0.24),
+                    color: AtsColors.primary.withValues(alpha: 0.24),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -222,10 +222,10 @@ class HrAboutPage extends StatelessWidget {
           const Text(
             '让每一份热爱都有回响',
             textAlign: TextAlign.center,
-            style: TextStyle(color: HrColors.textMuted, fontSize: 12),
+            style: TextStyle(color: AtsColors.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 34),
-          HrCard(
+          AtsCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -238,7 +238,7 @@ class HrAboutPage extends StatelessWidget {
                   '企业直聘是一款面向求职者与招聘方的移动招聘平台。'
                   '我们通过真实、及时、高效的职位信息与沟通工具，帮助人才找到合适的机会，也帮助企业发现优秀伙伴。',
                   style: TextStyle(
-                    color: HrColors.textSecondary,
+                    color: AtsColors.textSecondary,
                     fontSize: 13,
                     height: 1.8,
                   ),
@@ -253,23 +253,23 @@ class HrAboutPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          HrCard(
+          AtsCard(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                HrListRow(
+                AtsListRow(
                   icon: Icons.article_outlined,
                   title: '用户协议',
                   onTap: controller == null
                       ? null
-                      : () => controller!.open(HrRoute.terms),
+                      : () => controller!.open(AtsRoute.terms),
                 ),
-                HrListRow(
+                AtsListRow(
                   icon: Icons.privacy_tip_outlined,
                   title: '隐私政策',
                   onTap: controller == null
                       ? null
-                      : () => controller!.open(HrRoute.privacy),
+                      : () => controller!.open(AtsRoute.privacy),
                   showDivider: false,
                 ),
               ],
@@ -279,7 +279,7 @@ class HrAboutPage extends StatelessWidget {
           const Text(
             '© 2026 企业直聘 · 保留所有权利',
             textAlign: TextAlign.center,
-            style: TextStyle(color: HrColors.textMuted, fontSize: 9),
+            style: TextStyle(color: AtsColors.textMuted, fontSize: 9),
           ),
         ],
       );
@@ -288,23 +288,23 @@ class HrAboutPage extends StatelessWidget {
   }
 }
 
-enum HrAboutType { about, terms, privacy }
+enum AtsAboutType { about, terms, privacy }
 
 class _LegalContent extends StatelessWidget {
   const _LegalContent({required this.type});
 
-  final HrAboutType type;
+  final AtsAboutType type;
 
   @override
   Widget build(BuildContext context) {
-    final isTerms = type == HrAboutType.terms;
+    final isTerms = type == AtsAboutType.terms;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         Text(
           isTerms ? '企业直聘用户服务协议' : '企业直聘隐私政策',
           style: const TextStyle(
-            color: HrColors.text,
+            color: AtsColors.text,
             fontSize: 22,
             height: 1.35,
             fontWeight: FontWeight.w700,
@@ -313,7 +313,7 @@ class _LegalContent extends StatelessWidget {
         const SizedBox(height: 8),
         const Text(
           '更新日期：2026年11月1日  ·  生效日期：2026年11月8日',
-          style: TextStyle(color: HrColors.textMuted, fontSize: 10),
+          style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
         ),
         const SizedBox(height: 22),
         if (isTerms) ..._termsSections else ..._privacySections,
@@ -321,7 +321,7 @@ class _LegalContent extends StatelessWidget {
         const Text(
           '如对本协议或隐私政策有任何疑问，可通过「我的 - 在线客服」联系我们。',
           style: TextStyle(
-            color: HrColors.textMuted,
+            color: AtsColors.textMuted,
             fontSize: 12,
             height: 1.75,
           ),
@@ -419,7 +419,7 @@ class _LegalSection extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: HrColors.text,
+              color: AtsColors.text,
               fontSize: 15,
               fontWeight: FontWeight.w600,
             ),
@@ -428,7 +428,7 @@ class _LegalSection extends StatelessWidget {
           Text(
             body,
             style: const TextStyle(
-              color: HrColors.textSecondary,
+              color: AtsColors.textSecondary,
               fontSize: 13,
               height: 1.85,
             ),
@@ -451,19 +451,22 @@ class _AboutInfoRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(color: HrColors.textMuted, fontSize: 11),
+          style: const TextStyle(color: AtsColors.textMuted, fontSize: 11),
         ),
         const Spacer(),
-        Text(value, style: const TextStyle(color: HrColors.text, fontSize: 11)),
+        Text(
+          value,
+          style: const TextStyle(color: AtsColors.text, fontSize: 11),
+        ),
       ],
     );
   }
 }
 
-class HrHelpPage extends StatelessWidget {
-  const HrHelpPage({super.key, required this.controller});
+class AtsHelpPage extends StatelessWidget {
+  const AtsHelpPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -481,7 +484,7 @@ class HrHelpPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [HrColors.primary, Color(0xFF58D2B2)],
+              colors: [AtsColors.primary, Color(0xFF58D2B2)],
             ),
             borderRadius: BorderRadius.circular(13),
           ),
@@ -517,12 +520,12 @@ class HrHelpPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        HrCard(
-          color: HrColors.mint,
-          onTap: () => controller.open(HrRoute.robot),
+        AtsCard(
+          color: AtsColors.mint,
+          onTap: () => controller.open(AtsRoute.robot),
           child: const Row(
             children: [
-              Icon(Icons.support_agent, color: HrColors.primary, size: 26),
+              Icon(Icons.support_agent, color: AtsColors.primary, size: 26),
               SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -531,7 +534,7 @@ class HrHelpPage extends StatelessWidget {
                     Text(
                       '在线客服',
                       style: TextStyle(
-                        color: HrColors.primaryDark,
+                        color: AtsColors.primaryDark,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -539,26 +542,26 @@ class HrHelpPage extends StatelessWidget {
                     SizedBox(height: 3),
                     Text(
                       '智能客服 7×24 小时在线',
-                      style: TextStyle(color: HrColors.primary, fontSize: 10),
+                      style: TextStyle(color: AtsColors.primary, fontSize: 10),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: HrColors.primary, size: 20),
+              Icon(Icons.chevron_right, color: AtsColors.primary, size: 20),
             ],
           ),
         ),
         for (final entry in groups.entries) ...[
-          HrSectionHeader(title: entry.key),
-          HrCard(
+          AtsSectionHeader(title: entry.key),
+          AtsCard(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
                 for (var i = 0; i < entry.value.length; i++)
-                  HrListRow(
+                  AtsListRow(
                     icon: Icons.help_outline,
                     title: entry.value[i],
-                    onTap: () => controller.open(HrRoute.helpDetail),
+                    onTap: () => controller.open(AtsRoute.helpDetail),
                     showDivider: i != entry.value.length - 1,
                   ),
               ],
@@ -571,15 +574,15 @@ class HrHelpPage extends StatelessWidget {
   }
 }
 
-class HrHelpDetailPage extends StatelessWidget {
-  const HrHelpDetailPage({super.key});
+class AtsHelpDetailPage extends StatelessWidget {
+  const AtsHelpDetailPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(14),
       children: [
-        HrCard(
+        AtsCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -594,7 +597,7 @@ class HrHelpDetailPage extends StatelessWidget {
               const SizedBox(height: 8),
               const Text(
                 '更新于 2026-11-01 · 约 2 分钟阅读',
-                style: TextStyle(color: HrColors.textMuted, fontSize: 10),
+                style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
               ),
               const SizedBox(height: 18),
               const Divider(height: 1),
@@ -602,7 +605,7 @@ class HrHelpDetailPage extends StatelessWidget {
               const Text(
                 '一份完整、真实的简历更容易获得招聘方关注。建议你从以下方面完善：',
                 style: TextStyle(
-                  color: HrColors.textSecondary,
+                  color: AtsColors.textSecondary,
                   fontSize: 13,
                   height: 1.8,
                 ),
@@ -623,13 +626,13 @@ class HrHelpDetailPage extends StatelessWidget {
                         width: 22,
                         height: 22,
                         decoration: const BoxDecoration(
-                          color: HrColors.mint,
+                          color: AtsColors.mint,
                           shape: BoxShape.circle,
                         ),
                         alignment: Alignment.center,
                         child: const Icon(
                           Icons.check,
-                          color: HrColors.primary,
+                          color: AtsColors.primary,
                           size: 14,
                         ),
                       ),
@@ -649,7 +652,7 @@ class HrHelpDetailPage extends StatelessWidget {
                             Text(
                               item.$2,
                               style: const TextStyle(
-                                color: HrColors.textSecondary,
+                                color: AtsColors.textSecondary,
                                 fontSize: 12,
                                 height: 1.6,
                               ),
@@ -661,9 +664,9 @@ class HrHelpDetailPage extends StatelessWidget {
                   ),
                 ),
               const SizedBox(height: 14),
-              HrPrimaryButton(
+              AtsPrimaryButton(
                 label: '去完善简历',
-                onPressed: () => hrToast(context, '请从「我的 - 我的简历」进入'),
+                onPressed: () => atsToast(context, '请从「我的 - 我的简历」进入'),
               ),
             ],
           ),
@@ -673,14 +676,14 @@ class HrHelpDetailPage extends StatelessWidget {
   }
 }
 
-class HrContactPage extends StatefulWidget {
-  const HrContactPage({super.key});
+class AtsContactPage extends StatefulWidget {
+  const AtsContactPage({super.key});
 
   @override
-  State<HrContactPage> createState() => _HrContactPageState();
+  State<AtsContactPage> createState() => _AtsContactPageState();
 }
 
-class _HrContactPageState extends State<HrContactPage> {
+class _AtsContactPageState extends State<AtsContactPage> {
   final _content = TextEditingController();
 
   @override
@@ -694,19 +697,19 @@ class _HrContactPageState extends State<HrContactPage> {
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        HrCard(
+        AtsCard(
           child: Column(
             children: [
               Container(
                 width: 62,
                 height: 62,
                 decoration: const BoxDecoration(
-                  color: HrColors.mint,
+                  color: AtsColors.mint,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.headset_mic_outlined,
-                  color: HrColors.primary,
+                  color: AtsColors.primary,
                   size: 30,
                 ),
               ),
@@ -718,34 +721,34 @@ class _HrContactPageState extends State<HrContactPage> {
               const SizedBox(height: 4),
               const Text(
                 '工作日 09:00 - 18:00',
-                style: TextStyle(color: HrColors.textMuted, fontSize: 11),
+                style: TextStyle(color: AtsColors.textMuted, fontSize: 11),
               ),
               const SizedBox(height: 18),
               _ContactLine(
                 icon: Icons.phone_outlined,
                 label: '客服电话',
                 value: '400-800-6688',
-                onTap: () => hrToast(context, '正在拨号 400-800-6688'),
+                onTap: () => atsToast(context, '正在拨号 400-800-6688'),
               ),
               const Divider(height: 1),
               _ContactLine(
                 icon: Icons.mail_outline,
                 label: '客服邮箱',
                 value: 'support@wuyoujobs.com',
-                onTap: () => hrToast(context, '邮箱地址已复制'),
+                onTap: () => atsToast(context, '邮箱地址已复制'),
               ),
               const Divider(height: 1),
               _ContactLine(
                 icon: Icons.location_on_outlined,
                 label: '公司地址',
                 value: '上海市浦东新区张江路 88 号',
-                onTap: () => hrToast(context, '正在打开地图导航'),
+                onTap: () => atsToast(context, '正在打开地图导航'),
               ),
             ],
           ),
         ),
         const SizedBox(height: 10),
-        HrCard(
+        AtsCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -756,7 +759,7 @@ class _HrContactPageState extends State<HrContactPage> {
               const SizedBox(height: 5),
               const Text(
                 '你的建议会帮助我们做得更好',
-                style: TextStyle(color: HrColors.textMuted, fontSize: 10),
+                style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -770,16 +773,16 @@ class _HrContactPageState extends State<HrContactPage> {
                 style: const TextStyle(fontSize: 13),
               ),
               const SizedBox(height: 10),
-              HrPrimaryButton(
+              AtsPrimaryButton(
                 label: '提交反馈',
                 onPressed: () {
                   if (_content.text.trim().isEmpty) {
-                    hrToast(context, '请输入反馈内容');
+                    atsToast(context, '请输入反馈内容');
                     return;
                   }
                   _content.clear();
                   FocusScope.of(context).unfocus();
-                  hrToast(context, '感谢反馈，我们会尽快处理');
+                  atsToast(context, '感谢反馈，我们会尽快处理');
                 },
               ),
             ],
@@ -811,14 +814,14 @@ class _ContactLine extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 13),
         child: Row(
           children: [
-            Icon(icon, color: HrColors.primary, size: 20),
+            Icon(icon, color: AtsColors.primary, size: 20),
             const SizedBox(width: 10),
             SizedBox(
               width: 68,
               child: Text(
                 label,
                 style: const TextStyle(
-                  color: HrColors.textSecondary,
+                  color: AtsColors.textSecondary,
                   fontSize: 12,
                 ),
               ),
@@ -826,12 +829,12 @@ class _ContactLine extends StatelessWidget {
             Expanded(
               child: Text(
                 value,
-                style: const TextStyle(color: HrColors.text, fontSize: 12),
+                style: const TextStyle(color: AtsColors.text, fontSize: 12),
               ),
             ),
             const Icon(
               Icons.chevron_right,
-              color: HrColors.textMuted,
+              color: AtsColors.textMuted,
               size: 18,
             ),
           ],
@@ -841,10 +844,10 @@ class _ContactLine extends StatelessWidget {
   }
 }
 
-class HrLoginPage extends StatelessWidget {
-  const HrLoginPage({super.key, required this.controller});
+class AtsLoginPage extends StatelessWidget {
+  const AtsLoginPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -867,12 +870,12 @@ class HrLoginPage extends StatelessWidget {
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [HrColors.primary, Color(0xFF5DD5B6)],
+                  colors: [AtsColors.primary, Color(0xFF5DD5B6)],
                 ),
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: HrColors.primary.withValues(alpha: 0.25),
+                    color: AtsColors.primary.withValues(alpha: 0.25),
                     blurRadius: 24,
                     offset: const Offset(0, 9),
                   ),
@@ -890,7 +893,7 @@ class HrLoginPage extends StatelessWidget {
             '欢迎来到企业直聘',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: HrColors.text,
+              color: AtsColors.text,
               fontSize: 23,
               fontWeight: FontWeight.w700,
             ),
@@ -900,30 +903,30 @@ class HrLoginPage extends StatelessWidget {
             '登录后收藏职位、投递简历并与招聘方沟通',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: HrColors.textMuted,
+              color: AtsColors.textMuted,
               fontSize: 11,
               height: 1.5,
             ),
           ),
           const SizedBox(height: 44),
-          HrPrimaryButton(
+          AtsPrimaryButton(
             label: '微信一键登录',
             icon: Icons.chat_bubble_outline,
             onPressed: () {
               controller.login();
-              hrToast(context, '登录成功');
+              atsToast(context, '登录成功');
             },
           ),
           const SizedBox(height: 12),
-          HrOutlineButton(
+          AtsOutlineButton(
             label: '手机号验证码登录',
             icon: Icons.phone_iphone,
-            onPressed: () => controller.open(HrRoute.bindPhone),
+            onPressed: () => controller.open(AtsRoute.bindPhone),
           ),
           const SizedBox(height: 28),
           Row(
             children: [
-              const Expanded(child: Divider(color: HrColors.divider)),
+              const Expanded(child: Divider(color: AtsColors.divider)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
@@ -931,20 +934,20 @@ class HrLoginPage extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
-              const Expanded(child: Divider(color: HrColors.divider)),
+              const Expanded(child: Divider(color: AtsColors.divider)),
             ],
           ),
           const SizedBox(height: 14),
           TextButton(
-            onPressed: () => controller.open(HrRoute.loginIndex),
-            style: TextButton.styleFrom(foregroundColor: HrColors.primary),
+            onPressed: () => controller.open(AtsRoute.loginIndex),
+            style: TextButton.styleFrom(foregroundColor: AtsColors.primary),
             child: const Text('立即注册'),
           ),
           const SizedBox(height: 34),
           const Text(
             '登录即代表你已阅读并同意',
             textAlign: TextAlign.center,
-            style: TextStyle(color: HrColors.textMuted, fontSize: 9),
+            style: TextStyle(color: AtsColors.textMuted, fontSize: 9),
           ),
           const SizedBox(height: 3),
           const Text.rich(
@@ -956,7 +959,7 @@ class HrLoginPage extends StatelessWidget {
               ],
             ),
             textAlign: TextAlign.center,
-            style: TextStyle(color: HrColors.primary, fontSize: 9),
+            style: TextStyle(color: AtsColors.primary, fontSize: 9),
           ),
           const SizedBox(height: 22),
           const Row(
@@ -964,13 +967,13 @@ class HrLoginPage extends StatelessWidget {
             children: [
               Icon(
                 Icons.verified_user_outlined,
-                color: HrColors.textMuted,
+                color: AtsColors.textMuted,
                 size: 14,
               ),
               SizedBox(width: 4),
               Text(
                 '信息安全保护中',
-                style: TextStyle(color: HrColors.textMuted, fontSize: 9),
+                style: TextStyle(color: AtsColors.textMuted, fontSize: 9),
               ),
             ],
           ),
@@ -980,10 +983,10 @@ class HrLoginPage extends StatelessWidget {
   }
 }
 
-class HrLoginIndexPage extends StatelessWidget {
-  const HrLoginIndexPage({super.key, required this.controller});
+class AtsLoginIndexPage extends StatelessWidget {
+  const AtsLoginIndexPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -999,7 +1002,7 @@ class HrLoginIndexPage extends StatelessWidget {
         const Text(
           '找到更需要你的地方',
           style: TextStyle(
-            color: HrColors.text,
+            color: AtsColors.text,
             fontSize: 25,
             height: 1.3,
             fontWeight: FontWeight.w700,
@@ -1008,7 +1011,7 @@ class HrLoginIndexPage extends StatelessWidget {
         const SizedBox(height: 9),
         const Text(
           '注册企业直聘，开启更好的职业旅程',
-          style: TextStyle(color: HrColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: AtsColors.textSecondary, fontSize: 13),
         ),
         const SizedBox(height: 28),
         Container(
@@ -1016,7 +1019,7 @@ class HrLoginIndexPage extends StatelessWidget {
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [HrColors.primary, Color(0xFF51CFAF)],
+              colors: [AtsColors.primary, Color(0xFF51CFAF)],
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -1066,11 +1069,11 @@ class HrLoginIndexPage extends StatelessWidget {
           ),
           itemBuilder: (context, index) {
             final item = benefits[index];
-            return HrCard(
+            return AtsCard(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(item.$1, color: HrColors.primary, size: 27),
+                  Icon(item.$1, color: AtsColors.primary, size: 27),
                   const SizedBox(height: 8),
                   Text(
                     item.$2,
@@ -1083,7 +1086,7 @@ class HrLoginIndexPage extends StatelessWidget {
                   Text(
                     item.$3,
                     style: const TextStyle(
-                      color: HrColors.textMuted,
+                      color: AtsColors.textMuted,
                       fontSize: 9,
                     ),
                   ),
@@ -1093,9 +1096,9 @@ class HrLoginIndexPage extends StatelessWidget {
           },
         ),
         const SizedBox(height: 30),
-        HrPrimaryButton(
+        AtsPrimaryButton(
           label: '立即注册',
-          onPressed: () => controller.open(HrRoute.register),
+          onPressed: () => controller.open(AtsRoute.register),
         ),
         const SizedBox(height: 12),
         TextButton(
@@ -1107,16 +1110,16 @@ class HrLoginIndexPage extends StatelessWidget {
   }
 }
 
-class HrRegisterPage extends StatefulWidget {
-  const HrRegisterPage({super.key, required this.controller});
+class AtsRegisterPage extends StatefulWidget {
+  const AtsRegisterPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrRegisterPage> createState() => _HrRegisterPageState();
+  State<AtsRegisterPage> createState() => _AtsRegisterPageState();
 }
 
-class _HrRegisterPageState extends State<HrRegisterPage> {
+class _AtsRegisterPageState extends State<AtsRegisterPage> {
   final _phone = TextEditingController();
   final _code = TextEditingController();
   final _password = TextEditingController();
@@ -1133,7 +1136,7 @@ class _HrRegisterPageState extends State<HrRegisterPage> {
 
   Future<void> _sendCode() async {
     if (_phone.text.trim().length != 11) {
-      hrToast(context, '请输入 11 位手机号');
+      atsToast(context, '请输入 11 位手机号');
       return;
     }
     setState(() => _countdown = 60);
@@ -1149,14 +1152,14 @@ class _HrRegisterPageState extends State<HrRegisterPage> {
     if (_phone.text.trim().length != 11 ||
         _code.text.trim().isEmpty ||
         _password.text.length < 6) {
-      hrToast(context, '请完整填写手机号、验证码和密码');
+      atsToast(context, '请完整填写手机号、验证码和密码');
       return;
     }
     if (!_agreed) {
-      hrToast(context, '请先同意用户协议和隐私政策');
+      atsToast(context, '请先同意用户协议和隐私政策');
       return;
     }
-    widget.controller.open(HrRoute.registerSuccess);
+    widget.controller.open(AtsRoute.registerSuccess);
   }
 
   @override
@@ -1175,7 +1178,7 @@ class _HrRegisterPageState extends State<HrRegisterPage> {
               const Text(
                 '注册完成后，可根据需要选择求职者或招聘者身份',
                 style: TextStyle(
-                  color: HrColors.textMuted,
+                  color: AtsColors.textMuted,
                   fontSize: 11,
                   height: 1.5,
                 ),
@@ -1213,8 +1216,8 @@ class _HrRegisterPageState extends State<HrRegisterPage> {
                     child: OutlinedButton(
                       onPressed: _countdown == 0 ? _sendCode : null,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: HrColors.primary,
-                        side: const BorderSide(color: HrColors.primary),
+                        foregroundColor: AtsColors.primary,
+                        side: const BorderSide(color: AtsColors.primary),
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -1249,7 +1252,7 @@ class _HrRegisterPageState extends State<HrRegisterPage> {
                       value: _agreed,
                       onChanged: (value) =>
                           setState(() => _agreed = value ?? false),
-                      activeColor: HrColors.primary,
+                      activeColor: AtsColors.primary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(3),
                       ),
@@ -1263,17 +1266,17 @@ class _HrRegisterPageState extends State<HrRegisterPage> {
                           TextSpan(text: '我已阅读并同意'),
                           TextSpan(
                             text: '《用户协议》',
-                            style: TextStyle(color: HrColors.primary),
+                            style: TextStyle(color: AtsColors.primary),
                           ),
                           TextSpan(text: '和'),
                           TextSpan(
                             text: '《隐私政策》',
-                            style: TextStyle(color: HrColors.primary),
+                            style: TextStyle(color: AtsColors.primary),
                           ),
                         ],
                       ),
                       style: TextStyle(
-                        color: HrColors.textMuted,
+                        color: AtsColors.textMuted,
                         fontSize: 10,
                         height: 1.7,
                       ),
@@ -1287,17 +1290,17 @@ class _HrRegisterPageState extends State<HrRegisterPage> {
         Container(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
           color: Colors.white,
-          child: HrPrimaryButton(label: '注册', onPressed: _register),
+          child: AtsPrimaryButton(label: '注册', onPressed: _register),
         ),
       ],
     );
   }
 }
 
-class HrRegisterSuccessPage extends StatelessWidget {
-  const HrRegisterSuccessPage({super.key, required this.controller});
+class AtsRegisterSuccessPage extends StatelessWidget {
+  const AtsRegisterSuccessPage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -1311,12 +1314,12 @@ class HrRegisterSuccessPage extends StatelessWidget {
               width: 88,
               height: 88,
               decoration: const BoxDecoration(
-                color: HrColors.mint,
+                color: AtsColors.mint,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.check_rounded,
-                color: HrColors.primary,
+                color: AtsColors.primary,
                 size: 48,
               ),
             ),
@@ -1330,7 +1333,7 @@ class HrRegisterSuccessPage extends StatelessWidget {
               '欢迎加入企业直聘。现在可以完善简历，\n让合适的机会更快找到你。',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: HrColors.textSecondary,
+                color: AtsColors.textSecondary,
                 fontSize: 12,
                 height: 1.7,
               ),
@@ -1338,11 +1341,11 @@ class HrRegisterSuccessPage extends StatelessWidget {
             const SizedBox(height: 28),
             SizedBox(
               width: 220,
-              child: HrPrimaryButton(
+              child: AtsPrimaryButton(
                 label: '进入首页',
                 onPressed: () {
                   controller.login();
-                  hrToast(context, '欢迎来到企业直聘');
+                  atsToast(context, '欢迎来到企业直聘');
                 },
               ),
             ),
@@ -1352,7 +1355,7 @@ class HrRegisterSuccessPage extends StatelessWidget {
               child: TextButton(
                 onPressed: () {
                   controller.login();
-                  controller.open(HrRoute.resume);
+                  controller.open(AtsRoute.resume);
                 },
                 child: const Text('去完善简历'),
               ),
@@ -1364,16 +1367,16 @@ class HrRegisterSuccessPage extends StatelessWidget {
   }
 }
 
-class HrBindPhonePage extends StatefulWidget {
-  const HrBindPhonePage({super.key, required this.controller});
+class AtsBindPhonePage extends StatefulWidget {
+  const AtsBindPhonePage({super.key, required this.controller});
 
-  final HrAppController controller;
+  final AtsAppController controller;
 
   @override
-  State<HrBindPhonePage> createState() => _HrBindPhonePageState();
+  State<AtsBindPhonePage> createState() => _AtsBindPhonePageState();
 }
 
-class _HrBindPhonePageState extends State<HrBindPhonePage> {
+class _AtsBindPhonePageState extends State<AtsBindPhonePage> {
   final _phone = TextEditingController();
   final _code = TextEditingController();
 
@@ -1389,7 +1392,7 @@ class _HrBindPhonePageState extends State<HrBindPhonePage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(22, 34, 22, 24),
       children: [
-        const Icon(Icons.shield_outlined, color: HrColors.primary, size: 46),
+        const Icon(Icons.shield_outlined, color: AtsColors.primary, size: 46),
         const SizedBox(height: 14),
         const Text(
           '手机号快捷登录',
@@ -1400,7 +1403,7 @@ class _HrBindPhonePageState extends State<HrBindPhonePage> {
         const Text(
           '未注册的手机号验证后将自动创建账号',
           textAlign: TextAlign.center,
-          style: TextStyle(color: HrColors.textMuted, fontSize: 10),
+          style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
         ),
         const SizedBox(height: 34),
         TextField(
@@ -1433,10 +1436,10 @@ class _HrBindPhonePageState extends State<HrBindPhonePage> {
               child: TextButton(
                 onPressed: () {
                   if (_phone.text.trim().length != 11) {
-                    hrToast(context, '请输入 11 位手机号');
+                    atsToast(context, '请输入 11 位手机号');
                     return;
                   }
-                  hrToast(context, '验证码已发送');
+                  atsToast(context, '验证码已发送');
                 },
                 child: const Text('获取验证码'),
               ),
@@ -1444,11 +1447,11 @@ class _HrBindPhonePageState extends State<HrBindPhonePage> {
           ],
         ),
         const SizedBox(height: 24),
-        HrPrimaryButton(
+        AtsPrimaryButton(
           label: '登录 / 注册',
           onPressed: () {
             widget.controller.login();
-            hrToast(context, '登录成功');
+            atsToast(context, '登录成功');
           },
         ),
       ],
@@ -1456,15 +1459,15 @@ class _HrBindPhonePageState extends State<HrBindPhonePage> {
   }
 }
 
-class HrIndustryPage extends StatefulWidget {
-  const HrIndustryPage({super.key});
+class AtsIndustryPage extends StatefulWidget {
+  const AtsIndustryPage({super.key});
 
   @override
-  State<HrIndustryPage> createState() => _HrIndustryPageState();
+  State<AtsIndustryPage> createState() => _AtsIndustryPageState();
 }
 
-class _HrIndustryPageState extends State<HrIndustryPage> {
-  String _selected = hrIndustries.first;
+class _AtsIndustryPageState extends State<AtsIndustryPage> {
+  String _selected = atsIndustries.first;
 
   @override
   Widget build(BuildContext context) {
@@ -1474,18 +1477,18 @@ class _HrIndustryPageState extends State<HrIndustryPage> {
           child: ListView(
             padding: const EdgeInsets.all(12),
             children: [
-              const HrSectionHeader(title: '热门行业'),
-              HrCard(
+              const AtsSectionHeader(title: '热门行业'),
+              AtsCard(
                 padding: EdgeInsets.zero,
                 child: Column(
                   children: [
-                    for (var i = 0; i < hrIndustries.length; i++)
+                    for (var i = 0; i < atsIndustries.length; i++)
                       _SelectionRow(
-                        label: hrIndustries[i],
-                        selected: _selected == hrIndustries[i],
+                        label: atsIndustries[i],
+                        selected: _selected == atsIndustries[i],
                         onTap: () =>
-                            setState(() => _selected = hrIndustries[i]),
-                        showDivider: i != hrIndustries.length - 1,
+                            setState(() => _selected = atsIndustries[i]),
+                        showDivider: i != atsIndustries.length - 1,
                       ),
                   ],
                 ),
@@ -1496,10 +1499,10 @@ class _HrIndustryPageState extends State<HrIndustryPage> {
         Container(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           color: Colors.white,
-          child: HrPrimaryButton(
+          child: AtsPrimaryButton(
             label: '确认选择',
             onPressed: () {
-              hrToast(context, '已选择：$_selected');
+              atsToast(context, '已选择：$_selected');
               Navigator.of(context).maybePop();
             },
           ),
@@ -1509,15 +1512,15 @@ class _HrIndustryPageState extends State<HrIndustryPage> {
   }
 }
 
-class HrPostPage extends StatefulWidget {
-  const HrPostPage({super.key});
+class AtsPostPage extends StatefulWidget {
+  const AtsPostPage({super.key});
 
   @override
-  State<HrPostPage> createState() => _HrPostPageState();
+  State<AtsPostPage> createState() => _AtsPostPageState();
 }
 
-class _HrPostPageState extends State<HrPostPage> {
-  String _selected = hrPositions.first;
+class _AtsPostPageState extends State<AtsPostPage> {
+  String _selected = atsPositions.first;
 
   @override
   Widget build(BuildContext context) {
@@ -1527,27 +1530,27 @@ class _HrPostPageState extends State<HrPostPage> {
           child: ListView(
             padding: const EdgeInsets.all(12),
             children: [
-              const HrSectionHeader(title: '热门岗位'),
+              const AtsSectionHeader(title: '热门岗位'),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  for (final position in hrPositions)
+                  for (final position in atsPositions)
                     ChoiceChip(
                       label: Text(position),
                       selected: _selected == position,
                       onSelected: (_) => setState(() => _selected = position),
-                      selectedColor: HrColors.mint,
+                      selectedColor: AtsColors.mint,
                       backgroundColor: Colors.white,
                       side: BorderSide(
                         color: _selected == position
-                            ? HrColors.primary
-                            : HrColors.divider,
+                            ? AtsColors.primary
+                            : AtsColors.divider,
                       ),
                       labelStyle: TextStyle(
                         color: _selected == position
-                            ? HrColors.primary
-                            : HrColors.textSecondary,
+                            ? AtsColors.primary
+                            : AtsColors.textSecondary,
                         fontSize: 11,
                       ),
                       shape: RoundedRectangleBorder(
@@ -1556,17 +1559,17 @@ class _HrPostPageState extends State<HrPostPage> {
                     ),
                 ],
               ),
-              const HrSectionHeader(title: '全部岗位'),
-              HrCard(
+              const AtsSectionHeader(title: '全部岗位'),
+              AtsCard(
                 padding: EdgeInsets.zero,
                 child: Column(
                   children: [
-                    for (final position in hrHotPosts)
+                    for (final position in atsHotPosts)
                       _SelectionRow(
                         label: position,
                         selected: _selected == position,
                         onTap: () => setState(() => _selected = position),
-                        showDivider: position != hrHotPosts.last,
+                        showDivider: position != atsHotPosts.last,
                       ),
                   ],
                 ),
@@ -1577,10 +1580,10 @@ class _HrPostPageState extends State<HrPostPage> {
         Container(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           color: Colors.white,
-          child: HrPrimaryButton(
+          child: AtsPrimaryButton(
             label: _selected.isEmpty ? '请选择岗位' : '搜索 “$_selected”',
             onPressed: () {
-              hrToast(context, '正在搜索：$_selected');
+              atsToast(context, '正在搜索：$_selected');
               Navigator.of(context).maybePop();
             },
           ),
@@ -1617,14 +1620,14 @@ class _SelectionRow extends StatelessWidget {
                   child: Text(
                     label,
                     style: TextStyle(
-                      color: selected ? HrColors.primary : HrColors.text,
+                      color: selected ? AtsColors.primary : AtsColors.text,
                       fontSize: 13,
                       fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                 ),
                 if (selected)
-                  const Icon(Icons.check, color: HrColors.primary, size: 19),
+                  const Icon(Icons.check, color: AtsColors.primary, size: 19),
               ],
             ),
           ),

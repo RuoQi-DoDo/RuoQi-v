@@ -1,17 +1,17 @@
 import 'package:common/common.dart';
 import 'package:flutter/material.dart';
 
-import '../mini-program/hr/hr_mini_program.dart';
+import '../mini-program/ats/ats_mini_program.dart';
 import '../mini-program/merchant/home_page.dart';
 import '../mini-program/mini_program_shell.dart';
 import '../mini-program/partner/home_page.dart';
 
-enum _CustomerSubview { host, picker, hr }
+enum _CustomerSubview { host, picker, ats }
 
 /// 客户域独立首页。
 ///
 /// 视觉与交互模拟微信宿主：客户首页作为外层 App，下拉打开小程序选择页，
-/// 再从“企业直聘”进入 HR 小程序。关闭小程序后回到这里。
+/// 再从“企业直聘”进入 ATS 小程序。关闭小程序后回到这里。
 class CustomerHomePage extends StatefulWidget {
   const CustomerHomePage({super.key});
 
@@ -45,7 +45,7 @@ class CustomerHomePage extends StatefulWidget {
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
   _CustomerSubview _subview = _CustomerSubview.host;
-  _CustomerSubview _hrReturnSubview = _CustomerSubview.host;
+  _CustomerSubview _atsReturnSubview = _CustomerSubview.host;
 
   void _openMiniProgramPicker() {
     setState(() => _subview = _CustomerSubview.picker);
@@ -55,15 +55,15 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     setState(() => _subview = _CustomerSubview.host);
   }
 
-  void _openHrMiniProgram() {
+  void _openAtsMiniProgram() {
     setState(() {
-      _hrReturnSubview = _subview;
-      _subview = _CustomerSubview.hr;
+      _atsReturnSubview = _subview;
+      _subview = _CustomerSubview.ats;
     });
   }
 
-  void _exitHrMiniProgram() {
-    setState(() => _subview = _hrReturnSubview);
+  void _exitAtsMiniProgram() {
+    setState(() => _subview = _atsReturnSubview);
   }
 
   void _openMerchantMiniProgram() {
@@ -99,8 +99,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             break;
           case _CustomerSubview.picker:
             _closeMiniProgramPicker();
-          case _CustomerSubview.hr:
-            _exitHrMiniProgram();
+          case _CustomerSubview.ats:
+            _exitAtsMiniProgram();
         }
       },
       child: AnimatedSwitcher(
@@ -129,14 +129,14 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           ),
           _CustomerSubview.picker => _MiniProgramPickerPage(
             key: const ValueKey('customer-mini-program-picker'),
-            onOpenHr: _openHrMiniProgram,
+            onOpenAts: _openAtsMiniProgram,
             onOpenMerchant: _openMerchantMiniProgram,
             onOpenPartner: _openPartnerMiniProgram,
             onExit: _closeMiniProgramPicker,
           ),
-          _CustomerSubview.hr => HrMiniProgram(
-            key: const ValueKey('hr-mini-program'),
-            onExit: _exitHrMiniProgram,
+          _CustomerSubview.ats => AtsMiniProgram(
+            key: const ValueKey('ats-mini-program'),
+            onExit: _exitAtsMiniProgram,
           ),
         },
       ),
@@ -265,13 +265,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 class _MiniProgramPickerPage extends StatefulWidget {
   const _MiniProgramPickerPage({
     super.key,
-    required this.onOpenHr,
+    required this.onOpenAts,
     required this.onOpenMerchant,
     required this.onOpenPartner,
     required this.onExit,
   });
 
-  final VoidCallback onOpenHr;
+  final VoidCallback onOpenAts;
   final VoidCallback onOpenMerchant;
   final VoidCallback onOpenPartner;
   final VoidCallback onExit;
@@ -301,7 +301,7 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
               label: '企业直聘',
               icon: Icons.work_outline_rounded,
               color: scheme.primary,
-              opensHr: true,
+              opensAts: true,
             ),
             _LauncherMiniProgramData(
               label: '文件助手',
@@ -344,7 +344,7 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
               label: '企业直聘',
               icon: Icons.work_outline_rounded,
               color: scheme.primary,
-              opensHr: true,
+              opensAts: true,
             ),
             _LauncherMiniProgramData(
               label: '企业服务',
@@ -423,7 +423,7 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
                         const SizedBox(height: 14),
                         _LauncherGrid(
                           items: recent,
-                          onOpenHr: widget.onOpenHr,
+                          onOpenAts: widget.onOpenAts,
                           onOpenMerchant: widget.onOpenMerchant,
                           onOpenPartner: widget.onOpenPartner,
                           onOther: () => _pickerToast(context, '该小程序为模拟入口'),
@@ -437,11 +437,11 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
                         const SizedBox(height: 14),
                         _LauncherGrid(
                           items: common,
-                          onOpenHr: widget.onOpenHr,
+                          onOpenAts: widget.onOpenAts,
                           onOpenMerchant: widget.onOpenMerchant,
                           onOpenPartner: widget.onOpenPartner,
                           onOther: () => _pickerToast(context, '该小程序为模拟入口'),
-                          highlightHrForTest: true,
+                          highlightAtsForTest: true,
                         ),
                         const SizedBox(height: 30),
                         const _PickerSectionHeader(title: '刚刚看过（最近1小时）'),
@@ -553,7 +553,7 @@ class _LauncherMiniProgramData {
     required this.label,
     required this.icon,
     required this.color,
-    this.opensHr = false,
+    this.opensAts = false,
     this.opensMerchant = false,
     this.opensPartner = false,
   });
@@ -561,7 +561,7 @@ class _LauncherMiniProgramData {
   final String label;
   final IconData icon;
   final Color color;
-  final bool opensHr;
+  final bool opensAts;
   final bool opensMerchant;
   final bool opensPartner;
 }
@@ -569,19 +569,19 @@ class _LauncherMiniProgramData {
 class _LauncherGrid extends StatelessWidget {
   const _LauncherGrid({
     required this.items,
-    required this.onOpenHr,
+    required this.onOpenAts,
     required this.onOpenMerchant,
     required this.onOpenPartner,
     required this.onOther,
-    this.highlightHrForTest = false,
+    this.highlightAtsForTest = false,
   });
 
   final List<_LauncherMiniProgramData> items;
-  final VoidCallback onOpenHr;
+  final VoidCallback onOpenAts;
   final VoidCallback onOpenMerchant;
   final VoidCallback onOpenPartner;
   final VoidCallback onOther;
-  final bool highlightHrForTest;
+  final bool highlightAtsForTest;
 
   @override
   Widget build(BuildContext context) {
@@ -597,8 +597,8 @@ class _LauncherGrid extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final item = items[index];
-        final key = item.opensHr && highlightHrForTest
-            ? const Key('mini-program-picker-hr')
+        final key = item.opensAts && highlightAtsForTest
+            ? const Key('mini-program-picker-ats')
             : item.opensMerchant
             ? const Key('mini-program-picker-merchant')
             : item.opensPartner
@@ -607,8 +607,8 @@ class _LauncherGrid extends StatelessWidget {
         return _LauncherMiniProgramTile(
           key: key,
           data: item,
-          onTap: item.opensHr
-              ? onOpenHr
+          onTap: item.opensAts
+              ? onOpenAts
               : item.opensMerchant
               ? onOpenMerchant
               : item.opensPartner

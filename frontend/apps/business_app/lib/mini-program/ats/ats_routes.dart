@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'hr_models.dart';
+import 'ats_models.dart';
 
-enum HrRoute {
+enum AtsRoute {
   home(path: '/pages/main/main', title: '企业直聘', tabIndex: 0),
   search(path: '/pages/main/search', title: '搜索'),
   jobList(path: '/pages/position/list', title: '岗位列表'),
@@ -57,7 +57,7 @@ enum HrRoute {
   positionEdit(path: '/pages/user/company/position-edit', title: '新增职位'),
   companyAuth(path: '/pages/user/company/auth', title: '公司认证');
 
-  const HrRoute({required this.path, required this.title, this.tabIndex});
+  const AtsRoute({required this.path, required this.title, this.tabIndex});
 
   final String path;
   final String title;
@@ -66,36 +66,36 @@ enum HrRoute {
   bool get isTabRoot => tabIndex != null;
 }
 
-class HrAppController extends ChangeNotifier {
-  HrAppController({
-    HrUserRole initialRole = HrUserRole.candidate,
+class AtsAppController extends ChangeNotifier {
+  AtsAppController({
+    AtsUserRole initialRole = AtsUserRole.candidate,
     bool initialLoggedIn = false,
   }) : _role = initialRole,
        _loggedIn = initialLoggedIn;
 
-  final List<HrRoute> _history = [HrRoute.home];
+  final List<AtsRoute> _history = [AtsRoute.home];
   final Set<String> favorites = <String>{};
   final Set<String> applications = <String>{};
   final List<String> searchHistory = <String>['Flutter', '产品经理', '设计师'];
   final List<String> hiddenCompanies = <String>['某未认证企业'];
 
-  HrUserRole _role;
-  HrRoute _route = HrRoute.home;
+  AtsUserRole _role;
+  AtsRoute _route = AtsRoute.home;
   int _tabIndex = 0;
   bool _loggedIn;
   bool _forward = true;
   String _userName = '林小满';
 
-  HrRoute get route => _route;
-  HrUserRole get role => _role;
+  AtsRoute get route => _route;
+  AtsUserRole get role => _role;
   int get tabIndex => _tabIndex;
   bool get loggedIn => _loggedIn;
   bool get forward => _forward;
   bool get canGoBack => _history.length > 1;
   String get userName => _userName;
-  List<HrRoute> get history => List.unmodifiable(_history);
+  List<AtsRoute> get history => List.unmodifiable(_history);
 
-  void open(HrRoute route) {
+  void open(AtsRoute route) {
     if (route == _route) {
       return;
     }
@@ -121,10 +121,10 @@ class HrAppController extends ChangeNotifier {
 
   void switchTab(int index) {
     final route = switch (index) {
-      0 => HrRoute.home,
-      1 => HrRoute.category,
-      2 => HrRoute.messages,
-      _ => HrRoute.profile,
+      0 => AtsRoute.home,
+      1 => AtsRoute.category,
+      2 => AtsRoute.messages,
+      _ => AtsRoute.profile,
     };
     _forward = index >= _tabIndex;
     _tabIndex = index;
@@ -136,18 +136,18 @@ class HrAppController extends ChangeNotifier {
   }
 
   void toggleRole() {
-    _role = _role == HrUserRole.candidate
-        ? HrUserRole.recruiter
-        : HrUserRole.candidate;
-    if (_role == HrUserRole.recruiter && _route == HrRoute.profile) {
+    _role = _role == AtsUserRole.candidate
+        ? AtsUserRole.recruiter
+        : AtsUserRole.candidate;
+    if (_role == AtsUserRole.recruiter && _route == AtsRoute.profile) {
       _history
         ..clear()
-        ..add(HrRoute.profile);
+        ..add(AtsRoute.profile);
     }
     notifyListeners();
   }
 
-  void setRole(HrUserRole role) {
+  void setRole(AtsUserRole role) {
     if (_role == role) {
       return;
     }
@@ -159,8 +159,8 @@ class HrAppController extends ChangeNotifier {
     _loggedIn = true;
     _history
       ..clear()
-      ..add(HrRoute.home);
-    _route = HrRoute.home;
+      ..add(AtsRoute.home);
+    _route = AtsRoute.home;
     _tabIndex = 0;
     _forward = false;
     notifyListeners();
@@ -170,8 +170,8 @@ class HrAppController extends ChangeNotifier {
     _loggedIn = false;
     _history
       ..clear()
-      ..add(HrRoute.login);
-    _route = HrRoute.login;
+      ..add(AtsRoute.login);
+    _route = AtsRoute.login;
     _tabIndex = 0;
     _forward = true;
     notifyListeners();
@@ -224,6 +224,6 @@ class HrAppController extends ChangeNotifier {
   }
 }
 
-extension HrRouteColors on HrRoute {
-  bool get usesGreenNavigation => isTabRoot || this == HrRoute.login;
+extension AtsRouteColors on AtsRoute {
+  bool get usesGreenNavigation => isTabRoot || this == AtsRoute.login;
 }

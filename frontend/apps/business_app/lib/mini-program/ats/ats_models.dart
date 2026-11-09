@@ -1,14 +1,14 @@
-enum HrUserRole {
+enum AtsUserRole {
   candidate('求职者'),
   recruiter('招聘者');
 
-  const HrUserRole(this.label);
+  const AtsUserRole(this.label);
 
   final String label;
 }
 
-class HrJob {
-  const HrJob({
+class AtsJob {
+  const AtsJob({
     required this.id,
     required this.title,
     required this.salary,
@@ -41,8 +41,8 @@ class HrJob {
   final bool partTime;
 }
 
-class HrResume {
-  const HrResume({
+class AtsResume {
+  const AtsResume({
     required this.id,
     required this.name,
     required this.gender,
@@ -67,8 +67,8 @@ class HrResume {
   final String skill;
 }
 
-class HrCompany {
-  const HrCompany({
+class AtsCompany {
+  const AtsCompany({
     required this.id,
     required this.name,
     required this.industry,
@@ -93,8 +93,8 @@ class HrCompany {
   final String introduce;
 }
 
-class HrConversation {
-  const HrConversation({
+class AtsConversation {
+  const AtsConversation({
     required this.name,
     required this.preview,
     required this.time,
@@ -109,8 +109,8 @@ class HrConversation {
   final String job;
 }
 
-class HrNotice {
-  const HrNotice({
+class AtsNotice {
+  const AtsNotice({
     required this.title,
     required this.preview,
     required this.time,
@@ -125,8 +125,8 @@ class HrNotice {
   final bool unread;
 }
 
-const hrJobs = <HrJob>[
-  HrJob(
+const atsJobs = <AtsJob>[
+  AtsJob(
     id: 'job-flutter',
     title: 'Flutter 开发工程师',
     salary: '20-35K·14薪',
@@ -143,7 +143,7 @@ const hrJobs = <HrJob>[
         '负责公司移动端产品的架构设计与核心功能研发，参与 Flutter 工程体系、性能和组件库建设。'
         '希望你熟悉 Dart 与移动端原生能力，有完整上线项目经验，具备良好的产品意识和团队协作能力。',
   ),
-  HrJob(
+  AtsJob(
     id: 'job-product',
     title: '产品经理',
     salary: '18-28K·13薪',
@@ -158,7 +158,7 @@ const hrJobs = <HrJob>[
     tags: ['B端产品', '数据分析', '双休'],
     description: '负责招聘 SaaS 产品规划与迭代，深入理解客户业务，完成需求洞察、方案设计、项目推进与数据复盘。',
   ),
-  HrJob(
+  AtsJob(
     id: 'job-design',
     title: 'UI / 交互设计师',
     salary: '15-24K',
@@ -173,7 +173,7 @@ const hrJobs = <HrJob>[
     tags: ['移动端设计', 'Figma', '设计系统'],
     description: '负责移动端产品视觉与交互设计，完善设计规范，与产品和研发协作推动高质量交付。',
   ),
-  HrJob(
+  AtsJob(
     id: 'job-recruiter',
     title: '招聘专员',
     salary: '8-12K',
@@ -188,7 +188,7 @@ const hrJobs = <HrJob>[
     tags: ['招聘', '沟通能力', '周末双休'],
     description: '负责岗位需求分析、渠道运营、候选人沟通和面试安排，维护良好的雇主品牌体验。',
   ),
-  HrJob(
+  AtsJob(
     id: 'job-marketing',
     title: '新媒体运营',
     salary: '9-15K',
@@ -203,7 +203,7 @@ const hrJobs = <HrJob>[
     tags: ['内容运营', '短视频', '绩效奖金'],
     description: '负责小红书、抖音等平台内容策划与账号运营，跟踪热点并持续优化内容数据。',
   ),
-  HrJob(
+  AtsJob(
     id: 'job-backend',
     title: 'Java 后端开发工程师',
     salary: '22-38K·15薪',
@@ -220,8 +220,8 @@ const hrJobs = <HrJob>[
   ),
 ];
 
-const hrResumes = <HrResume>[
-  HrResume(
+const atsResumes = <AtsResume>[
+  AtsResume(
     id: 'resume-lin',
     name: '林小满',
     gender: '女',
@@ -233,7 +233,7 @@ const hrResumes = <HrResume>[
     intent: 'Flutter 开发工程师',
     skill: '4年移动端研发经验，主导过两款百万用户级 App，熟悉 Flutter、Dart、Android 及性能优化。',
   ),
-  HrResume(
+  AtsResume(
     id: 'resume-chen',
     name: '陈一鸣',
     gender: '男',
@@ -245,7 +245,7 @@ const hrResumes = <HrResume>[
     intent: 'Java 后端开发工程师',
     skill: '长期从事交易系统与高并发服务研发，具备架构设计、服务治理和团队协作经验。',
   ),
-  HrResume(
+  AtsResume(
     id: 'resume-zhou',
     name: '周予安',
     gender: '女',
@@ -259,8 +259,8 @@ const hrResumes = <HrResume>[
   ),
 ];
 
-const hrCompanies = <HrCompany>[
-  HrCompany(
+const atsCompanies = <AtsCompany>[
+  AtsCompany(
     id: 'company-shijia',
     name: '上海世佳科技有限公司',
     industry: '互联网',
@@ -274,7 +274,7 @@ const hrCompanies = <HrCompany>[
         '世佳科技专注于人才科技与数字化服务，以技术连接人和机会。公司拥有完善的产品、研发和运营团队，'
         '为超过 3000 家企业提供招聘数字化解决方案。',
   ),
-  HrCompany(
+  AtsCompany(
     id: 'company-yunfan',
     name: '北京云帆数字科技',
     industry: '企业服务',
@@ -286,7 +286,7 @@ const hrCompanies = <HrCompany>[
     welfare: ['六险一金', '带薪年假', '团建', '股票期权'],
     introduce: '云帆数字科技聚焦组织效率与人才数据，帮助成长型企业构建更敏捷的人力资源体系。',
   ),
-  HrCompany(
+  AtsCompany(
     id: 'company-shiguang',
     name: '杭州拾光创意有限公司',
     industry: '广告营销',
@@ -300,22 +300,22 @@ const hrCompanies = <HrCompany>[
   ),
 ];
 
-const hrConversations = <HrConversation>[
-  HrConversation(
+const atsConversations = <AtsConversation>[
+  AtsConversation(
     name: '李经理',
     preview: '你好，方便发一份最新简历吗？',
     time: '刚刚',
     unread: 2,
     job: 'Flutter 开发工程师',
   ),
-  HrConversation(
+  AtsConversation(
     name: '王女士',
     preview: '我们想约你明天下午聊聊',
     time: '10:32',
     unread: 0,
     job: '产品经理',
   ),
-  HrConversation(
+  AtsConversation(
     name: '陈老师',
     preview: '作品集已经收到，谢谢',
     time: '昨天',
@@ -324,8 +324,8 @@ const hrConversations = <HrConversation>[
   ),
 ];
 
-const hrNotices = <HrNotice>[
-  HrNotice(
+const atsNotices = <AtsNotice>[
+  AtsNotice(
     title: '面试邀请',
     preview: '上海世佳科技邀请你参加面试',
     time: '今天 09:20',
@@ -334,14 +334,14 @@ const hrNotices = <HrNotice>[
         '面试时间：11 月 10 日 14:00，面试方式：视频会议。如时间合适，请在消息中回复确认。',
     unread: true,
   ),
-  HrNotice(
+  AtsNotice(
     title: '简历投递成功',
     preview: '你已成功投递“产品经理”岗位',
     time: '昨天 16:45',
     content: '你的简历已送达北京云帆数字科技，招聘方将在 3 个工作日内查看。',
     unread: false,
   ),
-  HrNotice(
+  AtsNotice(
     title: '隐私政策更新',
     preview: '企业直聘隐私政策已更新',
     time: '11月01日',
@@ -350,7 +350,7 @@ const hrNotices = <HrNotice>[
   ),
 ];
 
-const hrHotPosts = <String>[
+const atsHotPosts = <String>[
   '销售',
   '技工/普工',
   '餐饮',
@@ -365,7 +365,7 @@ const hrHotPosts = <String>[
   '影视媒体',
 ];
 
-const hrIndustries = <String>[
+const atsIndustries = <String>[
   '互联网',
   '企业服务',
   '广告营销',
@@ -376,7 +376,7 @@ const hrIndustries = <String>[
   '医疗健康',
 ];
 
-const hrPositions = <String>[
+const atsPositions = <String>[
   'Flutter 开发工程师',
   '产品经理',
   'UI / 交互设计师',

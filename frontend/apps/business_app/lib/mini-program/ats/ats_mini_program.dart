@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
 
-import 'hr_routes.dart';
-import 'hr_style.dart';
+import 'ats_routes.dart';
+import 'ats_style.dart';
 import 'pages/company_pages.dart';
 import 'pages/home_pages.dart';
 import 'pages/message_pages.dart';
 import 'pages/misc_pages.dart';
 import 'pages/profile_pages.dart';
 
-class HrMiniProgram extends StatefulWidget {
-  const HrMiniProgram({super.key, this.onExit});
+class AtsMiniProgram extends StatefulWidget {
+  const AtsMiniProgram({super.key, this.onExit});
 
   /// 小程序作为客户首页子视图时，由宿主切回微信式首页。
   final VoidCallback? onExit;
 
   @override
-  State<HrMiniProgram> createState() => _HrMiniProgramState();
+  State<AtsMiniProgram> createState() => _AtsMiniProgramState();
 }
 
-class _HrMiniProgramState extends State<HrMiniProgram> {
-  late final HrAppController _controller;
+class _AtsMiniProgramState extends State<AtsMiniProgram> {
+  late final AtsAppController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = HrAppController();
+    _controller = AtsAppController();
   }
 
   @override
@@ -58,7 +58,7 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                   width: 34,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: HrColors.divider,
+                    color: AtsColors.divider,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -70,7 +70,7 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                       height: 44,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [HrColors.primary, Color(0xFF5BD2B3)],
+                          colors: [AtsColors.primary, Color(0xFF5BD2B3)],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -96,7 +96,7 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                           Text(
                             '招聘求职 · 微信小程序原型',
                             style: TextStyle(
-                              color: HrColors.textMuted,
+                              color: AtsColors.textMuted,
                               fontSize: 10,
                             ),
                           ),
@@ -113,7 +113,7 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                   label: '添加到我的小程序',
                   onTap: () {
                     Navigator.of(sheetContext).pop();
-                    hrToast(context, '已添加到我的小程序');
+                    atsToast(context, '已添加到我的小程序');
                   },
                 ),
                 _MoreMenuItem(
@@ -122,7 +122,7 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                   onTap: () {
                     Navigator.of(sheetContext).pop();
                     _controller.switchTab(0);
-                    hrToast(context, '已返回小程序首页');
+                    atsToast(context, '已返回小程序首页');
                   },
                 ),
                 _MoreMenuItem(
@@ -130,7 +130,7 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                   label: '关于企业直聘',
                   onTap: () {
                     Navigator.of(sheetContext).pop();
-                    _controller.open(HrRoute.aboutUs);
+                    _controller.open(AtsRoute.aboutUs);
                   },
                 ),
               ],
@@ -144,14 +144,14 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: HrTheme.data(),
+      data: AtsTheme.data(),
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
           final route = _controller.route;
           final greenNav = route.usesGreenNavigation;
           return Scaffold(
-            backgroundColor: HrColors.background,
+            backgroundColor: AtsColors.background,
             body: Material(
               color: Colors.black,
               child: ClipRect(
@@ -168,7 +168,7 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                     ),
                     Expanded(
                       child: ColoredBox(
-                        color: HrColors.background,
+                        color: AtsColors.background,
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 230),
                           switchInCurve: Curves.easeOutCubic,
@@ -197,7 +197,7 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                           },
                           child: KeyedSubtree(
                             key: ValueKey(route),
-                            child: HrPageRouter.build(route, _controller),
+                            child: AtsPageRouter.build(route, _controller),
                           ),
                         ),
                       ),
@@ -219,66 +219,68 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
   }
 }
 
-class HrPageRouter {
-  const HrPageRouter._();
+class AtsPageRouter {
+  const AtsPageRouter._();
 
-  static Widget build(HrRoute route, HrAppController controller) {
+  static Widget build(AtsRoute route, AtsAppController controller) {
     return switch (route) {
-      HrRoute.home => HrHomePage(controller: controller),
-      HrRoute.search => HrSearchPage(controller: controller),
-      HrRoute.jobList => HrJobListPage(controller: controller),
-      HrRoute.jobDetail => HrJobDetailPage(controller: controller),
-      HrRoute.companyList => HrCompanyListPage(controller: controller),
-      HrRoute.resumeList => HrResumeListPage(controller: controller),
-      HrRoute.companyDetail => HrCompanyDetailPage(controller: controller),
-      HrRoute.category => HrCategoryPage(controller: controller),
-      HrRoute.messages => HrMessagesPage(controller: controller),
-      HrRoute.privateChat => HrPrivateChatPage(controller: controller),
-      HrRoute.notices => HrNoticesPage(controller: controller),
-      HrRoute.noticeDetail => const HrNoticeDetailPage(),
-      HrRoute.profile => HrProfilePage(controller: controller),
-      HrRoute.aboutUs => HrAboutPage(controller: controller),
-      HrRoute.terms => HrAboutPage(
+      AtsRoute.home => AtsHomePage(controller: controller),
+      AtsRoute.search => AtsSearchPage(controller: controller),
+      AtsRoute.jobList => AtsJobListPage(controller: controller),
+      AtsRoute.jobDetail => AtsJobDetailPage(controller: controller),
+      AtsRoute.companyList => AtsCompanyListPage(controller: controller),
+      AtsRoute.resumeList => AtsResumeListPage(controller: controller),
+      AtsRoute.companyDetail => AtsCompanyDetailPage(controller: controller),
+      AtsRoute.category => AtsCategoryPage(controller: controller),
+      AtsRoute.messages => AtsMessagesPage(controller: controller),
+      AtsRoute.privateChat => AtsPrivateChatPage(controller: controller),
+      AtsRoute.notices => AtsNoticesPage(controller: controller),
+      AtsRoute.noticeDetail => const AtsNoticeDetailPage(),
+      AtsRoute.profile => AtsProfilePage(controller: controller),
+      AtsRoute.aboutUs => AtsAboutPage(controller: controller),
+      AtsRoute.terms => AtsAboutPage(
         controller: controller,
-        type: HrAboutType.terms,
+        type: AtsAboutType.terms,
       ),
-      HrRoute.privacy => HrAboutPage(
+      AtsRoute.privacy => AtsAboutPage(
         controller: controller,
-        type: HrAboutType.privacy,
+        type: AtsAboutType.privacy,
       ),
-      HrRoute.help => HrHelpPage(controller: controller),
-      HrRoute.helpDetail => const HrHelpDetailPage(),
-      HrRoute.settings => HrSettingsPage(controller: controller),
-      HrRoute.hideSetting => HrHideSettingPage(controller: controller),
-      HrRoute.applications => HrApplicationsPage(controller: controller),
-      HrRoute.connected => HrConnectedPage(controller: controller),
-      HrRoute.browse => HrBrowsePage(controller: controller),
-      HrRoute.robot => const HrRobotPage(),
-      HrRoute.contactUs => const HrContactPage(),
-      HrRoute.promoCode => HrPromoCodePage(controller: controller),
-      HrRoute.userInfo => HrUserInfoPage(controller: controller),
-      HrRoute.collect => HrCollectPage(controller: controller),
-      HrRoute.login => HrLoginPage(controller: controller),
-      HrRoute.loginIndex => HrLoginIndexPage(controller: controller),
-      HrRoute.register => HrRegisterPage(controller: controller),
-      HrRoute.registerSuccess => HrRegisterSuccessPage(controller: controller),
-      HrRoute.bindPhone => HrBindPhonePage(controller: controller),
-      HrRoute.industry => const HrIndustryPage(),
-      HrRoute.post => const HrPostPage(),
-      HrRoute.resume => HrResumePage(controller: controller),
-      HrRoute.resumeDetail => HrResumeDetailPage(controller: controller),
-      HrRoute.editEducation => const HrEditEducationPage(),
-      HrRoute.editExpectation => const HrEditExpectationPage(),
-      HrRoute.editProject => const HrEditProjectPage(),
-      HrRoute.editProjectContent => const HrEditProjectContentPage(),
-      HrRoute.editSkill => const HrEditSkillPage(),
-      HrRoute.editWork => const HrEditWorkPage(),
-      HrRoute.editWorkContent => const HrEditWorkContentPage(),
-      HrRoute.companyEdit => HrCompanyEditPage(controller: controller),
-      HrRoute.companyEnter => HrCompanyEnterPage(controller: controller),
-      HrRoute.positions => HrPositionsPage(controller: controller),
-      HrRoute.positionEdit => HrPositionEditPage(controller: controller),
-      HrRoute.companyAuth => HrCompanyAuthPage(controller: controller),
+      AtsRoute.help => AtsHelpPage(controller: controller),
+      AtsRoute.helpDetail => const AtsHelpDetailPage(),
+      AtsRoute.settings => AtsSettingsPage(controller: controller),
+      AtsRoute.hideSetting => AtsHideSettingPage(controller: controller),
+      AtsRoute.applications => AtsApplicationsPage(controller: controller),
+      AtsRoute.connected => AtsConnectedPage(controller: controller),
+      AtsRoute.browse => AtsBrowsePage(controller: controller),
+      AtsRoute.robot => const AtsRobotPage(),
+      AtsRoute.contactUs => const AtsContactPage(),
+      AtsRoute.promoCode => AtsPromoCodePage(controller: controller),
+      AtsRoute.userInfo => AtsUserInfoPage(controller: controller),
+      AtsRoute.collect => AtsCollectPage(controller: controller),
+      AtsRoute.login => AtsLoginPage(controller: controller),
+      AtsRoute.loginIndex => AtsLoginIndexPage(controller: controller),
+      AtsRoute.register => AtsRegisterPage(controller: controller),
+      AtsRoute.registerSuccess => AtsRegisterSuccessPage(
+        controller: controller,
+      ),
+      AtsRoute.bindPhone => AtsBindPhonePage(controller: controller),
+      AtsRoute.industry => const AtsIndustryPage(),
+      AtsRoute.post => const AtsPostPage(),
+      AtsRoute.resume => AtsResumePage(controller: controller),
+      AtsRoute.resumeDetail => AtsResumeDetailPage(controller: controller),
+      AtsRoute.editEducation => const AtsEditEducationPage(),
+      AtsRoute.editExpectation => const AtsEditExpectationPage(),
+      AtsRoute.editProject => const AtsEditProjectPage(),
+      AtsRoute.editProjectContent => const AtsEditProjectContentPage(),
+      AtsRoute.editSkill => const AtsEditSkillPage(),
+      AtsRoute.editWork => const AtsEditWorkPage(),
+      AtsRoute.editWorkContent => const AtsEditWorkContentPage(),
+      AtsRoute.companyEdit => AtsCompanyEditPage(controller: controller),
+      AtsRoute.companyEnter => AtsCompanyEnterPage(controller: controller),
+      AtsRoute.positions => AtsPositionsPage(controller: controller),
+      AtsRoute.positionEdit => AtsPositionEditPage(controller: controller),
+      AtsRoute.companyAuth => AtsCompanyAuthPage(controller: controller),
     };
   }
 }
@@ -291,9 +293,9 @@ class _MiniStatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final systemTop = MediaQuery.paddingOf(context).top;
-    final color = light ? Colors.white : HrColors.text;
+    final color = light ? Colors.white : AtsColors.text;
     return Container(
-      color: light ? HrColors.primary : Colors.white,
+      color: light ? AtsColors.primary : Colors.white,
       height: systemTop > 0 ? systemTop + 8 : 28,
       padding: EdgeInsets.fromLTRB(
         16,
@@ -344,10 +346,10 @@ class _MiniNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = light ? Colors.white : HrColors.text;
+    final foreground = light ? Colors.white : AtsColors.text;
     return Container(
       height: 48,
-      color: light ? HrColors.primary : Colors.white,
+      color: light ? AtsColors.primary : Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Stack(
         alignment: Alignment.center,
@@ -396,10 +398,10 @@ class _MiniCapsule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = light ? Colors.white : HrColors.text;
+    final foreground = light ? Colors.white : AtsColors.text;
     final borderColor = light
         ? Colors.white.withValues(alpha: 0.24)
-        : HrColors.text.withValues(alpha: 0.12);
+        : AtsColors.text.withValues(alpha: 0.12);
     return Container(
       width: onClose == null ? 42 : 84,
       height: 30,
@@ -491,7 +493,7 @@ class _MiniBottomChrome extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           border: showTabs
-              ? const Border(top: BorderSide(color: HrColors.divider))
+              ? const Border(top: BorderSide(color: AtsColors.divider))
               : null,
         ),
         child: Column(
@@ -560,16 +562,16 @@ class _MiniTabBar extends StatelessWidget {
                         index == i ? selectedIcons[i] : icons[i],
                         size: 21,
                         color: index == i
-                            ? HrColors.primary
-                            : HrColors.textMuted,
+                            ? AtsColors.primary
+                            : AtsColors.textMuted,
                       ),
                       const SizedBox(height: 2),
                       Text(
                         labels[i],
                         style: TextStyle(
                           color: index == i
-                              ? HrColors.primary
-                              : HrColors.textMuted,
+                              ? AtsColors.primary
+                              : AtsColors.textMuted,
                           fontSize: 9,
                           fontWeight: index == i
                               ? FontWeight.w600
@@ -586,7 +588,7 @@ class _MiniTabBar extends StatelessWidget {
                         width: 7,
                         height: 7,
                         decoration: BoxDecoration(
-                          color: HrColors.red,
+                          color: AtsColors.red,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 1),
                         ),
@@ -667,17 +669,17 @@ class _MoreMenuItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 13),
         child: Row(
           children: [
-            Icon(icon, color: HrColors.text, size: 20),
+            Icon(icon, color: AtsColors.text, size: 20),
             const SizedBox(width: 11),
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(color: HrColors.text, fontSize: 13),
+                style: const TextStyle(color: AtsColors.text, fontSize: 13),
               ),
             ),
             const Icon(
               Icons.chevron_right,
-              color: HrColors.textMuted,
+              color: AtsColors.textMuted,
               size: 18,
             ),
           ],

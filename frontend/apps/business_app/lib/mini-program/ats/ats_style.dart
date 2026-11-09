@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'hr_models.dart';
+import 'ats_models.dart';
 
-class HrColors {
-  const HrColors._();
+class AtsColors {
+  const AtsColors._();
 
   static const primary = Color(0xFF12AE85);
   static const primaryDark = Color(0xFF078666);
@@ -20,20 +20,20 @@ class HrColors {
   static const blue = Color(0xFF3B82F6);
 }
 
-class HrTheme {
-  const HrTheme._();
+class AtsTheme {
+  const AtsTheme._();
 
   static ThemeData data() {
     final scheme = ColorScheme.fromSeed(
-      seedColor: HrColors.primary,
+      seedColor: AtsColors.primary,
       brightness: Brightness.light,
-      primary: HrColors.primary,
-      surface: HrColors.surface,
+      primary: AtsColors.primary,
+      surface: AtsColors.surface,
     );
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: HrColors.background,
+      scaffoldBackgroundColor: AtsColors.background,
       fontFamilyFallback: const [
         'PingFang SC',
         'Microsoft YaHei',
@@ -41,51 +41,51 @@ class HrTheme {
       ],
       textTheme: const TextTheme(
         headlineSmall: TextStyle(
-          color: HrColors.text,
+          color: AtsColors.text,
           fontSize: 22,
           fontWeight: FontWeight.w700,
           height: 1.3,
         ),
         titleLarge: TextStyle(
-          color: HrColors.text,
+          color: AtsColors.text,
           fontSize: 18,
           fontWeight: FontWeight.w600,
           height: 1.35,
         ),
         titleMedium: TextStyle(
-          color: HrColors.text,
+          color: AtsColors.text,
           fontSize: 16,
           fontWeight: FontWeight.w600,
           height: 1.4,
         ),
-        bodyLarge: TextStyle(color: HrColors.text, fontSize: 15, height: 1.5),
+        bodyLarge: TextStyle(color: AtsColors.text, fontSize: 15, height: 1.5),
         bodyMedium: TextStyle(
-          color: HrColors.textSecondary,
+          color: AtsColors.textSecondary,
           fontSize: 13,
           height: 1.5,
         ),
         bodySmall: TextStyle(
-          color: HrColors.textMuted,
+          color: AtsColors.textMuted,
           fontSize: 12,
           height: 1.45,
         ),
         labelLarge: TextStyle(
-          color: HrColors.text,
+          color: AtsColors.text,
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),
-      dividerColor: HrColors.divider,
+      dividerColor: AtsColors.divider,
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: HrColors.text,
+        backgroundColor: AtsColors.text,
         contentTextStyle: const TextStyle(fontSize: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: HrColors.background,
-        hintStyle: const TextStyle(color: HrColors.textMuted, fontSize: 14),
+        fillColor: AtsColors.background,
+        hintStyle: const TextStyle(color: AtsColors.textMuted, fontSize: 14),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 13,
@@ -100,21 +100,21 @@ class HrTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: HrColors.primary, width: 1.2),
+          borderSide: const BorderSide(color: AtsColors.primary, width: 1.2),
         ),
       ),
     );
   }
 }
 
-class HrCard extends StatelessWidget {
-  const HrCard({
+class AtsCard extends StatelessWidget {
+  const AtsCard({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(16),
     this.margin = EdgeInsets.zero,
     this.onTap,
-    this.color = HrColors.surface,
+    this.color = AtsColors.surface,
   });
 
   final Widget child;
@@ -141,8 +141,8 @@ class HrCard extends StatelessWidget {
   }
 }
 
-class HrSectionHeader extends StatelessWidget {
-  const HrSectionHeader({
+class AtsSectionHeader extends StatelessWidget {
+  const AtsSectionHeader({
     super.key,
     required this.title,
     this.action,
@@ -163,7 +163,7 @@ class HrSectionHeader extends StatelessWidget {
             width: 4,
             height: 16,
             decoration: BoxDecoration(
-              color: HrColors.primary,
+              color: AtsColors.primary,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -174,7 +174,7 @@ class HrSectionHeader extends StatelessWidget {
             TextButton(
               onPressed: onAction,
               style: TextButton.styleFrom(
-                foregroundColor: HrColors.textMuted,
+                foregroundColor: AtsColors.textMuted,
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 4),
               ),
@@ -192,12 +192,12 @@ class HrSectionHeader extends StatelessWidget {
   }
 }
 
-class HrTag extends StatelessWidget {
-  const HrTag(
+class AtsTag extends StatelessWidget {
+  const AtsTag(
     this.label, {
     super.key,
-    this.foreground = HrColors.textSecondary,
-    this.background = HrColors.background,
+    this.foreground = AtsColors.textSecondary,
+    this.background = AtsColors.background,
     this.borderColor,
   });
 
@@ -228,13 +228,13 @@ class HrTag extends StatelessWidget {
   }
 }
 
-class HrPrimaryButton extends StatelessWidget {
-  const HrPrimaryButton({
+class AtsPrimaryButton extends StatelessWidget {
+  const AtsPrimaryButton({
     super.key,
     required this.label,
     this.onPressed,
     this.icon,
-    this.backgroundColor = HrColors.primary,
+    this.backgroundColor = AtsColors.primary,
     this.foregroundColor = Colors.white,
     this.height = 46,
   });
@@ -255,8 +255,8 @@ class HrPrimaryButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: foregroundColor,
-          disabledBackgroundColor: HrColors.divider,
-          disabledForegroundColor: HrColors.textMuted,
+          disabledBackgroundColor: AtsColors.divider,
+          disabledForegroundColor: AtsColors.textMuted,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -278,13 +278,13 @@ class HrPrimaryButton extends StatelessWidget {
   }
 }
 
-class HrOutlineButton extends StatelessWidget {
-  const HrOutlineButton({
+class AtsOutlineButton extends StatelessWidget {
+  const AtsOutlineButton({
     super.key,
     required this.label,
     this.onPressed,
     this.icon,
-    this.foreground = HrColors.text,
+    this.foreground = AtsColors.text,
   });
 
   final String label;
@@ -300,7 +300,7 @@ class HrOutlineButton extends StatelessWidget {
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           foregroundColor: foreground,
-          side: const BorderSide(color: HrColors.divider),
+          side: const BorderSide(color: AtsColors.divider),
           padding: const EdgeInsets.symmetric(horizontal: 10),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -323,12 +323,12 @@ class HrOutlineButton extends StatelessWidget {
   }
 }
 
-class HrAvatar extends StatelessWidget {
-  const HrAvatar({
+class AtsAvatar extends StatelessWidget {
+  const AtsAvatar({
     super.key,
     required this.label,
     this.size = 48,
-    this.color = HrColors.primary,
+    this.color = AtsColors.primary,
   });
 
   final String label;
@@ -361,8 +361,8 @@ class HrAvatar extends StatelessWidget {
   }
 }
 
-class HrJobCard extends StatelessWidget {
-  const HrJobCard({
+class AtsJobCard extends StatelessWidget {
+  const AtsJobCard({
     super.key,
     required this.job,
     this.onTap,
@@ -370,7 +370,7 @@ class HrJobCard extends StatelessWidget {
     this.showBorder = true,
   });
 
-  final HrJob job;
+  final AtsJob job;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry margin;
   final bool showBorder;
@@ -380,9 +380,9 @@ class HrJobCard extends StatelessWidget {
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: HrColors.surface,
+        color: AtsColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: showBorder ? Border.all(color: HrColors.divider) : null,
+        border: showBorder ? Border.all(color: AtsColors.divider) : null,
       ),
       child: InkWell(
         onTap: onTap,
@@ -402,16 +402,16 @@ class HrJobCard extends StatelessWidget {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         if (job.partTime)
-                          const HrTag(
+                          const AtsTag(
                             '兼职',
-                            foreground: HrColors.orange,
+                            foreground: AtsColors.orange,
                             background: Color(0xFFFFF4EB),
                             borderColor: Color(0xFFFFD8B8),
                           ),
                         Text(
                           job.title,
                           style: const TextStyle(
-                            color: HrColors.text,
+                            color: AtsColors.text,
                             fontSize: 16,
                             height: 1.3,
                             fontWeight: FontWeight.w600,
@@ -424,7 +424,7 @@ class HrJobCard extends StatelessWidget {
                   Text(
                     job.salary,
                     style: const TextStyle(
-                      color: HrColors.primary,
+                      color: AtsColors.primary,
                       fontSize: 15,
                       height: 1.3,
                       fontWeight: FontWeight.w700,
@@ -441,7 +441,7 @@ class HrJobCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: HrColors.textSecondary,
+                        color: AtsColors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -450,7 +450,7 @@ class HrJobCard extends StatelessWidget {
                   Text(
                     job.staffSize,
                     style: const TextStyle(
-                      color: HrColors.textMuted,
+                      color: AtsColors.textMuted,
                       fontSize: 12,
                     ),
                   ),
@@ -458,7 +458,7 @@ class HrJobCard extends StatelessWidget {
                   Text(
                     job.industry,
                     style: const TextStyle(
-                      color: HrColors.textMuted,
+                      color: AtsColors.textMuted,
                       fontSize: 12,
                     ),
                   ),
@@ -469,20 +469,20 @@ class HrJobCard extends StatelessWidget {
                 spacing: 6,
                 runSpacing: 6,
                 children: [
-                  HrTag(job.experience),
-                  HrTag(job.education),
-                  for (final tag in job.tags.take(2)) HrTag(tag),
+                  AtsTag(job.experience),
+                  AtsTag(job.education),
+                  for (final tag in job.tags.take(2)) AtsTag(tag),
                 ],
               ),
               const SizedBox(height: 10),
               Row(
                 children: [
-                  const HrAvatar(label: '李', size: 24),
+                  const AtsAvatar(label: '李', size: 24),
                   const SizedBox(width: 7),
                   Text(
                     job.publisher,
                     style: const TextStyle(
-                      color: HrColors.textSecondary,
+                      color: AtsColors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -490,13 +490,13 @@ class HrJobCard extends StatelessWidget {
                   const Icon(
                     Icons.location_on_outlined,
                     size: 14,
-                    color: HrColors.textMuted,
+                    color: AtsColors.textMuted,
                   ),
                   const SizedBox(width: 2),
                   Text(
                     job.location,
                     style: const TextStyle(
-                      color: HrColors.textMuted,
+                      color: AtsColors.textMuted,
                       fontSize: 12,
                     ),
                   ),
@@ -510,15 +510,15 @@ class HrJobCard extends StatelessWidget {
   }
 }
 
-class HrResumeCard extends StatelessWidget {
-  const HrResumeCard({
+class AtsResumeCard extends StatelessWidget {
+  const AtsResumeCard({
     super.key,
     required this.resume,
     this.onTap,
     this.margin = EdgeInsets.zero,
   });
 
-  final HrResume resume;
+  final AtsResume resume;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry margin;
 
@@ -527,9 +527,9 @@ class HrResumeCard extends StatelessWidget {
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: HrColors.surface,
+        color: AtsColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: HrColors.divider),
+        border: Border.all(color: AtsColors.divider),
       ),
       child: InkWell(
         onTap: onTap,
@@ -541,12 +541,12 @@ class HrResumeCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  HrAvatar(
+                  AtsAvatar(
                     label: resume.name,
                     size: 42,
                     color: resume.gender == '女'
                         ? const Color(0xFFEC6A88)
-                        : HrColors.blue,
+                        : AtsColors.blue,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -556,7 +556,7 @@ class HrResumeCard extends StatelessWidget {
                         Text(
                           resume.name,
                           style: const TextStyle(
-                            color: HrColors.text,
+                            color: AtsColors.text,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -566,17 +566,17 @@ class HrResumeCard extends StatelessWidget {
                           '${resume.gender} · ${resume.age}岁 · '
                           '${resume.education} · ${resume.experience}',
                           style: const TextStyle(
-                            color: HrColors.textSecondary,
+                            color: AtsColors.textSecondary,
                             fontSize: 12,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  HrTag(
+                  AtsTag(
                     resume.jobStatus,
-                    foreground: HrColors.primary,
-                    background: HrColors.mint,
+                    foreground: AtsColors.primary,
+                    background: AtsColors.mint,
                   ),
                 ],
               ),
@@ -598,7 +598,7 @@ class HrResumeCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: HrColors.textSecondary,
+                  color: AtsColors.textSecondary,
                   fontSize: 12,
                   height: 1.55,
                 ),
@@ -611,21 +611,21 @@ class HrResumeCard extends StatelessWidget {
   }
 }
 
-class HrCompanyCard extends StatelessWidget {
-  const HrCompanyCard({
+class AtsCompanyCard extends StatelessWidget {
+  const AtsCompanyCard({
     super.key,
     required this.company,
     this.onTap,
     this.margin = EdgeInsets.zero,
   });
 
-  final HrCompany company;
+  final AtsCompany company;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry margin;
 
   @override
   Widget build(BuildContext context) {
-    return HrCard(
+    return AtsCard(
       margin: margin,
       onTap: onTap,
       child: Row(
@@ -635,13 +635,13 @@ class HrCompanyCard extends StatelessWidget {
             height: 54,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: HrColors.mint,
+              color: AtsColors.mint,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               company.name.characters.first,
               style: const TextStyle(
-                color: HrColors.primary,
+                color: AtsColors.primary,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -657,7 +657,7 @@ class HrCompanyCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: HrColors.text,
+                    color: AtsColors.text,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -666,7 +666,7 @@ class HrCompanyCard extends StatelessWidget {
                 Text(
                   '${company.industry} · ${company.staffSize}',
                   style: const TextStyle(
-                    color: HrColors.textSecondary,
+                    color: AtsColors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -676,32 +676,32 @@ class HrCompanyCard extends StatelessWidget {
                   runSpacing: 5,
                   children: [
                     for (final welfare in company.welfare.take(3))
-                      HrTag(
+                      AtsTag(
                         welfare,
-                        foreground: HrColors.primary,
-                        background: HrColors.mint,
+                        foreground: AtsColors.primary,
+                        background: AtsColors.mint,
                       ),
                   ],
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, size: 20, color: HrColors.textMuted),
+          const Icon(Icons.chevron_right, size: 20, color: AtsColors.textMuted),
         ],
       ),
     );
   }
 }
 
-class HrListRow extends StatelessWidget {
-  const HrListRow({
+class AtsListRow extends StatelessWidget {
+  const AtsListRow({
     super.key,
     required this.icon,
     required this.title,
     this.subtitle,
     this.trailing,
     this.onTap,
-    this.iconColor = HrColors.primary,
+    this.iconColor = AtsColors.primary,
     this.showDivider = true,
   });
 
@@ -740,7 +740,7 @@ class HrListRow extends StatelessWidget {
                       Text(
                         title,
                         style: const TextStyle(
-                          color: HrColors.text,
+                          color: AtsColors.text,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -750,7 +750,7 @@ class HrListRow extends StatelessWidget {
                         Text(
                           subtitle!,
                           style: const TextStyle(
-                            color: HrColors.textMuted,
+                            color: AtsColors.textMuted,
                             fontSize: 11,
                           ),
                         ),
@@ -762,7 +762,7 @@ class HrListRow extends StatelessWidget {
                     const Icon(
                       Icons.chevron_right,
                       size: 19,
-                      color: HrColors.textMuted,
+                      color: AtsColors.textMuted,
                     ),
               ],
             ),
@@ -774,8 +774,8 @@ class HrListRow extends StatelessWidget {
   }
 }
 
-class HrFormRow extends StatelessWidget {
-  const HrFormRow({
+class AtsFormRow extends StatelessWidget {
+  const AtsFormRow({
     super.key,
     required this.label,
     required this.child,
@@ -801,13 +801,13 @@ class HrFormRow extends StatelessWidget {
                   if (required)
                     const TextSpan(
                       text: '* ',
-                      style: TextStyle(color: HrColors.red),
+                      style: TextStyle(color: AtsColors.red),
                     ),
                   TextSpan(text: label),
                 ],
               ),
               style: const TextStyle(
-                color: HrColors.text,
+                color: AtsColors.text,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -820,8 +820,8 @@ class HrFormRow extends StatelessWidget {
   }
 }
 
-class HrFormTextField extends StatelessWidget {
-  const HrFormTextField({
+class AtsFormTextField extends StatelessWidget {
+  const AtsFormTextField({
     super.key,
     required this.controller,
     this.hintText,
@@ -849,15 +849,15 @@ class HrFormTextField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hintText,
         isDense: true,
-        fillColor: HrColors.background,
+        fillColor: AtsColors.background,
       ),
-      style: const TextStyle(color: HrColors.text, fontSize: 14),
+      style: const TextStyle(color: AtsColors.text, fontSize: 14),
     );
   }
 }
 
-class HrEmptyState extends StatelessWidget {
-  const HrEmptyState({
+class AtsEmptyState extends StatelessWidget {
+  const AtsEmptyState({
     super.key,
     this.icon = Icons.inbox_outlined,
     this.title = '暂无数据',
@@ -882,10 +882,10 @@ class HrEmptyState extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: const BoxDecoration(
-                color: HrColors.mint,
+                color: AtsColors.mint,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 34, color: HrColors.primary),
+              child: Icon(icon, size: 34, color: AtsColors.primary),
             ),
             const SizedBox(height: 14),
             Text(title, style: Theme.of(context).textTheme.titleMedium),
@@ -913,7 +913,7 @@ class _Dot extends StatelessWidget {
     return Container(
       width: 1,
       height: 10,
-      color: HrColors.divider,
+      color: AtsColors.divider,
       margin: const EdgeInsets.symmetric(horizontal: 7),
     );
   }
@@ -930,18 +930,18 @@ class _IconLine extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: HrColors.textMuted),
+        Icon(icon, size: 14, color: AtsColors.textMuted),
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(color: HrColors.textSecondary, fontSize: 12),
+          style: const TextStyle(color: AtsColors.textSecondary, fontSize: 12),
         ),
       ],
     );
   }
 }
 
-void hrToast(BuildContext context, String message) {
+void atsToast(BuildContext context, String message) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(
