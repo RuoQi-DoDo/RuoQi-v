@@ -2,6 +2,7 @@ import 'package:common/common.dart';
 import 'package:flutter/material.dart';
 
 import '../mini-program/ats/ats_mini_program.dart';
+import '../mini-program/hr/hr_mini_program.dart';
 import '../mini-program/merchant/home_page.dart';
 import '../mini-program/mini_program_shell.dart';
 import '../mini-program/partner/home_page.dart';
@@ -86,6 +87,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     );
   }
 
+  void _openHrMiniProgram() {
+    Navigator.of(context).push<void>(HrMiniProgram.route());
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -132,6 +137,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             onOpenAts: _openAtsMiniProgram,
             onOpenMerchant: _openMerchantMiniProgram,
             onOpenPartner: _openPartnerMiniProgram,
+            onOpenHr: _openHrMiniProgram,
             onExit: _closeMiniProgramPicker,
           ),
           _CustomerSubview.ats => AtsMiniProgram(
@@ -268,12 +274,14 @@ class _MiniProgramPickerPage extends StatefulWidget {
     required this.onOpenAts,
     required this.onOpenMerchant,
     required this.onOpenPartner,
+    required this.onOpenHr,
     required this.onExit,
   });
 
   final VoidCallback onOpenAts;
   final VoidCallback onOpenMerchant;
   final VoidCallback onOpenPartner;
+  final VoidCallback onOpenHr;
   final VoidCallback onExit;
 
   @override
@@ -302,6 +310,12 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
               icon: Icons.work_outline_rounded,
               color: scheme.primary,
               opensAts: true,
+            ),
+            _LauncherMiniProgramData(
+              label: '人事',
+              icon: Icons.badge_outlined,
+              color: const Color(0xFFC43D28),
+              opensHr: true,
             ),
             _LauncherMiniProgramData(
               label: '文件助手',
@@ -345,6 +359,12 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
               icon: Icons.work_outline_rounded,
               color: scheme.primary,
               opensAts: true,
+            ),
+            _LauncherMiniProgramData(
+              label: '人事',
+              icon: Icons.badge_outlined,
+              color: const Color(0xFFC43D28),
+              opensHr: true,
             ),
             _LauncherMiniProgramData(
               label: '企业服务',
@@ -426,6 +446,7 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
                           onOpenAts: widget.onOpenAts,
                           onOpenMerchant: widget.onOpenMerchant,
                           onOpenPartner: widget.onOpenPartner,
+                          onOpenHr: widget.onOpenHr,
                           onOther: () => _pickerToast(context, '该小程序为模拟入口'),
                         ),
                         const SizedBox(height: 30),
@@ -440,8 +461,10 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
                           onOpenAts: widget.onOpenAts,
                           onOpenMerchant: widget.onOpenMerchant,
                           onOpenPartner: widget.onOpenPartner,
+                          onOpenHr: widget.onOpenHr,
                           onOther: () => _pickerToast(context, '该小程序为模拟入口'),
                           highlightAtsForTest: true,
+                          highlightHrForTest: true,
                         ),
                         const SizedBox(height: 30),
                         const _PickerSectionHeader(title: '刚刚看过（最近1小时）'),
@@ -556,6 +579,7 @@ class _LauncherMiniProgramData {
     this.opensAts = false,
     this.opensMerchant = false,
     this.opensPartner = false,
+    this.opensHr = false,
   });
 
   final String label;
@@ -564,6 +588,7 @@ class _LauncherMiniProgramData {
   final bool opensAts;
   final bool opensMerchant;
   final bool opensPartner;
+  final bool opensHr;
 }
 
 class _LauncherGrid extends StatelessWidget {
@@ -572,16 +597,20 @@ class _LauncherGrid extends StatelessWidget {
     required this.onOpenAts,
     required this.onOpenMerchant,
     required this.onOpenPartner,
+    required this.onOpenHr,
     required this.onOther,
     this.highlightAtsForTest = false,
+    this.highlightHrForTest = false,
   });
 
   final List<_LauncherMiniProgramData> items;
   final VoidCallback onOpenAts;
   final VoidCallback onOpenMerchant;
   final VoidCallback onOpenPartner;
+  final VoidCallback onOpenHr;
   final VoidCallback onOther;
   final bool highlightAtsForTest;
+  final bool highlightHrForTest;
 
   @override
   Widget build(BuildContext context) {
@@ -601,6 +630,8 @@ class _LauncherGrid extends StatelessWidget {
             ? const Key('mini-program-picker-ats')
             : item.opensMerchant
             ? const Key('mini-program-picker-merchant')
+            : item.opensHr && highlightHrForTest
+            ? const Key('mini-program-picker-hr')
             : item.opensPartner
             ? const Key('mini-program-picker-partner')
             : null;
@@ -611,6 +642,8 @@ class _LauncherGrid extends StatelessWidget {
               ? onOpenAts
               : item.opensMerchant
               ? onOpenMerchant
+              : item.opensHr
+              ? onOpenHr
               : item.opensPartner
               ? onOpenPartner
               : onOther,
