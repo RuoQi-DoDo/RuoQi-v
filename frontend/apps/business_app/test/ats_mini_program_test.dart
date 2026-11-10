@@ -110,16 +110,33 @@ void main() {
     await tester.pumpWidget(const BusinessApp());
     await tester.pumpAndSettle();
 
-    final gesture = await tester.startGesture(
-      tester.getCenter(find.byKey(const Key('customer-home-scroll'))),
+    double panelScale() {
+      return tester
+          .widget<Transform>(find.byKey(const Key('mini-program-panel-scale')))
+          .transform
+          .entry(0, 0);
+    }
+
+    final dragStart = tester.getCenter(
+      find.byKey(const Key('customer-home-scroll')),
     );
-    await gesture.moveBy(const Offset(0, 120));
+    final gesture = await tester.startGesture(dragStart);
+    await gesture.moveTo(
+      dragStart + const Offset(0, 120),
+      timeStamp: const Duration(milliseconds: 120),
+    );
     await tester.pump();
 
     expect(find.byType(RefreshProgressIndicator), findsNothing);
     expect(find.byType(CircularProgressIndicator), findsNothing);
+    final firstPullScale = panelScale();
+    expect(firstPullScale, greaterThan(0.42));
+    expect(firstPullScale, lessThan(1));
 
-    await gesture.moveBy(const Offset(0, 200));
+    await gesture.moveTo(
+      dragStart + const Offset(0, 220),
+      timeStamp: const Duration(milliseconds: 240),
+    );
     await tester.pump();
     expect(find.byKey(const Key('mini-program-loading-dots')), findsOneWidget);
     expect(
@@ -131,7 +148,9 @@ void main() {
     final openingTransform = tester.widget<Transform>(
       find.byKey(const Key('mini-program-panel-scale')),
     );
-    expect(openingTransform.transform.entry(0, 0), lessThan(1));
+    final openingScale = openingTransform.transform.entry(0, 0);
+    expect(openingScale, greaterThanOrEqualTo(firstPullScale));
+    expect(openingScale, lessThanOrEqualTo(1));
     await tester.pumpAndSettle();
 
     expect(find.text('搜索小程序'), findsOneWidget);

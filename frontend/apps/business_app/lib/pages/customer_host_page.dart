@@ -45,6 +45,9 @@ class _CustomerHomePageState extends State<CustomerHomePage>
   static const double _pullOpenThreshold = 0.16;
   static const double _closeThreshold = 0.06;
   static const double _maxReleaseVelocity = 1.8;
+  static const double _panelRevealStart = 0.015;
+  static const double _panelRevealEnd = 1;
+  static const double _panelMinScale = 0.42;
 
   _CustomerSubview _subview = _CustomerSubview.host;
   _CustomerSubview _atsReturnSubview = _CustomerSubview.host;
@@ -314,6 +317,13 @@ class _CustomerHomePageState extends State<CustomerHomePage>
     _finishPull(velocity: 0);
   }
 
+  double _panelRevealProgress(double progress) {
+    final normalized =
+        ((progress - _panelRevealStart) / (_panelRevealEnd - _panelRevealStart))
+            .clamp(0.0, 1.0);
+    return Curves.easeOutCubic.transform(normalized);
+  }
+
   void _animatePullTo(double target, {required double velocity}) {
     final generation = ++_pullAnimationGeneration;
     final simulation = SpringSimulation(
@@ -401,14 +411,15 @@ class _CustomerHomePageState extends State<CustomerHomePage>
         _pullDragging || (_pullAnimating && _pullTarget == 1);
     final hostInteractive =
         _subview == _CustomerSubview.host && !pickerInteractive;
+    final pickerBackdropColor = Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF303030)
+        : const Color(0xFFF2F2F2);
     return Stack(
       key: const ValueKey('customer-host-picker-stack'),
       fit: StackFit.expand,
       children: [
         if (showPicker)
-          Positioned.fill(
-            child: ColoredBox(color: Theme.of(context).colorScheme.surface),
-          ),
+          Positioned.fill(child: ColoredBox(color: pickerBackdropColor)),
         if (showPicker)
           IgnorePointer(
             ignoring: !pickerInteractive,
@@ -439,39 +450,40 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                     0.0001,
                     1.0,
                   );
+                  final openingProgress =
+                      ((progress - _pullReleaseProgress) / releaseRemaining)
+                          .clamp(0.0, 1.0);
+                  final releaseReveal = _panelRevealProgress(
+                    _pullReleaseProgress,
+                  );
+                  final dragReveal = _panelRevealProgress(progress);
                   final scaleProgress = openingFromPull
-                      ? ((progress - _pullReleaseProgress) / releaseRemaining)
-                            .clamp(0.0, 1.0)
+                      ? releaseReveal +
+                            (1 - releaseReveal) *
+                                Curves.easeOutCubic.transform(openingProgress)
                       : _subview == _CustomerSubview.picker
                       ? 1.0
-                      : 0.0;
-                  final dragReveal = ((progress - 0.30) / 0.70).clamp(0.0, 1.0);
+                      : dragReveal;
                   final opacity = _subview == _CustomerSubview.picker
                       ? 1.0
-                      : openingFromPull
-                      ? 0.28 + 0.72 * scaleProgress
-                      : _pullDragging
-                      ? 0.10 + 0.18 * dragReveal
-                      : 0.0;
+                      : progress == 0
+                      ? 0.0
+                      : 0.12 + 0.88 * scaleProgress;
                   final showingPanel =
                       _subview == _CustomerSubview.picker ||
-                      openingFromPull ||
-                      _pullDragging;
+                      _pullAnimating ||
+                      _pullDragging ||
+                      progress > 0;
                   final panelScale = showingPanel
-                      ? 0.70 + 0.30 * scaleProgress
-                      : 0.70;
-                  final panelRadius =
-                      18 * (1 - scaleProgress) + 12 * closeProgress;
+                      ? _panelMinScale + (1 - _panelMinScale) * scaleProgress
+                      : _panelMinScale;
                   return Transform.translate(
                     offset: Offset(0, -closeProgress * viewportHeight),
                     child: Transform.scale(
                       key: const Key('mini-program-panel-scale'),
                       alignment: const Alignment(0, -0.78),
                       scale: panelScale,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(panelRadius),
-                        child: Opacity(opacity: opacity, child: child),
-                      ),
+                      child: Opacity(opacity: opacity, child: child),
                     ),
                   );
                 },
