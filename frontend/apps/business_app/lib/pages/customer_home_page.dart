@@ -17,8 +17,8 @@ import '../mini-program/partner/home_page.dart';
 import 'login_page.dart';
 
 part 'customer_host_page.dart';
-part 'mini_program_picker_page.dart';
-part 'mini_program_collection_page.dart';
+part '../mini-program/mini_program_picker_page.dart';
+part '../mini-program/mini_program_collection_page.dart';
 part 'contacts_page.dart';
 part 'discover_page.dart';
 part 'me_page.dart';

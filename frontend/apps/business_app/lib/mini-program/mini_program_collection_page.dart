@@ -1,4 +1,4 @@
-part of 'customer_home_page.dart';
+part of '../pages/customer_home_page.dart';
 
 class _MiniProgramCollectionPage extends StatelessWidget {
   const _MiniProgramCollectionPage({
