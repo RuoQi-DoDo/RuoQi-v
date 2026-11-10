@@ -85,8 +85,8 @@ melos run run:app_miniapp    # 或任意 run:* 脚本,详见 frontend/README.md
 ```
 
 前端完整的目录结构与命令见 [frontend/README.md](frontend/README.md)。
-Flutter 版本钉在根目录的 [.tool-versions](.tool-versions)（当前 `3.44.0`），
-CI 读取同一个文件。
+Flutter 和 Java 版本固定在根目录的 [mise.toml](mise.toml)（当前
+Flutter `3.47.4`、Temurin 17），CI 从同一个文件读取 Flutter 版本。
 
 ### 后续拆分前端
 

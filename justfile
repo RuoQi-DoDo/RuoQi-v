@@ -102,7 +102,7 @@ build-business target="web":
     cd frontend/apps/business-pc && flutter build {{ target }}
 
 build-app target="web":
-    cd frontend/apps/app-miniapp && flutter build {{ target }}{{ if target == "web" { "" } else { " --no-tree-shake-icons" } }}
+    cd frontend/apps/app-miniapp && mise exec -- flutter build {{ target }}{{ if target == "web" { "" } else { " --no-tree-shake-icons" } }}
 
 # 依次构建全部 3 个前端 Web 产物。
 build-frontend:

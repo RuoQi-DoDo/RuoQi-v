@@ -42,30 +42,33 @@ apps/app-miniapp/
 
 ## 环境准备
 
-Flutter 版本钉在仓库根的 `.tool-versions`（当前 `3.44.0`，对应 Dart 3.12.0），
-CI 读同一个文件，本地请保持一致。
+Flutter 和 Java 版本固定在仓库根的 `mise.toml`（当前 Flutter `3.47.4`、
+Java Temurin 17），CI 从同一个文件读取 Flutter 版本，本地请保持一致。
 
 > 为什么必须钉版本：`meta` / `matcher` / `test_api` / `vector_math` 这几个传递依赖
 > 由 Flutter SDK 精确钉住，SDK 版本一变，`frontend/pubspec.lock` 就会被 pub 改写；
 > 而依赖集在运行中变化会让 dev server 拒绝热重载（`Hot reload rejected due to
 > unsupported changes`）。
 
-用 mise / asdf 管理：
+用 mise 管理：
 
 ```bash
-mise install        # asdf 用户：asdf install
-flutter --version   # 应输出 3.44.0
+mise install
+flutter --version   # 应输出 3.47.4
+java -version       # 应输出 17
 ```
 
-手动安装：把 3.44.0 放在 `$HOME/opt/flutter`，再把它和 melos 加进 PATH：
+手动安装：把 Flutter 3.47.4 和 JDK 17 分别安装到本地目录，再配置环境变量：
 
 ```bash
-export PATH="$PATH":"$HOME/opt/flutter/bin":"$HOME/.pub-cache/bin"
-flutter --version # 应输出 3.44.0
+export JAVA_HOME="$HOME/opt/jdk-17"
+export PATH="$JAVA_HOME/bin:$HOME/opt/flutter/bin:$HOME/.pub-cache/bin:$PATH"
+flutter --version # 应输出 3.47.4
+java -version     # 应输出 17
 melos --version   # 首次使用前：dart pub global activate melos 6.3.3
 ```
 
-升级 Flutter 时：改 `.tool-versions` 的版本号 → `cd frontend && flutter pub get`
+升级 Flutter 时：改 `mise.toml` 的版本号 → `cd frontend && flutter pub get`
 → 提交更新后的 `frontend/pubspec.lock`，CI 会自动切到新版本。
 
 ## 常用命令
