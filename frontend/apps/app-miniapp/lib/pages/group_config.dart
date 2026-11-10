@@ -1,6 +1,6 @@
-import 'business_group.dart';
-import 'business_group_config_stub.dart'
-    if (dart.library.js_interop) 'business_group_config_web.dart'
+import 'group.dart';
+import 'group_config_stub.dart'
+    if (dart.library.js_interop) 'group_config_web.dart'
     as platform;
 
 BusinessGroup resolveConfiguredBusinessGroup({String? override}) {

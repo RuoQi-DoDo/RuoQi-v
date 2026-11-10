@@ -27,7 +27,7 @@ apps/business-pc/
 
 apps/app-miniapp/
   lib/api/platform/           # 平台域 DTO + 客户端（平台小程序使用）
-  lib/business_groups/        # 业务组注册、Web 入口配置与 home 映射
+  lib/pages/group*            # 业务组注册、Web 入口配置与 home 映射
   lib/pages/im/               # IM 业务组宿主、聊天、通讯录、发现、我的与设置
   lib/pages/index.dart        # 业务组页面公共导出
   lib/mini-program/ats/      # 企业直聘 ATS 小程序页面
@@ -90,7 +90,7 @@ melos run run:business_pc
 `app-miniapp` 的业务组入口在 `apps/app-miniapp/web/index.html`：
 修改 `RQ_DEFAULT_BUSINESS_GROUP` 可指定哪个业务组的 `home` 作为 App 主页面，
 也可用 `?group=im|ats|hr|merchant|partner|platform` 临时切换。详见
-`apps/app-miniapp/lib/business_groups/README.md`。
+`apps/app-miniapp/lib/pages/README.md`。
 
 ## 分层约定
 

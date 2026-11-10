@@ -1,4 +1,4 @@
-# 业务组入口
+# 业务组与页面入口
 
 `BusinessApp` 不再固定写死客户/IM 首页，而是在启动时解析当前业务组，
 再用该业务组的 `home` Widget 作为 `MaterialApp.home`。

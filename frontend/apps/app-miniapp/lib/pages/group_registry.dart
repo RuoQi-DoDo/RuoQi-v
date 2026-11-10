@@ -5,8 +5,8 @@ import '../mini-program/hr/hr_mini_program.dart';
 import '../mini-program/merchant/home_page.dart';
 import '../mini-program/partner/home_page.dart';
 import '../mini-program/platform/platform_mini_program.dart';
-import '../pages/im/im_home_page.dart';
-import 'business_group.dart';
+import 'group.dart';
+import 'im/im_home_page.dart';
 
 class BusinessGroupDefinition {
   const BusinessGroupDefinition({

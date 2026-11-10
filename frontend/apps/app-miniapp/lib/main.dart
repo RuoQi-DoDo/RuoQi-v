@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:common/common.dart';
 
 import 'appearance.dart';
-import 'business_groups/business_group.dart';
-import 'business_groups/business_group_config.dart';
-import 'business_groups/business_group_registry.dart';
+import 'pages/group.dart';
+import 'pages/group_config.dart';
+import 'pages/group_registry.dart';
 
 void main() {
   runApp(const BusinessApp());

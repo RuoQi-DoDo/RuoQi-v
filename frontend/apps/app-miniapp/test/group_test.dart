@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ruoqi_app_miniapp/business_groups/business_group.dart';
-import 'package:ruoqi_app_miniapp/business_groups/business_group_config.dart';
-import 'package:ruoqi_app_miniapp/business_groups/business_group_registry.dart';
+import 'package:ruoqi_app_miniapp/pages/group.dart';
+import 'package:ruoqi_app_miniapp/pages/group_config.dart';
+import 'package:ruoqi_app_miniapp/pages/group_registry.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 
 void main() {
