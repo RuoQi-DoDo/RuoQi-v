@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="RuoQi 业务端 App">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="RuoQi 业务端 App">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>RuoQi 业务端 App</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <!--
+    业务组入口配置：
+    - 修改 RQ_DEFAULT_BUSINESS_GROUP 可选择启动时的 App 主页面。
+    - 可用值：im、ats、hr、merchant、partner、platform。
+    - URL 查询参数可临时覆盖，例如：?group=merchant。
+    - im 的 home 是 IM 宿主主页，并会打开小程序选择页；
+      ats / hr / merchant / partner / platform 是可直接作为 home 的业务组页面。
+  -->
+  <script>
+    const RQ_DEFAULT_BUSINESS_GROUP = 'im';
+    const RQ_BUSINESS_GROUPS = new Set([
+      'im',
+      'ats',
+      'hr',
+      'merchant',
+      'partner',
+      'platform',
+    ]);
+    const rqRequestedGroup = new URLSearchParams(
+      window.location.search
+    ).get('group');
+    window.ruoQiBusinessConfig = Object.freeze({
+      group: RQ_BUSINESS_GROUPS.has(rqRequestedGroup)
+        ? rqRequestedGroup
+        : RQ_DEFAULT_BUSINESS_GROUP,
+    });
+  </script>
+  <!--
+    You can customize the "flutter_bootstrap.js" script.
+    This is useful to provide a custom configuration to the Flutter loader
+    or to give the user feedback during the initialization process.
+
+    For more details:
+    * https://docs.flutter.dev/platform-integration/web/initialization
+  -->
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

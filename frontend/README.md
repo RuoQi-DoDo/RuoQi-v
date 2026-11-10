@@ -1,16 +1,16 @@
 # RuoQi Flutter UI
 
 RuoQi 多项目 Flutter 巨仓（monorepo），基于 Dart 原生 pub workspace 与 [melos](https://melos.invertase.dev) 管理。
-平台端保留 PC 外壳，平台账号中心以 `business_app` 内的“平台管理”小程序承载；
+平台端保留 PC 外壳，平台账号中心以 `app-miniapp` 内的“平台管理”小程序承载；
 业务端仍提供 App（移动端）与 PC（Web）两个 UI 项目。各应用壳在 `lib/api/` 下持有本端的域 API 层。
 
 ## 目录结构
 
 ```
 apps/
-  platform_pc/               # 平台端 PC（ruoqi_platform_pc）：系统管理 / 运营后台
-  business_pc/               # 业务端 PC（ruoqi_business_pc）：客户 / 商户 / 伙伴
-  business_app/              # 业务端 App（ruoqi_business_app）：客户 / 商户 / 伙伴
+  platform-pc/               # 平台端 PC（ruoqi_platform_pc）：系统管理 / 运营后台
+  business-pc/               # 业务端 PC（ruoqi_business_pc）：客户 / 商户 / 伙伴
+  app-miniapp/               # 业务小程序宿主（ruoqi_app_miniapp）：客户 / 商户 / 伙伴
 packages/
   common/                    # 品牌主题、通用组件、端类型、营销组件
   network/                   # 网络基础设施（不绑定后端）
@@ -19,24 +19,26 @@ packages/
 域 API 随应用壳走，不再是独立包。以业务端为例：
 
 ```
-apps/business_pc/
+apps/business-pc/
   lib/api/customer/           # 客户域 DTO + 客户端（本端一份）
   lib/api/merchant/           # 商户域 DTO + 客户端
   lib/api/partner/            # 伙伴域 DTO + 客户端
   lib/customer|merchant|partner/  # 对应域的 UI 页面
 
-apps/business_app/
+apps/app-miniapp/
   lib/api/platform/           # 平台域 DTO + 客户端（平台小程序使用）
-  lib/pages/                  # 客户宿主首页与登录页
+  lib/business_groups/        # 业务组注册、Web 入口配置与 home 映射
+  lib/pages/im/               # IM 业务组宿主、聊天、通讯录、发现、我的与设置
+  lib/pages/index.dart        # 业务组页面公共导出
   lib/mini-program/ats/      # 企业直聘 ATS 小程序页面
   lib/mini-program/merchant/  # 商户小程序页面
   lib/mini-program/partner/   # 伙伴小程序页面
   lib/mini-program/platform/  # 平台账号中心小程序
 ```
 
-> 说明：App 包名用 `ruoqi_` 前缀 + `_app` / `_pc` 后缀——`platform` 之类的名字与
-> pub.dev 上的同名包（Flutter SDK 的传递依赖）冲突，会让 workspace 解析失败；
-> 共享包则直接叫 `common` / `network`，import 时一眼能看出用途。
+> 说明：应用包名统一使用 `ruoqi_` 前缀；移动小程序宿主目录为 `app-miniapp`，
+> Dart 包名按语言规则写作 `ruoqi_app_miniapp`。`platform` 之类的裸名称会与
+> pub.dev 上的同名包冲突，因此统一加前缀；共享包则直接叫 `common` / `network`。
 
 ## 环境准备
 
@@ -81,9 +83,14 @@ melos gen
 
 # 运行某个端（App 或 PC）
 melos run run:platform_pc
-melos run run:business_app
+melos run run:app_miniapp
 melos run run:business_pc
 ```
+
+`app-miniapp` 的业务组入口在 `apps/app-miniapp/web/index.html`：
+修改 `RQ_DEFAULT_BUSINESS_GROUP` 可指定哪个业务组的 `home` 作为 App 主页面，
+也可用 `?group=im|ats|hr|merchant|partner|platform` 临时切换。详见
+`apps/app-miniapp/lib/business_groups/README.md`。
 
 ## 分层约定
 
@@ -95,7 +102,7 @@ melos run run:business_pc
   `json_serializable` 生成 `*.g.dart`，改动后执行 `melos gen`；各端接口本来就不同，
   因此按端各持一份，互不牵连。
 - `apps/<壳>/lib/<域>/`：该域的 UI 页面，按「应用壳 + 端类型」划分——平台 PC 位于
-  `platform_pc`；平台账号中心已收敛为 `business_app/lib/mini-program/platform` 小程序。
+  `platform-pc`；平台账号中心已收敛为 `app-miniapp/lib/mini-program/platform` 小程序。
   业务端（客户 / 商户 / 伙伴）的页面放在同一个壳里，由工作台入口打开。
 
 后端地址通过 `--dart-define` 注入，例如：
@@ -108,8 +115,8 @@ flutter run --dart-define=CUSTOMER_API_BASE_URL=https://customer.example.com
 
 | 域 | App（移动端） | PC（Web） |
 |---|---|---|
-| platform（系统管理 / 运营后台） | business_app 的“平台管理”小程序 | apps/platform_pc |
-| business（客户 / 商户 / 伙伴） | apps/business_app | apps/business_pc |
+| platform（系统管理 / 运营后台） | app-miniapp 的“平台管理”小程序 | apps/platform-pc |
+| business（客户 / 商户 / 伙伴） | apps/app-miniapp | apps/business-pc |
 
 每个 App 在 `main.dart` 用 `RuoQiPlatformScope` 声明端类型（`RuoQiPlatform.mobile` / `pc`），
 布局代码通过 `RuoQiPlatformScope.of(context)` 或 `RuoQiBreakpoints` 断点自适应。
@@ -122,8 +129,8 @@ flutter run --dart-define=CUSTOMER_API_BASE_URL=https://customer.example.com
 
 ```bash
 # PC 端 / App 端分别对应
-apps/business_pc/lib/api/<域>/   +   apps/business_pc/lib/<域>/
-apps/business_app/lib/api/<域>/  +   apps/business_app/lib/<域>/
+apps/business-pc/lib/api/<域>/   +   apps/business-pc/lib/<域>/
+apps/app-miniapp/lib/api/<域>/  +   apps/app-miniapp/lib/<域>/
 ```
 
 3. 若该域需要独立的 App 壳（不走业务端），再按现有壳复制目录：

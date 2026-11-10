@@ -86,7 +86,7 @@ Available services: `all fms iam job mcms pay tenant platform mcp db`.
 ```bash
 cd frontend
 flutter pub get
-melos run run:business_app   # or any run:* script, see frontend/README.md
+melos run run:app_miniapp    # or any run:* script, see frontend/README.md
 ```
 
 The full frontend layout and commands are documented in
