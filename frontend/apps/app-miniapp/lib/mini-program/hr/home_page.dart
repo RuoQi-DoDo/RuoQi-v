@@ -5,7 +5,7 @@
 library;
 
 export 'hr_controller.dart';
-export 'hr_api.dart';
+export '../../api/hr/hr_api.dart';
 export 'hr_mini_program.dart';
 export 'hr_models.dart';
 export 'hr_repository.dart';

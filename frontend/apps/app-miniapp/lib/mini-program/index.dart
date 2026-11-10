@@ -10,7 +10,7 @@ export 'ats/pages/home_pages.dart';
 export 'ats/pages/message_pages.dart';
 export 'ats/pages/misc_pages.dart';
 export 'ats/pages/profile_pages.dart';
-export 'hr/hr_api.dart';
+export '../api/hr/hr_api.dart';
 export 'hr/hr_controller.dart';
 export 'hr/hr_mini_program.dart';
 export 'hr/hr_models.dart';

@@ -9,6 +9,5 @@
 - `settings_page.dart`：设置与主题切换。
 - `login_page.dart`：IM 业务组登录页。
 
-IM 业务组默认作为业务 App 的主页面，也是当前唯一直接持有小程序选择页的
-home。业务组由 `web/index.html` 中的 `RQ_DEFAULT_BUSINESS_GROUP` 选择，
-也可以通过 `?group=im|ats|hr|merchant|partner|platform` 覆盖。
+IM 是当前业务 App 的唯一主页面，也是唯一直接持有小程序选择页的主业务。
+ATS、HR、商户、伙伴和平台管理只作为小程序从 IM 宿主打开，不作为 App home。

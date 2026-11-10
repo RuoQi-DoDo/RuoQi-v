@@ -26,8 +26,8 @@ apps/business-pc/
   lib/customer|merchant|partner/  # 对应域的 UI 页面
 
 apps/app-miniapp/
-  lib/api/platform/           # 平台域 DTO + 客户端（平台小程序使用）
-  lib/pages/group*            # 业务组注册、Web 入口配置与 home 映射
+  lib/api/                    # IM / ATS / HR / 客户 / 商户 / 伙伴 / 平台 API 与 DTO
+  lib/app_shell.dart          # 共享应用壳与独立入口启动函数
   lib/pages/im/               # IM 业务组宿主、聊天、通讯录、发现、我的与设置
   lib/pages/index.dart        # 业务组页面公共导出
   lib/mini-program/ats/      # 企业直聘 ATS 小程序页面
@@ -87,10 +87,8 @@ melos run run:app_miniapp
 melos run run:business_pc
 ```
 
-`app-miniapp` 的业务组入口在 `apps/app-miniapp/web/index.html`：
-修改 `RQ_DEFAULT_BUSINESS_GROUP` 可指定哪个业务组的 `home` 作为 App 主页面，
-也可用 `?group=im|ats|hr|merchant|partner|platform` 临时切换。详见
-`apps/app-miniapp/lib/pages/README.md`。
+`app-miniapp` 当前由 `lib/main.dart` 直接启动 IM 主业务。ATS、HR、商户、
+伙伴和平台管理仅作为小程序由 IM 宿主打开。
 
 ## 分层约定
 

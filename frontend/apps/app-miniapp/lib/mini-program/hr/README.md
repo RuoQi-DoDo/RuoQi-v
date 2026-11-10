@@ -14,7 +14,7 @@
 
 默认固定使用 `HrMockData`，所有页面无需后端即可展示和交互。
 
-真实 Horilla API 边界位于 `hr_api.dart`，通过 `HrRepository` 与页面隔离。
+真实 Horilla API 边界位于 `../../api/hr/hr_api.dart`，通过 `HrRepository` 与页面隔离。
 切换到远端仓库：
 
 ```bash

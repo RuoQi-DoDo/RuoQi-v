@@ -1,38 +1,13 @@
-# 业务组与页面入口
+# 主业务页面
 
-`BusinessApp` 不再固定写死客户/IM 首页，而是在启动时解析当前业务组，
-再用该业务组的 `home` Widget 作为 `MaterialApp.home`。
+`pages/` 只存放可以作为 App 主业务运行的页面和页面组。
 
-## Web 配置
+当前主业务：
 
-编辑 `web/index.html`：
+- `im/`：IM 宿主主页、通讯录、发现、我的、设置和登录。
 
-```js
-const RQ_DEFAULT_BUSINESS_GROUP = 'im';
-```
+小程序页面统一放在 `lib/mini-program/`，不会映射为主业务 home。IM 宿主负责
+提供小程序选择页，并从 `mini-program/` 打开对应小程序。
 
-支持的值为：
-
-- `im`：IM 宿主主页，包含下拉打开小程序选择页的交互。
-- `ats`：企业直聘小程序首页。
-- `hr`：人事小程序首页。
-- `merchant`：商户首页。
-- `partner`：伙伴首页。
-- `platform`：平台账号中心首页。
-
-无需重新构建也可通过 URL 临时覆盖：
-
-```text
-?group=merchant
-```
-
-## App 配置
-
-Android / iOS 运行时使用：
-
-```bash
-flutter run --dart-define=BUSINESS_GROUP=merchant
-```
-
-没有配置或配置值无效时回退到 `im`。`BusinessGroupDefinition.hostsMiniPrograms`
-标记该业务组的主页是否持有小程序宿主交互；当前为 IM 业务组。
+如果以后出现第二个主业务，应按主业务建立 `pages/<business>/`，并重新评估是否
+需要独立编译入口；当前只有 IM 一个主业务，因此由 `lib/main.dart` 直接启动。

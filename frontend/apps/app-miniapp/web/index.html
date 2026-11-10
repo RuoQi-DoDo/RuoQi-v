@@ -34,33 +34,6 @@
 </head>
 <body>
   <!--
-    业务组入口配置：
-    - 修改 RQ_DEFAULT_BUSINESS_GROUP 可选择启动时的 App 主页面。
-    - 可用值：im、ats、hr、merchant、partner、platform。
-    - URL 查询参数可临时覆盖，例如：?group=merchant。
-    - im 的 home 是 IM 宿主主页，并会打开小程序选择页；
-      ats / hr / merchant / partner / platform 是可直接作为 home 的业务组页面。
-  -->
-  <script>
-    const RQ_DEFAULT_BUSINESS_GROUP = 'im';
-    const RQ_BUSINESS_GROUPS = new Set([
-      'im',
-      'ats',
-      'hr',
-      'merchant',
-      'partner',
-      'platform',
-    ]);
-    const rqRequestedGroup = new URLSearchParams(
-      window.location.search
-    ).get('group');
-    window.ruoQiBusinessConfig = Object.freeze({
-      group: RQ_BUSINESS_GROUPS.has(rqRequestedGroup)
-        ? rqRequestedGroup
-        : RQ_DEFAULT_BUSINESS_GROUP,
-    });
-  </script>
-  <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
     or to give the user feedback during the initialization process.
