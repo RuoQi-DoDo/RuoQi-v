@@ -1,0 +1,40 @@
+name: ruoqi_app_miniapp
+description: "RuoQi business mini-app host for customer, merchant and partner."
+resolution: workspace
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  json_annotation: ^4.12.0
+  common:
+    path: ../../packages/common
+  network:
+    path: ../../packages/network
+
+dev_dependencies:
+  build_runner: ^2.4.13
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  json_serializable: ^6.9.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+
+  fonts:
+    - family: lightIconFont
+      fonts:
+        - asset: assets/fonts/lightIconFont.ttf
+    - family: boldIconFont
+      fonts:
+        - asset: assets/fonts/boldIconFont.ttf

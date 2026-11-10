@@ -6,10 +6,9 @@ environment:
   sdk: ^3.12.0
 
 workspace:
-  - apps/platform_app
-  - apps/platform_pc
-  - apps/business_app
-  - apps/business_pc
+  - apps/platform-pc
+  - apps/app-miniapp
+  - apps/business-pc
   - packages/common
   - packages/network
 
