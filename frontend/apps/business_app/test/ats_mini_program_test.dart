@@ -53,7 +53,11 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.drag(find.text('RuoQi'), const Offset(0, -80));
+    await tester.drag(
+      find.byKey(const Key('mini-program-picker-exit-swipe')),
+      const Offset(0, -80),
+    );
+    await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
     expect(find.text('客户模拟'), findsOneWidget);
   });
@@ -98,20 +102,40 @@ void main() {
     expect(find.text('搜索岗位或关键词'), findsNothing);
   });
 
-  testWidgets('客户首页下滑打开微信式小程序选择页', (tester) async {
+  testWidgets('客户首页下滑直接打开小程序选择页且不展示刷新 loading', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const BusinessApp());
     await tester.pumpAndSettle();
-    await tester.drag(
-      find.byKey(const Key('customer-home-scroll')),
-      const Offset(0, 320),
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byKey(const Key('customer-home-scroll'))),
     );
+    await gesture.moveBy(const Offset(0, 120));
+    await tester.pump();
+
+    expect(find.byType(RefreshProgressIndicator), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+
+    await gesture.moveBy(const Offset(0, 200));
+    await tester.pump();
+    expect(find.byKey(const Key('mini-program-loading-dots')), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.byKey(const Key('customer-host-home'))).dy,
+      greaterThan(0),
+    );
+    await gesture.up();
+    await tester.pump();
+    final openingTransform = tester.widget<Transform>(
+      find.byKey(const Key('mini-program-panel-scale')),
+    );
+    expect(openingTransform.transform.entry(0, 0), lessThan(1));
     await tester.pumpAndSettle();
 
     expect(find.text('搜索小程序'), findsOneWidget);
+    expect(find.byKey(const Key('mini-program-loading-dots')), findsNothing);
     expect(find.text('我的小程序'), findsOneWidget);
     expect(find.byType(Dialog), findsNothing);
     expect(find.byTooltip('关闭'), findsNothing);
@@ -138,11 +162,213 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.drag(find.text('RuoQi'), const Offset(0, -80));
+    await tester.drag(
+      find.byKey(const Key('mini-program-picker-exit-swipe')),
+      const Offset(0, -80),
+    );
+    await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
 
     expect(find.text('客户模拟'), findsOneWidget);
     expect(find.byKey(const Key('customer-mini-program-picker')), findsNothing);
+  });
+
+  testWidgets('更多和我的小程序页面可打开并返回', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byKey(const Key('customer-home-scroll')),
+      const Offset(0, 320),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('更多'));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('mini-program-collection-recent')),
+      findsOneWidget,
+    );
+    expect(find.text('最近使用的小程序'), findsOneWidget);
+    expect(
+      find.byKey(const Key('mini-program-collection-list')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const Key('mini-program-collection-back')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('我的小程序'));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('mini-program-collection-mine')),
+      findsOneWidget,
+    );
+    expect(find.text('我的小程序'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('mini-program-collection-back')));
+    await tester.pumpAndSettle();
+    expect(find.text('最近'), findsOneWidget);
+  });
+
+  testWidgets('通讯录、发现、我三个底栏页面可切换', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('通讯录'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('contacts-page')), findsOneWidget);
+    expect(find.text('新的朋友'), findsOneWidget);
+    expect(find.text('群聊'), findsOneWidget);
+
+    await tester.tap(find.text('发现').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('discover-page')), findsOneWidget);
+    expect(find.text('朋友圈'), findsOneWidget);
+    expect(find.text('视频号'), findsOneWidget);
+    expect(find.text('小程序'), findsOneWidget);
+
+    await tester.tap(find.text('我').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('me-page')), findsOneWidget);
+    expect(find.text('Jengro Woo'), findsOneWidget);
+    expect(find.text('服务'), findsOneWidget);
+    expect(find.text('设置'), findsOneWidget);
+  });
+
+  testWidgets('我可以进入设置页，通知开关与退出入口可用', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('我').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('settings-page')), findsOneWidget);
+    expect(find.text('账号与安全'), findsOneWidget);
+    expect(find.text('消息通知'), findsOneWidget);
+    expect(find.text('个人信息与权限'), findsOneWidget);
+
+    final notificationSwitch = find.descendant(
+      of: find.byKey(const Key('settings-message-notifications')),
+      matching: find.byType(Switch),
+    );
+    expect(tester.widget<Switch>(notificationSwitch).value, isTrue);
+    await tester.tap(notificationSwitch);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Switch>(notificationSwitch).value, isFalse);
+
+    final settingsList = find.descendant(
+      of: find.byKey(const Key('settings-page')),
+      matching: find.byType(ListView),
+    );
+    await tester.drag(settingsList, const Offset(0, -360));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-logout')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('退出后将返回登录页面，是否继续？'), findsOneWidget);
+    await tester.tap(find.text('取消'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('settings-back')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('me-page')), findsOneWidget);
+  });
+
+  testWidgets('正常模式与黑色模式可切换并覆盖通讯录', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
+      ThemeMode.light,
+    );
+    await tester.tap(find.text('通讯录'));
+    await tester.pumpAndSettle();
+    expect(
+      Theme.of(
+        tester.element(find.byKey(const Key('contacts-page'))),
+      ).brightness,
+      Brightness.light,
+    );
+
+    await tester.tap(find.text('我').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+
+    final darkModeSwitch = find.descendant(
+      of: find.byKey(const Key('settings-dark-mode')),
+      matching: find.byType(Switch),
+    );
+    expect(tester.widget<Switch>(darkModeSwitch).value, isFalse);
+    await tester.tap(darkModeSwitch);
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
+      ThemeMode.dark,
+    );
+    expect(
+      Theme.of(
+        tester.element(find.byKey(const Key('settings-page'))),
+      ).brightness,
+      Brightness.dark,
+    );
+
+    await tester.tap(find.byKey(const Key('settings-back')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('通讯录'));
+    await tester.pumpAndSettle();
+    expect(
+      Theme.of(
+        tester.element(find.byKey(const Key('contacts-page'))),
+      ).brightness,
+      Brightness.dark,
+    );
+  });
+
+  testWidgets('通讯录、发现、我和设置页在小屏下无布局异常', (tester) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('通讯录'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('发现').last);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('我').last);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    await tester.drag(find.byKey(const Key('me-page')), const Offset(0, -320));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('参考项目的全部页面路由均可构建', (tester) async {
