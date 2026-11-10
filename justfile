@@ -93,7 +93,7 @@ run-app target="web" port="51003":
 run-apps device=env_var_or_default("DEVICE", "web-server") base_port=env_var_or_default("BASE_PORT", "51000") hub_port=env_var_or_default("HUB_PORT", "51090"):
     DEVICE={{ device }} BASE_PORT={{ base_port }} HUB_PORT={{ hub_port }} ./frontend/tools/dev_all.sh
 
-# 构建目标写在命令末尾，如：just build-platform web、just build-app apk。
+# 构建目标写在命令末尾，如：just build-platform web、just build-app apk、just build-app aab。
 build-platform target="web":
     cd frontend/apps/platform-pc && flutter build {{ target }}
 
@@ -101,7 +101,7 @@ build-business target="web":
     cd frontend/apps/business-pc && flutter build {{ target }}
 
 build-app target="web":
-    cd frontend/apps/app-miniapp && flutter build {{ target }}{{ if target == "web" { "" } else { " --no-tree-shake-icons" } }}
+    cd frontend/apps/app-miniapp && flutter build {{ if target == "aab" { "appbundle" } else { target } }}{{ if target == "web" { "" } else { " --no-tree-shake-icons" } }}
 
 # 依次构建全部 3 个前端 Web 产物。
 build-frontend:
