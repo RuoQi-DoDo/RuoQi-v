@@ -1,7 +1,13 @@
 import 'package:common/common.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'appearance.dart';
+
+/// Web 打包时启用全站文案选择，移动端 App 保持原生手势行为。
+TransitionBuilder? platformSelectionBuilder({bool isWeb = kIsWeb}) {
+  return isWeb ? ruoQiSelectionBuilder : null;
+}
 
 /// 业务应用共享外壳，不依赖业务组注册表。
 class BusinessAppFrame extends StatefulWidget {
@@ -35,7 +41,7 @@ class _BusinessAppFrameState extends State<BusinessAppFrame> {
             child: MaterialApp(
               title: widget.title,
               debugShowCheckedModeBanner: false,
-              builder: ruoQiSelectionBuilder,
+              builder: platformSelectionBuilder(),
               theme: ruoQiTheme(accent: defaultAccentColor),
               darkTheme: ruoQiTheme(
                 brightness: Brightness.dark,
