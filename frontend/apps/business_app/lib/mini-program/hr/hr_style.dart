@@ -1,23 +1,103 @@
 import 'package:flutter/material.dart';
 
-import 'hr_models.dart';
+import 'hr_format.dart';
 
-class HrColors {
-  const HrColors._();
-
-  static const primary = Color(0xFF12AE85);
-  static const primaryDark = Color(0xFF078666);
-  static const mint = Color(0xFFE8F8F3);
-  static const mintStrong = Color(0xFFCCEFE4);
-  static const orange = Color(0xFFFF822B);
-  static const red = Color(0xFFFF4D4F);
-  static const background = Color(0xFFF5F6F7);
+abstract final class HrColors {
+  static const brand = Color(0xFFC43D28);
+  static const brandLight = Color(0xFFE54F38);
+  static const brandTint = Color(0xFFFDECE8);
+  static const brandTintBorder = Color(0xFFF6CFC7);
+  static const ink = Color(0xFF1C1C1C);
+  static const ink2 = Color(0xFF444442);
+  static const ink3 = Color(0xFF5E5E5C);
+  static const ink4 = Color(0xFF9B9B99);
+  static const onDark2 = Color(0xFFB5B5B3);
   static const surface = Colors.white;
-  static const text = Color(0xFF1F2329);
-  static const textSecondary = Color(0xFF646A73);
-  static const textMuted = Color(0xFF8F959E);
-  static const divider = Color(0xFFEDEFF2);
-  static const blue = Color(0xFF3B82F6);
+  static const bg = Color(0xFFF7F7F5);
+  static const bg2 = Color(0xFFF1F0EE);
+  static const line = Color(0xFFE4E3E0);
+  static const line2 = Color(0xFFEFEEEC);
+  static const success = Color(0xFF1E7A54);
+  static const successBg = Color(0xFFE4F2EA);
+  static const warning = Color(0xFF9A6B12);
+  static const warningBg = Color(0xFFFAF0DC);
+  static const warningBorder = Color(0xFFEFDCB4);
+  static const warningInk = Color(0xFF7A5410);
+  static const danger = Color(0xFF8E2E22);
+  static const dangerBg = Color(0xFFF7E4E0);
+  static const dangerBorder = Color(0xFFE8BDB4);
+  static const info = Color(0xFF2A5E8C);
+  static const infoBg = Color(0xFFE6EEF5);
+  static const readDot = Color(0xFFDEDEDC);
+  static const onDarkTile = Color(0x12FFFFFF);
+  static const onDarkLine = Color(0x24FFFFFF);
+}
+
+abstract final class HrText {
+  static const cardTitle = TextStyle(
+    color: HrColors.ink,
+    fontSize: 14.5,
+    fontWeight: FontWeight.w700,
+    height: 1.35,
+  );
+
+  static const appBarTitle = TextStyle(
+    color: HrColors.ink,
+    fontSize: 21,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.5,
+    height: 1.2,
+  );
+
+  static const body = TextStyle(
+    color: HrColors.ink2,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    height: 1.5,
+  );
+
+  static const meta = TextStyle(
+    color: HrColors.ink3,
+    fontSize: 11.5,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+  );
+
+  static const eyebrow = TextStyle(
+    color: HrColors.ink4,
+    fontSize: 10,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 1.1,
+    height: 1.3,
+  );
+
+  static const mono = TextStyle(
+    color: HrColors.ink,
+    fontFamilyFallback: ['SF Mono', 'Menlo', 'Consolas'],
+    fontSize: 12,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+}
+
+abstract final class HrShadows {
+  static const card = <BoxShadow>[
+    BoxShadow(color: Color(0x0A1C1C1C), offset: Offset(0, 1), blurRadius: 2),
+    BoxShadow(
+      color: Color(0x141C1C1C),
+      offset: Offset(0, 8),
+      blurRadius: 24,
+      spreadRadius: -12,
+    ),
+  ];
+
+  static const hero = <BoxShadow>[
+    BoxShadow(
+      color: Color(0x701C1C1C),
+      offset: Offset(0, 18),
+      blurRadius: 40,
+      spreadRadius: -18,
+    ),
+  ];
 }
 
 class HrTheme {
@@ -25,82 +105,68 @@ class HrTheme {
 
   static ThemeData data() {
     final scheme = ColorScheme.fromSeed(
-      seedColor: HrColors.primary,
+      seedColor: HrColors.brand,
       brightness: Brightness.light,
-      primary: HrColors.primary,
+      primary: HrColors.brand,
       surface: HrColors.surface,
     );
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: HrColors.background,
+      scaffoldBackgroundColor: HrColors.bg,
       fontFamilyFallback: const [
         'PingFang SC',
         'Microsoft YaHei',
         'Noto Sans CJK SC',
       ],
       textTheme: const TextTheme(
-        headlineSmall: TextStyle(
-          color: HrColors.text,
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
-          height: 1.3,
-        ),
-        titleLarge: TextStyle(
-          color: HrColors.text,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          height: 1.35,
-        ),
-        titleMedium: TextStyle(
-          color: HrColors.text,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          height: 1.4,
-        ),
-        bodyLarge: TextStyle(color: HrColors.text, fontSize: 15, height: 1.5),
-        bodyMedium: TextStyle(
-          color: HrColors.textSecondary,
-          fontSize: 13,
-          height: 1.5,
-        ),
-        bodySmall: TextStyle(
-          color: HrColors.textMuted,
-          fontSize: 12,
-          height: 1.45,
-        ),
+        headlineSmall: HrText.appBarTitle,
+        titleLarge: HrText.cardTitle,
+        titleMedium: HrText.cardTitle,
+        bodyLarge: HrText.body,
+        bodyMedium: HrText.body,
+        bodySmall: HrText.meta,
         labelLarge: TextStyle(
-          color: HrColors.text,
+          color: HrColors.ink,
           fontSize: 14,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
       ),
-      dividerColor: HrColors.divider,
+      dividerColor: HrColors.line2,
+      datePickerTheme: const DatePickerThemeData(
+        backgroundColor: HrColors.surface,
+        headerBackgroundColor: HrColors.ink,
+        headerForegroundColor: HrColors.surface,
+      ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: HrColors.text,
-        contentTextStyle: const TextStyle(fontSize: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        backgroundColor: HrColors.ink,
+        contentTextStyle: const TextStyle(
+          color: HrColors.surface,
+          fontSize: 13,
+        ),
+        actionTextColor: const Color(0xFFFF9B86),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: HrColors.background,
-        hintStyle: const TextStyle(color: HrColors.textMuted, fontSize: 14),
+        fillColor: HrColors.bg2,
+        hintStyle: HrText.meta.copyWith(color: HrColors.ink4),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
-          vertical: 13,
+          vertical: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: HrColors.primary, width: 1.2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: HrColors.brand, width: 1.2),
         ),
       ),
     );
@@ -114,114 +180,40 @@ class HrCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(16),
     this.margin = EdgeInsets.zero,
     this.onTap,
-    this.color = HrColors.surface,
+    this.background = HrColors.surface,
+    this.borderColor = HrColors.line,
+    this.radius = 22,
+    this.shadow = true,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
   final VoidCallback? onTap;
-  final Color color;
+  final Color background;
+  final Color borderColor;
+  final double radius;
+  final bool shadow;
 
   @override
   Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(12);
+    final borderRadius = BorderRadius.circular(radius);
     return Padding(
       padding: margin,
-      child: Material(
-        color: color,
-        borderRadius: radius,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: radius,
-          child: Padding(padding: padding, child: child),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: borderRadius,
+          border: Border.all(color: borderColor),
+          boxShadow: shadow ? HrShadows.card : null,
         ),
-      ),
-    );
-  }
-}
-
-class HrSectionHeader extends StatelessWidget {
-  const HrSectionHeader({
-    super.key,
-    required this.title,
-    this.action,
-    this.onAction,
-  });
-
-  final String title;
-  final String? action;
-  final VoidCallback? onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 16,
-            decoration: BoxDecoration(
-              color: HrColors.primary,
-              borderRadius: BorderRadius.circular(4),
-            ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: borderRadius,
+            child: Padding(padding: padding, child: child),
           ),
-          const SizedBox(width: 8),
-          Text(title, style: Theme.of(context).textTheme.titleMedium),
-          const Spacer(),
-          if (action != null)
-            TextButton(
-              onPressed: onAction,
-              style: TextButton.styleFrom(
-                foregroundColor: HrColors.textMuted,
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(action!, style: const TextStyle(fontSize: 12)),
-                  const Icon(Icons.chevron_right, size: 16),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class HrTag extends StatelessWidget {
-  const HrTag(
-    this.label, {
-    super.key,
-    this.foreground = HrColors.textSecondary,
-    this.background = HrColors.background,
-    this.borderColor,
-  });
-
-  final String label;
-  final Color foreground;
-  final Color background;
-  final Color? borderColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(5),
-        border: borderColor == null ? null : Border.all(color: borderColor!),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: foreground,
-          fontSize: 11,
-          height: 1.2,
-          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -234,41 +226,40 @@ class HrPrimaryButton extends StatelessWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.backgroundColor = HrColors.primary,
-    this.foregroundColor = Colors.white,
-    this.height = 46,
+    this.height = 50,
+    this.background = HrColors.brand,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
-  final Color backgroundColor;
-  final Color foregroundColor;
   final double height;
+  final Color background;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      width: double.infinity,
       height: height,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: foregroundColor,
-          disabledBackgroundColor: HrColors.divider,
-          disabledForegroundColor: HrColors.textMuted,
+          backgroundColor: background,
+          foregroundColor: HrColors.surface,
+          disabledBackgroundColor: HrColors.line,
+          disabledForegroundColor: HrColors.ink4,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(17),
           ),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 18),
-              const SizedBox(width: 6),
+              Icon(icon, size: 19),
+              const SizedBox(width: 7),
             ],
             Text(label),
           ],
@@ -284,28 +275,30 @@ class HrOutlineButton extends StatelessWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.foreground = HrColors.text,
+    this.danger = false,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
-  final Color foreground;
+  final bool danger;
 
   @override
   Widget build(BuildContext context) {
+    final color = danger ? HrColors.brand : HrColors.ink;
     return SizedBox(
-      height: 46,
+      height: 48,
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: foreground,
-          side: const BorderSide(color: HrColors.divider),
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+          foregroundColor: color,
+          side: BorderSide(
+            color: danger ? HrColors.brandTintBorder : HrColors.line,
           ),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -323,37 +316,78 @@ class HrOutlineButton extends StatelessWidget {
   }
 }
 
-class HrAvatar extends StatelessWidget {
-  const HrAvatar({
+class HrSectionHeader extends StatelessWidget {
+  const HrSectionHeader({
+    super.key,
+    required this.title,
+    this.action,
+    this.onAction,
+    this.padding = const EdgeInsets.fromLTRB(0, 20, 0, 10),
+  });
+
+  final String title;
+  final String? action;
+  final VoidCallback? onAction;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: padding,
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: HrText.cardTitle.copyWith(fontSize: 15, color: HrColors.ink),
+          ),
+          const Spacer(),
+          if (action != null)
+            TextButton(
+              onPressed: onAction,
+              style: TextButton.styleFrom(
+                foregroundColor: HrColors.brand,
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(action!, style: const TextStyle(fontSize: 12)),
+                  const Icon(Icons.chevron_right_rounded, size: 16),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class HrStatusChip extends StatelessWidget {
+  const HrStatusChip({
     super.key,
     required this.label,
-    this.size = 48,
-    this.color = HrColors.primary,
+    this.background = HrColors.successBg,
+    this.foreground = HrColors.success,
   });
 
   final String label;
-  final double size;
-  final Color color;
+  final Color background;
+  final Color foreground;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [color.withValues(alpha: 0.8), color],
-        ),
-        shape: BoxShape.circle,
+        color: background,
+        borderRadius: BorderRadius.circular(99),
       ),
       child: Text(
-        label.characters.first,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: size * 0.38,
+        label,
+        style: HrText.mono.copyWith(
+          color: foreground,
+          fontSize: 10,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -361,497 +395,87 @@ class HrAvatar extends StatelessWidget {
   }
 }
 
-class HrJobCard extends StatelessWidget {
-  const HrJobCard({
+class HrAvatar extends StatelessWidget {
+  const HrAvatar({
     super.key,
-    required this.job,
-    this.onTap,
-    this.margin = EdgeInsets.zero,
-    this.showBorder = true,
+    required this.name,
+    this.index = 0,
+    this.size = 40,
+    this.dark = false,
   });
 
-  final HrJob job;
-  final VoidCallback? onTap;
-  final EdgeInsetsGeometry margin;
-  final bool showBorder;
+  final String name;
+  final int index;
+  final double size;
+  final bool dark;
 
   @override
   Widget build(BuildContext context) {
+    final color = dark ? HrColors.brand : hrAvatarColor(name, index);
+    final text = name.trim().isEmpty ? '?' : name.trim().characters.last;
     return Container(
-      margin: margin,
+      width: size,
+      height: size,
+      alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: HrColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: showBorder ? Border.all(color: HrColors.divider) : null,
+        color: dark ? color : color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(size * 0.36),
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Wrap(
-                      spacing: 7,
-                      runSpacing: 7,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        if (job.partTime)
-                          const HrTag(
-                            '兼职',
-                            foreground: HrColors.orange,
-                            background: Color(0xFFFFF4EB),
-                            borderColor: Color(0xFFFFD8B8),
-                          ),
-                        Text(
-                          job.title,
-                          style: const TextStyle(
-                            color: HrColors.text,
-                            fontSize: 16,
-                            height: 1.3,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    job.salary,
-                    style: const TextStyle(
-                      color: HrColors.primary,
-                      fontSize: 15,
-                      height: 1.3,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      job.company,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: HrColors.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  const _Dot(),
-                  Text(
-                    job.staffSize,
-                    style: const TextStyle(
-                      color: HrColors.textMuted,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const _Dot(),
-                  Text(
-                    job.industry,
-                    style: const TextStyle(
-                      color: HrColors.textMuted,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 9),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  HrTag(job.experience),
-                  HrTag(job.education),
-                  for (final tag in job.tags.take(2)) HrTag(tag),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  const HrAvatar(label: '李', size: 24),
-                  const SizedBox(width: 7),
-                  Text(
-                    job.publisher,
-                    style: const TextStyle(
-                      color: HrColors.textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const Spacer(),
-                  const Icon(
-                    Icons.location_on_outlined,
-                    size: 14,
-                    color: HrColors.textMuted,
-                  ),
-                  const SizedBox(width: 2),
-                  Text(
-                    job.location,
-                    style: const TextStyle(
-                      color: HrColors.textMuted,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: dark ? HrColors.surface : color,
+          fontSize: size * 0.36,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );
   }
 }
 
-class HrResumeCard extends StatelessWidget {
-  const HrResumeCard({
-    super.key,
-    required this.resume,
-    this.onTap,
-    this.margin = EdgeInsets.zero,
-  });
+class HrLogoMark extends StatelessWidget {
+  const HrLogoMark({super.key, this.size = 42});
 
-  final HrResume resume;
-  final VoidCallback? onTap;
-  final EdgeInsetsGeometry margin;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: margin,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: HrColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: HrColors.divider),
+        borderRadius: BorderRadius.circular(size * 0.3),
+        border: Border.all(color: HrColors.line),
+        boxShadow: HrShadows.card,
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  HrAvatar(
-                    label: resume.name,
-                    size: 42,
-                    color: resume.gender == '女'
-                        ? const Color(0xFFEC6A88)
-                        : HrColors.blue,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          resume.name,
-                          style: const TextStyle(
-                            color: HrColors.text,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          '${resume.gender} · ${resume.age}岁 · '
-                          '${resume.education} · ${resume.experience}',
-                          style: const TextStyle(
-                            color: HrColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  HrTag(
-                    resume.jobStatus,
-                    foreground: HrColors.primary,
-                    background: HrColors.mint,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 16,
-                runSpacing: 7,
-                children: [
-                  _IconLine(icon: Icons.work_outline, label: resume.intent),
-                  _IconLine(
-                    icon: Icons.payments_outlined,
-                    label: resume.salary,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Text(
-                resume.skill,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: HrColors.textSecondary,
-                  fontSize: 12,
-                  height: 1.55,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class HrCompanyCard extends StatelessWidget {
-  const HrCompanyCard({
-    super.key,
-    required this.company,
-    this.onTap,
-    this.margin = EdgeInsets.zero,
-  });
-
-  final HrCompany company;
-  final VoidCallback? onTap;
-  final EdgeInsetsGeometry margin;
-
-  @override
-  Widget build(BuildContext context) {
-    return HrCard(
-      margin: margin,
-      onTap: onTap,
-      child: Row(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Container(
-            width: 54,
-            height: 54,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: HrColors.mint,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              company.name.characters.first,
-              style: const TextStyle(
-                color: HrColors.primary,
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
+          Transform.rotate(
+            angle: -0.45,
+            child: Container(
+              width: size * 0.52,
+              height: size * 0.25,
+              decoration: BoxDecoration(
+                color: HrColors.ink,
+                borderRadius: BorderRadius.circular(99),
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  company.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: HrColors.text,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  '${company.industry} · ${company.staffSize}',
-                  style: const TextStyle(
-                    color: HrColors.textSecondary,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 5,
-                  children: [
-                    for (final welfare in company.welfare.take(3))
-                      HrTag(
-                        welfare,
-                        foreground: HrColors.primary,
-                        background: HrColors.mint,
-                      ),
-                  ],
-                ),
-              ],
+          Positioned(
+            bottom: size * 0.17,
+            child: Container(
+              width: size * 0.56,
+              height: size * 0.18,
+              decoration: BoxDecoration(
+                color: HrColors.brandLight,
+                borderRadius: BorderRadius.circular(99),
+              ),
             ),
           ),
-          const Icon(Icons.chevron_right, size: 20, color: HrColors.textMuted),
         ],
       ),
-    );
-  }
-}
-
-class HrListRow extends StatelessWidget {
-  const HrListRow({
-    super.key,
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    this.trailing,
-    this.onTap,
-    this.iconColor = HrColors.primary,
-    this.showDivider = true,
-  });
-
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-  final Color iconColor;
-  final bool showDivider;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                  child: Icon(icon, size: 18, color: iconColor),
-                ),
-                const SizedBox(width: 11),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          color: HrColors.text,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle!,
-                          style: const TextStyle(
-                            color: HrColors.textMuted,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                trailing ??
-                    const Icon(
-                      Icons.chevron_right,
-                      size: 19,
-                      color: HrColors.textMuted,
-                    ),
-              ],
-            ),
-          ),
-          if (showDivider) const Divider(height: 1, indent: 57, endIndent: 14),
-        ],
-      ),
-    );
-  }
-}
-
-class HrFormRow extends StatelessWidget {
-  const HrFormRow({
-    super.key,
-    required this.label,
-    required this.child,
-    this.required = false,
-  });
-
-  final String label;
-  final Widget child;
-  final bool required;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 82,
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  if (required)
-                    const TextSpan(
-                      text: '* ',
-                      style: TextStyle(color: HrColors.red),
-                    ),
-                  TextSpan(text: label),
-                ],
-              ),
-              style: const TextStyle(
-                color: HrColors.text,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          Expanded(child: child),
-        ],
-      ),
-    );
-  }
-}
-
-class HrFormTextField extends StatelessWidget {
-  const HrFormTextField({
-    super.key,
-    required this.controller,
-    this.hintText,
-    this.maxLines = 1,
-    this.keyboardType,
-    this.onTap,
-    this.readOnly = false,
-  });
-
-  final TextEditingController controller;
-  final String? hintText;
-  final int maxLines;
-  final TextInputType? keyboardType;
-  final VoidCallback? onTap;
-  final bool readOnly;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      readOnly: readOnly,
-      onTap: onTap,
-      decoration: InputDecoration(
-        hintText: hintText,
-        isDense: true,
-        fillColor: HrColors.background,
-      ),
-      style: const TextStyle(color: HrColors.text, fontSize: 14),
     );
   }
 }
@@ -859,95 +483,49 @@ class HrFormTextField extends StatelessWidget {
 class HrEmptyState extends StatelessWidget {
   const HrEmptyState({
     super.key,
-    this.icon = Icons.inbox_outlined,
-    this.title = '暂无数据',
-    this.subtitle,
-    this.action,
+    required this.icon,
+    required this.title,
+    required this.message,
   });
 
   final IconData icon;
   final String title;
-  final String? subtitle;
-  final Widget? action;
+  final String message;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: const BoxDecoration(
-                color: HrColors.mint,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 34, color: HrColors.primary),
+    return HrCard(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: HrColors.successBg,
+              borderRadius: BorderRadius.circular(17),
             ),
-            const SizedBox(height: 14),
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            if (subtitle != null) ...[
-              const SizedBox(height: 6),
-              Text(
-                subtitle!,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-            if (action != null) ...[const SizedBox(height: 18), action!],
-          ],
-        ),
+            child: Icon(icon, color: HrColors.success),
+          ),
+          const SizedBox(height: 12),
+          Text(title, style: HrText.cardTitle),
+          const SizedBox(height: 5),
+          Text(message, textAlign: TextAlign.center, style: HrText.meta),
+        ],
       ),
     );
   }
 }
 
-class _Dot extends StatelessWidget {
-  const _Dot();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 10,
-      color: HrColors.divider,
-      margin: const EdgeInsets.symmetric(horizontal: 7),
-    );
-  }
-}
-
-class _IconLine extends StatelessWidget {
-  const _IconLine({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: HrColors.textMuted),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(color: HrColors.textSecondary, fontSize: 12),
-        ),
-      ],
-    );
-  }
-}
-
-void hrToast(BuildContext context, String message) {
-  ScaffoldMessenger.of(context)
+void hrToast(BuildContext context, String message, {SnackBarAction? action}) {
+  final messenger = ScaffoldMessenger.of(context);
+  messenger
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
         content: Text(message),
-        duration: const Duration(milliseconds: 1600),
+        action: action,
+        duration: const Duration(seconds: 2),
       ),
     );
 }

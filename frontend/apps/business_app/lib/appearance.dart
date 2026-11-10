@@ -38,3 +38,39 @@ const backgroundChoices = <BackgroundChoice>[
   BackgroundChoice('亮色', Icons.light_mode_outlined, ThemeMode.light),
   BackgroundChoice('暗色', Icons.dark_mode_outlined, ThemeMode.dark),
 ];
+
+/// App-wide theme selection shared by the host and pushed settings pages.
+class BusinessThemeController extends ChangeNotifier {
+  ThemeMode _mode = ThemeMode.light;
+
+  ThemeMode get mode => _mode;
+
+  bool get isDarkMode => _mode == ThemeMode.dark;
+
+  void setMode(ThemeMode mode) {
+    if (_mode == mode) {
+      return;
+    }
+    _mode = mode;
+    notifyListeners();
+  }
+
+  void setDarkMode(bool enabled) {
+    setMode(enabled ? ThemeMode.dark : ThemeMode.light);
+  }
+}
+
+class BusinessThemeScope extends InheritedNotifier<BusinessThemeController> {
+  const BusinessThemeScope({
+    super.key,
+    required BusinessThemeController controller,
+    required super.child,
+  }) : super(notifier: controller);
+
+  static BusinessThemeController of(BuildContext context) {
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<BusinessThemeScope>();
+    assert(scope != null, 'BusinessThemeScope is missing above this context.');
+    return scope!.notifier!;
+  }
+}
