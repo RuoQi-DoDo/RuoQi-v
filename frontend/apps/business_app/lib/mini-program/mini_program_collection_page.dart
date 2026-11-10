@@ -10,6 +10,7 @@ class _MiniProgramCollectionPage extends StatelessWidget {
     required this.onOpenMerchant,
     required this.onOpenPartner,
     required this.onOpenHr,
+    required this.onOpenPlatform,
     required this.onSearch,
     required this.onOther,
   });
@@ -21,6 +22,7 @@ class _MiniProgramCollectionPage extends StatelessWidget {
   final VoidCallback onOpenMerchant;
   final VoidCallback onOpenPartner;
   final VoidCallback onOpenHr;
+  final VoidCallback onOpenPlatform;
   final VoidCallback onSearch;
   final VoidCallback onOther;
 
@@ -71,6 +73,7 @@ class _MiniProgramCollectionPage extends StatelessWidget {
                 onOpenMerchant: onOpenMerchant,
                 onOpenPartner: onOpenPartner,
                 onOpenHr: onOpenHr,
+                onOpenPlatform: onOpenPlatform,
                 onOther: onOther,
                 mainAxisExtent: 94,
               ),
@@ -123,6 +126,7 @@ class _LauncherMiniProgramData {
     this.opensMerchant = false,
     this.opensPartner = false,
     this.opensHr = false,
+    this.opensPlatform = false,
   });
 
   final String label;
@@ -132,6 +136,7 @@ class _LauncherMiniProgramData {
   final bool opensMerchant;
   final bool opensPartner;
   final bool opensHr;
+  final bool opensPlatform;
 }
 
 class _LauncherGrid extends StatelessWidget {
@@ -141,6 +146,7 @@ class _LauncherGrid extends StatelessWidget {
     required this.onOpenMerchant,
     required this.onOpenPartner,
     required this.onOpenHr,
+    required this.onOpenPlatform,
     required this.onOther,
     this.highlightAtsForTest = false,
     this.highlightHrForTest = false,
@@ -152,6 +158,7 @@ class _LauncherGrid extends StatelessWidget {
   final VoidCallback onOpenMerchant;
   final VoidCallback onOpenPartner;
   final VoidCallback onOpenHr;
+  final VoidCallback onOpenPlatform;
   final VoidCallback onOther;
   final bool highlightAtsForTest;
   final bool highlightHrForTest;
@@ -179,6 +186,8 @@ class _LauncherGrid extends StatelessWidget {
             ? const Key('mini-program-picker-hr')
             : item.opensPartner
             ? const Key('mini-program-picker-partner')
+            : item.opensPlatform
+            ? const Key('mini-program-picker-platform')
             : null;
         return _LauncherMiniProgramTile(
           key: key,
@@ -191,6 +200,8 @@ class _LauncherGrid extends StatelessWidget {
               ? onOpenHr
               : item.opensPartner
               ? onOpenPartner
+              : item.opensPlatform
+              ? onOpenPlatform
               : onOther,
         );
       },

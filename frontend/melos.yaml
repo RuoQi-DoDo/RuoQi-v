@@ -17,9 +17,6 @@ scripts:
   gen:
     run: melos exec --depends-on build_runner -- dart run build_runner build
     description: Regenerate json_serializable output in apps that use build_runner.
-  run:platform_app:
-    run: melos exec --scope ruoqi_platform_app --concurrency 1 -- flutter run
-    description: Run the platform mobile app.
   run:platform_pc:
     run: melos exec --scope ruoqi_platform_pc --concurrency 1 -- flutter run
     description: Run the platform PC web app.

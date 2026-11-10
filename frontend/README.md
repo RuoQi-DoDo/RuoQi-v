@@ -1,14 +1,14 @@
 # RuoQi Flutter UI
 
 RuoQi 多项目 Flutter 巨仓（monorepo），基于 Dart 原生 pub workspace 与 [melos](https://melos.invertase.dev) 管理。
-每个业务域都有 App（移动端）与 PC（Web）两个 UI 项目，各自在 `lib/api/` 下持有本端的域 API 层。
+平台端保留 PC 外壳，平台账号中心以 `business_app` 内的“平台管理”小程序承载；
+业务端仍提供 App（移动端）与 PC（Web）两个 UI 项目。各应用壳在 `lib/api/` 下持有本端的域 API 层。
 
 ## 目录结构
 
 ```
 apps/
   platform_pc/               # 平台端 PC（ruoqi_platform_pc）：系统管理 / 运营后台
-  platform_app/              # 平台端 App（ruoqi_platform_app）
   business_pc/               # 业务端 PC（ruoqi_business_pc）：客户 / 商户 / 伙伴
   business_app/              # 业务端 App（ruoqi_business_app）：客户 / 商户 / 伙伴
 packages/
@@ -26,10 +26,12 @@ apps/business_pc/
   lib/customer|merchant|partner/  # 对应域的 UI 页面
 
 apps/business_app/
+  lib/api/platform/           # 平台域 DTO + 客户端（平台小程序使用）
   lib/pages/                  # 客户宿主首页与登录页
   lib/mini-program/ats/      # 企业直聘 ATS 小程序页面
   lib/mini-program/merchant/  # 商户小程序页面
   lib/mini-program/partner/   # 伙伴小程序页面
+  lib/mini-program/platform/  # 平台账号中心小程序
 ```
 
 > 说明：App 包名用 `ruoqi_` 前缀 + `_app` / `_pc` 后缀——`platform` 之类的名字与
@@ -78,7 +80,6 @@ melos test
 melos gen
 
 # 运行某个端（App 或 PC）
-melos run run:platform_app
 melos run run:platform_pc
 melos run run:business_app
 melos run run:business_pc
@@ -89,13 +90,13 @@ melos run run:business_pc
 - `packages/network`：只提供「怎么发请求」的能力——超时、token 注入、统一错误；
   不含任何后端地址或接口。
 - `packages/common`：品牌主题、通用组件、`RuoQiPlatform` 端类型与营销组件，
-  四个端共用同一份，改一次四端生效。
+  三个 UI 端共用同一份，改一次三端生效。
 - `apps/<壳>/lib/api/<域>/`：该应用壳自己的域 API 层（DTO + `<域>_api.dart` 客户端），
   `json_serializable` 生成 `*.g.dart`，改动后执行 `melos gen`；各端接口本来就不同，
   因此按端各持一份，互不牵连。
-- `apps/<壳>/lib/<域>/`：该域的 UI 页面，按「应用壳 + 端类型」划分——`platform_*` 是平台端
-  （系统管理 / 运营后台），`business_*` 是业务端（客户 / 商户 / 伙伴，
-  三个业务域的页面放在同一个壳里，由工作台入口在弹窗内打开）。
+- `apps/<壳>/lib/<域>/`：该域的 UI 页面，按「应用壳 + 端类型」划分——平台 PC 位于
+  `platform_pc`；平台账号中心已收敛为 `business_app/lib/mini-program/platform` 小程序。
+  业务端（客户 / 商户 / 伙伴）的页面放在同一个壳里，由工作台入口打开。
 
 后端地址通过 `--dart-define` 注入，例如：
 
@@ -107,7 +108,7 @@ flutter run --dart-define=CUSTOMER_API_BASE_URL=https://customer.example.com
 
 | 域 | App（移动端） | PC（Web） |
 |---|---|---|
-| platform（系统管理 / 运营后台） | apps/platform_app | apps/platform_pc |
+| platform（系统管理 / 运营后台） | business_app 的“平台管理”小程序 | apps/platform_pc |
 | business（客户 / 商户 / 伙伴） | apps/business_app | apps/business_pc |
 
 每个 App 在 `main.dart` 用 `RuoQiPlatformScope` 声明端类型（`RuoQiPlatform.mobile` / `pc`），

@@ -57,4 +57,23 @@ void main() {
     expect(app.theme!.colorScheme.primary, defaultAccentColor);
     expect(app.darkTheme!.colorScheme.primary, defaultAccentColor);
   });
+
+  testWidgets('平台管理从客户小程序选择页打开', (tester) async {
+    tester.view.physicalSize = const Size(414, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpAndSettle();
+
+    await tester.drag(
+      find.byKey(const Key('customer-home-scroll')),
+      const Offset(0, 320),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('mini-program-picker-platform')));
+    await tester.pumpAndSettle();
+    expect(find.text('账号中心'), findsOneWidget);
+    expect(find.byTooltip('退出小程序'), findsOneWidget);
+  });
 }

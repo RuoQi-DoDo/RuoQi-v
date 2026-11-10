@@ -214,6 +214,10 @@ class _CustomerHomePageState extends State<CustomerHomePage>
     Navigator.of(context).push<void>(HrMiniProgram.route());
   }
 
+  void _openPlatformMiniProgram() {
+    Navigator.of(context).push<void>(PlatformMiniProgram.route());
+  }
+
   void _openSettingsPage() {
     Navigator.of(context).push<void>(_SettingsPage.route());
   }
@@ -436,6 +440,7 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                   onOpenMerchant: _openMerchantMiniProgram,
                   onOpenPartner: _openPartnerMiniProgram,
                   onOpenHr: _openHrMiniProgram,
+                  onOpenPlatform: _openPlatformMiniProgram,
                   onCloseDragStart: _handlePickerCloseDragStart,
                   onCloseDragUpdate: _handlePickerCloseDragUpdate,
                   onCloseDragEnd: _handlePickerCloseDragEnd,

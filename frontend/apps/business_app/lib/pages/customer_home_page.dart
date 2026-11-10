@@ -14,6 +14,7 @@ import '../mini-program/hr/hr_mini_program.dart';
 import '../mini-program/merchant/home_page.dart';
 import '../mini-program/mini_program_shell.dart';
 import '../mini-program/partner/home_page.dart';
+import '../mini-program/platform/platform_mini_program.dart';
 import 'login_page.dart';
 
 part 'customer_host_page.dart';

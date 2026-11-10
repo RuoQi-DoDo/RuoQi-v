@@ -81,7 +81,7 @@ just run-dev-tcc                        # 不带服务名 = 单体（all，全�
 ```bash
 cd frontend
 flutter pub get
-melos run run:platform_app   # 或任意 run:* 脚本,详见 frontend/README.md
+melos run run:business_app   # 或任意 run:* 脚本,详见 frontend/README.md
 ```
 
 前端完整的目录结构与命令见 [frontend/README.md](frontend/README.md)。

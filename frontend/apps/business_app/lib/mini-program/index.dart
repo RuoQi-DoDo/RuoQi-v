@@ -18,3 +18,5 @@ export 'hr/hr_repository.dart';
 export 'hr/hr_routes.dart';
 export 'hr/hr_style.dart';
 export 'mini_program_shell.dart';
+export 'platform/platform_mini_program.dart';
+export 'platform/platform_models.dart';

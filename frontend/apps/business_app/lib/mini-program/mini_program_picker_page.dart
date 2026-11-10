@@ -7,6 +7,7 @@ class _MiniProgramPickerPage extends StatefulWidget {
     required this.onOpenMerchant,
     required this.onOpenPartner,
     required this.onOpenHr,
+    required this.onOpenPlatform,
     required this.onCloseDragStart,
     required this.onCloseDragUpdate,
     required this.onCloseDragEnd,
@@ -17,6 +18,7 @@ class _MiniProgramPickerPage extends StatefulWidget {
   final VoidCallback onOpenMerchant;
   final VoidCallback onOpenPartner;
   final VoidCallback onOpenHr;
+  final VoidCallback onOpenPlatform;
   final GestureDragStartCallback onCloseDragStart;
   final GestureDragUpdateCallback onCloseDragUpdate;
   final GestureDragEndCallback onCloseDragEnd;
@@ -151,6 +153,12 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
             opensPartner: true,
           ),
           _LauncherMiniProgramData(
+            label: '平台管理',
+            icon: Icons.admin_panel_settings_outlined,
+            color: const Color(0xFF0D9488),
+            opensPlatform: true,
+          ),
+          _LauncherMiniProgramData(
             label: '人才测评',
             icon: Icons.psychology_outlined,
             color: const Color(0xFF10B981),
@@ -210,6 +218,7 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
                     onOpenMerchant: widget.onOpenMerchant,
                     onOpenPartner: widget.onOpenPartner,
                     onOpenHr: widget.onOpenHr,
+                    onOpenPlatform: widget.onOpenPlatform,
                     onSearch: () => _pickerToast(context, '搜索小程序为模拟入口'),
                     onOther: () => _pickerToast(context, '该小程序为模拟入口'),
                   )
@@ -254,6 +263,7 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
                               onOpenMerchant: widget.onOpenMerchant,
                               onOpenPartner: widget.onOpenPartner,
                               onOpenHr: widget.onOpenHr,
+                              onOpenPlatform: widget.onOpenPlatform,
                               onOther: () => _pickerToast(context, '该小程序为模拟入口'),
                             ),
                             const SizedBox(height: 42),
@@ -272,6 +282,7 @@ class _MiniProgramPickerPageState extends State<_MiniProgramPickerPage> {
                               onOpenMerchant: widget.onOpenMerchant,
                               onOpenPartner: widget.onOpenPartner,
                               onOpenHr: widget.onOpenHr,
+                              onOpenPlatform: widget.onOpenPlatform,
                               onOther: () => _pickerToast(context, '该小程序为模拟入口'),
                               highlightAtsForTest: true,
                               highlightHrForTest: true,
