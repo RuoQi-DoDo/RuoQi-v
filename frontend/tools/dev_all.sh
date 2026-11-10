@@ -2,9 +2,9 @@
 # 并行启动全部 Flutter 原型，并提供一个静态入口页。
 #
 # 用法（在仓库根目录）：
-#   just apps
-#   just apps chrome 51010 51099      # 位置参数：设备、起始端口、入口页端口
-#   DEVICE=chrome HUB_PORT=51099 just apps
+#   just run-apps
+#   just run-apps chrome 51010 51099      # 位置参数：设备、起始端口、入口页端口
+#   DEVICE=chrome HUB_PORT=51099 just run-apps
 #
 # 可用环境变量：
 #   DEVICE        传给 flutter run -d 的设备，默认 web-server
@@ -67,7 +67,7 @@ trap cleanup INT TERM EXIT
 
 if ! command -v "$FLUTTER" >/dev/null 2>&1; then
   echo "找不到 flutter（当前 PATH=$PATH）" >&2
-  echo "可先 export PATH=\"\$PATH:\$HOME/opt/flutter/bin\"，或用 FLUTTER=/path/to/flutter just apps" >&2
+  echo "可先 export PATH=\"\$PATH:\$HOME/opt/flutter/bin\"，或用 FLUTTER=/path/to/flutter just run-apps" >&2
   exit 1
 fi
 
@@ -90,7 +90,7 @@ if port_in_use "$HUB_PORT"; then
   conflict=1
 fi
 if ((conflict)); then
-  echo "请先停掉占用端口的进程，或换端口：just apps web-server 51010 51099" >&2
+  echo "请先停掉占用端口的进程，或换端口：just run-apps web-server 51010 51099" >&2
   exit 1
 fi
 

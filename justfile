@@ -63,39 +63,52 @@ build-prod-x64 s=service: (_check_service s)
     cd backend && time v -b x64 -ownership -new-compiler -prod -stats {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # ─── 前端 ──────────────────────────────────────────
-frontend_get:
+get-frontend:
     cd frontend && flutter pub get
 
-frontend_analyze:
+analyze-frontend:
     cd frontend && melos analyze
 
-frontend_test:
+test-frontend:
     cd frontend && melos test
 
-frontend_gen:
+gen-frontend:
     cd frontend && melos gen
 
-# 启动平台 PC Flutter 原型服务。
-# 默认 web-server 模式：只起本地服务，用任意浏览器打开下方地址访问。
+# 运行目标写在命令末尾，如：just run-platform web、just run-platform linux。
+# web 映射到 web-server；传入 linux、chrome 等值时直接作为 Flutter 设备使用。
+run-platform target="web" port="51000":
+    cd frontend/apps/platform-pc && flutter run -d {{ if target == "web" { "web-server" } else { target } }}{{ if target == "web" { " --web-port " + port } else { "" } }}
 
-# 想用设备直接跑可覆盖，如：just platform_pc linux
-platform_pc DEVICE="web-server" PORT="51000":
-    cd frontend/apps/platform-pc && flutter run -d {{ DEVICE }} --web-port {{ PORT }}
+run-business target="web" port="51002":
+    cd frontend/apps/business-pc && flutter run -d {{ if target == "web" { "web-server" } else { target } }}{{ if target == "web" { " --web-port " + port } else { "" } }}
 
-# 业务端原型服务（客户 / 商户 / 伙伴三个业务域共用一个应用壳）
-business_pc DEVICE="web-server" PORT="51002":
-    cd frontend/apps/business-pc && flutter run -d {{ DEVICE }} --web-port {{ PORT }}
-
-app_miniapp DEVICE="web-server" PORT="51003":
-    cd frontend/apps/app-miniapp && flutter run -d {{ DEVICE }} --web-port {{ PORT }}
+run-app target="web" port="51003":
+    cd frontend/apps/app-miniapp && flutter run -d {{ if target == "web" { "web-server" } else { target } }}{{ if target == "web" { " --web-port " + port } else { "" } }}
 
 # 一条命令并行拉起全部 3 个原型 + 静态入口页（51090）。
 # 打开 http://localhost:51090 一页点进所有端；Ctrl-C 全部停止。
-# 覆盖示例：just apps chrome 51010 51099
+# 覆盖示例：just run-apps chrome 51010 51099
 
-# 也可用环境变量：DEVICE=chrome BASE_PORT=51010 HUB_PORT=51099 just apps
-apps device=env_var_or_default("DEVICE", "web-server") base_port=env_var_or_default("BASE_PORT", "51000") hub_port=env_var_or_default("HUB_PORT", "51090"):
+# 也可用环境变量：DEVICE=chrome BASE_PORT=51010 HUB_PORT=51099 just run-apps
+run-apps device=env_var_or_default("DEVICE", "web-server") base_port=env_var_or_default("BASE_PORT", "51000") hub_port=env_var_or_default("HUB_PORT", "51090"):
     DEVICE={{ device }} BASE_PORT={{ base_port }} HUB_PORT={{ hub_port }} ./frontend/tools/dev_all.sh
+
+# 构建目标写在命令末尾，如：just build-platform web、just build-app apk。
+build-platform target="web":
+    cd frontend/apps/platform-pc && flutter build {{ target }}
+
+build-business target="web":
+    cd frontend/apps/business-pc && flutter build {{ target }}
+
+build-app target="web":
+    cd frontend/apps/app-miniapp && flutter build {{ target }}{{ if target == "web" { "" } else { " --no-tree-shake-icons" } }}
+
+# 依次构建全部 3 个前端 Web 产物。
+build-frontend:
+    just build-platform web
+    just build-business web
+    just build-app web
 
 # ─── 工具 ──────────────────────────────────────────
 kill:
