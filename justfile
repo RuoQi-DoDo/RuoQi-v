@@ -75,7 +75,6 @@ test-frontend:
 gen-frontend:
     cd frontend && melos gen
 
-# 运行目标写在命令末尾，如：just run-platform web、just run-platform linux。
 # web 映射到 web-server；传入 linux、chrome 等值时直接作为 Flutter 设备使用。
 run-platform target="web" port="51000":
     cd frontend/apps/platform-pc && flutter run -d {{ if target == "web" { "web-server" } else { target } }}{{ if target == "web" { " --web-port " + port } else { "" } }}
@@ -102,7 +101,7 @@ build-business target="web":
     cd frontend/apps/business-pc && flutter build {{ target }}
 
 build-app target="web":
-    cd frontend/apps/app-miniapp && mise exec -- flutter build {{ target }}{{ if target == "web" { "" } else { " --no-tree-shake-icons" } }}
+    cd frontend/apps/app-miniapp && flutter build {{ target }}{{ if target == "web" { "" } else { " --no-tree-shake-icons" } }}
 
 # 依次构建全部 3 个前端 Web 产物。
 build-frontend:
