@@ -5,12 +5,12 @@ on:
       - "main"
     paths:
       - "frontend/**"
-      - ".tool-versions"
+      - "mise.toml"
       - ".github/workflows/test_frontend.yml"
   pull_request:
     paths:
       - "frontend/**"
-      - ".tool-versions"
+      - "mise.toml"
       - ".github/workflows/test_frontend.yml"
 
 jobs:
@@ -23,9 +23,9 @@ jobs:
       - name: Read pinned Flutter version
         id: flutter
         run: |
-          version=$(awk '$1 == "flutter" { print $2 }' .tool-versions)
+          version=$(python3 -c 'import tomllib; print(tomllib.load(open("mise.toml", "rb"))["tools"]["flutter"])')
           if [ -z "$version" ]; then
-            echo "`.tool-versions` 里没有 flutter 版本" >&2
+            echo "`mise.toml` 里没有 tools.flutter 版本" >&2
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"

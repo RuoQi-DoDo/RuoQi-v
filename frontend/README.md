@@ -28,12 +28,16 @@ apps/business-pc/
 apps/app-miniapp/
   lib/api/                    # IM / ATS / HR / 客户 / 商户 / 伙伴 / 平台 API 与 DTO
   lib/app_shell.dart          # 共享应用壳与独立入口启动函数
-  lib/pages/im/               # IM 业务组宿主、聊天、通讯录、发现、我的与设置
-  lib/pages/index.dart        # 业务组页面公共导出
-  lib/mini-program/ats/      # 企业直聘 ATS 小程序页面
-  lib/mini-program/merchant/  # 商户小程序页面
-  lib/mini-program/partner/   # 伙伴小程序页面
-  lib/mini-program/platform/  # 平台账号中心小程序
+  lib/pages/host/             # 公共业务宿主、底部导航与小程序交互
+  lib/pages/im/               # 当前 IM 聊天业务首页
+  lib/pages/contacts|discover|profile|settings|auth/  # 可复用公共页面
+  lib/pages/account|display/  # 公共账号安全及界面与显示
+  lib/pages/common/           # 公共页面主题、文案与组件
+  lib/pages/index.dart        # 业务首页与公共页面导出
+  lib/miniapp/ats/      # 企业直聘 ATS 小程序页面
+  lib/miniapp/merchant/  # 商户小程序页面
+  lib/miniapp/partner/   # 伙伴小程序页面
+  lib/miniapp/platform/  # 平台账号中心小程序
 ```
 
 > 说明：应用包名统一使用 `ruoqi_` 前缀；移动小程序宿主目录为 `app-miniapp`，
@@ -42,30 +46,33 @@ apps/app-miniapp/
 
 ## 环境准备
 
-Flutter 版本钉在仓库根的 `.tool-versions`（当前 `3.44.0`，对应 Dart 3.12.0），
-CI 读同一个文件，本地请保持一致。
+Flutter 和 Java 版本固定在仓库根的 `mise.toml`（当前 Flutter `3.47.4`、
+Java Temurin 17），CI 从同一个文件读取 Flutter 版本，本地请保持一致。
 
 > 为什么必须钉版本：`meta` / `matcher` / `test_api` / `vector_math` 这几个传递依赖
 > 由 Flutter SDK 精确钉住，SDK 版本一变，`frontend/pubspec.lock` 就会被 pub 改写；
 > 而依赖集在运行中变化会让 dev server 拒绝热重载（`Hot reload rejected due to
 > unsupported changes`）。
 
-用 mise / asdf 管理：
+用 mise 管理：
 
 ```bash
-mise install        # asdf 用户：asdf install
-flutter --version   # 应输出 3.44.0
+mise install
+flutter --version   # 应输出 3.47.4
+java -version       # 应输出 17
 ```
 
-手动安装：把 3.44.0 放在 `$HOME/opt/flutter`，再把它和 melos 加进 PATH：
+手动安装：把 Flutter 3.47.4 和 JDK 17 分别安装到本地目录，再配置环境变量：
 
 ```bash
-export PATH="$PATH":"$HOME/opt/flutter/bin":"$HOME/.pub-cache/bin"
-flutter --version # 应输出 3.44.0
+export JAVA_HOME="$HOME/opt/jdk-17"
+export PATH="$JAVA_HOME/bin:$HOME/opt/flutter/bin:$HOME/.pub-cache/bin:$PATH"
+flutter --version # 应输出 3.47.4
+java -version     # 应输出 17
 melos --version   # 首次使用前：dart pub global activate melos 6.3.3
 ```
 
-升级 Flutter 时：改 `.tool-versions` 的版本号 → `cd frontend && flutter pub get`
+升级 Flutter 时：改 `mise.toml` 的版本号 → `cd frontend && flutter pub get`
 → 提交更新后的 `frontend/pubspec.lock`，CI 会自动切到新版本。
 
 ## 常用命令
@@ -87,8 +94,11 @@ melos run run:app_miniapp
 melos run run:business_pc
 ```
 
-`app-miniapp` 当前由 `lib/main.dart` 直接启动 IM 主业务。ATS、HR、商户、
-伙伴和平台管理仅作为小程序由 IM 宿主打开。
+`app-miniapp` 由 `BusinessAppFrame` 管理全局设置和账号状态，
+`BusinessHostPage` 组合业务首页、通讯录、发现、我的及小程序选择页。当前
+`lib/main.dart` 将 `ImChatPage` 注入宿主的 `homeBuilder`；更换业务时替换首页
+构建器即可，公共页面继续复用。ATS、HR、商户、伙伴和平台管理由公共宿主
+作为小程序打开。具体接入方式见 `apps/app-miniapp/lib/pages/README.md`。
 
 ## 分层约定
 
@@ -100,7 +110,7 @@ melos run run:business_pc
   `json_serializable` 生成 `*.g.dart`，改动后执行 `melos gen`；各端接口本来就不同，
   因此按端各持一份，互不牵连。
 - `apps/<壳>/lib/<域>/`：该域的 UI 页面，按「应用壳 + 端类型」划分——平台 PC 位于
-  `platform-pc`；平台账号中心已收敛为 `app-miniapp/lib/mini-program/platform` 小程序。
+  `platform-pc`；平台账号中心已收敛为 `app-miniapp/lib/miniapp/platform` 小程序。
   业务端（客户 / 商户 / 伙伴）的页面放在同一个壳里，由工作台入口打开。
 
 后端地址通过 `--dart-define` 注入，例如：

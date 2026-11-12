@@ -1,13 +1,61 @@
-# 主业务页面
+# 业务首页与公共页面
 
-`pages/` 只存放可以作为 App 主业务运行的页面和页面组。
+`pages/` 按业务首页和可复用功能划分。各页面是独立 Dart 库，可以单独作为路由
+运行；通过 `pages/index.dart` 统一导出。
 
-当前主业务：
+- `host/`：公共业务宿主，组合业务首页、通讯录、发现、我的和小程序选择页。
+- `im/`：当前业务首页，仅提供 IM 聊天列表。
+- `contacts/`：公共通讯录。
+- `discover/`：公共发现页。
+- `mini_programs/`：从发现进入的小程序目录，支持中英文名称搜索和启动已实现的小程序。
+- `profile/`：公共我的页面，默认进入公共设置。
+- `settings/`：公共设置，可注入退出登录行为及登录页面。
+- `auth/`：公共登录页。
+- `common/`：公共页面使用的主题、文案与列表组件。
+- `account/`：公共账号安全、密码、手机/邮箱绑定、关联账号、设备和日志。
+- `display/`：公共界面与显示（主题模式、字体大小、中英文、屏幕方向）。
 
-- `im/`：IM 宿主主页、通讯录、发现、我的、设置和登录。
+`BusinessAppFrame` 管理全局主题、语言、字体与账号状态；`BusinessHostPage`
+管理公共导航及小程序交互。两层均不依赖 IM。当前 `main.dart` 只在业务首页
+构建器中选择 `ImChatPage`。使用默认应用入口时，替换
+`BusinessApp(homeBuilder: ..., homeLabel: ...)` 即可；自行组合应用时如下：
 
-小程序页面统一放在 `lib/mini-program/`，不会映射为主业务 home。IM 宿主负责
-提供小程序选择页，并从 `mini-program/` 打开对应小程序。
+```dart
+BusinessAppFrame(
+  title: '新业务',
+  home: (_) => BusinessHostPage(
+    homeLabel: '首页',
+    homeBuilder: (context, scrollController) => NewBusinessHomePage(
+      scrollController: scrollController,
+    ),
+  ),
+)
+```
 
-如果以后出现第二个主业务，应按主业务建立 `pages/<business>/`，并重新评估是否
-需要独立编译入口；当前只有 IM 一个主业务，因此由 `lib/main.dart` 直接启动。
+首页将宿主提供的 `ScrollController` 连接到主滚动区域，宿主即可在首页滚动到
+顶部时响应下拉小程序手势。切换公共页面和打开子路由会保留业务首页状态。
+通讯录、发现与我的也可以直接作为 `MaterialApp.home` 或普通路由运行。当前
+宿主保留各页自己的 Scaffold 和主题；其他容器需要嵌入页面内容时，可选用
+`embedded: true`。
+
+宿主和设置页的 `loginBuilder` 可指定登出后的登录路由；如果业务负责会话清理
+和导航，可用 `onLogout` 接管确认登出后的动作。
+
+显示状态作用于所有路由及小程序内部 Navigator；切换主题、语言和字体大小不
+清空页面栈。当前提供简体中文、English 和跟随系统，业务数据保留原文。
+屏幕方向通过 `SystemChrome.setPreferredOrientations` 请求，由运行平台执行。
+设置状态及账号安全演示数据保存在当前运行内，安全操作未连接真实认证后端。
+
+发现页默认打开 `MiniProgramsPage.route()`，独立使用时也无需宿主注入回调。
+目录从 `miniapp/launcher/miniapp_catalog.dart` 的 `availableMiniPrograms` 读取
+真实入口，打开和退出使用普通路由；返回目录保留搜索条件，返回发现保留滚动位置。
+业务仍可通过 `onOpenMiniPrograms` 覆盖发现入口。
+
+小程序业务页面统一放在 `lib/miniapp/`，目录与下拉面板复用公共启动分发；
+下拉面板的 ATS 保留宿主内联过渡，与业务首页实现独立。
+启动器的 `MiniProgramLibraryScope` 由应用外壳持有，最近使用与我的小程序在
+面板、集合页和目录启动操作之间同步。长按拖动可添加到我的小程序、拖到删除区
+移除当前列表条目，或在同列表中调整顺序；取消拖动不会修改数据或退出面板。
+删除最近记录不会取消收藏，移除我的小程序也不会卸载或删除业务数据。
+再次打开小程序会恢复其最近记录；关闭再打开面板保留修改，重启应用暂不持久化。
+平台旧账号页面路径保留兼容导出。

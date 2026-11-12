@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<title>RuoQi — RQ loop</title>
+<desc>A soft asymmetric loop, an inset shoulder and one shared diagonal hint at R and Q without setting literal letters.</desc>
+<path fill="#FFFFFF" d="M0 0h1024v1024H0z"/>
+<g fill="#000000" transform="translate(6 -18)">
+<path fill-rule="evenodd" d="M386 264h132c144 0 250 99 250 238 0 62-24 119-64 161l82 82-70 70-98-98c-30 11-64 17-100 17H386c-86 0-142-55-142-141V406c0-86 56-142 142-142Zm8 98c-32 0-52 20-52 52v112h88l96 110c84-4 140-56 140-134 0-84-59-140-148-140H394Z"/>
+</g>
+</svg>

@@ -4,7 +4,7 @@
 #   all 单体 / fms 文件 / iam 核心（身份+工作空间）/ job 任务 / mcms 消息 /
 #   pay 支付 / tenant 租户 / platform 平台 / mcp 基础资料（/base + /mcp）/
 #   db 数据库初始化（/database）
-# 用法：just run-dev-tcc mcp、just build-tcc fms、SERVICE=iam just run-test-x64
+# 用法：just run-dev-tcc mcp、just build-tcc fms、SERVICE=iam just run-test-amd64
 # 用 bash 执行 recipe：time 是 bash 保留字，默认的 sh(dash) 里不存在
 
 set shell := ["bash", "-uc"]
@@ -18,84 +18,96 @@ _check_service s:
 
 # ─── 后端 ───────────────────────────────────────────
 
-# 带 watch 的开发模式（x64）；可选服务名：just run-dev-x64 mcp
-run-dev-x64 s=service: (_check_service s)
-    cd backend && env V3_PARALLEL_MONOMORPHIZE=1 v -b x64 -new-compiler -no-retry-compilation -d trace_orm -d veb_livereload {{ if s == "all" { "" } else { "-d " + s } }} watch run ./main -f etc/config_dev.toml
+# 带 watch 的开发模式（amd64）；可选服务名：just run-dev-amd64 mcp
+run-dev-amd64 s=service: (_check_service s)
+    cd backend && env V3_PARALLEL_MONOMORPHIZE=1 v -b amd64 -new-compiler -no-retry-compilation -d trace_orm -d veb_livereload {{ if s == "all" { "" } else { "-d " + s } }} watch run ./main -f etc/config_dev.toml
 
 # 带 watch 的开发模式（tcc）；可选服务名：just run-dev-tcc mcp
 run-dev-tcc s=service: (_check_service s)
     cd backend && env V3_PARALLEL_MONOMORPHIZE=1 v -new-compiler -cc tcc -no-retry-compilation -d trace_orm -d veb_livereload {{ if s == "all" { "" } else { "-d " + s } }} watch run ./main -f etc/config_dev.toml
 
-# 单次运行 dev 配置（x64）；可选服务名：just run-test-x64 mcp
-run-test-x64 s=service: (_check_service s)
-    cd backend && v -b x64 -new-compiler -no-retry-compilation -d trace_orm {{ if s == "all" { "" } else { "-d " + s } }} run ./main -f etc/config_dev.toml
+# 单次运行 dev 配置（amd64）；可选服务名：just run-test-amd64 mcp
+run-test-amd64 s=service: (_check_service s)
+    cd backend && v -b amd64 -new-compiler -no-retry-compilation -d trace_orm {{ if s == "all" { "" } else { "-d " + s } }} run ./main -f etc/config_dev.toml
 
 # 单次运行 dev 配置（tcc）；可选服务名：just run-test-tcc mcp
 run-test-tcc s=service: (_check_service s)
     cd backend && v -new-compiler -cc tcc -no-retry-compilation -d trace_orm {{ if s == "all" { "" } else { "-d " + s } }} run ./main -f etc/config_dev.toml
 
-# 编译到 backend/app（x64）；可选服务名：just build-x64 fms
-build-x64 s=service: (_check_service s)
-    cd backend && time v -b x64 -no-prealloc -new-compiler -stats -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+# 编译到 backend/app（amd64）；可选服务名：just build-amd64 fms
+build-amd64 s=service: (_check_service s)
+    cd backend && time v -b amd64 -no-prealloc -new-compiler -stats -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 编译到 backend/app（tcc）；可选服务名：just build-tcc fms
 build-tcc s=service: (_check_service s)
     cd backend && time v -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
-# 编译到 backend/app（x64 + ownership）；可选服务名：just build-x64-owership fms
-build-x64-owership s=service: (_check_service s)
-    cd backend && time v -b x64 -ownership -autofree -gc none -no-prealloc -new-compiler -stats -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+# 编译到 backend/app（amd64 + ownership）；可选服务名：just build-amd64-owership fms
+build-amd64-owership s=service: (_check_service s)
+    cd backend && time v -b amd64 -ownership -autofree -gc none -no-prealloc -new-compiler -stats -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 编译到 backend/app（tcc + V 自带 GC）；可选服务名：just build-tcc-vgc fms
 build-tcc-vgc s=service: (_check_service s)
     cd backend && time v -autofree -gc vgc -no-prealloc -new-compiler -stats -cc tcc -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
-# 编译到 backend/app（x64 + V 自带 GC）；可选服务名：just build-x64-vgc fms
-build-x64-vgc s=service: (_check_service s)
-    cd backend && time v -b x64 -autofree -gc vgc -no-prealloc -new-compiler -stats -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+# 编译到 backend/app（amd64 + V 自带 GC）；可选服务名：just build-amd64-vgc fms
+build-amd64-vgc s=service: (_check_service s)
+    cd backend && time v -b amd64 -autofree -gc vgc -no-prealloc -new-compiler -stats -no-retry-compilation {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # 生产编译（默认 C 后端）；可选服务名：just build-prod-c pay
 build-prod-c s=service: (_check_service s)
     cd backend && time v -ownership -new-compiler -prod -stats {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
-# 生产编译（x64）；可选服务名：just build-prod-x64 pay
-build-prod-x64 s=service: (_check_service s)
-    cd backend && time v -b x64 -ownership -new-compiler -prod -stats {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
+# 生产编译（amd64）；可选服务名：just build-prod-amd64 pay
+build-prod-amd64 s=service: (_check_service s)
+    cd backend && time v -b amd64 -ownership -new-compiler -prod -stats {{ if s == "all" { "" } else { "-d " + s } }} -o app ./main
 
 # ─── 前端 ──────────────────────────────────────────
-frontend_get:
+get-frontend:
     cd frontend && flutter pub get
 
-frontend_analyze:
+analyze-frontend:
     cd frontend && melos analyze
 
-frontend_test:
+test-frontend:
     cd frontend && melos test
 
-frontend_gen:
+gen-frontend:
     cd frontend && melos gen
 
-# 启动平台 PC Flutter 原型服务。
-# 默认 web-server 模式：只起本地服务，用任意浏览器打开下方地址访问。
+# web 映射到 web-server；传入 linux、chrome 等值时直接作为 Flutter 设备使用。
+run-platform target="web" port="51000":
+    cd frontend/apps/platform-pc && flutter run -d {{ if target == "web" { "web-server" } else { target } }}{{ if target == "web" { " --web-port " + port } else { "" } }}
 
-# 想用设备直接跑可覆盖，如：just platform_pc linux
-platform_pc DEVICE="web-server" PORT="51000":
-    cd frontend/apps/platform-pc && flutter run -d {{ DEVICE }} --web-port {{ PORT }}
+run-business target="web" port="51002":
+    cd frontend/apps/business-pc && flutter run -d {{ if target == "web" { "web-server" } else { target } }}{{ if target == "web" { " --web-port " + port } else { "" } }}
 
-# 业务端原型服务（客户 / 商户 / 伙伴三个业务域共用一个应用壳）
-business_pc DEVICE="web-server" PORT="51002":
-    cd frontend/apps/business-pc && flutter run -d {{ DEVICE }} --web-port {{ PORT }}
-
-app_miniapp DEVICE="web-server" PORT="51003":
-    cd frontend/apps/app-miniapp && flutter run -d {{ DEVICE }} --web-port {{ PORT }}
+run-app target="web" port="51003":
+    cd frontend/apps/app-miniapp && flutter run -d {{ if target == "web" { "web-server" } else { target } }}{{ if target == "web" { " --web-port " + port } else { "" } }}
 
 # 一条命令并行拉起全部 3 个原型 + 静态入口页（51090）。
 # 打开 http://localhost:51090 一页点进所有端；Ctrl-C 全部停止。
-# 覆盖示例：just apps chrome 51010 51099
+# 覆盖示例：just run-apps chrome 51010 51099
 
-# 也可用环境变量：DEVICE=chrome BASE_PORT=51010 HUB_PORT=51099 just apps
-apps device=env_var_or_default("DEVICE", "web-server") base_port=env_var_or_default("BASE_PORT", "51000") hub_port=env_var_or_default("HUB_PORT", "51090"):
+# 也可用环境变量：DEVICE=chrome BASE_PORT=51010 HUB_PORT=51099 just run-apps
+run-apps device=env_var_or_default("DEVICE", "web-server") base_port=env_var_or_default("BASE_PORT", "51000") hub_port=env_var_or_default("HUB_PORT", "51090"):
     DEVICE={{ device }} BASE_PORT={{ base_port }} HUB_PORT={{ hub_port }} ./frontend/tools/dev_all.sh
+
+# 构建目标写在命令末尾，如：just build-platform web、just build-app apk、just build-app aab。
+build-platform target="web":
+    cd frontend/apps/platform-pc && flutter build {{ target }}
+
+build-business target="web":
+    cd frontend/apps/business-pc && flutter build {{ target }}
+
+build-app target="web":
+    cd frontend/apps/app-miniapp && flutter build {{ if target == "aab" { "appbundle" } else { target } }}{{ if target == "web" { "" } else { " --no-tree-shake-icons" } }}
+
+# 依次构建全部 3 个前端 Web 产物。
+build-frontend:
+    just build-platform web
+    just build-business web
+    just build-app web
 
 # ─── 工具 ──────────────────────────────────────────
 kill:

@@ -91,8 +91,8 @@ melos run run:app_miniapp    # or any run:* script, see frontend/README.md
 
 The full frontend layout and commands are documented in
 [frontend/README.md](frontend/README.md).
-The Flutter version is pinned in [.tool-versions](.tool-versions) (currently
-`3.44.0`) and the CI reads the same file.
+The Flutter and Java versions are pinned in [mise.toml](mise.toml) (currently
+Flutter `3.47.4` and Temurin 17), and the CI reads the Flutter version from the same file.
 
 ### Splitting the Frontend Later
 

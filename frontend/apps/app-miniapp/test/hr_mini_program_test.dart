@@ -1,14 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/hr_controller.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/hr_mini_program.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/hr_models.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/hr_repository.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/hr_routes.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/pages/team_pages.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/hr_controller.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/hr_miniapp.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/hr_models.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/hr_repository.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/hr_routes.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/pages/team_pages.dart';
 
 void main() {
+  testWidgets('存在系统状态栏时不再绘制模拟状态栏', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) {
+          final mediaQuery = MediaQuery.of(context);
+          return MediaQuery(
+            data: mediaQuery.copyWith(padding: const EdgeInsets.only(top: 24)),
+            child: child!,
+          );
+        },
+        home: const HrMiniProgram(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('9:41'), findsNothing);
+    expect(find.byTooltip('小程序菜单'), findsOneWidget);
+    expect(find.byTooltip('退出小程序'), findsOneWidget);
+  });
+
   testWidgets('HR 小程序默认展示完整的静态首页', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
