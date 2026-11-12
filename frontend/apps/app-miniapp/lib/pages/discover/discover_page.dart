@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../common/page_widgets.dart';
+import '../mini_programs/mini_programs_page.dart';
 
 class DiscoverPage extends StatelessWidget {
   const DiscoverPage({
@@ -116,10 +117,15 @@ class DiscoverPage extends StatelessWidget {
         PageListGroup(
           children: [
             PageListRow(
+              key: const Key('discover-mini-programs'),
               icon: Icons.apps_rounded,
               color: const Color(0xFF7C62D9),
               title: '小程序',
-              onTap: onOpenMiniPrograms ?? () => onTap('小程序入口为模拟入口'),
+              onTap:
+                  onOpenMiniPrograms ??
+                  () => Navigator.of(
+                    context,
+                  ).push<void>(MiniProgramsPage.route()),
             ),
           ],
         ),

@@ -3,7 +3,10 @@ import '../common/miniapp_localizations.dart';
 import 'package:common/common.dart';
 import 'package:flutter/material.dart';
 
+import '../../localization.dart';
 import 'launcher_widgets.dart';
+import 'miniapp_drag_targets.dart';
+import 'miniapp_library_controller.dart';
 import 'miniapp_collection_page.dart';
 import 'miniapp_launcher_item.dart';
 
@@ -32,9 +35,77 @@ enum _MiniProgramCollectionView { recent, mine }
 
 class _MiniProgramPickerPageState extends State<MiniProgramPickerPage> {
   _MiniProgramCollectionView? _collectionView;
+  MiniProgramLibraryController? _ownedLibrary;
+  late MiniProgramLibraryController _library;
+  MiniProgramDragData? _dragData;
 
   @override
-  Widget build(BuildContext context) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _library =
+        MiniProgramLibraryScope.maybeOf(context) ??
+        (_ownedLibrary ??= MiniProgramLibraryController());
+  }
+
+  @override
+  void dispose() {
+    _ownedLibrary?.dispose();
+    super.dispose();
+  }
+
+  void _startDrag(MiniProgramDragData data) => setState(() => _dragData = data);
+
+  void _endDrag() {
+    if (mounted && _dragData != null) setState(() => _dragData = null);
+  }
+
+  void _addToMy(MiniProgramDragData data) {
+    _endDrag();
+    final added = _library.addToMy(data.item);
+    final l10n = AppLocalizations.of(context);
+    _pickerToast(
+      context,
+      added
+          ? l10n.text('已添加到我的小程序', 'Added to My mini-programs')
+          : l10n.text('已在我的小程序中', 'Already in My mini-programs'),
+    );
+  }
+
+  void _delete(MiniProgramDragData data) {
+    _endDrag();
+    final l10n = AppLocalizations.of(context);
+    if (data.kind == MiniProgramListKind.recent) {
+      _library.removeRecent(data.item.id);
+      _pickerToast(
+        context,
+        l10n.text('已从最近使用中移除', 'Removed from recent mini-programs'),
+      );
+    } else {
+      _library.removeFromMy(data.item.id);
+      _pickerToast(
+        context,
+        l10n.text('已从我的小程序中移除', 'Removed from My mini-programs'),
+      );
+    }
+  }
+
+  void _reorder(MiniProgramDragData data, String targetId) {
+    _library.reorder(data.kind, data.item.id, targetId);
+  }
+
+  void _open(MiniProgramLauncherItem item) {
+    if (_dragData != null) return;
+    _library.recordOpen(item);
+    widget.onOpen(item);
+  }
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: _library,
+    builder: (context, _) => _buildWithTheme(context),
+  );
+
+  Widget _buildWithTheme(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
     final brightness = Theme.of(context).brightness;
     final baseTheme = ruoQiTheme(brightness: brightness, accent: accent);
@@ -75,147 +146,8 @@ class _MiniProgramPickerPageState extends State<MiniProgramPickerPage> {
       builder: (context) {
         final theme = Theme.of(context);
         final scheme = theme.colorScheme;
-        final info =
-            theme.extension<RuQiThemeExtension>()?.info ?? scheme.secondary;
-
-        final recent = <MiniProgramLauncherItem>[
-          MiniProgramLauncherItem(
-            id: MiniProgramLauncherIds.ats,
-            label: '企业直聘',
-            icon: Icons.work_outline_rounded,
-            color: scheme.primary,
-          ),
-          const MiniProgramLauncherItem(
-            id: MiniProgramLauncherIds.hr,
-            label: '人事',
-            icon: Icons.badge_outlined,
-            color: Color(0xFFC43D28),
-          ),
-          MiniProgramLauncherItem(
-            id: 'file-assistant',
-            label: '文件助手',
-            icon: Icons.folder_outlined,
-            color: info,
-          ),
-          const MiniProgramLauncherItem(
-            id: 'enterprise-services',
-            label: '企业服务',
-            icon: Icons.business_center_outlined,
-            color: Color(0xFFE36A2E),
-          ),
-          const MiniProgramLauncherItem(
-            id: 'meeting',
-            label: '会议',
-            icon: Icons.videocam_outlined,
-            color: Color(0xFF4D8DFF),
-          ),
-          const MiniProgramLauncherItem(
-            id: 'resume-assistant',
-            label: '简历助手',
-            icon: Icons.description_outlined,
-            color: Color(0xFF8B5CF6),
-          ),
-          const MiniProgramLauncherItem(
-            id: 'talent-pool',
-            label: '人才库',
-            icon: Icons.people_outline_rounded,
-            color: Color(0xFF16A34A),
-          ),
-          const MiniProgramLauncherItem(
-            id: 'interview-calendar',
-            label: '面试日历',
-            icon: Icons.calendar_month_outlined,
-            color: Color(0xFF0EA5E9),
-          ),
-        ];
-        final commonItems = <MiniProgramLauncherItem>[
-          MiniProgramLauncherItem(
-            id: MiniProgramLauncherIds.ats,
-            label: '企业直聘',
-            icon: Icons.work_outline_rounded,
-            color: scheme.primary,
-            tileKey: const Key('mini-program-picker-ats'),
-          ),
-          const MiniProgramLauncherItem(
-            id: MiniProgramLauncherIds.hr,
-            label: '人事',
-            icon: Icons.badge_outlined,
-            color: Color(0xFFC43D28),
-            tileKey: Key('mini-program-picker-hr'),
-          ),
-          const MiniProgramLauncherItem(
-            id: 'enterprise-services',
-            label: '企业服务',
-            icon: Icons.business_center_outlined,
-            color: Color(0xFFE36A2E),
-          ),
-          const MiniProgramLauncherItem(
-            id: MiniProgramLauncherIds.merchant,
-            label: '商户',
-            icon: Icons.fingerprint,
-            color: Color(0xFF3B82F6),
-            tileKey: Key('mini-program-picker-merchant'),
-          ),
-          const MiniProgramLauncherItem(
-            id: MiniProgramLauncherIds.partner,
-            label: '伙伴',
-            icon: Icons.handshake_outlined,
-            color: Color(0xFF8B5CF6),
-            tileKey: Key('mini-program-picker-partner'),
-          ),
-          const MiniProgramLauncherItem(
-            id: MiniProgramLauncherIds.platform,
-            label: '平台管理',
-            icon: Icons.admin_panel_settings_outlined,
-            color: Color(0xFF0D9488),
-            tileKey: Key('mini-program-picker-platform'),
-          ),
-          const MiniProgramLauncherItem(
-            id: 'talent-assessment',
-            label: '人才测评',
-            icon: Icons.psychology_outlined,
-            color: Color(0xFF10B981),
-          ),
-          const MiniProgramLauncherItem(
-            id: 'video-interview',
-            label: '视频面试',
-            icon: Icons.video_chat_outlined,
-            color: Color(0xFFF97316),
-          ),
-          const MiniProgramLauncherItem(
-            id: 'schedule',
-            label: '日程',
-            icon: Icons.event_note_outlined,
-            color: Color(0xFF14B8A6),
-          ),
-        ];
-        final allItems = <MiniProgramLauncherItem>[];
-        for (final item in [...recent, ...commonItems]) {
-          if (!allItems.any((existing) => existing.id == item.id)) {
-            allItems.add(item);
-          }
-        }
-        allItems.addAll(const [
-          MiniProgramLauncherItem(
-            id: 'mail',
-            label: '邮箱',
-            icon: Icons.mail_outline_rounded,
-            color: Color(0xFF3B82F6),
-          ),
-          MiniProgramLauncherItem(
-            id: 'attendance',
-            label: '考勤',
-            icon: Icons.fact_check_outlined,
-            color: Color(0xFF14B8A6),
-          ),
-          MiniProgramLauncherItem(
-            id: 'approval',
-            label: '审批',
-            icon: Icons.approval_outlined,
-            color: Color(0xFFF59E0B),
-          ),
-        ]);
-
+        final recent = _library.recentItems;
+        final commonItems = _library.myItems;
         return Scaffold(
           backgroundColor: scheme.surface,
           body: SafeArea(
@@ -229,10 +161,21 @@ class _MiniProgramPickerPageState extends State<MiniProgramPickerPage> {
                         ? '最近使用的小程序'
                         : '我的小程序',
                     items: _collectionView == _MiniProgramCollectionView.recent
-                        ? allItems
+                        ? recent
                         : commonItems,
-                    onBack: () => setState(() => _collectionView = null),
-                    onOpen: widget.onOpen,
+                    listKind:
+                        _collectionView == _MiniProgramCollectionView.recent
+                        ? MiniProgramListKind.recent
+                        : MiniProgramListKind.mine,
+                    onDragStarted: _startDrag,
+                    onDragEnded: _endDrag,
+                    onReorder: _reorder,
+                    onBack: () {
+                      if (_dragData == null) {
+                        setState(() => _collectionView = null);
+                      }
+                    },
+                    onOpen: _open,
                     onSearch: () => _pickerToast(context, '搜索小程序为模拟入口'),
                   )
                 : Column(
@@ -270,9 +213,23 @@ class _MiniProgramPickerPageState extends State<MiniProgramPickerPage> {
                               ),
                             ),
                             const SizedBox(height: 10),
+                            if (recent.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Text(
+                                  AppLocalizations.of(context).text(
+                                    '暂无最近使用的小程序',
+                                    'No recent mini-programs',
+                                  ),
+                                ),
+                              ),
                             MiniProgramLauncherGrid(
                               items: recent,
-                              onOpen: widget.onOpen,
+                              listKind: MiniProgramListKind.recent,
+                              onDragStarted: _startDrag,
+                              onDragEnded: _endDrag,
+                              onReorder: _reorder,
+                              onOpen: _open,
                             ),
                             const SizedBox(height: 42),
                             MiniProgramLauncherSectionHeader(
@@ -286,45 +243,69 @@ class _MiniProgramPickerPageState extends State<MiniProgramPickerPage> {
                             const SizedBox(height: 10),
                             MiniProgramLauncherGrid(
                               items: commonItems,
-                              onOpen: widget.onOpen,
+                              listKind: MiniProgramListKind.mine,
+                              onDragStarted: _startDrag,
+                              onDragEnded: _endDrag,
+                              onReorder: _reorder,
+                              onOpen: _open,
                             ),
+                            if (commonItems.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Text(
+                                  AppLocalizations.of(context).text(
+                                    '长按小程序，拖到底部添加为我的小程序',
+                                    'Long-press a mini-program and drag it below to add it here.',
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
                     ],
                   ),
           ),
-          bottomNavigationBar: SafeArea(
-            top: false,
-            child: MiniProgramLauncherSwipeExitHandle(
-              onDragStart: widget.onCloseDragStart,
-              onDragUpdate: widget.onCloseDragUpdate,
-              onDragEnd: widget.onCloseDragEnd,
-              onDragCancel: widget.onCloseDragCancel,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  MiniProgramLauncherBottomBar(
-                    onSearch: () => _pickerToast(context, '搜索小程序为模拟入口'),
-                    onMore: () => _pickerToast(context, '更多为模拟入口'),
+          bottomNavigationBar: _dragData != null
+              ? SafeArea(
+                  top: false,
+                  child: MiniProgramDragActions(
+                    data: _dragData!,
+                    alreadyInMy: _library.containsMy(_dragData!.item.id),
+                    onAddToMy: _addToMy,
+                    onDelete: _delete,
                   ),
-                  Container(
-                    height: 18,
-                    color: scheme.surfaceContainer,
-                    alignment: Alignment.center,
-                    child: Container(
-                      width: 110,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: scheme.outlineVariant,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+                )
+              : SafeArea(
+                  top: false,
+                  child: MiniProgramLauncherSwipeExitHandle(
+                    onDragStart: widget.onCloseDragStart,
+                    onDragUpdate: widget.onCloseDragUpdate,
+                    onDragEnd: widget.onCloseDragEnd,
+                    onDragCancel: widget.onCloseDragCancel,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        MiniProgramLauncherBottomBar(
+                          onSearch: () => _pickerToast(context, '搜索小程序为模拟入口'),
+                          onMore: () => _pickerToast(context, '更多为模拟入口'),
+                        ),
+                        Container(
+                          height: 18,
+                          color: scheme.surfaceContainer,
+                          alignment: Alignment.center,
+                          child: Container(
+                            width: 110,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: scheme.outlineVariant,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
+                ),
         );
       },
     );

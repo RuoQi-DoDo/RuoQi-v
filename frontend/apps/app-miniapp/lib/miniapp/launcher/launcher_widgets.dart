@@ -3,7 +3,10 @@ import '../common/miniapp_localizations.dart';
 import 'package:common/common.dart';
 import 'package:flutter/material.dart';
 
+import '../../localization.dart';
+import 'miniapp_drag_targets.dart';
 import 'miniapp_launcher_item.dart';
+import 'miniapp_library_controller.dart';
 
 class MiniProgramLauncherSearchBar extends StatelessWidget {
   const MiniProgramLauncherSearchBar({super.key, required this.onTap});
@@ -31,11 +34,15 @@ class MiniProgramLauncherSearchBar extends StatelessWidget {
                 color: scheme.onSurfaceVariant,
               ),
               const SizedBox(width: 5),
-              Text(
-                localizeMiniProgramLabel(context, '搜索小程序'),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                  fontSize: 12.5,
+              Flexible(
+                child: Text(
+                  localizeMiniProgramLabel(context, '搜索小程序'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontSize: 12.5,
+                  ),
                 ),
               ),
             ],
@@ -64,34 +71,47 @@ class MiniProgramLauncherSectionHeader extends StatelessWidget {
     final scheme = theme.colorScheme;
     return Row(
       children: [
-        Text(
-          localizeMiniProgramLabel(context, title),
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: scheme.onSurfaceVariant,
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
+        Expanded(
+          child: Text(
+            localizeMiniProgramLabel(context, title),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
-        const Spacer(),
+        const SizedBox(width: 8),
         if (trailing != null)
-          TextButton(
-            onPressed: onTap,
-            style: TextButton.styleFrom(
-              foregroundColor: scheme.onSurfaceVariant,
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  localizeMiniProgramLabel(context, trailing!),
-                  style: const TextStyle(fontSize: 11),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: onTap,
+                style: TextButton.styleFrom(
+                  foregroundColor: scheme.onSurfaceVariant,
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                const Icon(Icons.chevron_right_rounded, size: 13),
-              ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        localizeMiniProgramLabel(context, trailing!),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, size: 13),
+                  ],
+                ),
+              ),
             ),
           ),
       ],
@@ -105,11 +125,19 @@ class MiniProgramLauncherGrid extends StatelessWidget {
     required this.items,
     required this.onOpen,
     this.mainAxisExtent = 72,
+    this.listKind,
+    this.onDragStarted,
+    this.onDragEnded,
+    this.onReorder,
   });
 
   final List<MiniProgramLauncherItem> items;
   final ValueChanged<MiniProgramLauncherItem> onOpen;
   final double mainAxisExtent;
+  final MiniProgramListKind? listKind;
+  final ValueChanged<MiniProgramDragData>? onDragStarted;
+  final VoidCallback? onDragEnded;
+  final void Function(MiniProgramDragData data, String targetId)? onReorder;
 
   @override
   Widget build(BuildContext context) {
@@ -125,14 +153,93 @@ class MiniProgramLauncherGrid extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final item = items[index];
-        return MiniProgramLauncherTile(
+        final tile = MiniProgramLauncherTile(
           key: item.tileKey,
           item: item,
           onTap: () => onOpen(item),
+          draggable: listKind != null && onDragStarted != null,
+        );
+        final kind = listKind;
+        if (kind == null || onDragStarted == null) return tile;
+        final payload = MiniProgramDragData(item: item, kind: kind);
+        final theme = Theme.of(context);
+        final draggable = LongPressDraggable<MiniProgramDragData>(
+          key: Key('mini-program-drag-${kind.name}-${item.id}'),
+          data: payload,
+          maxSimultaneousDrags: 1,
+          rootOverlay: true,
+          dragAnchorStrategy: (_, _, _) => const Offset(44, 88),
+          hapticFeedbackOnStart: true,
+          onDragStarted: () => onDragStarted?.call(payload),
+          onDragEnd: (_) => onDragEnded?.call(),
+          childWhenDragging: Opacity(opacity: 0.25, child: tile),
+          feedback: Theme(
+            data: theme,
+            child: _MiniProgramDragFeedback(item: item),
+          ),
+          child: tile,
+        );
+        if (onReorder == null) return draggable;
+        return DragTarget<MiniProgramDragData>(
+          onWillAcceptWithDetails: (details) =>
+              details.data.kind == kind && details.data.item.id != item.id,
+          onAcceptWithDetails: (details) =>
+              onReorder?.call(details.data, item.id),
+          builder: (context, candidates, rejected) => AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            decoration: BoxDecoration(
+              color: candidates.isEmpty
+                  ? Colors.transparent
+                  : theme.colorScheme.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: draggable,
+          ),
         );
       },
     );
   }
+}
+
+class _MiniProgramDragFeedback extends StatelessWidget {
+  const _MiniProgramDragFeedback({required this.item});
+
+  final MiniProgramLauncherItem item;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    type: MaterialType.transparency,
+    child: SizedBox(
+      width: 88,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: item.color,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(item.icon, color: Colors.white, size: 29),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            localizeMiniProgramLabel(context, item.label),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 11,
+              height: 1.15,
+              fontWeight: FontWeight.w600,
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class MiniProgramLauncherTile extends StatelessWidget {
@@ -140,41 +247,51 @@ class MiniProgramLauncherTile extends StatelessWidget {
     super.key,
     required this.item,
     required this.onTap,
+    this.draggable = false,
   });
 
   final MiniProgramLauncherItem item;
   final VoidCallback onTap;
+  final bool draggable;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Column(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: item.color,
-              shape: BoxShape.circle,
+    return Semantics(
+      hint: draggable
+          ? AppLocalizations.of(context).text(
+              '长按拖动，可添加、删除或排序',
+              'Long press to drag, add, delete or reorder',
+            )
+          : null,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: item.color,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(item.icon, color: Colors.white, size: 20),
             ),
-            child: Icon(item.icon, color: Colors.white, size: 20),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            localizeMiniProgramLabel(context, item.label),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface,
-              fontSize: 10,
-              height: 1.15,
-              fontWeight: FontWeight.w500,
+            const SizedBox(height: 18),
+            Text(
+              localizeMiniProgramLabel(context, item.label),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontSize: 10,
+                height: 1.15,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

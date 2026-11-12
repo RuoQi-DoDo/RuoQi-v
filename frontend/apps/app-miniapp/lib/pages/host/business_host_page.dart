@@ -3,12 +3,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import '../../miniapp/ats/ats_miniapp.dart';
-import '../../miniapp/common/common.dart';
-import '../../miniapp/hr/hr_miniapp.dart';
 import '../../miniapp/launcher/launcher.dart';
-import '../../miniapp/merchant/home_page.dart';
-import '../../miniapp/partner/home_page.dart';
-import '../../miniapp/platform/platform_miniapp.dart';
+import '../../miniapp/launcher/miniapp_catalog.dart';
 import '../common/page_theme.dart';
 import '../contacts/contacts_page.dart';
 import '../discover/discover_page.dart';
@@ -194,49 +190,14 @@ class _BusinessHostPageState extends State<BusinessHostPage>
     setState(() => _subview = _atsReturnSubview);
   }
 
-  void _openMerchantMiniProgram() {
-    Navigator.of(context).push<void>(
-      MiniProgramShell.route(
-        title: '商户',
-        icon: Icons.fingerprint,
-        child: const MerchantHomePage(embedded: true),
-      ),
-    );
-  }
-
-  void _openPartnerMiniProgram() {
-    Navigator.of(context).push<void>(
-      MiniProgramShell.route(
-        title: '伙伴',
-        icon: Icons.handshake_outlined,
-        child: const PartnerHomePage(embedded: true),
-      ),
-    );
-  }
-
-  void _openHrMiniProgram() {
-    Navigator.of(context).push<void>(HrMiniProgram.route());
-  }
-
-  void _openPlatformMiniProgram() {
-    Navigator.of(context).push<void>(PlatformMiniProgram.route());
-  }
-
-  void _openMiniProgramLauncherItem(MiniProgramLauncherItem item) {
-    switch (item.id) {
-      case MiniProgramLauncherIds.ats:
-        _openAtsMiniProgram();
-      case MiniProgramLauncherIds.merchant:
-        _openMerchantMiniProgram();
-      case MiniProgramLauncherIds.partner:
-        _openPartnerMiniProgram();
-      case MiniProgramLauncherIds.hr:
-        _openHrMiniProgram();
-      case MiniProgramLauncherIds.platform:
-        _openPlatformMiniProgram();
-      default:
-        _showHostToast(context, '该小程序为模拟入口');
+  Future<void> _openMiniProgramLauncherItem(
+    MiniProgramLauncherItem item,
+  ) async {
+    if (item.id == MiniProgramLauncherIds.ats) {
+      _openAtsMiniProgram();
+      return;
     }
+    await openMiniProgram(context, item);
   }
 
   void _openSettingsPage() {
@@ -546,14 +507,6 @@ class _BusinessHostPageState extends State<BusinessHostPage>
     );
   }
 
-  void _openMiniProgramPicker() {
-    setState(() {
-      _subview = _HostSubview.picker;
-      _pullController.value = 1;
-      _closeController.value = 0;
-    });
-  }
-
   Widget _buildHostPage(BuildContext context, {required Key key}) => Material(
     child: Column(
       key: key,
@@ -576,7 +529,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
                 ),
               ),
               const ContactsPage(),
-              DiscoverPage(onOpenMiniPrograms: _openMiniProgramPicker),
+              const DiscoverPage(),
               MePage(onOpenSettings: _openSettingsPage),
             ],
           ),
@@ -596,12 +549,6 @@ class _BusinessHostPageState extends State<BusinessHostPage>
       ],
     ),
   );
-
-  static void _showHostToast(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
 }
 
 class _NoOverscrollGlowBehavior extends ScrollBehavior {

@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 
 import 'launcher_widgets.dart';
 import 'miniapp_launcher_item.dart';
+import 'miniapp_drag_targets.dart';
+import 'miniapp_library_controller.dart';
+import '../../localization.dart';
 
 /// “最近使用 / 我的小程序”集合页。
 class MiniProgramCollectionPage extends StatelessWidget {
@@ -14,6 +17,10 @@ class MiniProgramCollectionPage extends StatelessWidget {
     required this.onBack,
     required this.onOpen,
     required this.onSearch,
+    this.listKind,
+    this.onDragStarted,
+    this.onDragEnded,
+    this.onReorder,
   });
 
   final String title;
@@ -21,6 +28,10 @@ class MiniProgramCollectionPage extends StatelessWidget {
   final VoidCallback onBack;
   final ValueChanged<MiniProgramLauncherItem> onOpen;
   final VoidCallback onSearch;
+  final MiniProgramListKind? listKind;
+  final ValueChanged<MiniProgramDragData>? onDragStarted;
+  final VoidCallback? onDragEnded;
+  final void Function(MiniProgramDragData, String targetId)? onReorder;
 
   @override
   Widget build(BuildContext context) {
@@ -63,10 +74,24 @@ class MiniProgramCollectionPage extends StatelessWidget {
             key: const Key('mini-program-collection-list'),
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
             children: [
+              if (items.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    AppLocalizations.of(
+                      context,
+                    ).text('暂无小程序', 'No mini-programs yet'),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               MiniProgramLauncherGrid(
                 items: items,
                 onOpen: onOpen,
                 mainAxisExtent: 94,
+                listKind: listKind,
+                onDragStarted: onDragStarted,
+                onDragEnded: onDragEnded,
+                onReorder: onReorder,
               ),
             ],
           ),

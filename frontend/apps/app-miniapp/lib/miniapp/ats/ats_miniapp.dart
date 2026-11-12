@@ -11,10 +11,18 @@ import 'pages/misc_pages.dart';
 import 'pages/profile_pages.dart';
 
 class AtsMiniProgram extends StatefulWidget {
-  const AtsMiniProgram({super.key, this.onExit});
+  const AtsMiniProgram({super.key, this.onExit}) : _routed = false;
+
+  const AtsMiniProgram._routed({required this.onExit}) : _routed = true;
 
   /// 小程序作为客户首页子视图时，由宿主切回微信式首页。
   final VoidCallback? onExit;
+  final bool _routed;
+
+  static Route<void> route() => MaterialPageRoute<void>(
+    builder: (context) =>
+        AtsMiniProgram._routed(onExit: () => Navigator.of(context).pop()),
+  );
 
   @override
   State<AtsMiniProgram> createState() => _AtsMiniProgramState();
@@ -61,7 +69,7 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
         builder: (context, _) {
           final route = _controller.route;
           final greenNav = route.usesGreenNavigation;
-          return AnnotatedRegion<SystemUiOverlayStyle>(
+          final content = AnnotatedRegion<SystemUiOverlayStyle>(
             value: SystemUiOverlayStyle(
               statusBarColor: greenNav
                   ? AtsColors.solidPrimary(context)
@@ -161,6 +169,19 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
                 ),
               ),
             ),
+          );
+          if (!widget._routed) return content;
+          return PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, result) {
+              if (didPop) return;
+              if (_controller.canGoBack) {
+                _controller.back();
+              } else {
+                _exit();
+              }
+            },
+            child: content,
           );
         },
       ),

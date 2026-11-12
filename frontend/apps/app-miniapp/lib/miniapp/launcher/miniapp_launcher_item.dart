@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// 启动器已知小程序标识。
 ///
-/// 启动器本身只负责展示和上报选择，具体路由由宿主根据标识决定。
+/// 启动器负责展示和上报选择，公共目录负责根据标识分发路由。
 abstract final class MiniProgramLauncherIds {
   static const ats = 'ats';
   static const merchant = 'merchant';
@@ -20,6 +20,7 @@ class MiniProgramLauncherItem {
     required this.icon,
     required this.color,
     this.tileKey,
+    this.searchTerms = const [],
   });
 
   final String id;
@@ -27,4 +28,5 @@ class MiniProgramLauncherItem {
   final IconData icon;
   final Color color;
   final Key? tileKey;
+  final List<String> searchTerms;
 }
