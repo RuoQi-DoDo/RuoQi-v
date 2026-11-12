@@ -27,13 +27,13 @@ class _AtsContactPageState extends State<AtsContactPage> {
               Container(
                 width: 62,
                 height: 62,
-                decoration: const BoxDecoration(
-                  color: AtsColors.mint,
+                decoration: BoxDecoration(
+                  color: AtsColors.resolve(context, AtsColors.mint),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.headset_mic_outlined,
-                  color: AtsColors.primary,
+                  color: AtsColors.resolve(context, AtsColors.primary),
                   size: 30,
                 ),
               ),
@@ -43,9 +43,12 @@ class _AtsContactPageState extends State<AtsContactPage> {
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 '工作日 09:00 - 18:00',
-                style: TextStyle(color: AtsColors.textMuted, fontSize: 11),
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textMuted),
+                  fontSize: 11,
+                ),
               ),
               const SizedBox(height: 18),
               _ContactLine(
@@ -81,9 +84,12 @@ class _AtsContactPageState extends State<AtsContactPage> {
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 5),
-              const Text(
+              Text(
                 '你的建议会帮助我们做得更好',
-                style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textMuted),
+                  fontSize: 10,
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -138,14 +144,18 @@ class _ContactLine extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 13),
         child: Row(
           children: [
-            Icon(icon, color: AtsColors.primary, size: 20),
+            Icon(
+              icon,
+              color: AtsColors.resolve(context, AtsColors.primary),
+              size: 20,
+            ),
             const SizedBox(width: 10),
             SizedBox(
               width: 68,
               child: Text(
                 label,
-                style: const TextStyle(
-                  color: AtsColors.textSecondary,
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textSecondary),
                   fontSize: 12,
                 ),
               ),
@@ -153,12 +163,15 @@ class _ContactLine extends StatelessWidget {
             Expanded(
               child: Text(
                 value,
-                style: const TextStyle(color: AtsColors.text, fontSize: 12),
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.text),
+                  fontSize: 12,
+                ),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right,
-              color: AtsColors.textMuted,
+              color: AtsColors.resolve(context, AtsColors.textMuted),
               size: 18,
             ),
           ],

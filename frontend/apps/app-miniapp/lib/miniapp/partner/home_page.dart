@@ -1,3 +1,5 @@
+import '../common/miniapp_localizations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:common/common.dart';
 
@@ -20,7 +22,10 @@ class PartnerHomePage extends StatelessWidget {
             color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: 16),
-          Text('伙伴移动端', style: Theme.of(context).textTheme.headlineSmall),
+          Text(
+            localizeMiniProgramLabel(context, '伙伴移动端'),
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
           const SizedBox(height: 16),
           const AppBadge(appName: 'partner_app', version: '1.0.0'),
         ],
@@ -34,7 +39,9 @@ class PartnerHomePage extends StatelessWidget {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('RuoQi 伙伴 App')),
+      appBar: AppBar(
+        title: Text(localizeMiniProgramLabel(context, 'RuoQi 伙伴 App')),
+      ),
       body: body,
     );
   }

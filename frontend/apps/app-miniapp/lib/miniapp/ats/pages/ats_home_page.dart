@@ -54,7 +54,7 @@ class _AtsHomePageState extends State<AtsHomePage> {
     final controller = widget.controller;
     final isRecruiter = controller.role == AtsUserRole.recruiter;
     return RefreshIndicator(
-      color: AtsColors.primary,
+      color: AtsColors.resolve(context, AtsColors.primary),
       onRefresh: () async {
         await Future<void>.delayed(const Duration(milliseconds: 500));
         if (!context.mounted) {
@@ -67,15 +67,15 @@ class _AtsHomePageState extends State<AtsHomePage> {
         padding: EdgeInsets.zero,
         children: [
           Container(
-            color: AtsColors.primary,
+            color: AtsColors.solidPrimary(context),
             padding: const EdgeInsets.fromLTRB(14, 6, 14, 18),
             child: Material(
-              color: Colors.white,
+              color: AtsColors.resolve(context, AtsColors.surface),
               borderRadius: BorderRadius.circular(22),
               child: InkWell(
                 onTap: () => controller.open(AtsRoute.search),
                 borderRadius: BorderRadius.circular(22),
-                child: const SizedBox(
+                child: SizedBox(
                   height: 40,
                   child: Row(
                     children: [
@@ -83,13 +83,16 @@ class _AtsHomePageState extends State<AtsHomePage> {
                       Icon(
                         Icons.search_rounded,
                         size: 20,
-                        color: AtsColors.textMuted,
+                        color: AtsColors.resolve(context, AtsColors.textMuted),
                       ),
                       SizedBox(width: 8),
                       Text(
                         '搜索岗位或关键词',
                         style: TextStyle(
-                          color: AtsColors.textMuted,
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.textMuted,
+                          ),
                           fontSize: 14,
                         ),
                       ),
@@ -112,7 +115,7 @@ class _AtsHomePageState extends State<AtsHomePage> {
                   margin: const EdgeInsets.fromLTRB(12, 10, 12, 0),
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AtsColors.resolve(context, AtsColors.surface),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -153,12 +156,12 @@ class _AtsHomePageState extends State<AtsHomePage> {
                     vertical: 11,
                   ),
                   onTap: () => controller.open(AtsRoute.jobDetail),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(
                         Icons.campaign_outlined,
                         size: 18,
-                        color: AtsColors.orange,
+                        color: AtsColors.resolve(context, AtsColors.orange),
                       ),
                       SizedBox(width: 8),
                       Expanded(
@@ -168,7 +171,10 @@ class _AtsHomePageState extends State<AtsHomePage> {
                               TextSpan(
                                 text: '北京世佳科技',
                                 style: TextStyle(
-                                  color: AtsColors.primary,
+                                  color: AtsColors.resolve(
+                                    context,
+                                    AtsColors.primary,
+                                  ),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -176,7 +182,10 @@ class _AtsHomePageState extends State<AtsHomePage> {
                               TextSpan(
                                 text: '项目经理',
                                 style: TextStyle(
-                                  color: AtsColors.primary,
+                                  color: AtsColors.resolve(
+                                    context,
+                                    AtsColors.primary,
+                                  ),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -186,7 +195,10 @@ class _AtsHomePageState extends State<AtsHomePage> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: AtsColors.textSecondary,
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.textSecondary,
+                            ),
                             fontSize: 12,
                           ),
                         ),
@@ -194,7 +206,7 @@ class _AtsHomePageState extends State<AtsHomePage> {
                       Icon(
                         Icons.chevron_right,
                         size: 18,
-                        color: AtsColors.textMuted,
+                        color: AtsColors.resolve(context, AtsColors.textMuted),
                       ),
                     ],
                   ),
@@ -203,16 +215,16 @@ class _AtsHomePageState extends State<AtsHomePage> {
                   margin: const EdgeInsets.fromLTRB(12, 10, 12, 0),
                   padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AtsColors.resolve(context, AtsColors.surface),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         '热门岗位',
                         style: TextStyle(
-                          color: AtsColors.text,
+                          color: AtsColors.resolve(context, AtsColors.text),
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -232,8 +244,11 @@ class _AtsHomePageState extends State<AtsHomePage> {
                         itemBuilder: (context, index) {
                           return Material(
                             color: index.isEven
-                                ? AtsColors.mint
-                                : AtsColors.background,
+                                ? AtsColors.resolve(context, AtsColors.mint)
+                                : AtsColors.resolve(
+                                    context,
+                                    AtsColors.background,
+                                  ),
                             borderRadius: BorderRadius.circular(6),
                             child: InkWell(
                               onTap: () => controller.open(AtsRoute.post),
@@ -245,8 +260,14 @@ class _AtsHomePageState extends State<AtsHomePage> {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: index.isEven
-                                        ? AtsColors.primary
-                                        : AtsColors.textSecondary,
+                                        ? AtsColors.resolve(
+                                            context,
+                                            AtsColors.primary,
+                                          )
+                                        : AtsColors.resolve(
+                                            context,
+                                            AtsColors.textSecondary,
+                                          ),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -258,7 +279,7 @@ class _AtsHomePageState extends State<AtsHomePage> {
                       const SizedBox(height: 12),
                       InkWell(
                         onTap: () => controller.open(AtsRoute.post),
-                        child: const Padding(
+                        child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 2),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -266,14 +287,20 @@ class _AtsHomePageState extends State<AtsHomePage> {
                               Text(
                                 '查看全部职位',
                                 style: TextStyle(
-                                  color: AtsColors.textMuted,
+                                  color: AtsColors.resolve(
+                                    context,
+                                    AtsColors.textMuted,
+                                  ),
                                   fontSize: 12,
                                 ),
                               ),
                               Icon(
                                 Icons.chevron_right,
                                 size: 16,
-                                color: AtsColors.textMuted,
+                                color: AtsColors.resolve(
+                                  context,
+                                  AtsColors.textMuted,
+                                ),
                               ),
                             ],
                           ),
@@ -303,28 +330,35 @@ class _AtsHomePageState extends State<AtsHomePage> {
                       margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
                       onTap: () => controller.open(AtsRoute.jobDetail),
                     ),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.fromLTRB(0, 10, 0, 28),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(
                         width: 20,
-                        child: Divider(color: AtsColors.divider),
+                        child: Divider(
+                          color: AtsColors.resolve(context, AtsColors.divider),
+                        ),
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         child: Text(
                           '已经到底啦',
                           style: TextStyle(
-                            color: AtsColors.textMuted,
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.textMuted,
+                            ),
                             fontSize: 11,
                           ),
                         ),
                       ),
                       SizedBox(
                         width: 20,
-                        child: Divider(color: AtsColors.divider),
+                        child: Divider(
+                          color: AtsColors.resolve(context, AtsColors.divider),
+                        ),
                       ),
                     ],
                   ),
@@ -428,7 +462,10 @@ class _BannerCarousel extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.18),
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.surface,
+                              ).withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(99),
                             ),
                             child: const Text(
@@ -461,8 +498,11 @@ class _BannerCarousel extends StatelessWidget {
                     margin: const EdgeInsets.only(left: 4),
                     decoration: BoxDecoration(
                       color: i == index
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.5),
+                          ? AtsColors.resolve(context, AtsColors.surface)
+                          : AtsColors.resolve(
+                              context,
+                              AtsColors.surface,
+                            ).withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -498,16 +538,23 @@ class _HomeGridItem extends StatelessWidget {
               Container(
                 width: 38,
                 height: 38,
-                decoration: const BoxDecoration(
-                  color: AtsColors.mint,
+                decoration: BoxDecoration(
+                  color: AtsColors.resolve(context, AtsColors.mint),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: 20, color: AtsColors.primary),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: AtsColors.resolve(context, AtsColors.primary),
+                ),
               ),
               const SizedBox(height: 6),
               Text(
-                label,
-                style: const TextStyle(color: AtsColors.text, fontSize: 12),
+                localizeMiniProgramLabel(context, label),
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.text),
+                  fontSize: 12,
+                ),
               ),
             ],
           ),

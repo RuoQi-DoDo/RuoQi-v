@@ -55,7 +55,7 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: AtsTheme.data(),
+      data: AtsTheme.data(brightness: Theme.of(context).brightness),
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
@@ -63,16 +63,20 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
           final greenNav = route.usesGreenNavigation;
           return AnnotatedRegion<SystemUiOverlayStyle>(
             value: SystemUiOverlayStyle(
-              statusBarColor: greenNav ? AtsColors.primary : Colors.white,
-              statusBarIconBrightness: greenNav
+              statusBarColor: greenNav
+                  ? AtsColors.solidPrimary(context)
+                  : AtsColors.resolve(context, AtsColors.surface),
+              statusBarIconBrightness:
+                  greenNav || Theme.of(context).brightness == Brightness.dark
                   ? Brightness.light
                   : Brightness.dark,
-              statusBarBrightness: greenNav
+              statusBarBrightness:
+                  greenNav || Theme.of(context).brightness == Brightness.dark
                   ? Brightness.dark
                   : Brightness.light,
             ),
             child: Scaffold(
-              backgroundColor: AtsColors.background,
+              backgroundColor: AtsColors.resolve(context, AtsColors.background),
               body: Material(
                 color: Colors.black,
                 child: ClipRect(
@@ -80,11 +84,11 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
                     children: [
                       MiniProgramStatusBar(
                         backgroundColor: greenNav
-                            ? AtsColors.primary
-                            : Colors.white,
+                            ? AtsColors.solidPrimary(context)
+                            : AtsColors.resolve(context, AtsColors.surface),
                         foregroundColor: greenNav
                             ? Colors.white
-                            : AtsColors.text,
+                            : AtsColors.resolve(context, AtsColors.text),
                       ),
                       MiniProgramNavigationBar(
                         title: route.title,
@@ -93,21 +97,26 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
                         onMore: _showMore,
                         onClose: _exit,
                         backgroundColor: greenNav
-                            ? AtsColors.primary
-                            : Colors.white,
+                            ? AtsColors.solidPrimary(context)
+                            : AtsColors.resolve(context, AtsColors.surface),
                         foregroundColor: greenNav
                             ? Colors.white
-                            : AtsColors.text,
+                            : AtsColors.resolve(context, AtsColors.text),
                         borderColor: Colors.transparent,
                         titleStyle: TextStyle(
-                          color: greenNav ? Colors.white : AtsColors.text,
+                          color: greenNav
+                              ? Colors.white
+                              : AtsColors.resolve(context, AtsColors.text),
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Expanded(
                         child: ColoredBox(
-                          color: AtsColors.background,
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.background,
+                          ),
                           child: AnimatedSwitcher(
                             duration: const Duration(milliseconds: 230),
                             switchInCurve: Curves.easeOutCubic,
@@ -246,9 +255,13 @@ class _MiniBottomChrome extends StatelessWidget {
       onExit: onExit,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AtsColors.resolve(context, AtsColors.surface),
           border: showTabs
-              ? const Border(top: BorderSide(color: AtsColors.divider))
+              ? Border(
+                  top: BorderSide(
+                    color: AtsColors.resolve(context, AtsColors.divider),
+                  ),
+                )
               : null,
         ),
         child: Column(
@@ -317,16 +330,16 @@ class _MiniTabBar extends StatelessWidget {
                         index == i ? selectedIcons[i] : icons[i],
                         size: 21,
                         color: index == i
-                            ? AtsColors.primary
-                            : AtsColors.textMuted,
+                            ? AtsColors.resolve(context, AtsColors.primary)
+                            : AtsColors.resolve(context, AtsColors.textMuted),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        labels[i],
+                        localizeMiniProgramLabel(context, labels[i]),
                         style: TextStyle(
                           color: index == i
-                              ? AtsColors.primary
-                              : AtsColors.textMuted,
+                              ? AtsColors.resolve(context, AtsColors.primary)
+                              : AtsColors.resolve(context, AtsColors.textMuted),
                           fontSize: 9,
                           fontWeight: index == i
                               ? FontWeight.w600
@@ -343,7 +356,7 @@ class _MiniTabBar extends StatelessWidget {
                         width: 7,
                         height: 7,
                         decoration: BoxDecoration(
-                          color: AtsColors.red,
+                          color: AtsColors.resolve(context, AtsColors.red),
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 1),
                         ),

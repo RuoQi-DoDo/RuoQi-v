@@ -25,28 +25,34 @@ class _AtsHideSettingPageState extends State<AtsHideSettingPage> {
               SwitchListTile(
                 value: _hideResume,
                 onChanged: (value) => setState(() => _hideResume = value),
-                activeTrackColor: AtsColors.primary,
+                activeTrackColor: AtsColors.resolve(context, AtsColors.primary),
                 title: const Text(
                   '对招聘方隐藏简历',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   '开启后招聘方将无法主动查看你的完整简历',
-                  style: TextStyle(fontSize: 10, color: AtsColors.textMuted),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: AtsColors.resolve(context, AtsColors.textMuted),
+                  ),
                 ),
               ),
               const Divider(height: 1, indent: 16, endIndent: 16),
               SwitchListTile(
                 value: _hideCompany,
                 onChanged: (value) => setState(() => _hideCompany = value),
-                activeTrackColor: AtsColors.primary,
+                activeTrackColor: AtsColors.resolve(context, AtsColors.primary),
                 title: const Text(
                   '隐藏求职活跃状态',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   '隐藏最近活跃时间，减少被打扰',
-                  style: TextStyle(fontSize: 10, color: AtsColors.textMuted),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: AtsColors.resolve(context, AtsColors.textMuted),
+                  ),
                 ),
               ),
             ],
@@ -60,9 +66,9 @@ class _AtsHideSettingPageState extends State<AtsHideSettingPage> {
                 ListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(
+                  leading: Icon(
                     Icons.business_outlined,
-                    color: AtsColors.textMuted,
+                    color: AtsColors.resolve(context, AtsColors.textMuted),
                   ),
                   title: Text(company, style: const TextStyle(fontSize: 13)),
                   trailing: TextButton(

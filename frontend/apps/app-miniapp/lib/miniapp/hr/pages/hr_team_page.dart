@@ -16,7 +16,7 @@ class HrTeamPage extends StatelessWidget {
     final notIn = controller.team.length - checkedIn - onLeave;
 
     return RefreshIndicator(
-      color: HrColors.brand,
+      color: HrColors.resolve(context, HrColors.brand),
       onRefresh: controller.refresh,
       child: ListView(
         key: const Key('hr-team-scroll'),
@@ -28,21 +28,24 @@ class HrTeamPage extends StatelessWidget {
               Expanded(
                 child: Text(
                   '我的团队',
-                  style: HrText.appBarTitle.copyWith(fontSize: 25),
+                  style: HrText.resolve(
+                    context,
+                    HrText.appBarTitle,
+                  ).copyWith(fontSize: 25),
                 ),
               ),
               if (controller.approvals.isNotEmpty)
                 HrStatusChip(
                   label: '${controller.approvals.length} 待审批',
-                  background: HrColors.warningBg,
-                  foreground: HrColors.warning,
+                  background: HrColors.resolve(context, HrColors.warningBg),
+                  foreground: HrColors.resolve(context, HrColors.warning),
                 ),
             ],
           ),
           const SizedBox(height: 5),
           Text(
             '${controller.user.department} · ${controller.team.length} 位直属成员',
-            style: HrText.meta,
+            style: HrText.resolve(context, HrText.meta),
           ),
           const SizedBox(height: 17),
           HrCard(
@@ -54,22 +57,25 @@ class HrTeamPage extends StatelessWidget {
                     _TeamMetric(
                       label: '已到岗',
                       value: '$checkedIn',
-                      color: HrColors.success,
+                      color: HrColors.resolve(context, HrColors.success),
                     ),
                     _TeamMetric(
                       label: '休假中',
                       value: '$onLeave',
-                      color: HrColors.warning,
+                      color: HrColors.resolve(context, HrColors.warning),
                     ),
                     _TeamMetric(
                       label: '未打卡',
                       value: '$notIn',
-                      color: HrColors.brand,
+                      color: HrColors.resolve(context, HrColors.brand),
                     ),
                   ],
                 ),
                 const SizedBox(height: 15),
-                const Divider(height: 1, color: HrColors.line2),
+                Divider(
+                  height: 1,
+                  color: HrColors.resolve(context, HrColors.line2),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -104,11 +110,11 @@ class HrTeamPage extends StatelessWidget {
               children: [
                 for (var i = 0; i < controller.team.length; i++) ...[
                   if (i > 0)
-                    const Divider(
+                    Divider(
                       height: 1,
                       indent: 16,
                       endIndent: 16,
-                      color: HrColors.line2,
+                      color: HrColors.resolve(context, HrColors.line2),
                     ),
                   _TeamMemberRow(member: controller.team[i], index: i),
                 ],
@@ -141,14 +147,19 @@ class _TeamMetric extends StatelessWidget {
         children: [
           Text(
             value,
-            style: HrText.mono.copyWith(
-              color: color,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
+            style: HrText.resolve(
+              context,
+              HrText.mono,
+            ).copyWith(color: color, fontSize: 24, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 3),
-          Text(label, style: HrText.meta.copyWith(fontSize: 10.5)),
+          Text(
+            label,
+            style: HrText.resolve(
+              context,
+              HrText.meta,
+            ).copyWith(fontSize: 10.5),
+          ),
         ],
       ),
     );
@@ -164,9 +175,18 @@ class _TeamMemberRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (background, foreground) = switch (member.state) {
-      HrTeamState.checkedIn => (HrColors.successBg, HrColors.success),
-      HrTeamState.onLeave => (HrColors.warningBg, HrColors.warning),
-      HrTeamState.notIn => (HrColors.dangerBg, HrColors.danger),
+      HrTeamState.checkedIn => (
+        HrColors.resolve(context, HrColors.successBg),
+        HrColors.resolve(context, HrColors.success),
+      ),
+      HrTeamState.onLeave => (
+        HrColors.resolve(context, HrColors.warningBg),
+        HrColors.resolve(context, HrColors.warning),
+      ),
+      HrTeamState.notIn => (
+        HrColors.resolve(context, HrColors.dangerBg),
+        HrColors.resolve(context, HrColors.danger),
+      ),
     };
     final subtitle = member.state == HrTeamState.onLeave
         ? '${member.position} · ${member.leaveType ?? '休假'}'
@@ -183,14 +203,17 @@ class _TeamMemberRow extends StatelessWidget {
               children: [
                 Text(
                   member.name,
-                  style: HrText.cardTitle.copyWith(fontSize: 13.5),
+                  style: HrText.resolve(
+                    context,
+                    HrText.cardTitle,
+                  ).copyWith(fontSize: 13.5),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: HrText.meta,
+                  style: HrText.resolve(context, HrText.meta),
                 ),
               ],
             ),
@@ -198,8 +221,8 @@ class _TeamMemberRow extends StatelessWidget {
           if (member.clockIn != null)
             Text(
               member.clockIn!,
-              style: HrText.mono.copyWith(
-                color: HrColors.ink3,
+              style: HrText.resolve(context, HrText.mono).copyWith(
+                color: HrColors.resolve(context, HrColors.ink3),
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
@@ -247,20 +270,20 @@ class _ClashCard extends StatelessWidget {
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: counts[i] >= 2
-                              ? HrColors.dangerBg
+                              ? HrColors.resolve(context, HrColors.dangerBg)
                               : counts[i] == 1
-                              ? HrColors.warningBg
-                              : HrColors.bg,
+                              ? HrColors.resolve(context, HrColors.warningBg)
+                              : HrColors.resolve(context, HrColors.bg),
                           borderRadius: BorderRadius.circular(9),
                         ),
                         child: Text(
                           counts[i] == 0 ? '–' : '${counts[i]}',
-                          style: HrText.mono.copyWith(
+                          style: HrText.resolve(context, HrText.mono).copyWith(
                             color: counts[i] >= 2
-                                ? HrColors.danger
+                                ? HrColors.resolve(context, HrColors.danger)
                                 : counts[i] == 1
-                                ? HrColors.warning
-                                : HrColors.ink4,
+                                ? HrColors.resolve(context, HrColors.warning)
+                                : HrColors.resolve(context, HrColors.ink4),
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
                           ),
@@ -269,8 +292,8 @@ class _ClashCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         hrWeekdayShort(monday.add(Duration(days: i))),
-                        style: HrText.meta.copyWith(
-                          color: HrColors.ink4,
+                        style: HrText.resolve(context, HrText.meta).copyWith(
+                          color: HrColors.resolve(context, HrColors.ink4),
                           fontSize: 9.5,
                         ),
                       ),
@@ -283,8 +306,8 @@ class _ClashCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             '周四王思远、周宁同时休假，建议提前安排客户支持值班。',
-            style: HrText.meta.copyWith(
-              color: HrColors.danger,
+            style: HrText.resolve(context, HrText.meta).copyWith(
+              color: HrColors.resolve(context, HrColors.danger),
               fontWeight: FontWeight.w600,
             ),
           ),

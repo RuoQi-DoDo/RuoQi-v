@@ -9,7 +9,7 @@ class HrRequestsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     const kinds = HrRequestKind.values;
     return RefreshIndicator(
-      color: HrColors.brand,
+      color: HrColors.resolve(context, HrColors.brand),
       onRefresh: controller.refresh,
       child: ListView(
         key: const Key('hr-requests-scroll'),
@@ -21,22 +21,28 @@ class HrRequestsPage extends StatelessWidget {
               Expanded(
                 child: Text(
                   '申请中心',
-                  style: HrText.appBarTitle.copyWith(fontSize: 25),
+                  style: HrText.resolve(
+                    context,
+                    HrText.appBarTitle,
+                  ).copyWith(fontSize: 25),
                 ),
               ),
               HrStatusChip(
                 label: '${_pendingCount(controller.requests)} 个审批中',
-                background: HrColors.warningBg,
-                foreground: HrColors.warning,
+                background: HrColors.resolve(context, HrColors.warningBg),
+                foreground: HrColors.resolve(context, HrColors.warning),
               ),
             ],
           ),
           const SizedBox(height: 6),
-          const Text('常用人事服务集中在这里，提交后可随时查看进度。', style: HrText.meta),
+          Text(
+            '常用人事服务集中在这里，提交后可随时查看进度。',
+            style: HrText.resolve(context, HrText.meta),
+          ),
           const SizedBox(height: 18),
           HrCard(
             background: HrColors.ink,
-            borderColor: HrColors.ink,
+            borderColor: HrColors.resolve(context, HrColors.ink),
             onTap: () => controller.composeRequest(),
             child: Row(
               children: [
@@ -44,24 +50,24 @@ class HrRequestsPage extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: HrColors.brandLight,
+                    color: HrColors.resolve(context, HrColors.brandLight),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.add_rounded,
                     color: HrColors.surface,
                     size: 27,
                   ),
                 ),
                 const SizedBox(width: 13),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         '新建申请',
                         style: TextStyle(
-                          color: HrColors.surface,
+                          color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                         ),
@@ -70,14 +76,14 @@ class HrRequestsPage extends StatelessWidget {
                       Text(
                         '调班、办公方式、报销与办公资产',
                         style: TextStyle(
-                          color: HrColors.onDark2,
+                          color: HrColors.resolve(context, HrColors.onDark2),
                           fontSize: 11.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_rounded,
                   color: HrColors.surface,
                   size: 20,
@@ -118,14 +124,20 @@ class HrRequestsPage extends StatelessWidget {
                     const Spacer(),
                     Text(
                       kind.label,
-                      style: HrText.cardTitle.copyWith(fontSize: 13),
+                      style: HrText.resolve(
+                        context,
+                        HrText.cardTitle,
+                      ).copyWith(fontSize: 13),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       kind.description,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: HrText.meta.copyWith(fontSize: 10),
+                      style: HrText.resolve(
+                        context,
+                        HrText.meta,
+                      ).copyWith(fontSize: 10),
                     ),
                   ],
                 ),
@@ -157,26 +169,35 @@ class HrRequestsPage extends StatelessWidget {
                   width: 46,
                   height: 46,
                   decoration: BoxDecoration(
-                    color: HrColors.warningBg,
+                    color: HrColors.resolve(context, HrColors.warningBg),
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.receipt_long_outlined,
-                    color: HrColors.warning,
+                    color: HrColors.resolve(context, HrColors.warning),
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('工资单', style: HrText.cardTitle),
+                      Text(
+                        '工资单',
+                        style: HrText.resolve(context, HrText.cardTitle),
+                      ),
                       SizedBox(height: 3),
-                      Text('查看每月工资明细与发放状态', style: HrText.meta),
+                      Text(
+                        '查看每月工资明细与发放状态',
+                        style: HrText.resolve(context, HrText.meta),
+                      ),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: HrColors.ink4),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: HrColors.resolve(context, HrColors.ink4),
+                ),
               ],
             ),
           ),
@@ -230,9 +251,18 @@ class _RequestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final (icon, color, background) = HrRequestsPage._styleFor(item.kind);
     final (statusBackground, statusForeground) = switch (item.status) {
-      HrRequestStatus.pending => (HrColors.warningBg, HrColors.warning),
-      HrRequestStatus.approved => (HrColors.successBg, HrColors.success),
-      HrRequestStatus.rejected => (HrColors.dangerBg, HrColors.danger),
+      HrRequestStatus.pending => (
+        HrColors.resolve(context, HrColors.warningBg),
+        HrColors.resolve(context, HrColors.warning),
+      ),
+      HrRequestStatus.approved => (
+        HrColors.resolve(context, HrColors.successBg),
+        HrColors.resolve(context, HrColors.success),
+      ),
+      HrRequestStatus.rejected => (
+        HrColors.resolve(context, HrColors.dangerBg),
+        HrColors.resolve(context, HrColors.danger),
+      ),
     };
     return HrCard(
       padding: const EdgeInsets.all(15),
@@ -259,7 +289,10 @@ class _RequestCard extends StatelessWidget {
                         item.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: HrText.cardTitle.copyWith(fontSize: 13.5),
+                        style: HrText.resolve(
+                          context,
+                          HrText.cardTitle,
+                        ).copyWith(fontSize: 13.5),
                       ),
                     ),
                     HrStatusChip(
@@ -274,13 +307,13 @@ class _RequestCard extends StatelessWidget {
                   item.detail,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: HrText.meta,
+                  style: HrText.resolve(context, HrText.meta),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${item.kind.shortLabel} · ${hrDate(item.date)}',
-                  style: HrText.meta.copyWith(
-                    color: HrColors.ink4,
+                  style: HrText.resolve(context, HrText.meta).copyWith(
+                    color: HrColors.resolve(context, HrColors.ink4),
                     fontSize: 10,
                   ),
                 ),

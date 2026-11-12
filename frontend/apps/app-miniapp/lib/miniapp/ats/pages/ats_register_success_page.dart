@@ -16,13 +16,13 @@ class AtsRegisterSuccessPage extends StatelessWidget {
             Container(
               width: 88,
               height: 88,
-              decoration: const BoxDecoration(
-                color: AtsColors.mint,
+              decoration: BoxDecoration(
+                color: AtsColors.resolve(context, AtsColors.mint),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.check_rounded,
-                color: AtsColors.primary,
+                color: AtsColors.resolve(context, AtsColors.primary),
                 size: 48,
               ),
             ),
@@ -32,11 +32,11 @@ class AtsRegisterSuccessPage extends StatelessWidget {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 9),
-            const Text(
+            Text(
               '欢迎加入企业直聘。现在可以完善简历，\n让合适的机会更快找到你。',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AtsColors.textSecondary,
+                color: AtsColors.resolve(context, AtsColors.textSecondary),
                 fontSize: 12,
                 height: 1.7,
               ),

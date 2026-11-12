@@ -21,17 +21,20 @@ class AtsHelpDetailPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 '更新于 2026-11-01 · 约 2 分钟阅读',
-                style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textMuted),
+                  fontSize: 10,
+                ),
               ),
               const SizedBox(height: 18),
               const Divider(height: 1),
               const SizedBox(height: 18),
-              const Text(
+              Text(
                 '一份完整、真实的简历更容易获得招聘方关注。建议你从以下方面完善：',
                 style: TextStyle(
-                  color: AtsColors.textSecondary,
+                  color: AtsColors.resolve(context, AtsColors.textSecondary),
                   fontSize: 13,
                   height: 1.8,
                 ),
@@ -51,14 +54,14 @@ class AtsHelpDetailPage extends StatelessWidget {
                       Container(
                         width: 22,
                         height: 22,
-                        decoration: const BoxDecoration(
-                          color: AtsColors.mint,
+                        decoration: BoxDecoration(
+                          color: AtsColors.resolve(context, AtsColors.mint),
                           shape: BoxShape.circle,
                         ),
                         alignment: Alignment.center,
-                        child: const Icon(
+                        child: Icon(
                           Icons.check,
-                          color: AtsColors.primary,
+                          color: AtsColors.resolve(context, AtsColors.primary),
                           size: 14,
                         ),
                       ),
@@ -77,8 +80,11 @@ class AtsHelpDetailPage extends StatelessWidget {
                             const SizedBox(height: 3),
                             Text(
                               item.$2,
-                              style: const TextStyle(
-                                color: AtsColors.textSecondary,
+                              style: TextStyle(
+                                color: AtsColors.resolve(
+                                  context,
+                                  AtsColors.textSecondary,
+                                ),
                                 fontSize: 12,
                                 height: 1.6,
                               ),

@@ -123,8 +123,8 @@ class _EditIntro extends StatelessWidget {
           const SizedBox(height: 5),
           Text(
             subtitle,
-            style: const TextStyle(
-              color: AtsColors.textMuted,
+            style: TextStyle(
+              color: AtsColors.resolve(context, AtsColors.textMuted),
               fontSize: 11,
               height: 1.5,
             ),
@@ -144,9 +144,11 @@ class _BottomSaveBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AtsColors.divider)),
+      decoration: BoxDecoration(
+        color: AtsColors.resolve(context, AtsColors.surface),
+        border: Border(
+          top: BorderSide(color: AtsColors.resolve(context, AtsColors.divider)),
+        ),
       ),
       child: AtsPrimaryButton(label: '保存', onPressed: onSave),
     );
@@ -166,7 +168,7 @@ class _PickerValue extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 11),
         decoration: BoxDecoration(
-          color: AtsColors.background,
+          color: AtsColors.resolve(context, AtsColors.background),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -174,13 +176,16 @@ class _PickerValue extends StatelessWidget {
             Expanded(
               child: Text(
                 value,
-                style: const TextStyle(color: AtsColors.text, fontSize: 13),
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.text),
+                  fontSize: 13,
+                ),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right,
               size: 18,
-              color: AtsColors.textMuted,
+              color: AtsColors.resolve(context, AtsColors.textMuted),
             ),
           ],
         ),
@@ -205,7 +210,7 @@ class _DropdownValue extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: AtsColors.background,
+        color: AtsColors.resolve(context, AtsColors.background),
         borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButtonHideUnderline(
@@ -225,12 +230,12 @@ class _DropdownValue extends StatelessWidget {
               onChanged(newValue);
             }
           },
-          icon: const Icon(
+          icon: Icon(
             Icons.chevron_right,
             size: 18,
-            color: AtsColors.textMuted,
+            color: AtsColors.resolve(context, AtsColors.textMuted),
           ),
-          style: const TextStyle(color: AtsColors.text),
+          style: TextStyle(color: AtsColors.resolve(context, AtsColors.text)),
         ),
       ),
     );

@@ -1,5 +1,8 @@
 import 'package:common/common.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+enum AppOrientation { system, portrait, landscape }
 
 /// 业务端强调色选项，与 `platform-pc` 的主题页保持同一套色板。
 class AccentChoice {
@@ -42,8 +45,41 @@ const backgroundChoices = <BackgroundChoice>[
 /// App-wide theme selection shared by the host and pushed settings pages.
 class BusinessThemeController extends ChangeNotifier {
   ThemeMode _mode = ThemeMode.light;
+  Locale? _locale = const Locale('zh');
+  double _fontScale = 1;
+  AppOrientation _orientation = AppOrientation.system;
 
   ThemeMode get mode => _mode;
+  Locale? get locale => _locale;
+  double get fontScale => _fontScale;
+  AppOrientation get orientation => _orientation;
+
+  void setLocale(Locale? locale) {
+    if (_locale == locale) return;
+    _locale = locale;
+    notifyListeners();
+  }
+
+  void setFontScale(double scale) {
+    final next = scale.clamp(0.85, 1.3);
+    if (_fontScale == next) return;
+    _fontScale = next;
+    notifyListeners();
+  }
+
+  Future<void> setOrientation(AppOrientation orientation) async {
+    if (_orientation == orientation) return;
+    await SystemChrome.setPreferredOrientations(switch (orientation) {
+      AppOrientation.system => const <DeviceOrientation>[],
+      AppOrientation.portrait => const [DeviceOrientation.portraitUp],
+      AppOrientation.landscape => const [
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ],
+    });
+    _orientation = orientation;
+    notifyListeners();
+  }
 
   bool get isDarkMode => _mode == ThemeMode.dark;
 

@@ -1,3 +1,5 @@
+import '../miniapp_localizations.dart';
+
 import 'package:flutter/material.dart';
 
 /// 微信式小程序公共胶囊。
@@ -38,7 +40,7 @@ class MiniProgramCapsule extends StatelessWidget {
             children: [
               Expanded(
                 child: _MiniProgramCapsuleAction(
-                  tooltip: '小程序菜单',
+                  tooltip: localizeMiniProgramLabel(context, '小程序菜单'),
                   onTap: onMore,
                   child: const _MiniProgramMoreIcon(color: foregroundColor),
                 ),
@@ -50,7 +52,7 @@ class MiniProgramCapsule extends StatelessWidget {
               ),
               Expanded(
                 child: _MiniProgramCapsuleAction(
-                  tooltip: '退出小程序',
+                  tooltip: localizeMiniProgramLabel(context, '退出小程序'),
                   onTap: onClose,
                   child: Center(
                     child: Container(

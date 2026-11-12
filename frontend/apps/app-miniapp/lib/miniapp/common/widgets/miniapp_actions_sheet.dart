@@ -1,3 +1,6 @@
+import '../miniapp_localizations.dart';
+import '../../../pages/display/display_settings_page.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -83,24 +86,14 @@ class _MiniProgramActionsSheetState extends State<_MiniProgramActionsSheet> {
     if (!mounted) {
       return;
     }
-    _showFeedback('链接已复制');
+    _showFeedback(localizeMiniProgramLabel(context, '链接已复制'));
   }
 
   void _showSettings() {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(widget.title),
-          content: Text(widget.subtitle),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('知道了'),
-            ),
-          ],
-        );
-      },
+    final navigator = Navigator.of(context);
+    _close();
+    navigator.push<void>(
+      MaterialPageRoute<void>(builder: (_) => const DisplaySettingsPage()),
     );
   }
 
@@ -116,7 +109,8 @@ class _MiniProgramActionsSheetState extends State<_MiniProgramActionsSheet> {
         label: '转发给朋友',
         icon: Icons.turn_right_rounded,
         color: const Color(0xFF07C160),
-        onTap: () => _showFeedback('已打开转发面板'),
+        onTap: () =>
+            _showFeedback(localizeMiniProgramLabel(context, '已打开转发面板')),
       ),
       const _MiniProgramActionData(
         label: '分享到朋友圈',
@@ -146,13 +140,14 @@ class _MiniProgramActionsSheetState extends State<_MiniProgramActionsSheet> {
         label: '在电脑上\n打开',
         icon: Icons.computer_outlined,
         color: _miniProgramPrimaryText,
-        onTap: () => _showFeedback('已打开电脑端入口'),
+        onTap: () =>
+            _showFeedback(localizeMiniProgramLabel(context, '已打开电脑端入口')),
       ),
       _MiniProgramActionData(
         label: '浮窗',
         icon: Icons.picture_in_picture_alt_outlined,
         color: _miniProgramPrimaryText,
-        onTap: () => _showFeedback('已开启浮窗'),
+        onTap: () => _showFeedback(localizeMiniProgramLabel(context, '已开启浮窗')),
       ),
       _MiniProgramActionData(
         label: '设置',
@@ -164,7 +159,8 @@ class _MiniProgramActionsSheetState extends State<_MiniProgramActionsSheet> {
         label: '反馈与投诉',
         icon: Icons.report_problem_outlined,
         color: _miniProgramPrimaryText,
-        onTap: () => _showFeedback('已打开反馈入口'),
+        onTap: () =>
+            _showFeedback(localizeMiniProgramLabel(context, '已打开反馈入口')),
       ),
       _MiniProgramActionData(
         label: '重新进入\n小程序',
@@ -180,150 +176,148 @@ class _MiniProgramActionsSheetState extends State<_MiniProgramActionsSheet> {
       ),
     ];
 
-    return MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: const TextScaler.linear(1)),
-      child: Material(
-        color: _miniProgramSheetColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-        clipBehavior: Clip.antiAlias,
-        child: SafeArea(
-          top: false,
-          child: Column(
-            children: [
-              SizedBox(
-                height: 75,
-                child: ColoredBox(
-                  color: _miniProgramHeaderColor,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            color: _miniProgramTileColor,
-                            borderRadius: BorderRadius.circular(7),
-                          ),
-                          child: Icon(
-                            widget.icon,
-                            color: const Color(0xFF07C160),
-                            size: 18,
-                          ),
+    return Material(
+      color: _miniProgramSheetColor,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+      clipBehavior: Clip.antiAlias,
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            SizedBox(
+              height: 75,
+              child: ColoredBox(
+                color: _miniProgramHeaderColor,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: _miniProgramTileColor,
+                          borderRadius: BorderRadius.circular(7),
                         ),
-                        const SizedBox(width: 7),
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: _miniProgramPrimaryText,
-                                  fontSize: 15,
-                                  height: 1.2,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                widget.subtitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: _miniProgramSecondaryText,
-                                  fontSize: 11,
-                                  height: 1.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(
-                          Icons.chevron_right_rounded,
-                          color: _miniProgramSecondaryText,
+                        child: Icon(
+                          widget.icon,
+                          color: const Color(0xFF07C160),
                           size: 18,
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(16, 18, 16, 8),
-                        child: Text(
-                          '转发给',
-                          style: TextStyle(
-                            color: _miniProgramPrimaryText,
-                            fontSize: 15,
-                            height: 1.2,
-                            fontWeight: FontWeight.w700,
-                          ),
+                      ),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              localizeMiniProgramLabel(context, widget.title),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: _miniProgramPrimaryText,
+                                fontSize: 15,
+                                height: 1.2,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              localizeMiniProgramLabel(
+                                context,
+                                widget.subtitle,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: _miniProgramSecondaryText,
+                                fontSize: 11,
+                                height: 1.2,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(
-                        height: 104,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.only(left: 12),
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _shareTargets.length,
-                          itemBuilder: (context, index) {
-                            final target = _shareTargets[index];
-                            return _MiniProgramShareTarget(
-                              target: target,
-                              onTap: () => _showFeedback('已选择 ${target.name}'),
-                            );
-                          },
-                        ),
-                      ),
-                      const Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: _miniProgramDividerColor,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 24, 12, 16),
-                        child: _MiniProgramActionRows(
-                          firstRow: actions.take(6).toList(),
-                          secondRow: actions.skip(6).toList(),
-                        ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: _miniProgramSecondaryText,
+                        size: 18,
                       ),
                     ],
                   ),
                 ),
               ),
-              const Divider(
-                height: 1,
-                thickness: 1,
-                color: _miniProgramDividerColor,
-              ),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: TextButton(
-                  onPressed: _close,
-                  style: TextButton.styleFrom(
-                    foregroundColor: _miniProgramCancelText,
-                    shape: const RoundedRectangleBorder(),
-                  ),
-                  child: const Text(
-                    '取消',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                  ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+                      child: Text(
+                        localizeMiniProgramLabel(context, '转发给'),
+                        style: TextStyle(
+                          color: _miniProgramPrimaryText,
+                          fontSize: 15,
+                          height: 1.2,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 104,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.only(left: 12),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _shareTargets.length,
+                        itemBuilder: (context, index) {
+                          final target = _shareTargets[index];
+                          return _MiniProgramShareTarget(
+                            target: target,
+                            onTap: () => _showFeedback('已选择 ${target.name}'),
+                          );
+                        },
+                      ),
+                    ),
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: _miniProgramDividerColor,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 24, 12, 16),
+                      child: _MiniProgramActionRows(
+                        firstRow: actions.take(6).toList(),
+                        secondRow: actions.skip(6).toList(),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+            const Divider(
+              height: 1,
+              thickness: 1,
+              color: _miniProgramDividerColor,
+            ),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: TextButton(
+                onPressed: _close,
+                style: TextButton.styleFrom(
+                  foregroundColor: _miniProgramCancelText,
+                  shape: const RoundedRectangleBorder(),
+                ),
+                child: Text(
+                  localizeMiniProgramLabel(context, '取消'),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -398,7 +392,10 @@ class _MiniProgramActionTile extends StatelessWidget {
     return Semantics(
       button: action.enabled,
       enabled: action.enabled,
-      label: action.label.replaceAll('\n', ''),
+      label: localizeMiniProgramLabel(
+        context,
+        action.label,
+      ).replaceAll('\n', ''),
       child: SizedBox(
         width: 68,
         child: InkWell(
@@ -421,7 +418,7 @@ class _MiniProgramActionTile extends StatelessWidget {
                 child: SizedBox(
                   width: 68,
                   child: Text(
-                    action.label,
+                    localizeMiniProgramLabel(context, action.label),
                     maxLines: 2,
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
@@ -477,7 +474,7 @@ class _MiniProgramShareTarget extends StatelessWidget {
             SizedBox(
               width: 68,
               child: Text(
-                target.name,
+                localizeMiniProgramLabel(context, target.name),
                 maxLines: 2,
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,

@@ -18,7 +18,7 @@ class _AtsApplicationsPageState extends State<AtsApplicationsPage> {
     return Column(
       children: [
         Container(
-          color: Colors.white,
+          color: AtsColors.resolve(context, AtsColors.surface),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
           child: Row(
             children: [
@@ -30,7 +30,9 @@ class _AtsApplicationsPageState extends State<AtsApplicationsPage> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
-                        color: _tab == i ? AtsColors.mint : Colors.transparent,
+                        color: _tab == i
+                            ? AtsColors.resolve(context, AtsColors.mint)
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       alignment: Alignment.center,
@@ -38,8 +40,11 @@ class _AtsApplicationsPageState extends State<AtsApplicationsPage> {
                         statuses[i],
                         style: TextStyle(
                           color: _tab == i
-                              ? AtsColors.primary
-                              : AtsColors.textSecondary,
+                              ? AtsColors.resolve(context, AtsColors.primary)
+                              : AtsColors.resolve(
+                                  context,
+                                  AtsColors.textSecondary,
+                                ),
                           fontSize: 12,
                           fontWeight: _tab == i
                               ? FontWeight.w600
@@ -76,8 +81,11 @@ class _AtsApplicationsPageState extends State<AtsApplicationsPage> {
                           ),
                           Text(
                             atsJobs[i].salary,
-                            style: const TextStyle(
-                              color: AtsColors.primary,
+                            style: TextStyle(
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.primary,
+                              ),
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
@@ -87,8 +95,11 @@ class _AtsApplicationsPageState extends State<AtsApplicationsPage> {
                       const SizedBox(height: 6),
                       Text(
                         atsJobs[i].company,
-                        style: const TextStyle(
-                          color: AtsColors.textSecondary,
+                        style: TextStyle(
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.textSecondary,
+                          ),
                           fontSize: 11,
                         ),
                       ),
@@ -98,32 +109,41 @@ class _AtsApplicationsPageState extends State<AtsApplicationsPage> {
                           AtsTag(
                             i == 0 ? '已查看' : '已投递',
                             foreground: i == 0
-                                ? AtsColors.primary
-                                : AtsColors.blue,
+                                ? AtsColors.resolve(context, AtsColors.primary)
+                                : AtsColors.resolve(context, AtsColors.blue),
                             background: i == 0
-                                ? AtsColors.mint
+                                ? AtsColors.resolve(context, AtsColors.mint)
                                 : const Color(0xFFEEF4FF),
                           ),
                           const SizedBox(width: 7),
                           Text(
                             i == 0 ? '今天 10:20' : '昨天 16:45',
-                            style: const TextStyle(
-                              color: AtsColors.textMuted,
+                            style: TextStyle(
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.textMuted,
+                              ),
                               fontSize: 10,
                             ),
                           ),
                           const Spacer(),
-                          const Text(
+                          Text(
                             '查看详情',
                             style: TextStyle(
-                              color: AtsColors.primary,
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.primary,
+                              ),
                               fontSize: 11,
                             ),
                           ),
-                          const Icon(
+                          Icon(
                             Icons.chevron_right,
                             size: 16,
-                            color: AtsColors.primary,
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.primary,
+                            ),
                           ),
                         ],
                       ),

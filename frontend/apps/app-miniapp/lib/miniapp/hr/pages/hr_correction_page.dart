@@ -29,18 +29,24 @@ class _HrCorrectionPageState extends State<HrCorrectionPage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('补卡申请', style: HrText.appBarTitle.copyWith(fontSize: 25)),
+        Text(
+          '补卡申请',
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
         const SizedBox(height: 5),
         Text(
           '${hrDate(date, withYear: true)} · ${hrWeekday(date)}',
-          style: HrText.meta,
+          style: HrText.resolve(context, HrText.meta),
         ),
         const SizedBox(height: 18),
         HrCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('更正打卡时间', style: HrText.cardTitle),
+              Text('更正打卡时间', style: HrText.resolve(context, HrText.cardTitle)),
               const SizedBox(height: 14),
               Row(
                 children: [
@@ -82,18 +88,25 @@ class _HrCorrectionPageState extends State<HrCorrectionPage> {
         ),
         const SizedBox(height: 14),
         HrCard(
-          background: HrColors.infoBg,
+          background: HrColors.resolve(context, HrColors.infoBg),
           borderColor: const Color(0xFFC9DBEA),
           shadow: false,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.info_outline, color: HrColors.info, size: 19),
+              Icon(
+                Icons.info_outline,
+                color: HrColors.resolve(context, HrColors.info),
+                size: 19,
+              ),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
                   '补卡申请会同时通知直属主管与 HR。每人每月最多可发起 3 次。',
-                  style: HrText.meta.copyWith(color: HrColors.info),
+                  style: HrText.resolve(
+                    context,
+                    HrText.meta,
+                  ).copyWith(color: HrColors.resolve(context, HrColors.info)),
                 ),
               ),
             ],

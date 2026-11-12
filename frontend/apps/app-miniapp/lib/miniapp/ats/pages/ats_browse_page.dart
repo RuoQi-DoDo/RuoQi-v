@@ -10,12 +10,12 @@ class AtsBrowsePage extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(2, 2, 2, 9),
           child: Text(
             '今天',
             style: TextStyle(
-              color: AtsColors.textMuted,
+              color: AtsColors.resolve(context, AtsColors.textMuted),
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
@@ -42,28 +42,28 @@ class AtsBrowsePage extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '${atsJobs.first.company} · 14:32',
-                      style: const TextStyle(
-                        color: AtsColors.textMuted,
+                      style: TextStyle(
+                        color: AtsColors.resolve(context, AtsColors.textMuted),
                         fontSize: 11,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
-                color: AtsColors.textMuted,
+                color: AtsColors.resolve(context, AtsColors.textMuted),
                 size: 19,
               ),
             ],
           ),
         ),
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(2, 10, 2, 9),
           child: Text(
             '昨天',
             style: TextStyle(
-              color: AtsColors.textMuted,
+              color: AtsColors.resolve(context, AtsColors.textMuted),
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
@@ -75,7 +75,7 @@ class AtsBrowsePage extends StatelessWidget {
             children: [
               _TimelineIcon(
                 icon: Icons.business_outlined,
-                color: AtsColors.blue,
+                color: AtsColors.resolve(context, AtsColors.blue),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -90,19 +90,19 @@ class AtsBrowsePage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       '公司主页 · 18:05',
                       style: TextStyle(
-                        color: AtsColors.textMuted,
+                        color: AtsColors.resolve(context, AtsColors.textMuted),
                         fontSize: 11,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
-                color: AtsColors.textMuted,
+                color: AtsColors.resolve(context, AtsColors.textMuted),
                 size: 19,
               ),
             ],

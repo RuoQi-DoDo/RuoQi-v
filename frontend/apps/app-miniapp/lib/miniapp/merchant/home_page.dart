@@ -1,3 +1,5 @@
+import '../common/miniapp_localizations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:common/common.dart';
 
@@ -36,7 +38,10 @@ class MerchantHomePage extends StatelessWidget {
     final body = ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('业务静态页（语义化重构）', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          localizeMiniProgramLabel(context, '业务静态页（语义化重构）'),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 8),
         Card(
           margin: EdgeInsets.zero,
@@ -218,7 +223,9 @@ class MerchantHomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('RuoQi 商户(App) — IDM 租户业务页面'),
+        title: Text(
+          localizeMiniProgramLabel(context, 'RuoQi 商户(App) — IDM 租户业务页面'),
+        ),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16),
@@ -241,8 +248,8 @@ class MerchantHomePage extends StatelessWidget {
   ) {
     return ListTile(
       leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(subtitle),
+      title: Text(localizeMiniProgramLabel(context, title)),
+      subtitle: Text(localizeMiniProgramLabel(context, subtitle)),
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
@@ -261,8 +268,8 @@ class MerchantHomePage extends StatelessWidget {
   ) {
     return ListTile(
       leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(subtitle),
+      title: Text(localizeMiniProgramLabel(context, title)),
+      subtitle: Text(localizeMiniProgramLabel(context, subtitle)),
       trailing: const Icon(Icons.chevron_right),
       onTap: () => show(context),
     );
@@ -274,7 +281,7 @@ class MerchantHomePage extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
-          text,
+          localizeMiniProgramLabel(context, text),
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: Theme.of(context).colorScheme.primary,
           ),

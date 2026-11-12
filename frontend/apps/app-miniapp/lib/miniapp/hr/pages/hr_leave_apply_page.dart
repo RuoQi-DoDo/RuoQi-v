@@ -29,9 +29,18 @@ class _HrLeaveApplyPageState extends State<HrLeaveApplyPage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('发起请假', style: HrText.appBarTitle.copyWith(fontSize: 25)),
+        Text(
+          '发起请假',
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
         const SizedBox(height: 5),
-        const Text('请选择假期类型与时间，提交后将进入直属主管审批。', style: HrText.meta),
+        Text(
+          '请选择假期类型与时间，提交后将进入直属主管审批。',
+          style: HrText.resolve(context, HrText.meta),
+        ),
         const HrSectionHeader(
           title: '假期类型',
           padding: EdgeInsets.fromLTRB(0, 20, 0, 8),
@@ -45,15 +54,17 @@ class _HrLeaveApplyPageState extends State<HrLeaveApplyPage> {
                 label: Text(type),
                 selected: _type == type,
                 onSelected: (_) => setState(() => _type = type),
-                selectedColor: HrColors.brandTint,
-                backgroundColor: HrColors.surface,
+                selectedColor: HrColors.resolve(context, HrColors.brandTint),
+                backgroundColor: HrColors.resolve(context, HrColors.surface),
                 side: BorderSide(
                   color: _type == type
-                      ? HrColors.brandTintBorder
-                      : HrColors.line,
+                      ? HrColors.resolve(context, HrColors.brandTintBorder)
+                      : HrColors.resolve(context, HrColors.line),
                 ),
                 labelStyle: TextStyle(
-                  color: _type == type ? HrColors.brand : HrColors.ink3,
+                  color: _type == type
+                      ? HrColors.resolve(context, HrColors.brand)
+                      : HrColors.resolve(context, HrColors.ink3),
                   fontWeight: FontWeight.w700,
                   fontSize: 12.5,
                 ),
@@ -77,11 +88,11 @@ class _HrLeaveApplyPageState extends State<HrLeaveApplyPage> {
                 value: '${hrDate(_start)} ${hrWeekday(_start)}',
                 onTap: () => _pickDate(start: true),
               ),
-              const Divider(
+              Divider(
                 height: 1,
                 indent: 16,
                 endIndent: 16,
-                color: HrColors.line2,
+                color: HrColors.resolve(context, HrColors.line2),
               ),
               _DateRow(
                 label: '结束日期',
@@ -89,11 +100,11 @@ class _HrLeaveApplyPageState extends State<HrLeaveApplyPage> {
                 enabled: !_halfDay,
                 onTap: _halfDay ? null : () => _pickDate(start: false),
               ),
-              const Divider(
+              Divider(
                 height: 1,
                 indent: 16,
                 endIndent: 16,
-                color: HrColors.line2,
+                color: HrColors.resolve(context, HrColors.line2),
               ),
               SwitchListTile.adaptive(
                 value: _halfDay,
@@ -103,34 +114,37 @@ class _HrLeaveApplyPageState extends State<HrLeaveApplyPage> {
                     _end = _start;
                   }
                 }),
-                activeTrackColor: HrColors.brand,
+                activeTrackColor: HrColors.resolve(context, HrColors.brand),
                 title: const Text(
                   '仅半天',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text('半天请假按 0.5 天计算', style: HrText.meta),
+                subtitle: Text(
+                  '半天请假按 0.5 天计算',
+                  style: HrText.resolve(context, HrText.meta),
+                ),
               ),
             ],
           ),
         ),
         HrCard(
           margin: const EdgeInsets.only(top: 12),
-          background: HrColors.warningBg,
-          borderColor: HrColors.warningBorder,
+          background: HrColors.resolve(context, HrColors.warningBg),
+          borderColor: HrColors.resolve(context, HrColors.warningBorder),
           shadow: false,
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.info_outline_rounded,
-                color: HrColors.warningInk,
+                color: HrColors.resolve(context, HrColors.warningInk),
                 size: 20,
               ),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
                   '本次预计请假 $days 天，剩余额度会在审批通过后扣减。',
-                  style: HrText.meta.copyWith(
-                    color: HrColors.warningInk,
+                  style: HrText.resolve(context, HrText.meta).copyWith(
+                    color: HrColors.resolve(context, HrColors.warningInk),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -147,9 +161,9 @@ class _HrLeaveApplyPageState extends State<HrLeaveApplyPage> {
           minLines: 4,
           maxLines: 6,
           maxLength: 200,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: '请简要说明请假原因',
-            counterStyle: HrText.meta,
+            counterStyle: HrText.resolve(context, HrText.meta),
           ),
         ),
         const SizedBox(height: 14),
@@ -247,13 +261,18 @@ class _DateRow extends StatelessWidget {
           children: [
             Text(
               label,
-              style: HrText.body.copyWith(fontWeight: FontWeight.w600),
+              style: HrText.resolve(
+                context,
+                HrText.body,
+              ).copyWith(fontWeight: FontWeight.w600),
             ),
             const Spacer(),
             Text(
               value,
-              style: HrText.mono.copyWith(
-                color: enabled ? HrColors.ink2 : HrColors.ink4,
+              style: HrText.resolve(context, HrText.mono).copyWith(
+                color: enabled
+                    ? HrColors.resolve(context, HrColors.ink2)
+                    : HrColors.resolve(context, HrColors.ink4),
                 fontSize: 12,
               ),
             ),
@@ -261,7 +280,9 @@ class _DateRow extends StatelessWidget {
             Icon(
               Icons.calendar_month_outlined,
               size: 17,
-              color: enabled ? HrColors.brand : HrColors.ink4,
+              color: enabled
+                  ? HrColors.resolve(context, HrColors.brand)
+                  : HrColors.resolve(context, HrColors.ink4),
             ),
           ],
         ),

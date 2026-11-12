@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../pages/display/display_settings_page.dart';
+import '../../../pages/account/account.dart';
+import '../../common/miniapp_localizations.dart';
+
 import '../hr_controller.dart';
 import '../hr_format.dart';
 import '../hr_routes.dart';

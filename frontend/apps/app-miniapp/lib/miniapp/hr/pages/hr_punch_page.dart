@@ -43,22 +43,27 @@ class _HrPunchPageState extends State<HrPunchPage> {
             Expanded(
               child: Text(
                 '上下班打卡',
-                style: HrText.appBarTitle.copyWith(fontSize: 25),
+                style: HrText.resolve(
+                  context,
+                  HrText.appBarTitle,
+                ).copyWith(fontSize: 25),
               ),
             ),
             HrStatusChip(
               label: punch.inGeofence ? '考勤范围内' : '超出范围',
               background: punch.inGeofence
-                  ? HrColors.successBg
-                  : HrColors.dangerBg,
-              foreground: punch.inGeofence ? HrColors.success : HrColors.danger,
+                  ? HrColors.resolve(context, HrColors.successBg)
+                  : HrColors.resolve(context, HrColors.dangerBg),
+              foreground: punch.inGeofence
+                  ? HrColors.resolve(context, HrColors.success)
+                  : HrColors.resolve(context, HrColors.danger),
             ),
           ],
         ),
         const SizedBox(height: 5),
         Text(
           '${hrDate(_now, withYear: true)} ${hrWeekday(_now)}',
-          style: HrText.meta,
+          style: HrText.resolve(context, HrText.meta),
         ),
         const SizedBox(height: 18),
         Container(
@@ -78,15 +83,19 @@ class _HrPunchPageState extends State<HrPunchPage> {
                       children: [
                         Text(
                           '当前时间',
-                          style: HrText.eyebrow.copyWith(
-                            color: HrColors.onDark2,
-                          ),
+                          style: HrText.resolve(context, HrText.eyebrow)
+                              .copyWith(
+                                color: HrColors.resolve(
+                                  context,
+                                  HrColors.onDark2,
+                                ),
+                              ),
                         ),
                         const SizedBox(height: 5),
                         Text(
                           _clock(_now),
-                          style: HrText.mono.copyWith(
-                            color: HrColors.surface,
+                          style: HrText.resolve(context, HrText.mono).copyWith(
+                            color: Colors.white,
                             fontSize: 33,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -1.5,
@@ -108,9 +117,12 @@ class _HrPunchPageState extends State<HrPunchPage> {
                             value: progress,
                             strokeWidth: 7,
                             strokeCap: StrokeCap.round,
-                            backgroundColor: HrColors.onDarkLine,
-                            valueColor: const AlwaysStoppedAnimation(
-                              HrColors.brandLight,
+                            backgroundColor: HrColors.resolve(
+                              context,
+                              HrColors.onDarkLine,
+                            ),
+                            valueColor: AlwaysStoppedAnimation(
+                              HrColors.resolve(context, HrColors.brandLight),
                             ),
                           ),
                         ),
@@ -119,18 +131,23 @@ class _HrPunchPageState extends State<HrPunchPage> {
                           children: [
                             Text(
                               '${(progress * 100).round()}%',
-                              style: HrText.mono.copyWith(
-                                color: HrColors.surface,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                              ),
+                              style: HrText.resolve(context, HrText.mono)
+                                  .copyWith(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                             ),
                             Text(
                               '今日工时',
-                              style: HrText.meta.copyWith(
-                                color: HrColors.onDark2,
-                                fontSize: 9.5,
-                              ),
+                              style: HrText.resolve(context, HrText.meta)
+                                  .copyWith(
+                                    color: HrColors.resolve(
+                                      context,
+                                      HrColors.onDark2,
+                                    ),
+                                    fontSize: 9.5,
+                                  ),
                             ),
                           ],
                         ),
@@ -140,7 +157,10 @@ class _HrPunchPageState extends State<HrPunchPage> {
                 ],
               ),
               const SizedBox(height: 18),
-              const Divider(height: 1, color: HrColors.onDarkLine),
+              Divider(
+                height: 1,
+                color: HrColors.resolve(context, HrColors.onDarkLine),
+              ),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -176,12 +196,12 @@ class _HrPunchPageState extends State<HrPunchPage> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: HrColors.successBg,
+                  color: HrColors.resolve(context, HrColors.successBg),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.my_location_rounded,
-                  color: HrColors.success,
+                  color: HrColors.resolve(context, HrColors.success),
                 ),
               ),
               const SizedBox(width: 12),
@@ -191,16 +211,22 @@ class _HrPunchPageState extends State<HrPunchPage> {
                   children: [
                     Text(
                       punch.location,
-                      style: HrText.cardTitle.copyWith(fontSize: 13),
+                      style: HrText.resolve(
+                        context,
+                        HrText.cardTitle,
+                      ).copyWith(fontSize: 13),
                     ),
                     const SizedBox(height: 3),
-                    const Text('定位精度 18 米 · 已进入公司考勤围栏', style: HrText.meta),
+                    Text(
+                      '定位精度 18 米 · 已进入公司考勤围栏',
+                      style: HrText.resolve(context, HrText.meta),
+                    ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.check_circle_rounded,
-                color: HrColors.success,
+                color: HrColors.resolve(context, HrColors.success),
                 size: 21,
               ),
             ],
@@ -208,15 +234,15 @@ class _HrPunchPageState extends State<HrPunchPage> {
         ),
         const SizedBox(height: 12),
         HrCard(
-          background: HrColors.warningBg,
-          borderColor: HrColors.warningBorder,
+          background: HrColors.resolve(context, HrColors.warningBg),
+          borderColor: HrColors.resolve(context, HrColors.warningBorder),
           shadow: false,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
+              Icon(
                 Icons.schedule_rounded,
-                color: HrColors.warningInk,
+                color: HrColors.resolve(context, HrColors.warningInk),
                 size: 20,
               ),
               const SizedBox(width: 9),
@@ -225,8 +251,8 @@ class _HrPunchPageState extends State<HrPunchPage> {
                   punch.isClockedIn
                       ? '你已上班打卡。下班前请确认当天工作与休息时间，打卡后会同步到考勤记录。'
                       : '尚未上班打卡。默认班次为 09:00 - 18:00，班次可在考勤详情中查看。',
-                  style: HrText.meta.copyWith(
-                    color: HrColors.warningInk,
+                  style: HrText.resolve(context, HrText.meta).copyWith(
+                    color: HrColors.resolve(context, HrColors.warningInk),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -294,13 +320,16 @@ class _DarkMetric extends StatelessWidget {
       children: [
         Text(
           label,
-          style: HrText.meta.copyWith(color: HrColors.onDark2, fontSize: 9.5),
+          style: HrText.resolve(context, HrText.meta).copyWith(
+            color: HrColors.resolve(context, HrColors.onDark2),
+            fontSize: 9.5,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: HrText.mono.copyWith(
-            color: HrColors.surface,
+          style: HrText.resolve(context, HrText.mono).copyWith(
+            color: Colors.white,
             fontSize: 12,
             fontWeight: FontWeight.w700,
           ),

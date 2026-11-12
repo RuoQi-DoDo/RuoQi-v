@@ -2,7 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:common/common.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key, this.embedded = false});
+  const LoginPage({
+    super.key,
+    this.embedded = false,
+    this.appTitle = 'RuoQi 客户 App',
+    this.heading = '客户登录',
+  });
+
+  final String appTitle;
+  final String heading;
 
   /// 嵌入业务工作台弹窗时去掉自带 AppBar（弹窗顶部已有控制台导航栏）。
   final bool embedded;
@@ -51,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '客户登录',
+                  widget.heading,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
@@ -99,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('RuoQi 客户 App')),
+      appBar: AppBar(title: Text(widget.appTitle)),
       body: body,
     );
   }

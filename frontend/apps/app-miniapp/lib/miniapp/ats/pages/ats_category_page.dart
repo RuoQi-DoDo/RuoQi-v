@@ -30,7 +30,7 @@ class _AtsCategoryPageState extends State<AtsCategoryPage> {
       children: [
         Container(
           width: 92,
-          color: const Color(0xFFF0F1F2),
+          color: AtsColors.resolve(context, AtsColors.background),
           child: ListView.builder(
             itemCount: _categories.length,
             itemBuilder: (context, index) {
@@ -40,12 +40,14 @@ class _AtsCategoryPageState extends State<AtsCategoryPage> {
                 child: Container(
                   height: 50,
                   decoration: BoxDecoration(
-                    color: selected ? Colors.white : Colors.transparent,
+                    color: selected
+                        ? AtsColors.resolve(context, AtsColors.surface)
+                        : Colors.transparent,
                     border: Border(
                       left: BorderSide(
                         width: 3,
                         color: selected
-                            ? AtsColors.primary
+                            ? AtsColors.resolve(context, AtsColors.primary)
                             : Colors.transparent,
                       ),
                     ),
@@ -55,8 +57,8 @@ class _AtsCategoryPageState extends State<AtsCategoryPage> {
                     _categories[index],
                     style: TextStyle(
                       color: selected
-                          ? AtsColors.primary
-                          : AtsColors.textSecondary,
+                          ? AtsColors.resolve(context, AtsColors.primary)
+                          : AtsColors.resolve(context, AtsColors.textSecondary),
                       fontSize: 13,
                       fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                     ),
@@ -86,7 +88,10 @@ class _AtsCategoryPageState extends State<AtsCategoryPage> {
                     icon: const Icon(Icons.tune, size: 16),
                     label: const Text('筛选'),
                     style: TextButton.styleFrom(
-                      foregroundColor: AtsColors.textSecondary,
+                      foregroundColor: AtsColors.resolve(
+                        context,
+                        AtsColors.textSecondary,
+                      ),
                       visualDensity: VisualDensity.compact,
                     ),
                   ),

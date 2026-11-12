@@ -25,7 +25,7 @@ class _AtsPositionsPageState extends State<AtsPositionsPage> {
     return Column(
       children: [
         Container(
-          color: Colors.white,
+          color: AtsColors.resolve(context, AtsColors.surface),
           child: Row(
             children: [
               for (var i = 0; i < tabs.length; i++)
@@ -39,7 +39,7 @@ class _AtsPositionsPageState extends State<AtsPositionsPage> {
                           bottom: BorderSide(
                             width: 2,
                             color: _tab == i
-                                ? AtsColors.primary
+                                ? AtsColors.resolve(context, AtsColors.primary)
                                 : Colors.transparent,
                           ),
                         ),
@@ -49,8 +49,11 @@ class _AtsPositionsPageState extends State<AtsPositionsPage> {
                         tabs[i],
                         style: TextStyle(
                           color: _tab == i
-                              ? AtsColors.primary
-                              : AtsColors.textSecondary,
+                              ? AtsColors.resolve(context, AtsColors.primary)
+                              : AtsColors.resolve(
+                                  context,
+                                  AtsColors.textSecondary,
+                                ),
                           fontSize: 13,
                           fontWeight: _tab == i
                               ? FontWeight.w600
@@ -79,20 +82,26 @@ class _AtsPositionsPageState extends State<AtsPositionsPage> {
                   padding: const EdgeInsets.all(12),
                   children: [
                     AtsCard(
-                      color: AtsColors.mint,
+                      color: AtsColors.resolve(context, AtsColors.mint),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.insights_outlined,
-                            color: AtsColors.primary,
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.primary,
+                            ),
                             size: 25,
                           ),
                           const SizedBox(width: 10),
-                          const Expanded(
+                          Expanded(
                             child: Text(
                               '今日职位曝光 328 次，收到 6 份新简历',
                               style: TextStyle(
-                                color: AtsColors.primaryDark,
+                                color: AtsColors.resolve(
+                                  context,
+                                  AtsColors.primaryDark,
+                                ),
                                 fontSize: 11,
                               ),
                             ),
@@ -128,7 +137,7 @@ class _AtsPositionsPageState extends State<AtsPositionsPage> {
                 ),
         ),
         Container(
-          color: Colors.white,
+          color: AtsColors.resolve(context, AtsColors.surface),
           padding: const EdgeInsets.fromLTRB(12, 9, 12, 10),
           child: AtsPrimaryButton(
             label: '发布新职位',
@@ -174,15 +183,22 @@ class _ManagedJobCard extends StatelessWidget {
               ),
               AtsTag(
                 offline ? '已下线' : '招聘中',
-                foreground: offline ? AtsColors.textMuted : AtsColors.primary,
-                background: offline ? AtsColors.background : AtsColors.mint,
+                foreground: offline
+                    ? AtsColors.resolve(context, AtsColors.textMuted)
+                    : AtsColors.resolve(context, AtsColors.primary),
+                background: offline
+                    ? AtsColors.resolve(context, AtsColors.background)
+                    : AtsColors.resolve(context, AtsColors.mint),
               ),
             ],
           ),
           const SizedBox(height: 7),
           Text(
             '${job.salary} · ${job.location} · ${job.experience}',
-            style: const TextStyle(color: AtsColors.textMuted, fontSize: 11),
+            style: TextStyle(
+              color: AtsColors.resolve(context, AtsColors.textMuted),
+              fontSize: 11,
+            ),
           ),
           const SizedBox(height: 13),
           const Divider(height: 1),
@@ -196,7 +212,10 @@ class _ManagedJobCard extends StatelessWidget {
               TextButton(
                 onPressed: onToggle,
                 style: TextButton.styleFrom(
-                  foregroundColor: AtsColors.textSecondary,
+                  foregroundColor: AtsColors.resolve(
+                    context,
+                    AtsColors.textSecondary,
+                  ),
                   visualDensity: VisualDensity.compact,
                 ),
                 child: Text(offline ? '上线' : '下线'),
@@ -205,8 +224,13 @@ class _ManagedJobCard extends StatelessWidget {
               OutlinedButton(
                 onPressed: onEdit,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AtsColors.primary,
-                  side: const BorderSide(color: AtsColors.primary),
+                  foregroundColor: AtsColors.resolve(
+                    context,
+                    AtsColors.primary,
+                  ),
+                  side: BorderSide(
+                    color: AtsColors.resolve(context, AtsColors.primary),
+                  ),
                   visualDensity: VisualDensity.compact,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(7),
@@ -241,7 +265,10 @@ class _JobStat extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(color: AtsColors.textMuted, fontSize: 9),
+            style: TextStyle(
+              color: AtsColors.resolve(context, AtsColors.textMuted),
+              fontSize: 9,
+            ),
           ),
         ],
       ),

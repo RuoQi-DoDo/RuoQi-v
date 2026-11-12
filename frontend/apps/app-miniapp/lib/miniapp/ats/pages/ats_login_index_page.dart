@@ -16,27 +16,35 @@ class AtsLoginIndexPage extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 30, 24, 24),
       children: [
-        const Text(
+        Text(
           '找到更需要你的地方',
           style: TextStyle(
-            color: AtsColors.text,
+            color: AtsColors.resolve(context, AtsColors.text),
             fontSize: 25,
             height: 1.3,
             fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 9),
-        const Text(
+        Text(
           '注册企业直聘，开启更好的职业旅程',
-          style: TextStyle(color: AtsColors.textSecondary, fontSize: 13),
+          style: TextStyle(
+            color: AtsColors.resolve(context, AtsColors.textSecondary),
+            fontSize: 13,
+          ),
         ),
         const SizedBox(height: 28),
         Container(
           height: 148,
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AtsColors.primary, Color(0xFF51CFAF)],
+            gradient: LinearGradient(
+              colors: [
+                AtsColors.solidPrimary(context),
+                Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF116E56)
+                    : const Color(0xFF51CFAF),
+              ],
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -90,7 +98,11 @@ class AtsLoginIndexPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(item.$1, color: AtsColors.primary, size: 27),
+                  Icon(
+                    item.$1,
+                    color: AtsColors.resolve(context, AtsColors.primary),
+                    size: 27,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     item.$2,
@@ -102,8 +114,8 @@ class AtsLoginIndexPage extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     item.$3,
-                    style: const TextStyle(
-                      color: AtsColors.textMuted,
+                    style: TextStyle(
+                      color: AtsColors.resolve(context, AtsColors.textMuted),
                       fontSize: 9,
                     ),
                   ),

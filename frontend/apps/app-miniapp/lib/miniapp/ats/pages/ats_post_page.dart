@@ -28,17 +28,23 @@ class _AtsPostPageState extends State<AtsPostPage> {
                       label: Text(position),
                       selected: _selected == position,
                       onSelected: (_) => setState(() => _selected = position),
-                      selectedColor: AtsColors.mint,
-                      backgroundColor: Colors.white,
+                      selectedColor: AtsColors.resolve(context, AtsColors.mint),
+                      backgroundColor: AtsColors.resolve(
+                        context,
+                        AtsColors.surface,
+                      ),
                       side: BorderSide(
                         color: _selected == position
-                            ? AtsColors.primary
-                            : AtsColors.divider,
+                            ? AtsColors.resolve(context, AtsColors.primary)
+                            : AtsColors.resolve(context, AtsColors.divider),
                       ),
                       labelStyle: TextStyle(
                         color: _selected == position
-                            ? AtsColors.primary
-                            : AtsColors.textSecondary,
+                            ? AtsColors.resolve(context, AtsColors.primary)
+                            : AtsColors.resolve(
+                                context,
+                                AtsColors.textSecondary,
+                              ),
                         fontSize: 11,
                       ),
                       shape: RoundedRectangleBorder(
@@ -67,7 +73,7 @@ class _AtsPostPageState extends State<AtsPostPage> {
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-          color: Colors.white,
+          color: AtsColors.resolve(context, AtsColors.surface),
           child: AtsPrimaryButton(
             label: _selected.isEmpty ? '请选择岗位' : '搜索 “$_selected”',
             onPressed: () {
@@ -108,14 +114,20 @@ class _SelectionRow extends StatelessWidget {
                   child: Text(
                     label,
                     style: TextStyle(
-                      color: selected ? AtsColors.primary : AtsColors.text,
+                      color: selected
+                          ? AtsColors.resolve(context, AtsColors.primary)
+                          : AtsColors.resolve(context, AtsColors.text),
                       fontSize: 13,
                       fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                 ),
                 if (selected)
-                  const Icon(Icons.check, color: AtsColors.primary, size: 19),
+                  Icon(
+                    Icons.check,
+                    color: AtsColors.resolve(context, AtsColors.primary),
+                    size: 19,
+                  ),
               ],
             ),
           ),

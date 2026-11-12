@@ -23,8 +23,8 @@ class AtsNoticeDetailPage extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 '${notice.time} · 企业直聘',
-                style: const TextStyle(
-                  color: AtsColors.textMuted,
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textMuted),
                   fontSize: 11,
                 ),
               ),
@@ -33,8 +33,8 @@ class AtsNoticeDetailPage extends StatelessWidget {
               const SizedBox(height: 18),
               Text(
                 notice.content,
-                style: const TextStyle(
-                  color: AtsColors.textSecondary,
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textSecondary),
                   fontSize: 14,
                   height: 1.85,
                 ),
@@ -43,23 +43,26 @@ class AtsNoticeDetailPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AtsColors.mint,
+                  color: AtsColors.resolve(context, AtsColors.mint),
                   borderRadius: BorderRadius.circular(9),
                 ),
-                child: const Row(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
                       Icons.tips_and_updates_outlined,
                       size: 17,
-                      color: AtsColors.primary,
+                      color: AtsColors.resolve(context, AtsColors.primary),
                     ),
                     SizedBox(width: 7),
                     Expanded(
                       child: Text(
                         '如需调整面试时间，请直接在消息中与招聘方沟通。',
                         style: TextStyle(
-                          color: AtsColors.primaryDark,
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.primaryDark,
+                          ),
                           fontSize: 12,
                           height: 1.55,
                         ),

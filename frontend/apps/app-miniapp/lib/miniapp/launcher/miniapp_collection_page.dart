@@ -1,3 +1,5 @@
+import '../common/miniapp_localizations.dart';
+
 import 'package:flutter/material.dart';
 
 import 'launcher_widgets.dart';
@@ -35,13 +37,13 @@ class MiniProgramCollectionPage extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: IconButton(
                   key: const Key('mini-program-collection-back'),
-                  tooltip: '返回',
+                  tooltip: localizeMiniProgramLabel(context, '返回'),
                   onPressed: onBack,
                   icon: const Icon(Icons.arrow_back_ios_new_rounded),
                 ),
               ),
               Text(
-                title,
+                localizeMiniProgramLabel(context, title),
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: scheme.onSurface,
                   fontSize: 16,

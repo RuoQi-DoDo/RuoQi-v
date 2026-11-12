@@ -51,8 +51,11 @@ class _AtsCompanyEditPageState extends State<AtsCompanyEditPage> {
                         width: 72,
                         height: 72,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [AtsColors.primary, Color(0xFF54CFAD)],
+                          gradient: LinearGradient(
+                            colors: [
+                              AtsColors.resolve(context, AtsColors.primary),
+                              Color(0xFF54CFAD),
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(15),
                         ),
@@ -73,7 +76,7 @@ class _AtsCompanyEditPageState extends State<AtsCompanyEditPage> {
                       ),
                     ),
                     const SizedBox(width: 13),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -88,7 +91,10 @@ class _AtsCompanyEditPageState extends State<AtsCompanyEditPage> {
                           Text(
                             '完善资料可以提升企业可信度和职位曝光',
                             style: TextStyle(
-                              color: AtsColors.textMuted,
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.textMuted,
+                              ),
                               fontSize: 10,
                               height: 1.5,
                             ),
@@ -96,8 +102,14 @@ class _AtsCompanyEditPageState extends State<AtsCompanyEditPage> {
                           SizedBox(height: 6),
                           AtsTag(
                             '已认证',
-                            foreground: AtsColors.primary,
-                            background: AtsColors.mint,
+                            foreground: AtsColors.resolve(
+                              context,
+                              AtsColors.primary,
+                            ),
+                            background: AtsColors.resolve(
+                              context,
+                              AtsColors.mint,
+                            ),
                           ),
                         ],
                       ),
@@ -214,14 +226,29 @@ class _AtsCompanyEditPageState extends State<AtsCompanyEditPage> {
                                 }
                               });
                             },
-                            selectedColor: AtsColors.mint,
-                            checkmarkColor: AtsColors.primary,
-                            backgroundColor: AtsColors.background,
+                            selectedColor: AtsColors.resolve(
+                              context,
+                              AtsColors.mint,
+                            ),
+                            checkmarkColor: AtsColors.resolve(
+                              context,
+                              AtsColors.primary,
+                            ),
+                            backgroundColor: AtsColors.resolve(
+                              context,
+                              AtsColors.background,
+                            ),
                             side: BorderSide.none,
                             labelStyle: TextStyle(
                               color: _welfare.contains(item)
-                                  ? AtsColors.primary
-                                  : AtsColors.textSecondary,
+                                  ? AtsColors.resolve(
+                                      context,
+                                      AtsColors.primary,
+                                    )
+                                  : AtsColors.resolve(
+                                      context,
+                                      AtsColors.textSecondary,
+                                    ),
                               fontSize: 11,
                             ),
                             shape: RoundedRectangleBorder(
@@ -283,15 +310,24 @@ class _AtsCompanyEditPageState extends State<AtsCompanyEditPage> {
                                 aspectRatio: 1.25,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: AtsColors.background,
+                                    color: AtsColors.resolve(
+                                      context,
+                                      AtsColors.background,
+                                    ),
                                     borderRadius: BorderRadius.circular(9),
                                     border: Border.all(
-                                      color: AtsColors.divider,
+                                      color: AtsColors.resolve(
+                                        context,
+                                        AtsColors.divider,
+                                      ),
                                     ),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.add_photo_alternate_outlined,
-                                    color: AtsColors.textMuted,
+                                    color: AtsColors.resolve(
+                                      context,
+                                      AtsColors.textMuted,
+                                    ),
                                     size: 25,
                                   ),
                                 ),

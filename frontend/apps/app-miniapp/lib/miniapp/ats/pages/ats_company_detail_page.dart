@@ -19,8 +19,11 @@ class AtsCompanyDetailPage extends StatelessWidget {
                 height: 58,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AtsColors.primary, Color(0xFF54CFAD)],
+                  gradient: LinearGradient(
+                    colors: [
+                      AtsColors.resolve(context, AtsColors.primary),
+                      Color(0xFF54CFAD),
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -48,16 +51,16 @@ class AtsCompanyDetailPage extends StatelessWidget {
                     const SizedBox(height: 5),
                     Text(
                       '${company.industry} · ${company.staffSize}',
-                      style: const TextStyle(
-                        color: AtsColors.textMuted,
+                      style: TextStyle(
+                        color: AtsColors.resolve(context, AtsColors.textMuted),
                         fontSize: 12,
                       ),
                     ),
                     const SizedBox(height: 7),
-                    const AtsTag(
+                    AtsTag(
                       '已认证',
-                      foreground: AtsColors.primary,
-                      background: AtsColors.mint,
+                      foreground: AtsColors.resolve(context, AtsColors.primary),
+                      background: AtsColors.resolve(context, AtsColors.mint),
                     ),
                   ],
                 ),
@@ -100,8 +103,8 @@ class AtsCompanyDetailPage extends StatelessWidget {
                   for (final item in company.welfare)
                     AtsTag(
                       item,
-                      foreground: AtsColors.primary,
-                      background: AtsColors.mint,
+                      foreground: AtsColors.resolve(context, AtsColors.primary),
+                      background: AtsColors.resolve(context, AtsColors.mint),
                     ),
                 ],
               ),
@@ -121,17 +124,20 @@ class AtsCompanyDetailPage extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.location_on_outlined,
                     size: 18,
-                    color: AtsColors.textMuted,
+                    color: AtsColors.resolve(context, AtsColors.textMuted),
                   ),
                   const SizedBox(width: 5),
                   Expanded(
                     child: Text(
                       company.address,
-                      style: const TextStyle(
-                        color: AtsColors.textSecondary,
+                      style: TextStyle(
+                        color: AtsColors.resolve(
+                          context,
+                          AtsColors.textSecondary,
+                        ),
                         fontSize: 13,
                         height: 1.55,
                       ),
@@ -142,7 +148,10 @@ class AtsCompanyDetailPage extends StatelessWidget {
                     icon: const Icon(Icons.navigation_outlined, size: 16),
                     label: const Text('导航'),
                     style: TextButton.styleFrom(
-                      foregroundColor: AtsColors.primary,
+                      foregroundColor: AtsColors.resolve(
+                        context,
+                        AtsColors.primary,
+                      ),
                       visualDensity: VisualDensity.compact,
                     ),
                   ),
@@ -163,8 +172,8 @@ class AtsCompanyDetailPage extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 company.introduce,
-                style: const TextStyle(
-                  color: AtsColors.textSecondary,
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textSecondary),
                   fontSize: 13,
                   height: 1.75,
                 ),
@@ -200,16 +209,26 @@ class _InfoLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 17, color: AtsColors.primary),
+        Icon(
+          icon,
+          size: 17,
+          color: AtsColors.resolve(context, AtsColors.primary),
+        ),
         const SizedBox(width: 8),
         Text(
           label,
-          style: const TextStyle(color: AtsColors.textSecondary, fontSize: 12),
+          style: TextStyle(
+            color: AtsColors.resolve(context, AtsColors.textSecondary),
+            fontSize: 12,
+          ),
         ),
         const Spacer(),
         Text(
           value,
-          style: const TextStyle(color: AtsColors.text, fontSize: 12),
+          style: TextStyle(
+            color: AtsColors.resolve(context, AtsColors.text),
+            fontSize: 12,
+          ),
         ),
       ],
     );

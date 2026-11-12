@@ -11,7 +11,13 @@ class HrMePage extends StatelessWidget {
       key: const Key('hr-me-scroll'),
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('我的', style: HrText.appBarTitle.copyWith(fontSize: 25)),
+        Text(
+          '我的',
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
         const SizedBox(height: 16),
         HrCard(
           padding: const EdgeInsets.all(18),
@@ -27,7 +33,7 @@ class HrMePage extends StatelessWidget {
                 ),
                 child: Text(
                   controller.user.name.characters.last,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: HrColors.surface,
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
@@ -41,12 +47,15 @@ class HrMePage extends StatelessWidget {
                   children: [
                     Text(
                       controller.user.name,
-                      style: HrText.appBarTitle.copyWith(fontSize: 19),
+                      style: HrText.resolve(
+                        context,
+                        HrText.appBarTitle,
+                      ).copyWith(fontSize: 19),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${controller.user.department} · ${controller.user.position}',
-                      style: HrText.meta,
+                      style: HrText.resolve(context, HrText.meta),
                     ),
                     const SizedBox(height: 6),
                     Container(
@@ -55,13 +64,13 @@ class HrMePage extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: HrColors.successBg,
+                        color: HrColors.resolve(context, HrColors.successBg),
                         borderRadius: BorderRadius.circular(99),
                       ),
                       child: Text(
                         '在职 · ${controller.user.employeeNo}',
-                        style: HrText.mono.copyWith(
-                          color: HrColors.success,
+                        style: HrText.resolve(context, HrText.mono).copyWith(
+                          color: HrColors.resolve(context, HrColors.success),
                           fontSize: 9.5,
                           fontWeight: FontWeight.w700,
                         ),
@@ -73,9 +82,9 @@ class HrMePage extends StatelessWidget {
               IconButton(
                 tooltip: '编辑个人信息',
                 onPressed: () => controller.open(HrRoute.personalInfo),
-                icon: const Icon(
+                icon: Icon(
                   Icons.edit_outlined,
-                  color: HrColors.ink3,
+                  color: HrColors.resolve(context, HrColors.ink3),
                   size: 20,
                 ),
               ),
@@ -113,16 +122,16 @@ class HrMePage extends StatelessWidget {
             children: [
               _MenuRow(
                 icon: Icons.person_outline_rounded,
-                iconColor: HrColors.info,
-                iconBackground: HrColors.infoBg,
+                iconColor: HrColors.resolve(context, HrColors.info),
+                iconBackground: HrColors.resolve(context, HrColors.infoBg),
                 label: '个人信息',
                 value: controller.user.employeeNo,
                 onTap: () => controller.open(HrRoute.personalInfo),
               ),
               _MenuRow(
                 icon: Icons.campaign_outlined,
-                iconColor: HrColors.success,
-                iconBackground: HrColors.successBg,
+                iconColor: HrColors.resolve(context, HrColors.success),
+                iconBackground: HrColors.resolve(context, HrColors.successBg),
                 label: '公司公告',
                 value: controller.unreadAnnouncementCount > 0
                     ? '${controller.unreadAnnouncementCount} 条未读'
@@ -131,8 +140,8 @@ class HrMePage extends StatelessWidget {
               ),
               _MenuRow(
                 icon: Icons.notifications_none_rounded,
-                iconColor: HrColors.warning,
-                iconBackground: HrColors.warningBg,
+                iconColor: HrColors.resolve(context, HrColors.warning),
+                iconBackground: HrColors.resolve(context, HrColors.warningBg),
                 label: '消息通知',
                 value: controller.unreadNotificationCount > 0
                     ? '${controller.unreadNotificationCount} 条未读'
@@ -141,24 +150,24 @@ class HrMePage extends StatelessWidget {
               ),
               _MenuRow(
                 icon: Icons.receipt_long_outlined,
-                iconColor: HrColors.warning,
-                iconBackground: HrColors.warningBg,
+                iconColor: HrColors.resolve(context, HrColors.warning),
+                iconBackground: HrColors.resolve(context, HrColors.warningBg),
                 label: '工资单',
                 value: '最近 ${controller.payslips.length} 期',
                 onTap: () => controller.open(HrRoute.payslips),
               ),
               _MenuRow(
                 icon: Icons.people_outline_rounded,
-                iconColor: HrColors.info,
-                iconBackground: HrColors.infoBg,
+                iconColor: HrColors.resolve(context, HrColors.info),
+                iconBackground: HrColors.resolve(context, HrColors.infoBg),
                 label: '企业通讯录',
                 value: '${controller.directory.length} 位同事',
                 onTap: () => controller.open(HrRoute.directory),
               ),
               _MenuRow(
                 icon: Icons.support_agent_outlined,
-                iconColor: HrColors.info,
-                iconBackground: HrColors.infoBg,
+                iconColor: HrColors.resolve(context, HrColors.info),
+                iconBackground: HrColors.resolve(context, HrColors.infoBg),
                 label: '员工服务台',
                 value: '提交服务工单',
                 onTap: () => controller.open(HrRoute.helpdesk),
@@ -174,31 +183,31 @@ class HrMePage extends StatelessWidget {
             children: [
               _MenuRow(
                 icon: Icons.manage_accounts_outlined,
-                iconColor: HrColors.ink3,
-                iconBackground: HrColors.bg2,
+                iconColor: HrColors.resolve(context, HrColors.ink3),
+                iconBackground: HrColors.resolve(context, HrColors.bg2),
                 label: '直属主管',
                 value: controller.user.manager,
                 onTap: null,
               ),
               _MenuRow(
                 icon: Icons.face_retouching_natural,
-                iconColor: HrColors.success,
-                iconBackground: HrColors.successBg,
+                iconColor: HrColors.resolve(context, HrColors.success),
+                iconBackground: HrColors.resolve(context, HrColors.successBg),
                 label: '人脸参考照片',
                 value: '已支持打卡核验',
                 onTap: () => controller.open(HrRoute.faceEnrolment),
               ),
               _MenuRow(
                 icon: Icons.switch_account_outlined,
-                iconColor: HrColors.warning,
-                iconBackground: HrColors.warningBg,
+                iconColor: HrColors.resolve(context, HrColors.warning),
+                iconBackground: HrColors.resolve(context, HrColors.warningBg),
                 label: '切换账号',
                 onTap: () => controller.open(HrRoute.signIn),
               ),
               _MenuRow(
                 icon: Icons.settings_outlined,
-                iconColor: HrColors.ink3,
-                iconBackground: HrColors.bg2,
+                iconColor: HrColors.resolve(context, HrColors.ink3),
+                iconBackground: HrColors.resolve(context, HrColors.bg2),
                 label: '设置',
                 onTap: () => controller.open(HrRoute.settings),
                 showDivider: false,
@@ -208,13 +217,17 @@ class HrMePage extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         HrCard(
-          background: HrColors.infoBg,
+          background: HrColors.resolve(context, HrColors.infoBg),
           borderColor: const Color(0xFFC9DBEA),
           shadow: false,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.api_rounded, color: HrColors.info, size: 20),
+              Icon(
+                Icons.api_rounded,
+                color: HrColors.resolve(context, HrColors.info),
+                size: 20,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -222,15 +235,17 @@ class HrMePage extends StatelessWidget {
                   children: [
                     Text(
                       controller.useMockData ? '当前：静态模拟数据' : '当前：真实 HR API',
-                      style: HrText.cardTitle.copyWith(
-                        color: HrColors.info,
+                      style: HrText.resolve(context, HrText.cardTitle).copyWith(
+                        color: HrColors.resolve(context, HrColors.info),
                         fontSize: 12.5,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       'Horilla 接口层已保留，可通过 HR_USE_MOCK_DATA=false 切换。',
-                      style: HrText.meta.copyWith(color: HrColors.info),
+                      style: HrText.resolve(context, HrText.meta).copyWith(
+                        color: HrColors.resolve(context, HrColors.info),
+                      ),
                     ),
                   ],
                 ),
@@ -242,7 +257,10 @@ class HrMePage extends StatelessWidget {
         Text(
           'RuoQi 人事 · 静态原型 1.0.0',
           textAlign: TextAlign.center,
-          style: HrText.mono.copyWith(color: HrColors.ink4, fontSize: 9.5),
+          style: HrText.resolve(context, HrText.mono).copyWith(
+            color: HrColors.resolve(context, HrColors.ink4),
+            fontSize: 9.5,
+          ),
         ),
       ],
     );
@@ -265,17 +283,24 @@ class _ProfileStat extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, size: 19, color: HrColors.brand),
+          Icon(
+            icon,
+            size: 19,
+            color: HrColors.resolve(context, HrColors.brand),
+          ),
           const SizedBox(height: 5),
           Text(
             value,
-            style: HrText.mono.copyWith(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
+            style: HrText.resolve(
+              context,
+              HrText.mono,
+            ).copyWith(fontSize: 18, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 1),
-          Text(label, style: HrText.meta.copyWith(fontSize: 10)),
+          Text(
+            localizeMiniProgramLabel(context, label),
+            style: HrText.resolve(context, HrText.meta).copyWith(fontSize: 10),
+          ),
         ],
       ),
     );
@@ -323,9 +348,9 @@ class _MenuRow extends StatelessWidget {
                 const SizedBox(width: 11),
                 Expanded(
                   child: Text(
-                    label,
-                    style: HrText.body.copyWith(
-                      color: HrColors.ink,
+                    localizeMiniProgramLabel(context, label),
+                    style: HrText.resolve(context, HrText.body).copyWith(
+                      color: HrColors.resolve(context, HrColors.ink),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -333,28 +358,28 @@ class _MenuRow extends StatelessWidget {
                 if (value != null)
                   Flexible(
                     child: Text(
-                      value!,
+                      localizeMiniProgramLabel(context, value!),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: HrText.meta,
+                      style: HrText.resolve(context, HrText.meta),
                     ),
                   ),
                 if (onTap != null)
-                  const Icon(
+                  Icon(
                     Icons.chevron_right_rounded,
                     size: 19,
-                    color: HrColors.ink4,
+                    color: HrColors.resolve(context, HrColors.ink4),
                   ),
               ],
             ),
           ),
         ),
         if (showDivider)
-          const Divider(
+          Divider(
             height: 1,
             indent: 63,
             endIndent: 16,
-            color: HrColors.line2,
+            color: HrColors.resolve(context, HrColors.line2),
           ),
       ],
     );

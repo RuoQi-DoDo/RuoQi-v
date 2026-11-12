@@ -76,10 +76,13 @@ class _AtsRobotPageState extends State<AtsRobotPage> {
             controller: _scrollController,
             padding: const EdgeInsets.all(14),
             children: [
-              const Center(
+              Center(
                 child: Text(
                   '智能客服 · 7×24小时在线',
-                  style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
+                  style: TextStyle(
+                    color: AtsColors.resolve(context, AtsColors.textMuted),
+                    fontSize: 10,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -95,9 +98,12 @@ class _AtsRobotPageState extends State<AtsRobotPage> {
                 ),
               if (_messages.length == 2) ...[
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   '猜你想问',
-                  style: TextStyle(color: AtsColors.textMuted, fontSize: 11),
+                  style: TextStyle(
+                    color: AtsColors.resolve(context, AtsColors.textMuted),
+                    fontSize: 11,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -112,7 +118,10 @@ class _AtsRobotPageState extends State<AtsRobotPage> {
                       ActionChip(
                         onPressed: () => _send(question),
                         label: Text(question),
-                        backgroundColor: AtsColors.mint,
+                        backgroundColor: AtsColors.resolve(
+                          context,
+                          AtsColors.mint,
+                        ),
                         side: BorderSide.none,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -132,9 +141,9 @@ class _AtsRobotPageState extends State<AtsRobotPage> {
               IconButton(
                 onPressed: () => atsToast(context, '已为你连接人工客服'),
                 tooltip: '人工客服',
-                icon: const Icon(
+                icon: Icon(
                   Icons.support_agent,
-                  color: AtsColors.textSecondary,
+                  color: AtsColors.resolve(context, AtsColors.textSecondary),
                 ),
               ),
               Expanded(
@@ -142,10 +151,10 @@ class _AtsRobotPageState extends State<AtsRobotPage> {
                   controller: _textController,
                   textInputAction: TextInputAction.send,
                   onSubmitted: _send,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: '请用一句话描述你的问题',
                     isDense: true,
-                    fillColor: Colors.white,
+                    fillColor: AtsColors.resolve(context, AtsColors.surface),
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 10,
@@ -161,7 +170,7 @@ class _AtsRobotPageState extends State<AtsRobotPage> {
                   height: 38,
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   decoration: BoxDecoration(
-                    color: AtsColors.primary,
+                    color: AtsColors.solidPrimary(context),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   alignment: Alignment.center,
@@ -204,8 +213,11 @@ class _RobotBubble extends StatelessWidget {
               width: 34,
               height: 34,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AtsColors.primary, Color(0xFF54CFAD)],
+                gradient: LinearGradient(
+                  colors: [
+                    AtsColors.resolve(context, AtsColors.primary),
+                    Color(0xFF54CFAD),
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -222,13 +234,17 @@ class _RobotBubble extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 280),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: mine ? AtsColors.primary : Colors.white,
+                color: mine
+                    ? AtsColors.solidPrimary(context)
+                    : AtsColors.resolve(context, AtsColors.surface),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 text,
                 style: TextStyle(
-                  color: mine ? Colors.white : AtsColors.text,
+                  color: mine
+                      ? Colors.white
+                      : AtsColors.resolve(context, AtsColors.text),
                   fontSize: 13,
                   height: 1.6,
                 ),
@@ -253,7 +269,7 @@ class _RobotTyping extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AtsColors.resolve(context, AtsColors.surface),
         borderRadius: BorderRadius.circular(10),
       ),
       child: const Row(
@@ -285,8 +301,8 @@ class _TypingDot extends StatelessWidget {
     return Container(
       width: 5,
       height: 5,
-      decoration: const BoxDecoration(
-        color: AtsColors.textMuted,
+      decoration: BoxDecoration(
+        color: AtsColors.resolve(context, AtsColors.textMuted),
         shape: BoxShape.circle,
       ),
     );

@@ -8,14 +8,14 @@ class AtsPromoCodePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AtsColors.background,
+      color: AtsColors.resolve(context, AtsColors.background),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 26, 20, 20),
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AtsColors.resolve(context, AtsColors.surface),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -37,10 +37,10 @@ class AtsPromoCodePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   '邀请码：212121',
                   style: TextStyle(
-                    color: AtsColors.primary,
+                    color: AtsColors.resolve(context, AtsColors.primary),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -51,25 +51,30 @@ class AtsPromoCodePage extends StatelessWidget {
                   height: 178,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AtsColors.resolve(context, AtsColors.surface),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AtsColors.divider),
+                    border: Border.all(
+                      color: AtsColors.resolve(context, AtsColors.divider),
+                    ),
                   ),
                   child: const _FakeQrCode(),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   '微信扫描上方二维码即可注册',
                   style: TextStyle(
-                    color: AtsColors.textSecondary,
+                    color: AtsColors.resolve(context, AtsColors.textSecondary),
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 5),
-                const Text(
+                Text(
                   '截图保存二维码到手机或微信识别',
-                  style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
+                  style: TextStyle(
+                    color: AtsColors.resolve(context, AtsColors.textMuted),
+                    fontSize: 10,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 AtsPrimaryButton(
@@ -81,15 +86,19 @@ class AtsPromoCodePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.verified_outlined, size: 18, color: AtsColors.primary),
+              Icon(
+                Icons.verified_outlined,
+                size: 18,
+                color: AtsColors.resolve(context, AtsColors.primary),
+              ),
               SizedBox(width: 6),
               Text(
                 '企业直聘',
                 style: TextStyle(
-                  color: AtsColors.primary,
+                  color: AtsColors.resolve(context, AtsColors.primary),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -129,7 +138,11 @@ class _FakeQrCode extends StatelessWidget {
                   (col >= 15 && col <= 19 && row == 0) ||
                   (row >= 15 && row <= 19 && col == 0))
             : ((index * 7 + col * 3) % 11 < 4);
-        return ColoredBox(color: fill ? AtsColors.text : Colors.transparent);
+        return ColoredBox(
+          color: fill
+              ? AtsColors.resolve(context, AtsColors.text)
+              : Colors.transparent,
+        );
       },
     );
   }

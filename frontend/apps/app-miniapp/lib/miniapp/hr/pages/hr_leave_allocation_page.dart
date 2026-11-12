@@ -26,16 +26,25 @@ class _HrLeaveAllocationPageState extends State<HrLeaveAllocationPage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('额度追加申请', style: HrText.appBarTitle.copyWith(fontSize: 25)),
+        Text(
+          '额度追加申请',
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
         const SizedBox(height: 5),
-        const Text('额外假期额度由 HR 审批，不进入直属主管审批流。', style: HrText.meta),
+        Text(
+          '额外假期额度由 HR 审批，不进入直属主管审批流。',
+          style: HrText.resolve(context, HrText.meta),
+        ),
         const SizedBox(height: 17),
         HrCard(
           padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('假期类型', style: HrText.eyebrow),
+              Text('假期类型', style: HrText.resolve(context, HrText.eyebrow)),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
@@ -46,15 +55,23 @@ class _HrLeaveAllocationPageState extends State<HrLeaveAllocationPage> {
                       label: Text(type),
                       selected: _type == type,
                       showCheckmark: false,
-                      selectedColor: HrColors.brandTint,
-                      backgroundColor: HrColors.bg2,
+                      selectedColor: HrColors.resolve(
+                        context,
+                        HrColors.brandTint,
+                      ),
+                      backgroundColor: HrColors.resolve(context, HrColors.bg2),
                       side: BorderSide(
                         color: _type == type
-                            ? HrColors.brandTintBorder
-                            : HrColors.line,
+                            ? HrColors.resolve(
+                                context,
+                                HrColors.brandTintBorder,
+                              )
+                            : HrColors.resolve(context, HrColors.line),
                       ),
                       labelStyle: TextStyle(
-                        color: _type == type ? HrColors.brand : HrColors.ink3,
+                        color: _type == type
+                            ? HrColors.resolve(context, HrColors.brand)
+                            : HrColors.resolve(context, HrColors.ink3),
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                       ),
@@ -72,16 +89,19 @@ class _HrLeaveAllocationPageState extends State<HrLeaveAllocationPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('申请天数', style: HrText.eyebrow),
+                        Text(
+                          '申请天数',
+                          style: HrText.resolve(context, HrText.eyebrow),
+                        ),
                         const SizedBox(height: 6),
                         Text(
                           _days == _days.roundToDouble()
                               ? _days.toStringAsFixed(0)
                               : _days.toStringAsFixed(1),
-                          style: HrText.mono.copyWith(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                          ),
+                          style: HrText.resolve(
+                            context,
+                            HrText.mono,
+                          ).copyWith(fontSize: 28, fontWeight: FontWeight.w800),
                         ),
                       ],
                     ),
@@ -100,12 +120,15 @@ class _HrLeaveAllocationPageState extends State<HrLeaveAllocationPage> {
                 ],
               ),
               const SizedBox(height: 15),
-              const Divider(height: 1, color: HrColors.line2),
+              Divider(
+                height: 1,
+                color: HrColors.resolve(context, HrColors.line2),
+              ),
               const SizedBox(height: 12),
               Text(
                 '当前 $_type 余额 '
                 '${_currentBalance(widget.controller, _type)} 天',
-                style: HrText.meta,
+                style: HrText.resolve(context, HrText.meta),
               ),
             ],
           ),
@@ -119,9 +142,9 @@ class _HrLeaveAllocationPageState extends State<HrLeaveAllocationPage> {
           minLines: 4,
           maxLines: 6,
           maxLength: 200,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: '请说明需要额外额度的原因',
-            counterStyle: HrText.meta,
+            counterStyle: HrText.resolve(context, HrText.meta),
           ),
         ),
         const SizedBox(height: 14),
@@ -185,14 +208,16 @@ class _StepperButton extends StatelessWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: HrColors.surface,
+          color: HrColors.resolve(context, HrColors.surface),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: HrColors.line),
+          border: Border.all(color: HrColors.resolve(context, HrColors.line)),
         ),
         child: Icon(
           icon,
           size: 19,
-          color: onTap == null ? HrColors.ink4 : HrColors.ink,
+          color: onTap == null
+              ? HrColors.resolve(context, HrColors.ink4)
+              : HrColors.resolve(context, HrColors.ink),
         ),
       ),
     );

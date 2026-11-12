@@ -84,13 +84,16 @@ class _AtsEditWorkPageState extends State<AtsEditWorkPage> {
                     for (final tag in const ['Flutter', 'Dart', '团队协作'])
                       AtsTag(
                         tag,
-                        foreground: AtsColors.primary,
-                        background: AtsColors.mint,
+                        foreground: AtsColors.resolve(
+                          context,
+                          AtsColors.primary,
+                        ),
+                        background: AtsColors.resolve(context, AtsColors.mint),
                       ),
-                    const AtsTag(
+                    AtsTag(
                       '+ 添加',
-                      foreground: AtsColors.primary,
-                      background: AtsColors.mint,
+                      foreground: AtsColors.resolve(context, AtsColors.primary),
+                      background: AtsColors.resolve(context, AtsColors.mint),
                     ),
                   ],
                 ),

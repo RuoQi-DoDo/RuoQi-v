@@ -15,13 +15,18 @@ class HrNotificationsPage extends StatelessWidget {
             Expanded(
               child: Text(
                 '消息通知',
-                style: HrText.appBarTitle.copyWith(fontSize: 25),
+                style: HrText.resolve(
+                  context,
+                  HrText.appBarTitle,
+                ).copyWith(fontSize: 25),
               ),
             ),
             if (controller.unreadNotificationCount > 0)
               TextButton(
                 onPressed: controller.markAllNotificationsRead,
-                style: TextButton.styleFrom(foregroundColor: HrColors.brand),
+                style: TextButton.styleFrom(
+                  foregroundColor: HrColors.resolve(context, HrColors.brand),
+                ),
                 child: const Text(
                   '全部已读',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
@@ -32,7 +37,7 @@ class HrNotificationsPage extends StatelessWidget {
         const SizedBox(height: 5),
         Text(
           '${controller.unreadNotificationCount} 条未读 · 共 ${controller.notifications.length} 条',
-          style: HrText.meta,
+          style: HrText.resolve(context, HrText.meta),
         ),
         const SizedBox(height: 16),
         for (final item in controller.notifications) ...[
@@ -41,7 +46,9 @@ class HrNotificationsPage extends StatelessWidget {
                 ? () => controller.markNotificationRead(item.id)
                 : null,
             padding: const EdgeInsets.all(15),
-            borderColor: item.unread ? HrColors.line : HrColors.line2,
+            borderColor: item.unread
+                ? HrColors.resolve(context, HrColors.line)
+                : HrColors.resolve(context, HrColors.line2),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -68,14 +75,17 @@ class HrNotificationsPage extends StatelessWidget {
                           Expanded(
                             child: Text(
                               item.title,
-                              style: HrText.cardTitle.copyWith(fontSize: 13),
+                              style: HrText.resolve(
+                                context,
+                                HrText.cardTitle,
+                              ).copyWith(fontSize: 13),
                             ),
                           ),
                           if (item.unread)
                             Container(
                               width: 7,
                               height: 7,
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                 color: HrColors.brand,
                                 shape: BoxShape.circle,
                               ),
@@ -85,13 +95,15 @@ class HrNotificationsPage extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         item.message,
-                        style: HrText.body.copyWith(color: HrColors.ink3),
+                        style: HrText.resolve(context, HrText.body).copyWith(
+                          color: HrColors.resolve(context, HrColors.ink3),
+                        ),
                       ),
                       const SizedBox(height: 5),
                       Text(
                         hrRelative(item.createdAt),
-                        style: HrText.meta.copyWith(
-                          color: HrColors.ink4,
+                        style: HrText.resolve(context, HrText.meta).copyWith(
+                          color: HrColors.resolve(context, HrColors.ink4),
                           fontSize: 10,
                         ),
                       ),

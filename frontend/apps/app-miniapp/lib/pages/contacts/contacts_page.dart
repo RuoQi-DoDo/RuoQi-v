@@ -1,39 +1,51 @@
-part of 'im_home_page.dart';
+import 'package:flutter/material.dart';
 
-class _ContactsPage extends StatelessWidget {
-  const _ContactsPage({required this.onTap});
+import '../common/page_localizations.dart';
+import '../common/page_widgets.dart';
 
-  final ValueChanged<String> onTap;
+class ContactsPage extends StatelessWidget {
+  const ContactsPage({super.key, this.onTap, this.embedded = false});
+
+  final ValueChanged<String>? onTap;
+  final bool embedded;
+
+  static Route<void> route() =>
+      MaterialPageRoute<void>(builder: (_) => const ContactsPage());
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      SharedPageFrame(embedded: embedded, title: '通讯录', builder: _buildContent);
+
+  Widget _buildContent(BuildContext context) {
+    final onTap = this.onTap ?? (message) => showPageMessage(context, message);
+
     return Stack(
       children: [
         ListView(
           key: const Key('contacts-page'),
           padding: const EdgeInsets.only(top: 8, bottom: 24),
           children: [
-            _WeChatListGroup(
+            PageListGroup(
               children: [
-                _WeChatListRow(
+                PageListRow(
                   icon: Icons.person_add_alt_1_rounded,
                   color: const Color(0xFF07C160),
                   title: '新的朋友',
                   onTap: () => onTap('新的朋友为模拟入口'),
                 ),
-                _WeChatListRow(
+                PageListRow(
                   icon: Icons.groups_rounded,
                   color: const Color(0xFF07C160),
                   title: '群聊',
                   onTap: () => onTap('群聊为模拟入口'),
                 ),
-                _WeChatListRow(
+                PageListRow(
                   icon: Icons.sell_outlined,
                   color: const Color(0xFF2F88FF),
                   title: '标签',
                   onTap: () => onTap('标签为模拟入口'),
                 ),
-                _WeChatListRow(
+                PageListRow(
                   icon: Icons.article_outlined,
                   color: const Color(0xFF2F88FF),
                   title: '公众号',
@@ -112,7 +124,7 @@ class _ContactsAlphabetIndex extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: '通讯录字母索引',
+      label: pageLabel(context, '通讯录字母索引'),
       child: ExcludeSemantics(
         child: Column(
           mainAxisSize: MainAxisSize.min,

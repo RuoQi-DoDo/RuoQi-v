@@ -13,7 +13,7 @@ class HrHomePage extends StatelessWidget {
         .firstOrNull;
 
     return RefreshIndicator(
-      color: HrColors.brand,
+      color: HrColors.resolve(context, HrColors.brand),
       onRefresh: controller.refresh,
       child: ListView(
         key: const Key('hr-home-scroll'),
@@ -49,17 +49,20 @@ class HrHomePage extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Expanded(
-                        child: Text('最新公告', style: HrText.eyebrow),
+                      Expanded(
+                        child: Text(
+                          '最新公告',
+                          style: HrText.resolve(context, HrText.eyebrow),
+                        ),
                       ),
                       InkWell(
                         onTap: () => controller.open(HrRoute.announcements),
-                        child: const Padding(
+                        child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 4),
                           child: Text(
                             '查看全部',
                             style: TextStyle(
-                              color: HrColors.brand,
+                              color: HrColors.resolve(context, HrColors.brand),
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
@@ -73,30 +76,38 @@ class HrHomePage extends StatelessWidget {
                     featured.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: HrText.cardTitle.copyWith(
-                      fontSize: 17,
-                      height: 1.35,
-                    ),
+                    style: HrText.resolve(
+                      context,
+                      HrText.cardTitle,
+                    ).copyWith(fontSize: 17, height: 1.35),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     featured.summary,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: HrText.body.copyWith(color: HrColors.ink3),
+                    style: HrText.resolve(
+                      context,
+                      HrText.body,
+                    ).copyWith(color: HrColors.resolve(context, HrColors.ink3)),
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       HrStatusChip(
                         label: featured.category,
-                        background: HrColors.brandTint,
-                        foreground: HrColors.brand,
+                        background: HrColors.resolve(
+                          context,
+                          HrColors.brandTint,
+                        ),
+                        foreground: HrColors.resolve(context, HrColors.brand),
                       ),
                       const Spacer(),
                       Text(
                         hrRelative(featured.createdAt),
-                        style: HrText.meta.copyWith(color: HrColors.ink4),
+                        style: HrText.resolve(context, HrText.meta).copyWith(
+                          color: HrColors.resolve(context, HrColors.ink4),
+                        ),
                       ),
                     ],
                   ),
@@ -131,13 +142,22 @@ class _HomeHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(greeting, style: HrText.meta.copyWith(fontSize: 11.5)),
+              Text(
+                greeting,
+                style: HrText.resolve(
+                  context,
+                  HrText.meta,
+                ).copyWith(fontSize: 11.5),
+              ),
               const SizedBox(height: 1),
               Text(
                 controller.user.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: HrText.appBarTitle.copyWith(fontSize: 20),
+                style: HrText.resolve(
+                  context,
+                  HrText.appBarTitle,
+                ).copyWith(fontSize: 20),
               ),
             ],
           ),
@@ -156,13 +176,13 @@ class _HomeHeader extends StatelessWidget {
             width: 42,
             height: 42,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: HrColors.brand,
               shape: BoxShape.circle,
             ),
             child: Text(
               controller.user.name.characters.last,
-              style: const TextStyle(
+              style: TextStyle(
                 color: HrColors.surface,
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
@@ -199,14 +219,18 @@ class _HeaderIcon extends StatelessWidget {
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: HrColors.surface,
+            color: HrColors.resolve(context, HrColors.surface),
             borderRadius: BorderRadius.circular(13),
-            border: Border.all(color: HrColors.line),
+            border: Border.all(color: HrColors.resolve(context, HrColors.line)),
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(icon, color: HrColors.ink, size: 21),
+              Icon(
+                icon,
+                color: HrColors.resolve(context, HrColors.ink),
+                size: 21,
+              ),
               if (badge > 0)
                 Positioned(
                   right: 8,
@@ -215,9 +239,12 @@ class _HeaderIcon extends StatelessWidget {
                     width: 7,
                     height: 7,
                     decoration: BoxDecoration(
-                      color: HrColors.brandLight,
+                      color: HrColors.resolve(context, HrColors.brandLight),
                       shape: BoxShape.circle,
-                      border: Border.all(color: HrColors.surface, width: 1.2),
+                      border: Border.all(
+                        color: HrColors.resolve(context, HrColors.surface),
+                        width: 1.2,
+                      ),
                     ),
                   ),
                 ),
@@ -260,8 +287,8 @@ class _PunchCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   '${hrDate(now)} ${hrWeekday(now)}'.toUpperCase(),
-                  style: HrText.eyebrow.copyWith(
-                    color: HrColors.onDark2,
+                  style: HrText.resolve(context, HrText.eyebrow).copyWith(
+                    color: HrColors.resolve(context, HrColors.onDark2),
                     letterSpacing: 0.7,
                   ),
                 ),
@@ -269,21 +296,24 @@ class _PunchCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                 decoration: BoxDecoration(
-                  color: HrColors.onDarkTile,
+                  color: HrColors.resolve(context, HrColors.onDarkTile),
                   borderRadius: BorderRadius.circular(99),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.location_on_outlined,
                       size: 12,
-                      color: HrColors.onDark2,
+                      color: HrColors.resolve(context, HrColors.onDark2),
                     ),
                     SizedBox(width: 3),
                     Text(
                       '考勤范围内',
-                      style: TextStyle(color: HrColors.onDark2, fontSize: 9.5),
+                      style: TextStyle(
+                        color: HrColors.resolve(context, HrColors.onDark2),
+                        fontSize: 9.5,
+                      ),
                     ),
                   ],
                 ),
@@ -299,8 +329,8 @@ class _PunchCard extends StatelessWidget {
                   children: [
                     Text(
                       state,
-                      style: HrText.meta.copyWith(
-                        color: HrColors.onDark2,
+                      style: HrText.resolve(context, HrText.meta).copyWith(
+                        color: HrColors.resolve(context, HrColors.onDark2),
                         fontSize: 12,
                       ),
                     ),
@@ -310,8 +340,8 @@ class _PunchCard extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         hrDuration(punch.workedSeconds, withSeconds: true),
-                        style: HrText.mono.copyWith(
-                          color: HrColors.surface,
+                        style: HrText.resolve(context, HrText.mono).copyWith(
+                          color: Colors.white,
                           fontSize: 35,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -1.6,
@@ -321,8 +351,8 @@ class _PunchCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       stateHint,
-                      style: HrText.meta.copyWith(
-                        color: HrColors.onDark2,
+                      style: HrText.resolve(context, HrText.meta).copyWith(
+                        color: HrColors.resolve(context, HrColors.onDark2),
                         fontSize: 11,
                       ),
                     ),
@@ -350,8 +380,11 @@ class _PunchCard extends StatelessWidget {
                           height: 93,
                           decoration: BoxDecoration(
                             color: punch.isClockedIn
-                                ? HrColors.surface
-                                : HrColors.brandLight,
+                                ? HrColors.resolve(context, HrColors.surface)
+                                : HrColors.resolve(
+                                    context,
+                                    HrColors.brandLight,
+                                  ),
                             shape: BoxShape.circle,
                           ),
                           child: Column(
@@ -361,16 +394,16 @@ class _PunchCard extends StatelessWidget {
                                 Icons.power_settings_new_rounded,
                                 size: 19,
                                 color: punch.isClockedIn
-                                    ? HrColors.ink
-                                    : HrColors.surface,
+                                    ? HrColors.resolve(context, HrColors.ink)
+                                    : Colors.white,
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 punch.isClockedIn ? '下班打卡' : '上班打卡',
                                 style: TextStyle(
                                   color: punch.isClockedIn
-                                      ? HrColors.ink
-                                      : HrColors.surface,
+                                      ? HrColors.resolve(context, HrColors.ink)
+                                      : Colors.white,
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -380,8 +413,11 @@ class _PunchCard extends StatelessWidget {
                                 style: TextStyle(
                                   color:
                                       (punch.isClockedIn
-                                              ? HrColors.ink
-                                              : HrColors.surface)
+                                              ? HrColors.resolve(
+                                                  context,
+                                                  HrColors.ink,
+                                                )
+                                              : Colors.white)
                                           .withValues(alpha: 0.65),
                                   fontSize: 9,
                                 ),
@@ -444,17 +480,17 @@ class _PunchMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(11, 10, 11, 11),
       decoration: BoxDecoration(
-        color: HrColors.onDarkTile,
+        color: HrColors.resolve(context, HrColors.onDarkTile),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label,
+            localizeMiniProgramLabel(context, label),
             maxLines: 1,
-            style: HrText.eyebrow.copyWith(
-              color: HrColors.onDark2,
+            style: HrText.resolve(context, HrText.eyebrow).copyWith(
+              color: HrColors.resolve(context, HrColors.onDark2),
               fontSize: 9,
               letterSpacing: 0.3,
             ),
@@ -465,8 +501,8 @@ class _PunchMetric extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               value,
-              style: HrText.mono.copyWith(
-                color: accent ? const Color(0xFF62C99A) : HrColors.surface,
+              style: HrText.resolve(context, HrText.mono).copyWith(
+                color: accent ? const Color(0xFF62C99A) : Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
               ),
@@ -518,8 +554,8 @@ class _ApprovalBand extends StatelessWidget {
       key: const Key('hr-home-approvals'),
       onTap: onTap,
       shadow: false,
-      background: HrColors.warningBg,
-      borderColor: HrColors.warningBorder,
+      background: HrColors.resolve(context, HrColors.warningBg),
+      borderColor: HrColors.resolve(context, HrColors.warningBorder),
       padding: const EdgeInsets.fromLTRB(18, 15, 14, 15),
       child: Row(
         children: [
@@ -529,20 +565,25 @@ class _ApprovalBand extends StatelessWidget {
               children: [
                 Text(
                   '$pending 个申请等待你审批',
-                  style: HrText.cardTitle.copyWith(
-                    color: HrColors.warningInk,
+                  style: HrText.resolve(context, HrText.cardTitle).copyWith(
+                    color: HrColors.resolve(context, HrColors.warningInk),
                     fontSize: 15,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '请假 1 · 办公方式 1 · 报销 1 · 补卡 1',
-                  style: HrText.meta.copyWith(color: HrColors.warningInk),
+                  style: HrText.resolve(context, HrText.meta).copyWith(
+                    color: HrColors.resolve(context, HrColors.warningInk),
+                  ),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: HrColors.warningInk),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: HrColors.resolve(context, HrColors.warningInk),
+          ),
         ],
       ),
     );
@@ -560,57 +601,57 @@ class _QuickActions extends StatelessWidget {
       _QuickActionData(
         label: '发起请假',
         icon: Icons.event_available_outlined,
-        color: HrColors.brand,
-        background: HrColors.brandTint,
+        color: HrColors.resolve(context, HrColors.brand),
+        background: HrColors.resolve(context, HrColors.brandTint),
         onTap: () => controller.open(HrRoute.leaveApply),
       ),
       _QuickActionData(
         label: '休假额度',
         icon: Icons.donut_large_outlined,
-        color: HrColors.success,
-        background: HrColors.successBg,
+        color: HrColors.resolve(context, HrColors.success),
+        background: HrColors.resolve(context, HrColors.successBg),
         onTap: () => controller.open(HrRoute.leave),
       ),
       _QuickActionData(
         label: '我的考勤',
         icon: Icons.schedule_outlined,
-        color: HrColors.warning,
-        background: HrColors.warningBg,
+        color: HrColors.resolve(context, HrColors.warning),
+        background: HrColors.resolve(context, HrColors.warningBg),
         onTap: () => controller.switchTab(1),
       ),
       _QuickActionData(
         label: '企业通讯录',
         icon: Icons.people_outline_rounded,
-        color: HrColors.info,
-        background: HrColors.infoBg,
+        color: HrColors.resolve(context, HrColors.info),
+        background: HrColors.resolve(context, HrColors.infoBg),
         onTap: () => controller.open(HrRoute.directory),
       ),
       _QuickActionData(
         label: '工资单',
         icon: Icons.receipt_long_outlined,
-        color: HrColors.warning,
-        background: HrColors.warningBg,
+        color: HrColors.resolve(context, HrColors.warning),
+        background: HrColors.resolve(context, HrColors.warningBg),
         onTap: () => controller.open(HrRoute.payslips),
       ),
       _QuickActionData(
         label: '新建申请',
         icon: Icons.add_rounded,
-        color: HrColors.brand,
-        background: HrColors.brandTint,
+        color: HrColors.resolve(context, HrColors.brand),
+        background: HrColors.resolve(context, HrColors.brandTint),
         onTap: () => controller.composeRequest(),
       ),
       _QuickActionData(
         label: '审批中心',
         icon: Icons.approval_outlined,
-        color: HrColors.info,
-        background: HrColors.infoBg,
+        color: HrColors.resolve(context, HrColors.info),
+        background: HrColors.resolve(context, HrColors.infoBg),
         onTap: () => controller.open(HrRoute.approvals),
       ),
       _QuickActionData(
         label: '公司公告',
         icon: Icons.campaign_outlined,
-        color: HrColors.success,
-        background: HrColors.successBg,
+        color: HrColors.resolve(context, HrColors.success),
+        background: HrColors.resolve(context, HrColors.successBg),
         onTap: () => controller.open(HrRoute.announcements),
       ),
     ];
@@ -646,7 +687,10 @@ class _QuickActions extends StatelessWidget {
                 action.label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: HrText.cardTitle.copyWith(fontSize: 11.5),
+                style: HrText.resolve(
+                  context,
+                  HrText.cardTitle,
+                ).copyWith(fontSize: 11.5),
               ),
             ],
           ),
@@ -695,8 +739,8 @@ class _OnLeaveCard extends StatelessWidget {
                     left: i * 28,
                     child: Container(
                       padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: HrColors.surface,
+                      decoration: BoxDecoration(
+                        color: HrColors.resolve(context, HrColors.surface),
                         shape: BoxShape.circle,
                       ),
                       child: HrAvatar(
@@ -716,19 +760,25 @@ class _OnLeaveCard extends StatelessWidget {
               children: [
                 Text(
                   '${colleagues.length} 位同事今天休假',
-                  style: HrText.cardTitle.copyWith(fontSize: 13.5),
+                  style: HrText.resolve(
+                    context,
+                    HrText.cardTitle,
+                  ).copyWith(fontSize: 13.5),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   colleagues.map((item) => item.name).join('、'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: HrText.meta,
+                  style: HrText.resolve(context, HrText.meta),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: HrColors.ink4),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: HrColors.resolve(context, HrColors.ink4),
+          ),
         ],
       ),
     );

@@ -1,3 +1,5 @@
+import '../common/miniapp_localizations.dart';
+
 import 'package:common/common.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +32,7 @@ class MiniProgramLauncherSearchBar extends StatelessWidget {
               ),
               const SizedBox(width: 5),
               Text(
-                '搜索小程序',
+                localizeMiniProgramLabel(context, '搜索小程序'),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: scheme.onSurfaceVariant,
                   fontSize: 12.5,
@@ -63,7 +65,7 @@ class MiniProgramLauncherSectionHeader extends StatelessWidget {
     return Row(
       children: [
         Text(
-          title,
+          localizeMiniProgramLabel(context, title),
           style: theme.textTheme.titleSmall?.copyWith(
             color: scheme.onSurfaceVariant,
             fontSize: 11,
@@ -84,7 +86,10 @@ class MiniProgramLauncherSectionHeader extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(trailing!, style: const TextStyle(fontSize: 11)),
+                Text(
+                  localizeMiniProgramLabel(context, trailing!),
+                  style: const TextStyle(fontSize: 11),
+                ),
                 const Icon(Icons.chevron_right_rounded, size: 13),
               ],
             ),
@@ -159,7 +164,7 @@ class MiniProgramLauncherTile extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            item.label,
+            localizeMiniProgramLabel(context, item.label),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall?.copyWith(
@@ -210,12 +215,12 @@ class MiniProgramLauncherBottomBar extends StatelessWidget {
           ),
           IconButton(
             onPressed: onSearch,
-            tooltip: '搜索',
+            tooltip: localizeMiniProgramLabel(context, '搜索'),
             icon: Icon(Icons.search_rounded, color: muted, size: 26),
           ),
           IconButton(
             onPressed: onMore,
-            tooltip: '更多',
+            tooltip: localizeMiniProgramLabel(context, '更多'),
             icon: Icon(
               Icons.add_circle_outline_rounded,
               color: muted,
@@ -248,7 +253,7 @@ class MiniProgramLauncherSwipeExitHandle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: '底部上滑返回客户首页',
+      label: localizeMiniProgramLabel(context, '底部上滑返回客户首页'),
       child: GestureDetector(
         key: const Key('mini-program-picker-exit-swipe'),
         behavior: HitTestBehavior.opaque,

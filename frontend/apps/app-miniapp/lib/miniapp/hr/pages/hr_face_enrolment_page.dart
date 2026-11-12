@@ -18,9 +18,18 @@ class _HrFaceEnrolmentPageState extends State<HrFaceEnrolmentPage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('人脸录入', style: HrText.appBarTitle.copyWith(fontSize: 25)),
+        Text(
+          '人脸录入',
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
         const SizedBox(height: 5),
-        const Text('录入一张清晰的正面照片，用于 HR 复核与人脸打卡参考。', style: HrText.meta),
+        Text(
+          '录入一张清晰的正面照片，用于 HR 复核与人脸打卡参考。',
+          style: HrText.resolve(context, HrText.meta),
+        ),
         const SizedBox(height: 24),
         Center(
           child: AnimatedContainer(
@@ -28,10 +37,14 @@ class _HrFaceEnrolmentPageState extends State<HrFaceEnrolmentPage> {
             width: 220,
             height: 250,
             decoration: BoxDecoration(
-              color: _captured ? HrColors.successBg : HrColors.ink,
+              color: _captured
+                  ? HrColors.resolve(context, HrColors.successBg)
+                  : HrColors.ink,
               borderRadius: BorderRadius.circular(78),
               border: Border.all(
-                color: _captured ? HrColors.success : HrColors.brandLight,
+                color: _captured
+                    ? HrColors.resolve(context, HrColors.success)
+                    : HrColors.resolve(context, HrColors.brandLight),
                 width: 3,
               ),
               boxShadow: HrShadows.hero,
@@ -41,7 +54,9 @@ class _HrFaceEnrolmentPageState extends State<HrFaceEnrolmentPage> {
                   ? Icons.check_circle_outline_rounded
                   : Icons.add_a_photo_outlined,
               size: 76,
-              color: _captured ? HrColors.success : HrColors.surface,
+              color: _captured
+                  ? HrColors.resolve(context, HrColors.success)
+                  : Colors.white,
             ),
           ),
         ),
@@ -49,13 +64,16 @@ class _HrFaceEnrolmentPageState extends State<HrFaceEnrolmentPage> {
         Text(
           _captured ? '照片已拍摄，可确认保存' : '将面部置于框内',
           textAlign: TextAlign.center,
-          style: HrText.cardTitle.copyWith(fontSize: 17),
+          style: HrText.resolve(
+            context,
+            HrText.cardTitle,
+          ).copyWith(fontSize: 17),
         ),
         const SizedBox(height: 6),
         Text(
           _captured ? '请确认光线均匀、无遮挡' : '静态预览不会请求相机权限',
           textAlign: TextAlign.center,
-          style: HrText.meta,
+          style: HrText.resolve(context, HrText.meta),
         ),
         const SizedBox(height: 24),
         if (_captured) ...[
@@ -86,22 +104,24 @@ class _HrFaceEnrolmentPageState extends State<HrFaceEnrolmentPage> {
           ),
         const SizedBox(height: 14),
         HrCard(
-          background: HrColors.warningBg,
-          borderColor: HrColors.warningBorder,
+          background: HrColors.resolve(context, HrColors.warningBg),
+          borderColor: HrColors.resolve(context, HrColors.warningBorder),
           shadow: false,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
+              Icon(
                 Icons.privacy_tip_outlined,
-                color: HrColors.warningInk,
+                color: HrColors.resolve(context, HrColors.warningInk),
                 size: 20,
               ),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
                   '人脸照片属于敏感个人信息，仅用于公司考勤身份核验，不会用于其他用途。',
-                  style: HrText.meta.copyWith(color: HrColors.warningInk),
+                  style: HrText.resolve(context, HrText.meta).copyWith(
+                    color: HrColors.resolve(context, HrColors.warningInk),
+                  ),
                 ),
               ),
             ],

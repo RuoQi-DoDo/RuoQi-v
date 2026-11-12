@@ -20,24 +20,38 @@ class HrPayslipsPage extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('工资单', style: HrText.appBarTitle.copyWith(fontSize: 25)),
+        Text(
+          '工资单',
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
         const SizedBox(height: 5),
-        const Text('工资条由薪酬团队统一发布，仅本人可见。', style: HrText.meta),
+        Text(
+          '工资条由薪酬团队统一发布，仅本人可见。',
+          style: HrText.resolve(context, HrText.meta),
+        ),
         const SizedBox(height: 17),
         HrCard(
           onTap: () => controller.openPayslip(latest.id),
           background: HrColors.ink,
-          borderColor: HrColors.ink,
+          borderColor: HrColors.resolve(context, HrColors.ink),
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Expanded(child: Text('最近一期实发', style: HrText.eyebrow)),
+                  Expanded(
+                    child: Text(
+                      '最近一期实发',
+                      style: HrText.resolve(context, HrText.eyebrow),
+                    ),
+                  ),
                   HrStatusChip(
                     label: '已发放',
-                    background: HrColors.onDarkTile,
+                    background: HrColors.resolve(context, HrColors.onDarkTile),
                     foreground: Color(0xFF72D2A6),
                   ),
                 ],
@@ -45,8 +59,8 @@ class HrPayslipsPage extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 hrMoney(latest.netPay),
-                style: HrText.mono.copyWith(
-                  color: HrColors.surface,
+                style: HrText.resolve(context, HrText.mono).copyWith(
+                  color: Colors.white,
                   fontSize: 34,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -1.3,
@@ -56,16 +70,19 @@ class HrPayslipsPage extends StatelessWidget {
               Text(
                 '${latest.periodStart.year} 年 ${latest.periodStart.month} 月 · '
                 '应发 ${hrMoney(latest.grossPay)}',
-                style: HrText.meta.copyWith(color: HrColors.onDark2),
+                style: HrText.resolve(
+                  context,
+                  HrText.meta,
+                ).copyWith(color: HrColors.resolve(context, HrColors.onDark2)),
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       '查看完整工资明细',
                       style: TextStyle(
-                        color: HrColors.surface,
+                        color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -73,7 +90,7 @@ class HrPayslipsPage extends StatelessWidget {
                   ),
                   Icon(
                     Icons.arrow_forward_rounded,
-                    color: HrColors.surface.withValues(alpha: 0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     size: 19,
                   ),
                 ],
@@ -93,13 +110,13 @@ class HrPayslipsPage extends StatelessWidget {
                   height: 44,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: HrColors.warningBg,
+                    color: HrColors.resolve(context, HrColors.warningBg),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
                     '${payslip.periodStart.month}月',
-                    style: const TextStyle(
-                      color: HrColors.warning,
+                    style: TextStyle(
+                      color: HrColors.resolve(context, HrColors.warning),
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
                     ),
@@ -112,18 +129,24 @@ class HrPayslipsPage extends StatelessWidget {
                     children: [
                       Text(
                         '${payslip.periodStart.year} 年 ${payslip.periodStart.month} 月工资',
-                        style: HrText.cardTitle.copyWith(fontSize: 13),
+                        style: HrText.resolve(
+                          context,
+                          HrText.cardTitle,
+                        ).copyWith(fontSize: 13),
                       ),
                       const SizedBox(height: 3),
-                      Text('实发 ${hrMoney(payslip.netPay)}', style: HrText.meta),
+                      Text(
+                        '实发 ${hrMoney(payslip.netPay)}',
+                        style: HrText.resolve(context, HrText.meta),
+                      ),
                     ],
                   ),
                 ),
                 HrStatusChip(label: payslip.status),
                 const SizedBox(width: 2),
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
-                  color: HrColors.ink4,
+                  color: HrColors.resolve(context, HrColors.ink4),
                   size: 18,
                 ),
               ],

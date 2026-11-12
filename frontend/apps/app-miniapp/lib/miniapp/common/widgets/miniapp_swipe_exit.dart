@@ -1,3 +1,5 @@
+import '../miniapp_localizations.dart';
+
 import 'package:flutter/material.dart';
 
 /// 包裹小程序底部区域，提供统一的上滑退出手势。
@@ -43,7 +45,7 @@ class _MiniProgramSwipeExitRegionState
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: widget.semanticsLabel,
+      label: localizeMiniProgramLabel(context, widget.semanticsLabel),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onVerticalDragStart: (_) => _reset(),

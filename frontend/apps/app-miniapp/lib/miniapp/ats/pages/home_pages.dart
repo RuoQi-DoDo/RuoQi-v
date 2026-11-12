@@ -1,3 +1,5 @@
+import '../../common/miniapp_localizations.dart';
+
 import 'package:flutter/material.dart';
 
 import '../ats_models.dart';

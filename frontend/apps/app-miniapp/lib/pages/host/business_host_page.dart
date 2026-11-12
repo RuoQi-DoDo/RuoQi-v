@@ -1,46 +1,51 @@
-part of 'im_home_page.dart';
+import 'dart:math' as math;
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
+import '../../miniapp/ats/ats_miniapp.dart';
+import '../../miniapp/common/common.dart';
+import '../../miniapp/hr/hr_miniapp.dart';
+import '../../miniapp/launcher/launcher.dart';
+import '../../miniapp/merchant/home_page.dart';
+import '../../miniapp/partner/home_page.dart';
+import '../../miniapp/platform/platform_miniapp.dart';
+import '../common/page_theme.dart';
+import '../contacts/contacts_page.dart';
+import '../discover/discover_page.dart';
+import '../profile/me_page.dart';
+import '../settings/settings_page.dart';
+import 'host_tab_bar.dart';
 
-enum _ImSubview { host, picker, ats }
+/// Attach this controller to the business home scroll view to share pull-down
+/// mini-program navigation with the host.
+typedef BusinessHomeBuilder =
+    Widget Function(BuildContext context, ScrollController scrollController);
 
-enum _HostTab { chats, contacts, discover, me }
+enum _HostSubview { home, picker, ats }
 
-/// IM 业务组独立首页。
-///
-/// 视觉与交互模拟微信宿主：客户首页作为外层 App，下拉打开小程序选择页，
-/// 再从“企业直聘”进入 ATS 小程序。下拉距离直接驱动面板过渡，
-/// 不经过刷新状态，也不展示系统 overscroll 光效。
-class ImHomePage extends StatefulWidget {
-  const ImHomePage({super.key});
-
-  static Route<void> route() {
-    return PageRouteBuilder<void>(
-      transitionDuration: const Duration(milliseconds: 280),
-      reverseTransitionDuration: const Duration(milliseconds: 220),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return const ImHomePage();
-      },
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final curved = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutCubic,
-          reverseCurve: Curves.easeInCubic,
-        );
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0.08, 0),
-            end: Offset.zero,
-          ).animate(curved),
-          child: FadeTransition(opacity: curved, child: child),
-        );
-      },
-    );
-  }
-
+/// Shared navigation and mini-program host; the first tab is supplied by the business.
+class BusinessHostPage extends StatefulWidget {
+  const BusinessHostPage({
+    super.key,
+    required this.homeBuilder,
+    this.homeLabel = 'RuoQi',
+    this.homeIcon = Icons.home_outlined,
+    this.homeActiveIcon = Icons.home_rounded,
+    this.loginBuilder,
+    this.onLogout,
+  });
+  final BusinessHomeBuilder homeBuilder;
+  final String homeLabel;
+  final IconData homeIcon;
+  final IconData homeActiveIcon;
+  final WidgetBuilder? loginBuilder;
+  final VoidCallback? onLogout;
   @override
-  State<ImHomePage> createState() => _ImHomePageState();
+  State<BusinessHostPage> createState() => _BusinessHostPageState();
 }
 
-class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
+class _BusinessHostPageState extends State<BusinessHostPage>
+    with TickerProviderStateMixin {
   static const double _pullOpenThreshold = 0.16;
   static const double _closeThreshold = 0.06;
   static const double _maxReleaseVelocity = 1.8;
@@ -48,9 +53,9 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
   static const double _panelRevealEnd = 1;
   static const double _panelMinScale = 0.42;
 
-  _ImSubview _subview = _ImSubview.host;
-  _ImSubview _atsReturnSubview = _ImSubview.host;
-  _HostTab _hostTab = _HostTab.chats;
+  _HostSubview _subview = _HostSubview.home;
+  _HostSubview _atsReturnSubview = _HostSubview.home;
+  HostTab _hostTab = HostTab.home;
   late final AnimationController _pullController;
   late final AnimationController _closeController;
   late final AnimationController _loadingController;
@@ -101,7 +106,7 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
   }
 
   void _handlePickerCloseDragStart(DragStartDetails details) {
-    if (_subview != _ImSubview.picker || _closeAnimating) {
+    if (_subview != _HostSubview.picker || _closeAnimating) {
       return;
     }
     _closeAnimationGeneration++;
@@ -170,7 +175,7 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
         _closeAnimating = false;
         _closeDragging = false;
         if (target == 1) {
-          _subview = _ImSubview.host;
+          _subview = _HostSubview.home;
           _pullController.value = 0;
           _closeController.value = 0;
         }
@@ -181,7 +186,7 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
   void _openAtsMiniProgram() {
     setState(() {
       _atsReturnSubview = _subview;
-      _subview = _ImSubview.ats;
+      _subview = _HostSubview.ats;
     });
   }
 
@@ -235,10 +240,15 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
   }
 
   void _openSettingsPage() {
-    Navigator.of(context).push<void>(_SettingsPage.route());
+    Navigator.of(context).push<void>(
+      SettingsPage.route(
+        onLogout: widget.onLogout,
+        loginBuilder: widget.loginBuilder,
+      ),
+    );
   }
 
-  void _selectHostTab(_HostTab tab) {
+  void _selectHostTab(HostTab tab) {
     if (_hostTab == tab) {
       return;
     }
@@ -272,19 +282,21 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
     _pullPointerStartY = event.position.dy;
     _pullPointerLastY = event.position.dy;
     _pullPointerCanDrag =
-        _subview == _ImSubview.host &&
-        _hostTab == _HostTab.chats &&
+        _subview == _HostSubview.home &&
+        _hostTab == HostTab.home &&
         !_pullAnimating &&
-        _hostScrollController.hasClients &&
-        _hostScrollController.offset <=
-            _hostScrollController.position.minScrollExtent + 0.5;
+        (!_hostScrollController.hasClients ||
+            _hostScrollController.offset <=
+                _hostScrollController.position.minScrollExtent + 0.5);
     _pullVelocityTracker = VelocityTracker.withKind(event.kind)
       ..addPosition(event.timeStamp, event.position);
   }
 
   void _handlePullPointerMove(PointerMoveEvent event) {
     _pullVelocityTracker?.addPosition(event.timeStamp, event.position);
-    if (!_pullPointerCanDrag || _subview != _ImSubview.host || _pullAnimating) {
+    if (!_pullPointerCanDrag ||
+        _subview != _HostSubview.home ||
+        _pullAnimating) {
       return;
     }
 
@@ -361,7 +373,7 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
       setState(() {
         _pullAnimating = false;
         _pullTarget = 0;
-        _subview = target == 1 ? _ImSubview.picker : _ImSubview.host;
+        _subview = target == 1 ? _HostSubview.picker : _HostSubview.home;
       });
     });
   }
@@ -370,7 +382,7 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return PopScope(
       canPop:
-          _subview == _ImSubview.host &&
+          _subview == _HostSubview.home &&
           !_pullAnimating &&
           _pullController.value == 0,
       onPopInvokedWithResult: (didPop, result) {
@@ -378,53 +390,44 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
           return;
         }
         switch (_subview) {
-          case _ImSubview.host:
+          case _HostSubview.home:
             break;
-          case _ImSubview.picker:
+          case _HostSubview.picker:
             _closeMiniProgramPicker();
-          case _ImSubview.ats:
+          case _HostSubview.ats:
             _exitAtsMiniProgram();
         }
       },
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.easeInCubic,
-        layoutBuilder: (currentChild, previousChildren) {
-          return Stack(
-            fit: StackFit.expand,
-            children: [...previousChildren, ?currentChild],
-          );
-        },
-        transitionBuilder: (child, animation) {
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.08),
-              end: Offset.zero,
-            ).animate(animation),
-            child: FadeTransition(opacity: animation, child: child),
-          );
-        },
-        child: _subview == _ImSubview.ats
-            ? AtsMiniProgram(
-                key: const ValueKey('ats-mini-program'),
-                onExit: _exitAtsMiniProgram,
-              )
-            : _buildCustomerSurface(context),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Offstage(
+            offstage: _subview == _HostSubview.ats,
+            child: TickerMode(
+              enabled: _subview != _HostSubview.ats,
+              child: _buildCustomerSurface(context),
+            ),
+          ),
+          if (_subview == _HostSubview.ats)
+            AtsMiniProgram(
+              key: const ValueKey('ats-mini-program'),
+              onExit: _exitAtsMiniProgram,
+            ),
+        ],
       ),
     );
   }
 
   Widget _buildCustomerSurface(BuildContext context) {
     final showPicker =
-        _subview == _ImSubview.picker ||
+        _subview == _HostSubview.picker ||
         _pullController.value > 0 ||
         _pullAnimating;
     final pickerInteractive =
-        _subview == _ImSubview.picker || (_pullAnimating && _pullTarget == 1);
+        _subview == _HostSubview.picker || (_pullAnimating && _pullTarget == 1);
     final showLoadingDots =
         _pullDragging || (_pullAnimating && _pullTarget == 1);
-    final hostInteractive = _subview == _ImSubview.host && !pickerInteractive;
+    final hostInteractive = _subview == _HostSubview.home && !pickerInteractive;
     final pickerBackdropColor = Theme.of(context).brightness == Brightness.dark
         ? const Color(0xFF303030)
         : const Color(0xFFF2F2F2);
@@ -472,16 +475,16 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
                       ? releaseReveal +
                             (1 - releaseReveal) *
                                 Curves.easeOutCubic.transform(openingProgress)
-                      : _subview == _ImSubview.picker
+                      : _subview == _HostSubview.picker
                       ? 1.0
                       : dragReveal;
-                  final opacity = _subview == _ImSubview.picker
+                  final opacity = _subview == _HostSubview.picker
                       ? 1.0
                       : progress == 0
                       ? 0.0
                       : 0.12 + 0.88 * scaleProgress;
                   final showingPanel =
-                      _subview == _ImSubview.picker ||
+                      _subview == _HostSubview.picker ||
                       _pullAnimating ||
                       _pullDragging ||
                       progress > 0;
@@ -501,7 +504,7 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
               ),
             ),
           ),
-        if (showLoadingDots && _subview == _ImSubview.host)
+        if (showLoadingDots && _subview == _HostSubview.home)
           Positioned(
             top: MediaQuery.paddingOf(context).top + 48,
             left: 0,
@@ -528,7 +531,7 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
                 final viewportHeight = MediaQuery.sizeOf(context).height;
                 final progress = _pullController.value.clamp(0.0, 1.0);
                 final closeProgress = _closeController.value.clamp(0.0, 1.0);
-                final hostProgress = _subview == _ImSubview.picker
+                final hostProgress = _subview == _HostSubview.picker
                     ? 1 - closeProgress
                     : progress;
                 return Transform.translate(
@@ -543,242 +546,62 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildHostPage(BuildContext context, {required Key key}) {
-    if (_hostTab != _HostTab.chats) {
-      return _buildUtilityHostPage(context, key: key);
-    }
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final muted =
-        theme.extension<RuQiThemeExtension>()?.inkMuted ??
-        scheme.onSurfaceVariant;
+  void _openMiniProgramPicker() {
+    setState(() {
+      _subview = _HostSubview.picker;
+      _pullController.value = 1;
+      _closeController.value = 0;
+    });
+  }
 
-    return Scaffold(
+  Widget _buildHostPage(BuildContext context, {required Key key}) => Material(
+    child: Column(
       key: key,
-      appBar: AppBar(
-        titleSpacing: 16,
-        title: Row(
-          children: [
-            Text(
-              'RuoQi',
-              style: zh(
-                theme.textTheme.headlineMedium!.copyWith(
-                  color: scheme.onSurface,
-                  fontWeight: FontWeight.w700,
+      children: [
+        Expanded(
+          child: IndexedStack(
+            index: _hostTab.index,
+            children: [
+              Listener(
+                onPointerDown: _handlePullPointerDown,
+                onPointerMove: _handlePullPointerMove,
+                onPointerUp: _handlePullPointerUp,
+                onPointerCancel: _handlePullPointerCancel,
+                child: ScrollConfiguration(
+                  behavior: const _NoOverscrollGlowBehavior(),
+                  child: Builder(
+                    builder: (context) =>
+                        widget.homeBuilder(context, _hostScrollController),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 7),
-            Text(
-              '客户模拟',
-              style: theme.textTheme.bodySmall?.copyWith(color: muted),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: '搜索',
-            onPressed: () => _showHostToast(context, '搜索功能为模拟入口'),
-            icon: const Icon(Icons.search_rounded),
-          ),
-          IconButton(
-            tooltip: '发起',
-            onPressed: () => _showHostToast(context, '发起功能为模拟入口'),
-            icon: const Icon(Icons.add_circle_outline_rounded),
-          ),
-          const SizedBox(width: 6),
-        ],
-        shape: Border(bottom: BorderSide(color: scheme.outlineVariant)),
-      ),
-      body: Listener(
-        onPointerDown: _handlePullPointerDown,
-        onPointerMove: _handlePullPointerMove,
-        onPointerUp: _handlePullPointerUp,
-        onPointerCancel: _handlePullPointerCancel,
-        child: ScrollConfiguration(
-          behavior: const _NoOverscrollGlowBehavior(),
-          child: CustomScrollView(
-            key: const Key('customer-home-scroll'),
-            controller: _hostScrollController,
-            physics: const ClampingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
-            slivers: [
-              SliverList(
-                delegate: SliverChildListDelegate([
-                  _ChatRow(
-                    title: '企业直聘',
-                    preview: '面试邀请：上海世佳科技邀请你参加面试',
-                    time: '刚刚',
-                    unread: 1,
-                    color: scheme.primary,
-                    icon: Icons.work_outline_rounded,
-                    onTap: () => _showHostToast(context, '该聊天由小程序消息模拟'),
-                  ),
-                  _ChatRow(
-                    title: '佳佳',
-                    preview: '周末一起去看展吗？',
-                    time: '10:32',
-                    unread: 2,
-                    color: const Color(0xFFEC6A88),
-                    icon: Icons.person_outline_rounded,
-                    onTap: () => _showHostToast(context, '聊天详情为模拟入口'),
-                  ),
-                  _ChatRow(
-                    title: '文件传输助手',
-                    preview: '[文件] 简历-林小满.pdf',
-                    time: '昨天',
-                    unread: 0,
-                    color:
-                        theme.extension<RuQiThemeExtension>()?.info ??
-                        scheme.secondary,
-                    icon: Icons.folder_outlined,
-                    onTap: () => _showHostToast(context, '文件传输为模拟入口'),
-                  ),
-                  _ChatRow(
-                    title: '招聘交流群',
-                    preview: '陈一鸣：感谢大家的建议',
-                    time: '昨天',
-                    unread: 0,
-                    color: scheme.primary,
-                    icon: Icons.groups_outlined,
-                    onTap: () => _showHostToast(context, '群聊为模拟入口'),
-                  ),
-                  _ChatRow(
-                    title: '腾讯新闻',
-                    preview: '今日要闻：数字招聘的新趋势',
-                    time: '周一',
-                    unread: 0,
-                    color: const Color(0xFFE36A2E),
-                    icon: Icons.article_outlined,
-                    onTap: () => _showHostToast(context, '公众号为模拟入口'),
-                  ),
-                ]),
-              ),
+              const ContactsPage(),
+              DiscoverPage(onOpenMiniPrograms: _openMiniProgramPicker),
+              MePage(onOpenSettings: _openSettingsPage),
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: _WeChatTabBar(
-        selected: _hostTab,
-        onSelected: _selectHostTab,
-      ),
-    );
-  }
-
-  Widget _buildUtilityHostPage(BuildContext context, {required Key key}) {
-    final hostTheme = _weChatHostTheme(context);
-    return Theme(
-      data: hostTheme,
-      child: Builder(
-        builder: (context) {
-          final theme = Theme.of(context);
-          final scheme = theme.colorScheme;
-          final title = switch (_hostTab) {
-            _HostTab.contacts => '通讯录',
-            _HostTab.discover => '发现',
-            _HostTab.me => '',
-            _HostTab.chats => '',
-          };
-          final content = switch (_hostTab) {
-            _HostTab.contacts => _ContactsPage(
-              onTap: (message) => _showHostToast(context, message),
-            ),
-            _HostTab.discover => _DiscoverPage(
-              onTap: (message) => _showHostToast(context, message),
-            ),
-            _HostTab.me => _MePage(
-              onTap: (message) => _showHostToast(context, message),
-              onOpenSettings: _openSettingsPage,
-            ),
-            _HostTab.chats => const SizedBox.shrink(),
-          };
-          return Scaffold(
-            key: key,
-            backgroundColor: scheme.surface,
-            appBar: _hostTab == _HostTab.me
-                ? null
-                : AppBar(
-                    centerTitle: true,
-                    backgroundColor: scheme.surfaceContainerLowest,
-                    surfaceTintColor: Colors.transparent,
-                    title: Text(
-                      title,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: scheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    actions: [
-                      IconButton(
-                        tooltip: '搜索',
-                        onPressed: () =>
-                            _showHostToast(context, '$title搜索为模拟入口'),
-                        icon: const Icon(Icons.search_rounded),
-                      ),
-                      if (_hostTab == _HostTab.contacts)
-                        IconButton(
-                          tooltip: '添加',
-                          onPressed: () =>
-                              _showHostToast(context, '$title添加入口为模拟入口'),
-                          icon: const Icon(Icons.add_circle_outline_rounded),
-                        ),
-                      const SizedBox(width: 6),
-                    ],
-                    shape: Border(
-                      bottom: BorderSide(color: scheme.outlineVariant),
-                    ),
-                  ),
-            body: SafeArea(top: _hostTab == _HostTab.me, child: content),
-            bottomNavigationBar: _WeChatTabBar(
-              selected: _hostTab,
-              onSelected: _selectHostTab,
-            ),
-          );
-        },
-      ),
-    );
-  }
+        Theme(
+          data: _hostTab == HostTab.home
+              ? Theme.of(context)
+              : sharedPageTheme(context),
+          child: HostTabBar(
+            selected: _hostTab,
+            onSelected: _selectHostTab,
+            homeLabel: widget.homeLabel,
+            homeIcon: widget.homeIcon,
+            homeActiveIcon: widget.homeActiveIcon,
+          ),
+        ),
+      ],
+    ),
+  );
 
   static void _showHostToast(BuildContext context, String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
   }
-}
-
-ThemeData _weChatHostTheme(BuildContext context) {
-  final accent = Theme.of(context).colorScheme.primary;
-  final brightness = Theme.of(context).brightness;
-  final baseTheme = ruoQiTheme(brightness: brightness, accent: accent);
-  if (brightness == Brightness.light) {
-    return baseTheme.copyWith(
-      scaffoldBackgroundColor: const Color(0xFFEDEDED),
-      colorScheme: baseTheme.colorScheme.copyWith(
-        surface: const Color(0xFFEDEDED),
-        surfaceContainerLowest: const Color(0xFFF7F7F7),
-        surfaceContainerLow: Colors.white,
-        surfaceContainer: Colors.white,
-        surfaceContainerHigh: const Color(0xFFF2F2F2),
-        onSurface: const Color(0xFF111111),
-        onSurfaceVariant: const Color(0xFF707070),
-        outlineVariant: const Color(0xFFDEDEDE),
-      ),
-    );
-  }
-  return baseTheme.copyWith(
-    scaffoldBackgroundColor: const Color(0xFF181818),
-    colorScheme: baseTheme.colorScheme.copyWith(
-      surface: const Color(0xFF181818),
-      surfaceContainerLowest: const Color(0xFF181818),
-      surfaceContainerLow: const Color(0xFF222222),
-      surfaceContainer: const Color(0xFF242424),
-      surfaceContainerHigh: const Color(0xFF282828),
-      onSurface: Colors.white,
-      onSurfaceVariant: const Color(0xFFA8A8A8),
-      outlineVariant: const Color(0xFF303030),
-    ),
-  );
 }
 
 class _NoOverscrollGlowBehavior extends ScrollBehavior {
@@ -838,118 +661,6 @@ class _MiniProgramLoadingDots extends StatelessWidget {
               ],
             );
           },
-        ),
-      ),
-    );
-  }
-}
-
-class _ChatRow extends StatelessWidget {
-  const _ChatRow({
-    required this.title,
-    required this.preview,
-    required this.time,
-    required this.unread,
-    required this.color,
-    required this.icon,
-    required this.onTap,
-  });
-
-  final String title;
-  final String preview;
-  final String time;
-  final int unread;
-  final Color color;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    return Material(
-      color: scheme.surfaceContainerLowest,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
-          child: Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.13),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 23),
-              ),
-              const SizedBox(width: 11),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: scheme.onSurface,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          time,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            preview,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                        if (unread > 0) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            constraints: const BoxConstraints(minWidth: 18),
-                            height: 18,
-                            padding: const EdgeInsets.symmetric(horizontal: 5),
-                            decoration: BoxDecoration(
-                              color: scheme.error,
-                              borderRadius: BorderRadius.circular(9),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '$unread',
-                              style: TextStyle(
-                                color: scheme.onError,
-                                fontSize: 10,
-                                height: 1,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

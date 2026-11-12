@@ -36,16 +36,25 @@ class AtsResumeDetailPage extends StatelessWidget {
                           Text(
                             '${resume.gender} · ${resume.age}岁 · '
                             '${resume.education} · ${resume.experience}',
-                            style: const TextStyle(
-                              color: AtsColors.textMuted,
+                            style: TextStyle(
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.textMuted,
+                              ),
                               fontSize: 11,
                             ),
                           ),
                           const SizedBox(height: 7),
                           AtsTag(
                             resume.jobStatus,
-                            foreground: AtsColors.primary,
-                            background: AtsColors.mint,
+                            foreground: AtsColors.resolve(
+                              context,
+                              AtsColors.primary,
+                            ),
+                            background: AtsColors.resolve(
+                              context,
+                              AtsColors.mint,
+                            ),
                           ),
                         ],
                       ),
@@ -58,8 +67,8 @@ class AtsResumeDetailPage extends StatelessWidget {
                 title: '个人优势',
                 child: Text(
                   resume.skill,
-                  style: const TextStyle(
-                    color: AtsColors.textSecondary,
+                  style: TextStyle(
+                    color: AtsColors.resolve(context, AtsColors.textSecondary),
                     fontSize: 13,
                     height: 1.7,
                   ),
@@ -81,7 +90,7 @@ class AtsResumeDetailPage extends StatelessWidget {
                 title: '工作经历',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     _ExperienceHeader(
                       title: '上海青禾网络科技',
                       period: '2022.06 - 至今',
@@ -91,7 +100,10 @@ class AtsResumeDetailPage extends StatelessWidget {
                     Text(
                       '负责核心业务 App 架构升级和性能优化，搭建组件库与自动化发布流程。',
                       style: TextStyle(
-                        color: AtsColors.textSecondary,
+                        color: AtsColors.resolve(
+                          context,
+                          AtsColors.textSecondary,
+                        ),
                         fontSize: 12,
                         height: 1.7,
                       ),
@@ -114,9 +126,13 @@ class AtsResumeDetailPage extends StatelessWidget {
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(top: BorderSide(color: AtsColors.divider)),
+          decoration: BoxDecoration(
+            color: AtsColors.resolve(context, AtsColors.surface),
+            border: Border(
+              top: BorderSide(
+                color: AtsColors.resolve(context, AtsColors.divider),
+              ),
+            ),
           ),
           child: Row(
             children: [
@@ -124,7 +140,9 @@ class AtsResumeDetailPage extends StatelessWidget {
                 child: AtsOutlineButton(
                   label: favorite ? '取消收藏' : '收藏简历',
                   icon: favorite ? Icons.star : Icons.star_border,
-                  foreground: favorite ? AtsColors.orange : AtsColors.text,
+                  foreground: favorite
+                      ? AtsColors.resolve(context, AtsColors.orange)
+                      : AtsColors.resolve(context, AtsColors.text),
                   onPressed: () {
                     controller.toggleFavorite(resume.id);
                     atsToast(context, favorite ? '已取消收藏' : '已收藏简历');

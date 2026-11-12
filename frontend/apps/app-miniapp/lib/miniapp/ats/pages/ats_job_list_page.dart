@@ -20,16 +20,19 @@ class _AtsJobListPageState extends State<AtsJobListPage> {
       _ => atsJobs,
     };
     return Container(
-      color: AtsColors.background,
+      color: AtsColors.resolve(context, AtsColors.background),
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
             child: Container(
               height: 96,
               padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AtsColors.primary, Color(0xFF42C7A5)],
+                  colors: [
+                    AtsColors.resolve(context, AtsColors.primary),
+                    Color(0xFF42C7A5),
+                  ],
                 ),
               ),
               child: const Row(
@@ -71,7 +74,7 @@ class _AtsJobListPageState extends State<AtsJobListPage> {
             pinned: true,
             delegate: _FilterHeaderDelegate(
               child: Container(
-                color: Colors.white,
+                color: AtsColors.resolve(context, AtsColors.surface),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 8,
@@ -87,7 +90,7 @@ class _AtsJobListPageState extends State<AtsJobListPage> {
                             padding: const EdgeInsets.symmetric(vertical: 7),
                             decoration: BoxDecoration(
                               color: _filter == i
-                                  ? AtsColors.mint
+                                  ? AtsColors.resolve(context, AtsColors.mint)
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(7),
                             ),
@@ -95,8 +98,14 @@ class _AtsJobListPageState extends State<AtsJobListPage> {
                               ['综合排序', '最新发布', '高薪优选'][i],
                               style: TextStyle(
                                 color: _filter == i
-                                    ? AtsColors.primary
-                                    : AtsColors.textSecondary,
+                                    ? AtsColors.resolve(
+                                        context,
+                                        AtsColors.primary,
+                                      )
+                                    : AtsColors.resolve(
+                                        context,
+                                        AtsColors.textSecondary,
+                                      ),
                                 fontSize: 13,
                                 fontWeight: _filter == i
                                     ? FontWeight.w600
@@ -110,7 +119,7 @@ class _AtsJobListPageState extends State<AtsJobListPage> {
                         Container(
                           width: 1,
                           height: 12,
-                          color: AtsColors.divider,
+                          color: AtsColors.resolve(context, AtsColors.divider),
                         ),
                     ],
                   ],
@@ -129,13 +138,16 @@ class _AtsJobListPageState extends State<AtsJobListPage> {
               ),
             ),
           ),
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.only(bottom: 24),
               child: Text(
                 '没有更多了',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AtsColors.textMuted, fontSize: 11),
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textMuted),
+                  fontSize: 11,
+                ),
               ),
             ),
           ),

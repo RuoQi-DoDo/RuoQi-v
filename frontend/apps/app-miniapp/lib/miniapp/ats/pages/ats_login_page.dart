@@ -23,15 +23,21 @@ class AtsLoginPage extends StatelessWidget {
               width: 82,
               height: 82,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [AtsColors.primary, Color(0xFF5DD5B6)],
+                  colors: [
+                    AtsColors.resolve(context, AtsColors.primary),
+                    Color(0xFF5DD5B6),
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: AtsColors.primary.withValues(alpha: 0.25),
+                    color: AtsColors.resolve(
+                      context,
+                      AtsColors.primary,
+                    ).withValues(alpha: 0.25),
                     blurRadius: 24,
                     offset: const Offset(0, 9),
                   ),
@@ -45,21 +51,21 @@ class AtsLoginPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             '欢迎来到企业直聘',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AtsColors.text,
+              color: AtsColors.resolve(context, AtsColors.text),
               fontSize: 23,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             '登录后收藏职位、投递简历并与招聘方沟通',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AtsColors.textMuted,
+              color: AtsColors.resolve(context, AtsColors.textMuted),
               fontSize: 11,
               height: 1.5,
             ),
@@ -82,7 +88,11 @@ class AtsLoginPage extends StatelessWidget {
           const SizedBox(height: 28),
           Row(
             children: [
-              const Expanded(child: Divider(color: AtsColors.divider)),
+              Expanded(
+                child: Divider(
+                  color: AtsColors.resolve(context, AtsColors.divider),
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
@@ -90,23 +100,32 @@ class AtsLoginPage extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
-              const Expanded(child: Divider(color: AtsColors.divider)),
+              Expanded(
+                child: Divider(
+                  color: AtsColors.resolve(context, AtsColors.divider),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 14),
           TextButton(
             onPressed: () => controller.open(AtsRoute.loginIndex),
-            style: TextButton.styleFrom(foregroundColor: AtsColors.primary),
+            style: TextButton.styleFrom(
+              foregroundColor: AtsColors.resolve(context, AtsColors.primary),
+            ),
             child: const Text('立即注册'),
           ),
           const SizedBox(height: 34),
-          const Text(
+          Text(
             '登录即代表你已阅读并同意',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AtsColors.textMuted, fontSize: 9),
+            style: TextStyle(
+              color: AtsColors.resolve(context, AtsColors.textMuted),
+              fontSize: 9,
+            ),
           ),
           const SizedBox(height: 3),
-          const Text.rich(
+          Text.rich(
             TextSpan(
               children: [
                 TextSpan(text: '《用户协议》'),
@@ -115,21 +134,27 @@ class AtsLoginPage extends StatelessWidget {
               ],
             ),
             textAlign: TextAlign.center,
-            style: TextStyle(color: AtsColors.primary, fontSize: 9),
+            style: TextStyle(
+              color: AtsColors.resolve(context, AtsColors.primary),
+              fontSize: 9,
+            ),
           ),
           const SizedBox(height: 22),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.verified_user_outlined,
-                color: AtsColors.textMuted,
+                color: AtsColors.resolve(context, AtsColors.textMuted),
                 size: 14,
               ),
               SizedBox(width: 4),
               Text(
                 '信息安全保护中',
-                style: TextStyle(color: AtsColors.textMuted, fontSize: 9),
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textMuted),
+                  fontSize: 9,
+                ),
               ),
             ],
           ),

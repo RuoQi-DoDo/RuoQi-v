@@ -39,9 +39,18 @@ class _HrRequestComposePageState extends State<HrRequestComposePage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('新建申请', style: HrText.appBarTitle.copyWith(fontSize: 25)),
+        Text(
+          '新建申请',
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
         const SizedBox(height: 5),
-        const Text('选择申请类型，填写必要信息后提交审批。', style: HrText.meta),
+        Text(
+          '选择申请类型，填写必要信息后提交审批。',
+          style: HrText.resolve(context, HrText.meta),
+        ),
         const SizedBox(height: 16),
         Wrap(
           spacing: 8,
@@ -52,15 +61,17 @@ class _HrRequestComposePageState extends State<HrRequestComposePage> {
                 label: Text(kind.shortLabel),
                 selected: _kind == kind,
                 showCheckmark: false,
-                selectedColor: HrColors.brandTint,
-                backgroundColor: HrColors.surface,
+                selectedColor: HrColors.resolve(context, HrColors.brandTint),
+                backgroundColor: HrColors.resolve(context, HrColors.surface),
                 side: BorderSide(
                   color: _kind == kind
-                      ? HrColors.brandTintBorder
-                      : HrColors.line,
+                      ? HrColors.resolve(context, HrColors.brandTintBorder)
+                      : HrColors.resolve(context, HrColors.line),
                 ),
                 labelStyle: TextStyle(
-                  color: _kind == kind ? HrColors.brand : HrColors.ink3,
+                  color: _kind == kind
+                      ? HrColors.resolve(context, HrColors.brand)
+                      : HrColors.resolve(context, HrColors.ink3),
                   fontWeight: FontWeight.w700,
                   fontSize: 12.5,
                 ),
@@ -76,9 +87,15 @@ class _HrRequestComposePageState extends State<HrRequestComposePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(_kind.label, style: HrText.cardTitle),
+              Text(
+                _kind.label,
+                style: HrText.resolve(context, HrText.cardTitle),
+              ),
               const SizedBox(height: 4),
-              Text(_kind.description, style: HrText.meta),
+              Text(
+                _kind.description,
+                style: HrText.resolve(context, HrText.meta),
+              ),
               const SizedBox(height: 16),
               if (_kind == HrRequestKind.shift) ...[
                 _PickerRow(
@@ -117,22 +134,28 @@ class _HrRequestComposePageState extends State<HrRequestComposePage> {
                       vertical: 14,
                     ),
                     decoration: BoxDecoration(
-                      color: HrColors.bg2,
+                      color: HrColors.resolve(context, HrColors.bg2),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Row(
                       children: [
-                        Text('生效日期', style: HrText.meta),
+                        Text(
+                          '生效日期',
+                          style: HrText.resolve(context, HrText.meta),
+                        ),
                         const Spacer(),
                         Text(
                           '${hrDate(_date)} ${hrWeekday(_date)}',
-                          style: HrText.mono.copyWith(fontSize: 12),
+                          style: HrText.resolve(
+                            context,
+                            HrText.mono,
+                          ).copyWith(fontSize: 12),
                         ),
                         const SizedBox(width: 5),
-                        const Icon(
+                        Icon(
                           Icons.calendar_month_outlined,
                           size: 17,
-                          color: HrColors.brand,
+                          color: HrColors.resolve(context, HrColors.brand),
                         ),
                       ],
                     ),
@@ -175,18 +198,25 @@ class _HrRequestComposePageState extends State<HrRequestComposePage> {
         ),
         const SizedBox(height: 12),
         HrCard(
-          background: HrColors.infoBg,
+          background: HrColors.resolve(context, HrColors.infoBg),
           borderColor: const Color(0xFFC9DBEA),
           shadow: false,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.info_outline, color: HrColors.info, size: 19),
+              Icon(
+                Icons.info_outline,
+                color: HrColors.resolve(context, HrColors.info),
+                size: 19,
+              ),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
                   '默认使用模拟审批流。切换真实 API 后，提交内容将写入对应的 Horilla 接口。',
-                  style: HrText.meta.copyWith(color: HrColors.info),
+                  style: HrText.resolve(
+                    context,
+                    HrText.meta,
+                  ).copyWith(color: HrColors.resolve(context, HrColors.info)),
                 ),
               ),
             ],
@@ -273,22 +303,25 @@ class _PickerRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: HrColors.bg2,
+        color: HrColors.resolve(context, HrColors.bg2),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          Text(label, style: HrText.meta),
+          Text(label, style: HrText.resolve(context, HrText.meta)),
           const Spacer(),
           DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: value,
               isDense: true,
               borderRadius: BorderRadius.circular(14),
-              style: HrText.cardTitle.copyWith(fontSize: 12.5),
-              icon: const Icon(
+              style: HrText.resolve(
+                context,
+                HrText.cardTitle,
+              ).copyWith(fontSize: 12.5),
+              icon: Icon(
                 Icons.keyboard_arrow_down_rounded,
-                color: HrColors.brand,
+                color: HrColors.resolve(context, HrColors.brand),
               ),
               items: [
                 for (final option in options)

@@ -32,7 +32,9 @@ class _AtsCompanyAuthPageState extends State<AtsCompanyAuthPage> {
             padding: const EdgeInsets.all(12),
             children: [
               AtsCard(
-                color: _submitted ? const Color(0xFFFFFAF4) : AtsColors.mint,
+                color: _submitted
+                    ? const Color(0xFFFFFAF4)
+                    : AtsColors.resolve(context, AtsColors.mint),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -40,7 +42,9 @@ class _AtsCompanyAuthPageState extends State<AtsCompanyAuthPage> {
                       _submitted
                           ? Icons.hourglass_top_rounded
                           : Icons.verified_user_outlined,
-                      color: _submitted ? AtsColors.orange : AtsColors.primary,
+                      color: _submitted
+                          ? AtsColors.resolve(context, AtsColors.orange)
+                          : AtsColors.resolve(context, AtsColors.primary),
                       size: 28,
                     ),
                     const SizedBox(width: 11),
@@ -53,7 +57,10 @@ class _AtsCompanyAuthPageState extends State<AtsCompanyAuthPage> {
                             style: TextStyle(
                               color: _submitted
                                   ? const Color(0xFF9A5B16)
-                                  : AtsColors.primaryDark,
+                                  : AtsColors.resolve(
+                                      context,
+                                      AtsColors.primaryDark,
+                                    ),
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
@@ -65,8 +72,11 @@ class _AtsCompanyAuthPageState extends State<AtsCompanyAuthPage> {
                                 : '认证后可获得企业标识，提升求职者信任和职位曝光。',
                             style: TextStyle(
                               color: _submitted
-                                  ? AtsColors.orange
-                                  : AtsColors.primary,
+                                  ? AtsColors.resolve(context, AtsColors.orange)
+                                  : AtsColors.resolve(
+                                      context,
+                                      AtsColors.primary,
+                                    ),
                               fontSize: 11,
                               height: 1.55,
                             ),
@@ -119,7 +129,7 @@ class _AtsCompanyAuthPageState extends State<AtsCompanyAuthPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Text(
                           '认证材料',
@@ -131,16 +141,16 @@ class _AtsCompanyAuthPageState extends State<AtsCompanyAuthPage> {
                         SizedBox(width: 7),
                         AtsTag(
                           '必传',
-                          foreground: AtsColors.red,
+                          foreground: AtsColors.resolve(context, AtsColors.red),
                           background: Color(0xFFFFF0F0),
                         ),
                       ],
                     ),
                     const SizedBox(height: 5),
-                    const Text(
+                    Text(
                       '请上传清晰完整的营业执照照片，仅用于企业资质审核。',
                       style: TextStyle(
-                        color: AtsColors.textMuted,
+                        color: AtsColors.resolve(context, AtsColors.textMuted),
                         fontSize: 10,
                         height: 1.5,
                       ),
@@ -154,9 +164,17 @@ class _AtsCompanyAuthPageState extends State<AtsCompanyAuthPage> {
                         height: 118,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: AtsColors.background,
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.background,
+                          ),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AtsColors.divider),
+                          border: Border.all(
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.divider,
+                            ),
+                          ),
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -166,15 +184,24 @@ class _AtsCompanyAuthPageState extends State<AtsCompanyAuthPage> {
                                   ? Icons.description_outlined
                                   : Icons.add_a_photo_outlined,
                               color: _submitted
-                                  ? AtsColors.primary
-                                  : AtsColors.textMuted,
+                                  ? AtsColors.resolve(
+                                      context,
+                                      AtsColors.primary,
+                                    )
+                                  : AtsColors.resolve(
+                                      context,
+                                      AtsColors.textMuted,
+                                    ),
                               size: 30,
                             ),
                             const SizedBox(height: 7),
                             Text(
                               _submitted ? '营业执照已上传' : '点击上传营业执照',
-                              style: const TextStyle(
-                                color: AtsColors.textMuted,
+                              style: TextStyle(
+                                color: AtsColors.resolve(
+                                  context,
+                                  AtsColors.textMuted,
+                                ),
                                 fontSize: 11,
                               ),
                             ),
@@ -186,14 +213,14 @@ class _AtsCompanyAuthPageState extends State<AtsCompanyAuthPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              const AtsCard(
+              AtsCard(
                 color: Color(0xFFFFFAF4),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
                       Icons.shield_outlined,
-                      color: AtsColors.orange,
+                      color: AtsColors.resolve(context, AtsColors.orange),
                       size: 18,
                     ),
                     SizedBox(width: 7),
@@ -201,7 +228,10 @@ class _AtsCompanyAuthPageState extends State<AtsCompanyAuthPage> {
                       child: Text(
                         '平台将对认证材料严格保密，仅用于核验企业主体真实性，不会向其他用户公开。',
                         style: TextStyle(
-                          color: AtsColors.textSecondary,
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.textSecondary,
+                          ),
                           fontSize: 11,
                           height: 1.55,
                         ),
@@ -249,9 +279,11 @@ class _CompanyBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 9, 12, 10),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AtsColors.divider)),
+      decoration: BoxDecoration(
+        color: AtsColors.resolve(context, AtsColors.surface),
+        border: Border(
+          top: BorderSide(color: AtsColors.resolve(context, AtsColors.divider)),
+        ),
       ),
       child: Row(
         children: [
@@ -287,16 +319,16 @@ class _CompanyPicker extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 11),
         decoration: BoxDecoration(
-          color: AtsColors.background,
+          color: AtsColors.resolve(context, AtsColors.background),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
             Expanded(child: Text(value, style: const TextStyle(fontSize: 12))),
-            const Icon(
+            Icon(
               Icons.chevron_right,
               size: 18,
-              color: AtsColors.textMuted,
+              color: AtsColors.resolve(context, AtsColors.textMuted),
             ),
           ],
         ),
@@ -321,7 +353,7 @@ class _CompanyDropdown extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: AtsColors.background,
+        color: AtsColors.resolve(context, AtsColors.background),
         borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButtonHideUnderline(
@@ -341,12 +373,12 @@ class _CompanyDropdown extends StatelessWidget {
               onChanged(newValue);
             }
           },
-          icon: const Icon(
+          icon: Icon(
             Icons.chevron_right,
             size: 18,
-            color: AtsColors.textMuted,
+            color: AtsColors.resolve(context, AtsColors.textMuted),
           ),
-          style: const TextStyle(color: AtsColors.text),
+          style: TextStyle(color: AtsColors.resolve(context, AtsColors.text)),
         ),
       ),
     );

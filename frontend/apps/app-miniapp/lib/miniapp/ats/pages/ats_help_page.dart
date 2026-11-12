@@ -20,8 +20,11 @@ class AtsHelpPage extends StatelessWidget {
           height: 104,
           padding: const EdgeInsets.symmetric(horizontal: 18),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AtsColors.primary, Color(0xFF58D2B2)],
+            gradient: LinearGradient(
+              colors: [
+                AtsColors.resolve(context, AtsColors.primary),
+                Color(0xFF58D2B2),
+              ],
             ),
             borderRadius: BorderRadius.circular(13),
           ),
@@ -58,11 +61,15 @@ class AtsHelpPage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         AtsCard(
-          color: AtsColors.mint,
+          color: AtsColors.resolve(context, AtsColors.mint),
           onTap: () => controller.open(AtsRoute.robot),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.support_agent, color: AtsColors.primary, size: 26),
+              Icon(
+                Icons.support_agent,
+                color: AtsColors.resolve(context, AtsColors.primary),
+                size: 26,
+              ),
               SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -71,7 +78,10 @@ class AtsHelpPage extends StatelessWidget {
                     Text(
                       '在线客服',
                       style: TextStyle(
-                        color: AtsColors.primaryDark,
+                        color: AtsColors.resolve(
+                          context,
+                          AtsColors.primaryDark,
+                        ),
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -79,12 +89,19 @@ class AtsHelpPage extends StatelessWidget {
                     SizedBox(height: 3),
                     Text(
                       '智能客服 7×24 小时在线',
-                      style: TextStyle(color: AtsColors.primary, fontSize: 10),
+                      style: TextStyle(
+                        color: AtsColors.resolve(context, AtsColors.primary),
+                        fontSize: 10,
+                      ),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: AtsColors.primary, size: 20),
+              Icon(
+                Icons.chevron_right,
+                color: AtsColors.resolve(context, AtsColors.primary),
+                size: 20,
+              ),
             ],
           ),
         ),

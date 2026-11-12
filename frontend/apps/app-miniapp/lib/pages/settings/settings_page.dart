@@ -1,24 +1,41 @@
-part of 'im_home_page.dart';
+import 'package:flutter/material.dart';
 
-class _SettingsPage extends StatefulWidget {
-  const _SettingsPage();
+import '../account/account.dart';
+import '../auth/login_page.dart';
+import '../common/page_localizations.dart';
+import '../common/page_theme.dart';
+import '../display/display_settings_page.dart';
 
-  static Route<void> route() {
-    return MaterialPageRoute<void>(builder: (context) => const _SettingsPage());
+/// App settings shared by business hosts and standalone routes.
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key, this.onLogout, this.loginBuilder});
+
+  /// A business may handle its own session cleanup and navigation after logout.
+  final VoidCallback? onLogout;
+
+  /// Destination used after logout when [onLogout] is not supplied.
+  final WidgetBuilder? loginBuilder;
+
+  static Route<void> route({
+    VoidCallback? onLogout,
+    WidgetBuilder? loginBuilder,
+  }) {
+    return MaterialPageRoute<void>(
+      builder: (context) =>
+          SettingsPage(onLogout: onLogout, loginBuilder: loginBuilder),
+    );
   }
 
   @override
-  State<_SettingsPage> createState() => _SettingsPageState();
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<_SettingsPage> {
+class _SettingsPageState extends State<SettingsPage> {
   bool _messageNotificationsEnabled = true;
 
   @override
   Widget build(BuildContext context) {
-    final themeController = BusinessThemeScope.of(context);
-    final hostTheme = _weChatHostTheme(context);
-    final isDarkMode = hostTheme.brightness == Brightness.dark;
+    final hostTheme = sharedPageTheme(context);
     return Theme(
       data: hostTheme,
       child: Builder(
@@ -34,12 +51,12 @@ class _SettingsPageState extends State<_SettingsPage> {
               surfaceTintColor: Colors.transparent,
               leading: IconButton(
                 key: const Key('settings-back'),
-                tooltip: '返回',
+                tooltip: pageLabel(context, '返回'),
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 21),
               ),
               title: Text(
-                '设置',
+                pageLabel(context, '设置'),
                 style: theme.textTheme.titleLarge?.copyWith(
                   color: scheme.onSurface,
                   fontWeight: FontWeight.w600,
@@ -55,19 +72,21 @@ class _SettingsPageState extends State<_SettingsPage> {
                 ),
                 _SettingsGroup(
                   rows: [
-                    _SettingsSwitchRow(
-                      key: const Key('settings-dark-mode'),
-                      title: '深色模式',
-                      value: isDarkMode,
-                      onChanged: themeController.setDarkMode,
+                    _SettingsRow(
+                      title: '界面与显示',
+                      onTap: () => Navigator.of(
+                        context,
+                      ).push(DisplaySettingsPage.route()),
                     ),
                   ],
                 ),
                 _SettingsGroup(
                   rows: [
                     _SettingsRow(
-                      title: '账号与安全',
-                      onTap: () => _showSettingsMessage(context, '账号与安全为演示入口'),
+                      title: '账号安全',
+                      onTap: () => Navigator.of(
+                        context,
+                      ).push(AccountSecurityPage.route()),
                     ),
                     _SettingsRow(
                       title: '青少年模式',
@@ -165,17 +184,17 @@ class _SettingsPageState extends State<_SettingsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('退出登录'),
-          content: const Text('退出后将返回登录页面，是否继续？'),
+          title: Text(pageLabel(context, '退出登录')),
+          content: Text(pageLabel(context, '退出后将返回登录页面，是否继续？')),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('取消'),
+              child: Text(pageLabel(context, '取消')),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text(
-                '退出',
+              child: Text(
+                pageLabel(context, '退出'),
                 style: TextStyle(color: Color(0xFFFF5B5B)),
               ),
             ),
@@ -186,8 +205,15 @@ class _SettingsPageState extends State<_SettingsPage> {
     if (!mounted || shouldLogout != true) {
       return;
     }
+    final onLogout = widget.onLogout;
+    if (onLogout != null) {
+      onLogout();
+      return;
+    }
     Navigator.of(context).pushAndRemoveUntil<void>(
-      MaterialPageRoute<void>(builder: (context) => const LoginPage()),
+      MaterialPageRoute<void>(
+        builder: widget.loginBuilder ?? (context) => const LoginPage(),
+      ),
       (route) => false,
     );
   }
@@ -333,18 +359,21 @@ class _SettingsRow extends StatelessWidget {
           child: Row(
             children: [
               const SizedBox(width: 18),
-              Text(
-                title,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: scheme.onSurface,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
+              Expanded(
+                child: Text(
+                  pageLabel(context, title),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: scheme.onSurface,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
-              const Spacer(),
               if (trailingText != null)
                 Text(
-                  trailingText!,
+                  pageLabel(context, trailingText!),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: scheme.onSurfaceVariant,
                     fontSize: 14,
@@ -387,7 +416,7 @@ class _SettingsSwitchRow extends StatelessWidget {
           const SizedBox(width: 18),
           Expanded(
             child: Text(
-              title,
+              pageLabel(context, title),
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurface,
                 fontSize: 16,
@@ -429,7 +458,7 @@ class _SettingsActionRow extends StatelessWidget {
           height: 56,
           child: Center(
             child: Text(
-              title,
+              pageLabel(context, title),
               style: TextStyle(
                 color: color,
                 fontSize: 16,

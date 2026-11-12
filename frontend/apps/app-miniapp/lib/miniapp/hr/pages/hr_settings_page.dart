@@ -8,12 +8,46 @@ class HrSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
+      padding: EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('设置', style: HrText.appBarTitle.copyWith(fontSize: 25)),
-        const SizedBox(height: 5),
-        const Text('消息、安全与数据偏好。', style: HrText.meta),
-        const SizedBox(height: 17),
+        Text(
+          localizeMiniProgramLabel(context, '设置'),
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
+        SizedBox(height: 5),
+        Text(
+          localizeMiniProgramLabel(context, '消息、安全与数据偏好。'),
+          style: HrText.resolve(context, HrText.meta),
+        ),
+        SizedBox(height: 17),
+        HrCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              ListTile(
+                leading: Icon(Icons.security_outlined),
+                title: Text(localizeMiniProgramLabel(context, '账号安全')),
+                trailing: Icon(Icons.chevron_right_rounded),
+                onTap: () =>
+                    Navigator.of(context).push(AccountSecurityPage.route()),
+              ),
+              ListTile(
+                leading: Icon(Icons.display_settings_outlined),
+                title: Text(localizeMiniProgramLabel(context, '界面与显示')),
+                trailing: Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push<void>(
+                  MaterialPageRoute<void>(
+                    builder: (_) => DisplaySettingsPage(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 12),
         HrCard(
           padding: EdgeInsets.zero,
           child: Column(
@@ -21,85 +55,106 @@ class HrSettingsPage extends StatelessWidget {
               SwitchListTile.adaptive(
                 value: controller.notificationsEnabled,
                 onChanged: controller.setNotificationsEnabled,
-                activeTrackColor: HrColors.brand,
-                title: const Text(
-                  '消息通知',
+                activeTrackColor: HrColors.resolve(context, HrColors.brand),
+                title: Text(
+                  localizeMiniProgramLabel(context, '消息通知'),
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text('审批、考勤与公告提醒', style: HrText.meta),
+                subtitle: Text(
+                  localizeMiniProgramLabel(context, '审批、考勤与公告提醒'),
+                  style: HrText.resolve(context, HrText.meta),
+                ),
               ),
-              const Divider(
+              Divider(
                 height: 1,
                 indent: 16,
                 endIndent: 16,
-                color: HrColors.line2,
+                color: HrColors.resolve(context, HrColors.line2),
               ),
               SwitchListTile.adaptive(
                 value: controller.biometricEnabled,
                 onChanged: controller.setBiometricEnabled,
-                activeTrackColor: HrColors.brand,
-                title: const Text(
-                  '生物识别解锁',
+                activeTrackColor: HrColors.resolve(context, HrColors.brand),
+                title: Text(
+                  localizeMiniProgramLabel(context, '生物识别解锁'),
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text('使用指纹或面容快速进入', style: HrText.meta),
+                subtitle: Text(
+                  localizeMiniProgramLabel(context, '使用指纹或面容快速进入'),
+                  style: HrText.resolve(context, HrText.meta),
+                ),
               ),
             ],
           ),
         ),
-        const HrSectionHeader(title: '数据与存储'),
+        HrSectionHeader(title: '数据与存储'),
         HrCard(
           padding: EdgeInsets.zero,
           child: Column(
             children: [
               ListTile(
-                leading: const Icon(
+                leading: Icon(
                   Icons.cleaning_services_outlined,
-                  color: HrColors.ink3,
+                  color: HrColors.resolve(context, HrColors.ink3),
                   size: 20,
                 ),
-                title: const Text('清理缓存', style: HrText.cardTitle),
-                subtitle: const Text('12.6 MB', style: HrText.meta),
-                trailing: const Icon(
+                title: Text(
+                  localizeMiniProgramLabel(context, '清理缓存'),
+                  style: HrText.resolve(context, HrText.cardTitle),
+                ),
+                subtitle: Text(
+                  localizeMiniProgramLabel(context, '12.6 MB'),
+                  style: HrText.resolve(context, HrText.meta),
+                ),
+                trailing: Icon(
                   Icons.chevron_right_rounded,
-                  color: HrColors.ink4,
+                  color: HrColors.resolve(context, HrColors.ink4),
                 ),
                 onTap: () => hrToast(context, '缓存已清理'),
               ),
-              const Divider(
+              Divider(
                 height: 1,
                 indent: 16,
                 endIndent: 16,
-                color: HrColors.line2,
+                color: HrColors.resolve(context, HrColors.line2),
               ),
               ListTile(
-                leading: const Icon(
+                leading: Icon(
                   Icons.cloud_outlined,
-                  color: HrColors.ink3,
+                  color: HrColors.resolve(context, HrColors.ink3),
                   size: 20,
                 ),
-                title: const Text('数据来源', style: HrText.cardTitle),
+                title: Text(
+                  localizeMiniProgramLabel(context, '数据来源'),
+                  style: HrText.resolve(context, HrText.cardTitle),
+                ),
                 subtitle: Text(
                   controller.useMockData ? '静态模拟数据' : 'Horilla API',
-                  style: HrText.meta,
+                  style: HrText.resolve(context, HrText.meta),
                 ),
               ),
             ],
           ),
         ),
-        const HrSectionHeader(title: '关于'),
+        HrSectionHeader(title: '关于'),
         HrCard(
-          padding: const EdgeInsets.all(18),
-          child: const Column(
+          padding: EdgeInsets.all(18),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               HrLogoMark(size: 48),
               SizedBox(height: 12),
-              Text('RuoQi 人事', style: HrText.cardTitle),
+              Text(
+                localizeMiniProgramLabel(context, 'RuoQi 人事'),
+                style: HrText.resolve(context, HrText.cardTitle),
+              ),
               SizedBox(height: 4),
               Text(
-                '参考 Horilla HR Mobile 信息架构实现的人事小程序页面。当前默认使用静态模拟数据，真实 API 适配层已保留。',
-                style: HrText.body,
+                localizeMiniProgramLabel(
+                  context,
+                  '参考 Horilla HR Mobile 信息架构实现的人事小程序页面。当前默认使用静态模拟数据，真实 API 适配层已保留。',
+                ),
+                style: HrText.resolve(context, HrText.body),
               ),
             ],
           ),

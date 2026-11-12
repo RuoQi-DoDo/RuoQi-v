@@ -180,11 +180,20 @@ class _AtsPositionEditPageState extends State<AtsPositionEditPage> {
                             label: Text(_skills[i]),
                             onDeleted: () =>
                                 setState(() => _skills.removeAt(i)),
-                            deleteIconColor: AtsColors.primary,
-                            backgroundColor: AtsColors.mint,
+                            deleteIconColor: AtsColors.resolve(
+                              context,
+                              AtsColors.primary,
+                            ),
+                            backgroundColor: AtsColors.resolve(
+                              context,
+                              AtsColors.mint,
+                            ),
                             side: BorderSide.none,
-                            labelStyle: const TextStyle(
-                              color: AtsColors.primary,
+                            labelStyle: TextStyle(
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.primary,
+                              ),
                               fontSize: 11,
                             ),
                             shape: RoundedRectangleBorder(
@@ -195,8 +204,16 @@ class _AtsPositionEditPageState extends State<AtsPositionEditPage> {
                           onPressed: _addSkill,
                           avatar: const Icon(Icons.add, size: 15),
                           label: const Text('添加'),
-                          side: const BorderSide(color: AtsColors.divider),
-                          backgroundColor: Colors.white,
+                          side: BorderSide(
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.divider,
+                            ),
+                          ),
+                          backgroundColor: AtsColors.resolve(
+                            context,
+                            AtsColors.surface,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(7),
                           ),

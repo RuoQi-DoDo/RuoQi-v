@@ -33,7 +33,7 @@ class AtsMessagesPage extends StatelessWidget {
       padding: EdgeInsets.zero,
       children: [
         Container(
-          color: Colors.white,
+          color: AtsColors.resolve(context, AtsColors.surface),
           padding: const EdgeInsets.fromLTRB(8, 12, 8, 14),
           child: Row(
             children: [
@@ -62,16 +62,28 @@ class AtsMessagesPage extends StatelessWidget {
                                 height: 42,
                                 decoration: BoxDecoration(
                                   color: i == 0
-                                      ? AtsColors.mint
-                                      : AtsColors.background,
+                                      ? AtsColors.resolve(
+                                          context,
+                                          AtsColors.mint,
+                                        )
+                                      : AtsColors.resolve(
+                                          context,
+                                          AtsColors.background,
+                                        ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
                                   actions[i].icon,
                                   size: 21,
                                   color: i == 0
-                                      ? AtsColors.primary
-                                      : AtsColors.textSecondary,
+                                      ? AtsColors.resolve(
+                                          context,
+                                          AtsColors.primary,
+                                        )
+                                      : AtsColors.resolve(
+                                          context,
+                                          AtsColors.textSecondary,
+                                        ),
                                 ),
                               ),
                               if (actions[i].badge != null)
@@ -84,7 +96,10 @@ class AtsMessagesPage extends StatelessWidget {
                                       vertical: 1,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AtsColors.red,
+                                      color: AtsColors.resolve(
+                                        context,
+                                        AtsColors.red,
+                                      ),
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
                                         color: Colors.white,
@@ -106,8 +121,11 @@ class AtsMessagesPage extends StatelessWidget {
                           const SizedBox(height: 7),
                           Text(
                             actions[i].label,
-                            style: const TextStyle(
-                              color: AtsColors.textSecondary,
+                            style: TextStyle(
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.textSecondary,
+                              ),
                               fontSize: 11,
                             ),
                           ),
@@ -121,7 +139,7 @@ class AtsMessagesPage extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Material(
-          color: Colors.white,
+          color: AtsColors.resolve(context, AtsColors.surface),
           child: InkWell(
             onTap: () => controller.open(AtsRoute.notices),
             child: Padding(
@@ -132,8 +150,11 @@ class AtsMessagesPage extends StatelessWidget {
                     width: 46,
                     height: 46,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AtsColors.primary, Color(0xFF50CFAE)],
+                      gradient: LinearGradient(
+                        colors: [
+                          AtsColors.resolve(context, AtsColors.primary),
+                          Color(0xFF50CFAE),
+                        ],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -144,7 +165,7 @@ class AtsMessagesPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 11),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -160,7 +181,10 @@ class AtsMessagesPage extends StatelessWidget {
                             SizedBox(width: 7),
                             AtsTag(
                               '1条新消息',
-                              foreground: AtsColors.red,
+                              foreground: AtsColors.resolve(
+                                context,
+                                AtsColors.red,
+                              ),
                               background: Color(0xFFFFF0F0),
                             ),
                           ],
@@ -171,16 +195,22 @@ class AtsMessagesPage extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: AtsColors.textMuted,
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.textMuted,
+                            ),
                             fontSize: 12,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Text(
+                  Text(
                     '刚刚',
-                    style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
+                    style: TextStyle(
+                      color: AtsColors.resolve(context, AtsColors.textMuted),
+                      fontSize: 10,
+                    ),
                   ),
                 ],
               ),
@@ -195,7 +225,7 @@ class AtsMessagesPage extends StatelessWidget {
           )
         else
           Material(
-            color: Colors.white,
+            color: AtsColors.resolve(context, AtsColors.surface),
             child: Column(
               children: [
                 for (var i = 0; i < atsConversations.length; i++) ...[
@@ -236,8 +266,8 @@ class _ConversationTile extends StatelessWidget {
                   label: conversation.name,
                   size: 45,
                   color: conversation.name == '李经理'
-                      ? AtsColors.blue
-                      : AtsColors.primary,
+                      ? AtsColors.resolve(context, AtsColors.blue)
+                      : AtsColors.resolve(context, AtsColors.primary),
                 ),
                 Positioned(
                   right: -1,
@@ -274,8 +304,11 @@ class _ConversationTile extends StatelessWidget {
                           conversation.job,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AtsColors.textMuted,
+                          style: TextStyle(
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.textMuted,
+                            ),
                             fontSize: 10,
                           ),
                         ),
@@ -283,8 +316,11 @@ class _ConversationTile extends StatelessWidget {
                       const Spacer(),
                       Text(
                         conversation.time,
-                        style: const TextStyle(
-                          color: AtsColors.textMuted,
+                        style: TextStyle(
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.textMuted,
+                          ),
                           fontSize: 10,
                         ),
                       ),
@@ -298,8 +334,11 @@ class _ConversationTile extends StatelessWidget {
                           conversation.preview,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AtsColors.textMuted,
+                          style: TextStyle(
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.textMuted,
+                            ),
                             fontSize: 12,
                           ),
                         ),
@@ -311,7 +350,7 @@ class _ConversationTile extends StatelessWidget {
                           height: 17,
                           padding: const EdgeInsets.symmetric(horizontal: 5),
                           decoration: BoxDecoration(
-                            color: AtsColors.red,
+                            color: AtsColors.resolve(context, AtsColors.red),
                             borderRadius: BorderRadius.circular(9),
                           ),
                           alignment: Alignment.center,

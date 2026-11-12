@@ -39,7 +39,7 @@ class _AtsIndustryPageState extends State<AtsIndustryPage> {
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-          color: Colors.white,
+          color: AtsColors.resolve(context, AtsColors.surface),
           child: AtsPrimaryButton(
             label: '确认选择',
             onPressed: () {

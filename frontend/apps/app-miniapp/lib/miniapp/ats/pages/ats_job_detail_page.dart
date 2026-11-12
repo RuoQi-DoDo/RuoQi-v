@@ -26,8 +26,8 @@ class AtsJobDetailPage extends StatelessWidget {
                         Expanded(
                           child: Text(
                             job.title,
-                            style: const TextStyle(
-                              color: AtsColors.text,
+                            style: TextStyle(
+                              color: AtsColors.resolve(context, AtsColors.text),
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
                             ),
@@ -35,8 +35,11 @@ class AtsJobDetailPage extends StatelessWidget {
                         ),
                         Text(
                           job.salary,
-                          style: const TextStyle(
-                            color: AtsColors.primary,
+                          style: TextStyle(
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.primary,
+                            ),
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                           ),
@@ -53,8 +56,14 @@ class AtsJobDetailPage extends StatelessWidget {
                         AtsTag(job.location),
                         AtsTag(
                           '刚刚活跃',
-                          foreground: AtsColors.primary,
-                          background: AtsColors.mint,
+                          foreground: AtsColors.resolve(
+                            context,
+                            AtsColors.primary,
+                          ),
+                          background: AtsColors.resolve(
+                            context,
+                            AtsColors.mint,
+                          ),
                         ),
                       ],
                     ),
@@ -67,10 +76,10 @@ class AtsJobDetailPage extends StatelessWidget {
                       onTap: () => controller.open(AtsRoute.companyDetail),
                       child: Row(
                         children: [
-                          const AtsAvatar(
+                          AtsAvatar(
                             label: '李',
                             size: 44,
-                            color: AtsColors.blue,
+                            color: AtsColors.resolve(context, AtsColors.blue),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -87,17 +96,23 @@ class AtsJobDetailPage extends StatelessWidget {
                                 const SizedBox(height: 3),
                                 Text(
                                   '${job.company} · 招聘经理',
-                                  style: const TextStyle(
-                                    color: AtsColors.textMuted,
+                                  style: TextStyle(
+                                    color: AtsColors.resolve(
+                                      context,
+                                      AtsColors.textMuted,
+                                    ),
                                     fontSize: 11,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const Icon(
+                          Icon(
                             Icons.chevron_right,
-                            color: AtsColors.textMuted,
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.textMuted,
+                            ),
                           ),
                         ],
                       ),
@@ -120,8 +135,11 @@ class AtsJobDetailPage extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       job.description,
-                      style: const TextStyle(
-                        color: AtsColors.textSecondary,
+                      style: TextStyle(
+                        color: AtsColors.resolve(
+                          context,
+                          AtsColors.textSecondary,
+                        ),
                         fontSize: 13,
                         height: 1.75,
                       ),
@@ -148,13 +166,16 @@ class AtsJobDetailPage extends StatelessWidget {
                           height: 44,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: AtsColors.mint,
+                            color: AtsColors.resolve(context, AtsColors.mint),
                             borderRadius: BorderRadius.circular(11),
                           ),
-                          child: const Text(
+                          child: Text(
                             '世',
                             style: TextStyle(
-                              color: AtsColors.primary,
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.primary,
+                              ),
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
                             ),
@@ -175,35 +196,47 @@ class AtsJobDetailPage extends StatelessWidget {
                               const SizedBox(height: 4),
                               Text(
                                 '${job.industry} · ${job.staffSize}',
-                                style: const TextStyle(
-                                  color: AtsColors.textMuted,
+                                style: TextStyle(
+                                  color: AtsColors.resolve(
+                                    context,
+                                    AtsColors.textMuted,
+                                  ),
                                   fontSize: 11,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(
+                        Icon(
                           Icons.chevron_right,
-                          color: AtsColors.textMuted,
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.textMuted,
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 14),
-                    const Row(
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
                           Icons.location_on_outlined,
                           size: 16,
-                          color: AtsColors.textMuted,
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.textMuted,
+                          ),
                         ),
                         SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             '上海市浦东新区张江路 88 号世佳中心',
                             style: TextStyle(
-                              color: AtsColors.textSecondary,
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.textSecondary,
+                              ),
                               fontSize: 12,
                               height: 1.5,
                             ),
@@ -220,12 +253,12 @@ class AtsJobDetailPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(
                           Icons.shield_outlined,
                           size: 17,
-                          color: AtsColors.orange,
+                          color: AtsColors.resolve(context, AtsColors.orange),
                         ),
                         SizedBox(width: 6),
                         Text(
@@ -245,14 +278,20 @@ class AtsJobDetailPage extends StatelessWidget {
                           TextSpan(
                             text: '请立即举报',
                             style: TextStyle(
-                              color: AtsColors.orange,
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.orange,
+                              ),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
-                      style: const TextStyle(
-                        color: AtsColors.textSecondary,
+                      style: TextStyle(
+                        color: AtsColors.resolve(
+                          context,
+                          AtsColors.textSecondary,
+                        ),
                         fontSize: 12,
                         height: 1.55,
                       ),
@@ -273,9 +312,13 @@ class AtsJobDetailPage extends StatelessWidget {
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(top: BorderSide(color: AtsColors.divider)),
+          decoration: BoxDecoration(
+            color: AtsColors.resolve(context, AtsColors.surface),
+            border: Border(
+              top: BorderSide(
+                color: AtsColors.resolve(context, AtsColors.divider),
+              ),
+            ),
           ),
           child: Row(
             children: [
@@ -339,12 +382,17 @@ class _BottomIcon extends StatelessWidget {
             Icon(
               icon,
               size: 21,
-              color: active ? AtsColors.orange : AtsColors.textSecondary,
+              color: active
+                  ? AtsColors.resolve(context, AtsColors.orange)
+                  : AtsColors.resolve(context, AtsColors.textSecondary),
             ),
             const SizedBox(height: 2),
             Text(
               label,
-              style: const TextStyle(color: AtsColors.textMuted, fontSize: 10),
+              style: TextStyle(
+                color: AtsColors.resolve(context, AtsColors.textMuted),
+                fontSize: 10,
+              ),
             ),
           ],
         ),

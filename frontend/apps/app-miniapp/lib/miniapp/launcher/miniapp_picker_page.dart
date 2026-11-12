@@ -1,3 +1,5 @@
+import '../common/miniapp_localizations.dart';
+
 import 'package:common/common.dart';
 import 'package:flutter/material.dart';
 
@@ -239,7 +241,7 @@ class _MiniProgramPickerPageState extends State<MiniProgramPickerPage> {
                         height: 58,
                         child: Center(
                           child: Text(
-                            '最近',
+                            localizeMiniProgramLabel(context, '最近'),
                             style: theme.textTheme.headlineSmall?.copyWith(
                               color: scheme.onSurface,
                               fontSize: 14,

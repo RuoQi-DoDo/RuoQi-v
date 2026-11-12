@@ -33,12 +33,18 @@ class _HrDirectoryPageState extends State<HrDirectoryPage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('企业通讯录', style: HrText.appBarTitle.copyWith(fontSize: 25)),
+        Text(
+          '企业通讯录',
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
         const SizedBox(height: 5),
         Text(
           '共 ${widget.controller.directory.length} 位同事 · '
           '可直接查看联系方式',
-          style: HrText.meta,
+          style: HrText.resolve(context, HrText.meta),
         ),
         const SizedBox(height: 15),
         TextField(
@@ -72,11 +78,11 @@ class _HrDirectoryPageState extends State<HrDirectoryPage> {
               children: [
                 for (var i = 0; i < entries.length; i++) ...[
                   if (i > 0)
-                    const Divider(
+                    Divider(
                       height: 1,
                       indent: 16,
                       endIndent: 16,
-                      color: HrColors.line2,
+                      color: HrColors.resolve(context, HrColors.line2),
                     ),
                   InkWell(
                     onTap: () => _showContact(entries[i], i),
@@ -96,23 +102,24 @@ class _HrDirectoryPageState extends State<HrDirectoryPage> {
                               children: [
                                 Text(
                                   entries[i].name,
-                                  style: HrText.cardTitle.copyWith(
-                                    fontSize: 13.5,
-                                  ),
+                                  style: HrText.resolve(
+                                    context,
+                                    HrText.cardTitle,
+                                  ).copyWith(fontSize: 13.5),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   '${entries[i].department} · ${entries[i].position}',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: HrText.meta,
+                                  style: HrText.resolve(context, HrText.meta),
                                 ),
                               ],
                             ),
                           ),
-                          const Icon(
+                          Icon(
                             Icons.chevron_right_rounded,
-                            color: HrColors.ink4,
+                            color: HrColors.resolve(context, HrColors.ink4),
                             size: 19,
                           ),
                         ],
@@ -228,9 +235,11 @@ class _ContactRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: HrColors.brand),
+        Icon(icon, size: 18, color: HrColors.resolve(context, HrColors.brand)),
         const SizedBox(width: 9),
-        Expanded(child: Text(label, style: HrText.body)),
+        Expanded(
+          child: Text(label, style: HrText.resolve(context, HrText.body)),
+        ),
       ],
     );
   }

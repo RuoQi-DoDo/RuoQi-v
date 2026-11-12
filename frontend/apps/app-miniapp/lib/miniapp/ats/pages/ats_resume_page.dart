@@ -31,10 +31,13 @@ class AtsResumePage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Icon(
+                        Icon(
                           Icons.edit_outlined,
                           size: 15,
-                          color: AtsColors.textMuted,
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.textMuted,
+                          ),
                         ),
                       ],
                     ),
@@ -42,8 +45,8 @@ class AtsResumePage extends StatelessWidget {
                     Text(
                       '${resume.age}岁 · ${resume.education} · '
                       '${resume.experience}工作经验',
-                      style: const TextStyle(
-                        color: AtsColors.textMuted,
+                      style: TextStyle(
+                        color: AtsColors.resolve(context, AtsColors.textMuted),
                         fontSize: 11,
                       ),
                     ),
@@ -54,23 +57,26 @@ class AtsResumePage extends StatelessWidget {
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: AtsColors.mint,
+                  color: AtsColors.resolve(context, AtsColors.mint),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Column(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       '85%',
                       style: TextStyle(
-                        color: AtsColors.primary,
+                        color: AtsColors.resolve(context, AtsColors.primary),
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
                       '完整度',
-                      style: TextStyle(color: AtsColors.primary, fontSize: 8),
+                      style: TextStyle(
+                        color: AtsColors.resolve(context, AtsColors.primary),
+                        fontSize: 8,
+                      ),
                     ),
                   ],
                 ),
@@ -85,8 +91,8 @@ class AtsResumePage extends StatelessWidget {
           onAction: () => controller.open(AtsRoute.editSkill),
           child: Text(
             resume.skill,
-            style: const TextStyle(
-              color: AtsColors.textSecondary,
+            style: TextStyle(
+              color: AtsColors.resolve(context, AtsColors.textSecondary),
               fontSize: 13,
               height: 1.7,
             ),
@@ -119,11 +125,11 @@ class AtsResumePage extends StatelessWidget {
                 role: 'Flutter 开发工程师',
               ),
               const SizedBox(height: 9),
-              const Text(
+              Text(
                 '负责核心业务 App 架构升级和性能优化，搭建组件库与自动化发布流程，'
                 '关键页面渲染性能提升 35%。',
                 style: TextStyle(
-                  color: AtsColors.textSecondary,
+                  color: AtsColors.resolve(context, AtsColors.textSecondary),
                   fontSize: 12,
                   height: 1.7,
                 ),
@@ -141,7 +147,7 @@ class AtsResumePage extends StatelessWidget {
           title: '项目经历',
           action: '添加',
           onAction: () => controller.open(AtsRoute.editProject),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _ExperienceHeader(
@@ -153,7 +159,7 @@ class AtsResumePage extends StatelessWidget {
               Text(
                 '统一 iOS、Android 与 Web 三端研发链路，持续集成效率提升 40%。',
                 style: TextStyle(
-                  color: AtsColors.textSecondary,
+                  color: AtsColors.resolve(context, AtsColors.textSecondary),
                   fontSize: 12,
                   height: 1.7,
                 ),
@@ -213,7 +219,10 @@ class _ResumeSection extends StatelessWidget {
                   icon: const Icon(Icons.edit_outlined, size: 14),
                   label: Text(action!),
                   style: TextButton.styleFrom(
-                    foregroundColor: AtsColors.primary,
+                    foregroundColor: AtsColors.resolve(
+                      context,
+                      AtsColors.primary,
+                    ),
                     visualDensity: VisualDensity.compact,
                     textStyle: const TextStyle(fontSize: 11),
                     padding: EdgeInsets.zero,
@@ -245,14 +254,17 @@ class _ResumeInfoRow extends StatelessWidget {
             width: 76,
             child: Text(
               label,
-              style: const TextStyle(color: AtsColors.textMuted, fontSize: 12),
+              style: TextStyle(
+                color: AtsColors.resolve(context, AtsColors.textMuted),
+                fontSize: 12,
+              ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                color: AtsColors.text,
+              style: TextStyle(
+                color: AtsColors.resolve(context, AtsColors.text),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -284,7 +296,7 @@ class _ExperienceHeader extends StatelessWidget {
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            color: AtsColors.mint,
+            color: AtsColors.resolve(context, AtsColors.mint),
             borderRadius: BorderRadius.circular(9),
           ),
           child: Icon(
@@ -293,7 +305,7 @@ class _ExperienceHeader extends StatelessWidget {
                 : title.contains('项目')
                 ? Icons.folder_outlined
                 : Icons.business_outlined,
-            color: AtsColors.primary,
+            color: AtsColors.resolve(context, AtsColors.primary),
             size: 18,
           ),
         ),
@@ -312,8 +324,8 @@ class _ExperienceHeader extends StatelessWidget {
               const SizedBox(height: 3),
               Text(
                 '$role · $period',
-                style: const TextStyle(
-                  color: AtsColors.textMuted,
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textMuted),
                   fontSize: 10,
                 ),
               ),

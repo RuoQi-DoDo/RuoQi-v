@@ -16,13 +16,16 @@ class HrLeavePage extends StatelessWidget {
             Expanded(
               child: Text(
                 '我的休假',
-                style: HrText.appBarTitle.copyWith(fontSize: 25),
+                style: HrText.resolve(
+                  context,
+                  HrText.appBarTitle,
+                ).copyWith(fontSize: 25),
               ),
             ),
             HrStatusChip(
               label: '${controller.leaveBalances.length} 类额度',
-              background: HrColors.brandTint,
-              foreground: HrColors.brand,
+              background: HrColors.resolve(context, HrColors.brandTint),
+              foreground: HrColors.resolve(context, HrColors.brand),
             ),
           ],
         ),
@@ -59,26 +62,35 @@ class HrLeavePage extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: HrColors.infoBg,
+                  color: HrColors.resolve(context, HrColors.infoBg),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.add_card_outlined,
-                  color: HrColors.info,
+                  color: HrColors.resolve(context, HrColors.info),
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('额度追加申请', style: HrText.cardTitle),
+                    Text(
+                      '额度追加申请',
+                      style: HrText.resolve(context, HrText.cardTitle),
+                    ),
                     SizedBox(height: 2),
-                    Text('向 HR 申请额外假期额度', style: HrText.meta),
+                    Text(
+                      '向 HR 申请额外假期额度',
+                      style: HrText.resolve(context, HrText.meta),
+                    ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: HrColors.ink4),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: HrColors.resolve(context, HrColors.ink4),
+              ),
             ],
           ),
         ),
@@ -100,11 +112,11 @@ class HrLeavePage extends StatelessWidget {
               children: [
                 for (var i = 0; i < controller.holidays.length; i++) ...[
                   if (i > 0)
-                    const Divider(
+                    Divider(
                       height: 1,
                       indent: 16,
                       endIndent: 16,
-                      color: HrColors.line2,
+                      color: HrColors.resolve(context, HrColors.line2),
                     ),
                   Padding(
                     padding: const EdgeInsets.all(16),
@@ -115,13 +127,16 @@ class HrLeavePage extends StatelessWidget {
                           height: 42,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: HrColors.brandTint,
+                            color: HrColors.resolve(
+                              context,
+                              HrColors.brandTint,
+                            ),
                             borderRadius: BorderRadius.circular(13),
                           ),
                           child: Text(
                             '${controller.holidays[i].date.month}/${controller.holidays[i].date.day}',
-                            style: const TextStyle(
-                              color: HrColors.brand,
+                            style: TextStyle(
+                              color: HrColors.resolve(context, HrColors.brand),
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
                             ),
@@ -134,12 +149,15 @@ class HrLeavePage extends StatelessWidget {
                             children: [
                               Text(
                                 controller.holidays[i].name,
-                                style: HrText.cardTitle.copyWith(fontSize: 13),
+                                style: HrText.resolve(
+                                  context,
+                                  HrText.cardTitle,
+                                ).copyWith(fontSize: 13),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 controller.holidays[i].description,
-                                style: HrText.meta,
+                                style: HrText.resolve(context, HrText.meta),
                               ),
                             ],
                           ),
@@ -182,10 +200,10 @@ class _BalanceCard extends StatelessWidget {
               child: Center(
                 child: Text(
                   _number(balance.availableDays),
-                  style: HrText.mono.copyWith(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: HrText.resolve(
+                    context,
+                    HrText.mono,
+                  ).copyWith(fontSize: 19, fontWeight: FontWeight.w800),
                 ),
               ),
             ),
@@ -195,12 +213,18 @@ class _BalanceCard extends StatelessWidget {
             balance.type,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: HrText.cardTitle.copyWith(fontSize: 13),
+            style: HrText.resolve(
+              context,
+              HrText.cardTitle,
+            ).copyWith(fontSize: 13),
           ),
           const SizedBox(height: 2),
           Text(
             '天可用',
-            style: HrText.meta.copyWith(fontSize: 10, color: HrColors.ink4),
+            style: HrText.resolve(context, HrText.meta).copyWith(
+              fontSize: 10,
+              color: HrColors.resolve(context, HrColors.ink4),
+            ),
           ),
         ],
       ),
@@ -251,10 +275,22 @@ class _LeaveRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (background, foreground) = switch (request.status) {
-      HrLeaveStatus.approved => (HrColors.successBg, HrColors.success),
-      HrLeaveStatus.pending => (HrColors.warningBg, HrColors.warning),
-      HrLeaveStatus.rejected => (HrColors.dangerBg, HrColors.danger),
-      HrLeaveStatus.cancelled => (HrColors.bg2, HrColors.ink3),
+      HrLeaveStatus.approved => (
+        HrColors.resolve(context, HrColors.successBg),
+        HrColors.resolve(context, HrColors.success),
+      ),
+      HrLeaveStatus.pending => (
+        HrColors.resolve(context, HrColors.warningBg),
+        HrColors.resolve(context, HrColors.warning),
+      ),
+      HrLeaveStatus.rejected => (
+        HrColors.resolve(context, HrColors.dangerBg),
+        HrColors.resolve(context, HrColors.danger),
+      ),
+      HrLeaveStatus.cancelled => (
+        HrColors.resolve(context, HrColors.bg2),
+        HrColors.resolve(context, HrColors.ink3),
+      ),
     };
     return HrCard(
       padding: const EdgeInsets.fromLTRB(17, 15, 17, 15),
@@ -266,7 +302,10 @@ class _LeaveRequestCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   '${request.type}${request.halfDay ? ' · 半天' : ''}',
-                  style: HrText.cardTitle.copyWith(fontSize: 14.5),
+                  style: HrText.resolve(
+                    context,
+                    HrText.cardTitle,
+                  ).copyWith(fontSize: 14.5),
                 ),
               ),
               HrStatusChip(
@@ -280,7 +319,10 @@ class _LeaveRequestCard extends StatelessWidget {
           Text(
             '${hrDateRange(request.startDate, request.endDate)} · '
             '${_days(request.days)}',
-            style: HrText.body.copyWith(color: HrColors.ink3),
+            style: HrText.resolve(
+              context,
+              HrText.body,
+            ).copyWith(color: HrColors.resolve(context, HrColors.ink3)),
           ),
           if (request.reason.isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -288,10 +330,13 @@ class _LeaveRequestCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: HrColors.bg,
+                color: HrColors.resolve(context, HrColors.bg),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(request.reason, style: HrText.meta),
+              child: Text(
+                request.reason,
+                style: HrText.resolve(context, HrText.meta),
+              ),
             ),
           ],
         ],

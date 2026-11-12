@@ -45,9 +45,18 @@ class _HrPersonalInfoPageState extends State<HrPersonalInfoPage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('个人信息', style: HrText.appBarTitle.copyWith(fontSize: 25)),
+        Text(
+          '个人信息',
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
         const SizedBox(height: 5),
-        const Text('部分字段由 HR 系统维护，当前演示允许编辑。', style: HrText.meta),
+        Text(
+          '部分字段由 HR 系统维护，当前演示允许编辑。',
+          style: HrText.resolve(context, HrText.meta),
+        ),
         const SizedBox(height: 17),
         HrCard(
           padding: const EdgeInsets.all(16),
@@ -79,11 +88,11 @@ class _HrPersonalInfoPageState extends State<HrPersonalInfoPage> {
                 label: '员工编号',
                 value: widget.controller.user.employeeNo,
               ),
-              const Divider(
+              Divider(
                 height: 1,
                 indent: 16,
                 endIndent: 16,
-                color: HrColors.line2,
+                color: HrColors.resolve(context, HrColors.line2),
               ),
               _ReadonlyRow(
                 label: '入职日期',
@@ -156,9 +165,9 @@ class _ReadonlyRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       child: Row(
         children: [
-          Text(label, style: HrText.body),
+          Text(label, style: HrText.resolve(context, HrText.body)),
           const Spacer(),
-          Text(value, style: HrText.meta),
+          Text(value, style: HrText.resolve(context, HrText.meta)),
         ],
       ),
     );

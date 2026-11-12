@@ -1,3 +1,5 @@
+import '../common/miniapp_localizations.dart';
+
 import 'package:flutter/material.dart';
 
 import 'hr_format.dart';
@@ -31,9 +33,48 @@ abstract final class HrColors {
   static const readDot = Color(0xFFDEDEDC);
   static const onDarkTile = Color(0x12FFFFFF);
   static const onDarkLine = Color(0x24FFFFFF);
+
+  /// Semantic colors for both host brightness modes, without global state.
+  static Color resolve(BuildContext context, Color color) {
+    if (Theme.of(context).brightness != Brightness.dark) return color;
+    return switch (color) {
+      surface => const Color(0xFF242422),
+      bg => const Color(0xFF161615),
+      bg2 => const Color(0xFF30302D),
+      ink => const Color(0xFFF1F0EC),
+      ink2 => const Color(0xFFD2D0C9),
+      ink3 => const Color(0xFFB5B3AA),
+      ink4 => const Color(0xFF99978E),
+      line => const Color(0xFF44443D),
+      line2 => const Color(0xFF363630),
+      brand => const Color(0xFFFF8A73),
+      brandTint => const Color(0xFF492A23),
+      brandTintBorder => const Color(0xFF754639),
+      success => const Color(0xFF6FD7A6),
+      successBg => const Color(0xFF1D3C2F),
+      warning => const Color(0xFFEAC26A),
+      warningInk => const Color(0xFFEAC26A),
+      warningBg => const Color(0xFF42361D),
+      warningBorder => const Color(0xFF6B5730),
+      danger => const Color(0xFFFFA094),
+      dangerBg => const Color(0xFF482923),
+      dangerBorder => const Color(0xFF72483C),
+      info => const Color(0xFF90C7F4),
+      infoBg => const Color(0xFF203548),
+      readDot => const Color(0xFF55554E),
+      _ => color,
+    };
+  }
 }
 
 abstract final class HrText {
+  static TextStyle resolve(BuildContext context, TextStyle style) {
+    final color = style.color;
+    return color == null
+        ? style
+        : style.copyWith(color: HrColors.resolve(context, color));
+  }
+
   static const cardTitle = TextStyle(
     color: HrColors.ink,
     fontSize: 14.5,
@@ -103,14 +144,14 @@ abstract final class HrShadows {
 class HrTheme {
   const HrTheme._();
 
-  static ThemeData data() {
+  static ThemeData data({Brightness brightness = Brightness.light}) {
     final scheme = ColorScheme.fromSeed(
       seedColor: HrColors.brand,
       brightness: Brightness.light,
       primary: HrColors.brand,
       surface: HrColors.surface,
     );
-    return ThemeData(
+    final light = ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: HrColors.bg,
@@ -170,6 +211,36 @@ class HrTheme {
         ),
       ),
     );
+    if (brightness == Brightness.light) return light;
+    final dark = ColorScheme.fromSeed(
+      seedColor: HrColors.brand,
+      brightness: Brightness.dark,
+      primary: const Color(0xFFFF8A73),
+      surface: const Color(0xFF242422),
+    );
+    return light.copyWith(
+      brightness: Brightness.dark,
+      colorScheme: dark,
+      scaffoldBackgroundColor: const Color(0xFF161615),
+      textTheme: light.textTheme.apply(
+        bodyColor: dark.onSurface,
+        displayColor: dark.onSurface,
+      ),
+      dividerColor: dark.outlineVariant,
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: dark.surface,
+        headerBackgroundColor: dark.surfaceContainerHigh,
+        headerForegroundColor: dark.onSurface,
+      ),
+      snackBarTheme: light.snackBarTheme.copyWith(
+        backgroundColor: dark.inverseSurface,
+        contentTextStyle: TextStyle(color: dark.onInverseSurface, fontSize: 13),
+      ),
+      inputDecorationTheme: light.inputDecorationTheme.copyWith(
+        fillColor: const Color(0xFF30302D),
+        hintStyle: HrText.meta.copyWith(color: dark.onSurfaceVariant),
+      ),
+    );
   }
 }
 
@@ -202,9 +273,9 @@ class HrCard extends StatelessWidget {
       padding: margin,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: background,
+          color: HrColors.resolve(context, background),
           borderRadius: borderRadius,
-          border: Border.all(color: borderColor),
+          border: Border.all(color: HrColors.resolve(context, borderColor)),
           boxShadow: shadow ? HrShadows.card : null,
         ),
         child: Material(
@@ -245,9 +316,9 @@ class HrPrimaryButton extends StatelessWidget {
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: background,
-          foregroundColor: HrColors.surface,
-          disabledBackgroundColor: HrColors.line,
-          disabledForegroundColor: HrColors.ink4,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: HrColors.resolve(context, HrColors.line),
+          disabledForegroundColor: HrColors.resolve(context, HrColors.ink4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(17),
           ),
@@ -261,7 +332,7 @@ class HrPrimaryButton extends StatelessWidget {
               Icon(icon, size: 19),
               const SizedBox(width: 7),
             ],
-            Text(label),
+            Text(localizeMiniProgramLabel(context, label)),
           ],
         ),
       ),
@@ -285,7 +356,9 @@ class HrOutlineButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = danger ? HrColors.brand : HrColors.ink;
+    final color = danger
+        ? HrColors.resolve(context, HrColors.brand)
+        : HrColors.resolve(context, HrColors.ink);
     return SizedBox(
       height: 48,
       child: OutlinedButton(
@@ -293,7 +366,9 @@ class HrOutlineButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: color,
           side: BorderSide(
-            color: danger ? HrColors.brandTintBorder : HrColors.line,
+            color: danger
+                ? HrColors.resolve(context, HrColors.brandTintBorder)
+                : HrColors.resolve(context, HrColors.line),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -308,7 +383,7 @@ class HrOutlineButton extends StatelessWidget {
               Icon(icon, size: 18),
               const SizedBox(width: 6),
             ],
-            Text(label),
+            Text(localizeMiniProgramLabel(context, label)),
           ],
         ),
       ),
@@ -337,22 +412,28 @@ class HrSectionHeader extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            title,
-            style: HrText.cardTitle.copyWith(fontSize: 15, color: HrColors.ink),
+            localizeMiniProgramLabel(context, title),
+            style: HrText.resolve(context, HrText.cardTitle).copyWith(
+              fontSize: 15,
+              color: HrColors.resolve(context, HrColors.ink),
+            ),
           ),
           const Spacer(),
           if (action != null)
             TextButton(
               onPressed: onAction,
               style: TextButton.styleFrom(
-                foregroundColor: HrColors.brand,
+                foregroundColor: HrColors.resolve(context, HrColors.brand),
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 4),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(action!, style: const TextStyle(fontSize: 12)),
+                  Text(
+                    localizeMiniProgramLabel(context, action!),
+                    style: const TextStyle(fontSize: 12),
+                  ),
                   const Icon(Icons.chevron_right_rounded, size: 16),
                 ],
               ),
@@ -380,13 +461,13 @@ class HrStatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: background,
+        color: HrColors.resolve(context, background),
         borderRadius: BorderRadius.circular(99),
       ),
       child: Text(
-        label,
-        style: HrText.mono.copyWith(
-          color: foreground,
+        localizeMiniProgramLabel(context, label),
+        style: HrText.resolve(context, HrText.mono).copyWith(
+          color: HrColors.resolve(context, foreground),
           fontSize: 10,
           fontWeight: FontWeight.w700,
         ),
@@ -424,7 +505,7 @@ class HrAvatar extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(
-          color: dark ? HrColors.surface : color,
+          color: dark ? Colors.white : color,
           fontSize: size * 0.36,
           fontWeight: FontWeight.w800,
         ),
@@ -444,9 +525,9 @@ class HrLogoMark extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: HrColors.surface,
+        color: HrColors.resolve(context, HrColors.surface),
         borderRadius: BorderRadius.circular(size * 0.3),
-        border: Border.all(color: HrColors.line),
+        border: Border.all(color: HrColors.resolve(context, HrColors.line)),
         boxShadow: HrShadows.card,
       ),
       child: Stack(
@@ -469,7 +550,7 @@ class HrLogoMark extends StatelessWidget {
               width: size * 0.56,
               height: size * 0.18,
               decoration: BoxDecoration(
-                color: HrColors.brandLight,
+                color: HrColors.resolve(context, HrColors.brandLight),
                 borderRadius: BorderRadius.circular(99),
               ),
             ),
@@ -502,15 +583,25 @@ class HrEmptyState extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: HrColors.successBg,
+              color: HrColors.resolve(context, HrColors.successBg),
               borderRadius: BorderRadius.circular(17),
             ),
-            child: Icon(icon, color: HrColors.success),
+            child: Icon(
+              icon,
+              color: HrColors.resolve(context, HrColors.success),
+            ),
           ),
           const SizedBox(height: 12),
-          Text(title, style: HrText.cardTitle),
+          Text(
+            localizeMiniProgramLabel(context, title),
+            style: HrText.resolve(context, HrText.cardTitle),
+          ),
           const SizedBox(height: 5),
-          Text(message, textAlign: TextAlign.center, style: HrText.meta),
+          Text(
+            localizeMiniProgramLabel(context, message),
+            textAlign: TextAlign.center,
+            style: HrText.resolve(context, HrText.meta),
+          ),
         ],
       ),
     );
@@ -523,7 +614,7 @@ void hrToast(BuildContext context, String message, {SnackBarAction? action}) {
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(localizeMiniProgramLabel(context, message)),
         action: action,
         duration: const Duration(seconds: 2),
       ),

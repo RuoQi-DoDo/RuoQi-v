@@ -73,13 +73,13 @@ class _AtsCompanyEnterPageState extends State<AtsCompanyEnterPage> {
             padding: const EdgeInsets.all(12),
             children: [
               AtsCard(
-                color: AtsColors.mint,
-                child: const Row(
+                color: AtsColors.resolve(context, AtsColors.mint),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
                       Icons.storefront_outlined,
-                      color: AtsColors.primary,
+                      color: AtsColors.resolve(context, AtsColors.primary),
                       size: 28,
                     ),
                     SizedBox(width: 11),
@@ -90,7 +90,10 @@ class _AtsCompanyEnterPageState extends State<AtsCompanyEnterPage> {
                           Text(
                             '免费入驻，开始招聘',
                             style: TextStyle(
-                              color: AtsColors.primaryDark,
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.primaryDark,
+                              ),
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
@@ -99,7 +102,10 @@ class _AtsCompanyEnterPageState extends State<AtsCompanyEnterPage> {
                           Text(
                             '提交企业基本信息后即可发布职位，认证企业将获得更多曝光。',
                             style: TextStyle(
-                              color: AtsColors.primary,
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.primary,
+                              ),
                               fontSize: 11,
                               height: 1.55,
                             ),
@@ -199,13 +205,24 @@ class _AtsCompanyEnterPageState extends State<AtsCompanyEnterPage> {
                         width: 82,
                         height: 82,
                         decoration: BoxDecoration(
-                          color: AtsColors.background,
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.background,
+                          ),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AtsColors.divider),
+                          border: Border.all(
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.divider,
+                            ),
+                          ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.add_a_photo_outlined,
-                          color: AtsColors.textMuted,
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.textMuted,
+                          ),
                           size: 28,
                         ),
                       ),
@@ -227,28 +244,41 @@ class _AtsCompanyEnterPageState extends State<AtsCompanyEnterPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(3),
                       ),
-                      activeColor: AtsColors.primary,
+                      activeColor: AtsColors.resolve(
+                        context,
+                        AtsColors.primary,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 7),
-                  const Expanded(
+                  Expanded(
                     child: Text.rich(
                       TextSpan(
                         children: [
                           TextSpan(text: '我已阅读并同意'),
                           TextSpan(
                             text: '《企业入驻协议》',
-                            style: TextStyle(color: AtsColors.primary),
+                            style: TextStyle(
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.primary,
+                              ),
+                            ),
                           ),
                           TextSpan(text: '和'),
                           TextSpan(
                             text: '《隐私政策》',
-                            style: TextStyle(color: AtsColors.primary),
+                            style: TextStyle(
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.primary,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                       style: TextStyle(
-                        color: AtsColors.textMuted,
+                        color: AtsColors.resolve(context, AtsColors.textMuted),
                         fontSize: 10,
                         height: 1.7,
                       ),

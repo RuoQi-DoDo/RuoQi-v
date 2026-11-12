@@ -12,12 +12,12 @@ class AtsConnectedPage extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       children: [
         AtsCard(
-          color: AtsColors.mint,
+          color: AtsColors.resolve(context, AtsColors.mint),
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.visibility_outlined,
-                color: AtsColors.primary,
+                color: AtsColors.resolve(context, AtsColors.primary),
                 size: 28,
               ),
               const SizedBox(width: 11),
@@ -25,19 +25,22 @@ class AtsConnectedPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       '本周有 12 位新访客',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AtsColors.primaryDark,
+                        color: AtsColors.resolve(
+                          context,
+                          AtsColors.primaryDark,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       recruiter ? '持续更新职位可吸引更多人才' : '完善简历可获得更多曝光',
-                      style: const TextStyle(
-                        color: AtsColors.primary,
+                      style: TextStyle(
+                        color: AtsColors.resolve(context, AtsColors.primary),
                         fontSize: 10,
                       ),
                     ),
@@ -61,7 +64,7 @@ class AtsConnectedPage extends StatelessWidget {
                   size: 42,
                   color: resume.gender == '女'
                       ? const Color(0xFFEC6A88)
-                      : AtsColors.blue,
+                      : AtsColors.resolve(context, AtsColors.blue),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -78,17 +81,23 @@ class AtsConnectedPage extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         '${resume.intent} · ${resume.experience}',
-                        style: const TextStyle(
-                          color: AtsColors.textMuted,
+                        style: TextStyle(
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.textMuted,
+                          ),
                           fontSize: 10,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Text(
+                Text(
                   '刚刚浏览',
-                  style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
+                  style: TextStyle(
+                    color: AtsColors.resolve(context, AtsColors.textMuted),
+                    fontSize: 10,
+                  ),
                 ),
               ],
             ),

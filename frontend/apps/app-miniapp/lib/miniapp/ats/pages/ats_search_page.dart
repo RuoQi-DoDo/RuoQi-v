@@ -42,11 +42,11 @@ class _AtsSearchPageState extends State<AtsSearchPage> {
         )
         .toList();
     return Container(
-      color: AtsColors.background,
+      color: AtsColors.resolve(context, AtsColors.background),
       child: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: AtsColors.resolve(context, AtsColors.surface),
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
             child: Row(
               children: [
@@ -72,7 +72,10 @@ class _AtsSearchPageState extends State<AtsSearchPage> {
                 TextButton(
                   onPressed: () => _search(),
                   style: TextButton.styleFrom(
-                    foregroundColor: AtsColors.primary,
+                    foregroundColor: AtsColors.resolve(
+                      context,
+                      AtsColors.primary,
+                    ),
                     visualDensity: VisualDensity.compact,
                   ),
                   child: const Text('搜索'),
@@ -114,10 +117,13 @@ class _AtsSearchPageState extends State<AtsSearchPage> {
                           const Spacer(),
                           IconButton(
                             onPressed: widget.controller.clearSearchHistory,
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.delete_outline,
                               size: 19,
-                              color: AtsColors.textMuted,
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.textMuted,
+                              ),
                             ),
                           ),
                         ],
@@ -136,9 +142,15 @@ class _AtsSearchPageState extends State<AtsSearchPage> {
                               ActionChip(
                                 onPressed: () => _search(item),
                                 label: Text(item),
-                                backgroundColor: Colors.white,
-                                side: const BorderSide(
-                                  color: AtsColors.divider,
+                                backgroundColor: AtsColors.resolve(
+                                  context,
+                                  AtsColors.surface,
+                                ),
+                                side: BorderSide(
+                                  color: AtsColors.resolve(
+                                    context,
+                                    AtsColors.divider,
+                                  ),
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
@@ -163,7 +175,10 @@ class _AtsSearchPageState extends State<AtsSearchPage> {
                             ActionChip(
                               onPressed: () => _search(item),
                               label: Text(item),
-                              backgroundColor: AtsColors.mint,
+                              backgroundColor: AtsColors.resolve(
+                                context,
+                                AtsColors.mint,
+                              ),
                               side: BorderSide.none,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),

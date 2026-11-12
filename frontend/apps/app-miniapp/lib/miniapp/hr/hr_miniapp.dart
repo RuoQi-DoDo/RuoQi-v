@@ -89,7 +89,7 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: HrTheme.data(),
+      data: HrTheme.data(brightness: Theme.of(context).brightness),
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
@@ -106,20 +106,32 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
               }
             },
             child: AnnotatedRegion<SystemUiOverlayStyle>(
-              value: const SystemUiOverlayStyle(
-                statusBarColor: HrColors.surface,
-                statusBarIconBrightness: Brightness.dark,
-                statusBarBrightness: Brightness.light,
+              value: SystemUiOverlayStyle(
+                statusBarColor: HrColors.resolve(context, HrColors.surface),
+                statusBarIconBrightness:
+                    Theme.of(context).brightness == Brightness.dark
+                    ? Brightness.light
+                    : Brightness.dark,
+                statusBarBrightness:
+                    Theme.of(context).brightness == Brightness.dark
+                    ? Brightness.dark
+                    : Brightness.light,
               ),
               child: Scaffold(
                 backgroundColor: Colors.black,
                 body: Material(
-                  color: HrColors.bg,
+                  color: HrColors.resolve(context, HrColors.bg),
                   child: Column(
                     children: [
-                      const MiniProgramStatusBar(
-                        backgroundColor: HrColors.surface,
-                        foregroundColor: HrColors.ink,
+                      MiniProgramStatusBar(
+                        backgroundColor: HrColors.resolve(
+                          context,
+                          HrColors.surface,
+                        ),
+                        foregroundColor: HrColors.resolve(
+                          context,
+                          HrColors.ink,
+                        ),
                         fallbackHeight: 26,
                         fontSize: 11,
                         iconSize: 13,
@@ -137,15 +149,24 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                                 padding: EdgeInsets.only(left: 5),
                                 child: HrLogoMark(size: 30),
                               ),
-                        backgroundColor: HrColors.surface,
-                        foregroundColor: HrColors.ink,
-                        borderColor: HrColors.line2,
+                        backgroundColor: HrColors.resolve(
+                          context,
+                          HrColors.surface,
+                        ),
+                        foregroundColor: HrColors.resolve(
+                          context,
+                          HrColors.ink,
+                        ),
+                        borderColor: HrColors.resolve(context, HrColors.line2),
                         backIconSize: 18,
-                        titleStyle: HrText.cardTitle.copyWith(fontSize: 14),
+                        titleStyle: HrText.resolve(
+                          context,
+                          HrText.cardTitle,
+                        ).copyWith(fontSize: 14),
                       ),
                       Expanded(
                         child: ColoredBox(
-                          color: HrColors.bg,
+                          color: HrColors.resolve(context, HrColors.bg),
                           child: AnimatedSwitcher(
                             duration: const Duration(milliseconds: 210),
                             switchInCurve: Curves.easeOutCubic,
@@ -256,7 +277,7 @@ class _HrBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottom = MediaQuery.paddingOf(context).bottom;
     return ColoredBox(
-      color: HrColors.bg,
+      color: HrColors.resolve(context, HrColors.bg),
       child: Padding(
         padding: EdgeInsets.fromLTRB(12, 7, 12, math.max(8, bottom)),
         child: Container(
@@ -285,7 +306,7 @@ class _HrBottomNavigation extends StatelessWidget {
                       child: Semantics(
                         button: true,
                         selected: i == index,
-                        label: _items[i].$1,
+                        label: localizeMiniProgramLabel(context, _items[i].$1),
                         child: InkWell(
                           key: Key('hr-tab-${_items[i].$1}'),
                           onTap: () => onChanged(i),
@@ -305,17 +326,23 @@ class _HrBottomNavigation extends StatelessWidget {
                                   _items[i].$2,
                                   size: 19,
                                   color: i == index
-                                      ? HrColors.surface
-                                      : HrColors.ink4,
+                                      ? Colors.white
+                                      : HrColors.resolve(
+                                          context,
+                                          HrColors.ink4,
+                                        ),
                                 ),
                                 if (i == index) ...[
                                   const SizedBox(width: 5),
                                   Flexible(
                                     child: Text(
-                                      _items[i].$1,
+                                      localizeMiniProgramLabel(
+                                        context,
+                                        _items[i].$1,
+                                      ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: HrColors.surface,
                                         fontSize: 11.5,
                                         fontWeight: FontWeight.w700,

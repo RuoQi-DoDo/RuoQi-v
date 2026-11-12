@@ -1,3 +1,5 @@
+import '../../../localization.dart';
+
 import 'package:flutter/material.dart';
 
 import '../platform_dialogs.dart';
@@ -25,7 +27,15 @@ class PlatformAccountHomePage extends StatelessWidget {
           key: const Key('platform-account-home'),
           padding: PlatformStyle.pagePadding,
           children: [
-            const PlatformPageHeader(title: '账号中心', subtitle: '平台账号、安全设置与登录记录'),
+            PlatformPageHeader(
+              title: AppLocalizations.of(
+                context,
+              ).text('账号中心', 'Account center'),
+              subtitle: AppLocalizations.of(context).text(
+                '平台账号、安全设置与登录记录',
+                'Account, security and sign-in activity',
+              ),
+            ),
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
@@ -84,8 +94,10 @@ class PlatformAccountHomePage extends StatelessWidget {
                                     color: Colors.white.withValues(alpha: 0.16),
                                     borderRadius: BorderRadius.circular(99),
                                   ),
-                                  child: const Text(
-                                    '运营账号',
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).text('运营账号', 'Operations'),
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 9.5,
@@ -97,7 +109,10 @@ class PlatformAccountHomePage extends StatelessWidget {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              '账号 ${controller.accountId}',
+                              AppLocalizations.of(context).text(
+                                '账号 ${controller.accountId}',
+                                'Account ${controller.accountId}',
+                              ),
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.82),
                                 fontSize: 11.5,
@@ -107,7 +122,9 @@ class PlatformAccountHomePage extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        tooltip: '编辑个人资料',
+                        tooltip: AppLocalizations.of(
+                          context,
+                        ).text('编辑个人资料', 'Edit profile'),
                         onPressed: () => _push(
                           context,
                           PlatformProfilePage(controller: controller),
@@ -124,15 +141,21 @@ class PlatformAccountHomePage extends StatelessWidget {
                     children: [
                       _Metric(
                         value: '${controller.securityScore}',
-                        label: '安全分',
+                        label: AppLocalizations.of(
+                          context,
+                        ).text('安全分', 'Security score'),
                       ),
                       _Metric(
                         value: '${controller.linkedAccountCount}',
-                        label: '已关联',
+                        label: AppLocalizations.of(
+                          context,
+                        ).text('已关联', 'Linked'),
                       ),
                       _Metric(
                         value: '${controller.devices.length}',
-                        label: '在线设备',
+                        label: AppLocalizations.of(
+                          context,
+                        ).text('在线设备', 'Devices'),
                       ),
                     ],
                   ),
@@ -150,7 +173,7 @@ class PlatformAccountHomePage extends StatelessWidget {
               children: [
                 _QuickAction(
                   icon: Icons.badge_outlined,
-                  label: '个人资料',
+                  label: AppLocalizations.of(context).text('个人资料', 'Profile'),
                   onTap: () => _push(
                     context,
                     PlatformProfilePage(controller: controller),
@@ -158,7 +181,9 @@ class PlatformAccountHomePage extends StatelessWidget {
                 ),
                 _QuickAction(
                   icon: Icons.shield_outlined,
-                  label: '账号安全',
+                  label: AppLocalizations.of(
+                    context,
+                  ).text('账号安全', 'Account security'),
                   onTap: () => _push(
                     context,
                     PlatformAccountSecurityPage(controller: controller),
@@ -166,7 +191,9 @@ class PlatformAccountHomePage extends StatelessWidget {
                 ),
                 _QuickAction(
                   icon: Icons.link_rounded,
-                  label: '账号关联',
+                  label: AppLocalizations.of(
+                    context,
+                  ).text('账号关联', 'Linked accounts'),
                   onTap: () => _push(
                     context,
                     PlatformAccountLinksPage(controller: controller),
@@ -174,7 +201,7 @@ class PlatformAccountHomePage extends StatelessWidget {
                 ),
                 _QuickAction(
                   icon: Icons.devices_other_rounded,
-                  label: '设备管理',
+                  label: AppLocalizations.of(context).text('设备管理', 'Devices'),
                   onTap: () => _push(
                     context,
                     PlatformDeviceManagementPage(controller: controller),
@@ -182,18 +209,36 @@ class PlatformAccountHomePage extends StatelessWidget {
                 ),
               ],
             ),
-            const PlatformSectionTitle(title: '安全概览'),
+            PlatformSectionTitle(
+              title: AppLocalizations.of(
+                context,
+              ).text('安全概览', 'Security overview'),
+            ),
             PlatformCard(
               child: Column(
                 children: [
                   PlatformListRow(
                     icon: Icons.verified_user_outlined,
-                    title: '账号保护',
+                    title: AppLocalizations.of(
+                      context,
+                    ).text('账号保护', 'Account protection'),
                     subtitle: controller.securityScore >= 85
-                        ? '关键安全信息已完善'
-                        : '建议继续完善安全信息',
+                        ? AppLocalizations.of(context).text(
+                            '关键安全信息已完善',
+                            'Essential security information complete',
+                          )
+                        : AppLocalizations.of(context).text(
+                            '建议继续完善安全信息',
+                            'Complete your security information',
+                          ),
                     trailing: PlatformStatusTag(
-                      label: controller.securityScore >= 85 ? '状态良好' : '待完善',
+                      label: controller.securityScore >= 85
+                          ? AppLocalizations.of(
+                              context,
+                            ).text('状态良好', 'Protected')
+                          : AppLocalizations.of(
+                              context,
+                            ).text('待完善', 'Incomplete'),
                       tone: controller.securityScore >= 85
                           ? PlatformTagTone.brand
                           : PlatformTagTone.warning,
@@ -206,8 +251,12 @@ class PlatformAccountHomePage extends StatelessWidget {
                   const PlatformRowDivider(),
                   PlatformListRow(
                     icon: Icons.phone_iphone_rounded,
-                    title: '安全手机',
-                    value: controller.phone ?? '未绑定',
+                    title: AppLocalizations.of(
+                      context,
+                    ).text('安全手机', 'Security phone'),
+                    value:
+                        controller.phone ??
+                        AppLocalizations.of(context).text('未绑定', 'Not linked'),
                     onTap: () => _push(
                       context,
                       PlatformAccountSecurityPage(controller: controller),
@@ -216,8 +265,12 @@ class PlatformAccountHomePage extends StatelessWidget {
                   const PlatformRowDivider(),
                   PlatformListRow(
                     icon: Icons.mark_email_read_outlined,
-                    title: '安全邮箱',
-                    value: controller.email ?? '未绑定',
+                    title: AppLocalizations.of(
+                      context,
+                    ).text('安全邮箱', 'Security email'),
+                    value:
+                        controller.email ??
+                        AppLocalizations.of(context).text('未绑定', 'Not linked'),
                     onTap: () => _push(
                       context,
                       PlatformAccountSecurityPage(controller: controller),
@@ -227,8 +280,10 @@ class PlatformAccountHomePage extends StatelessWidget {
               ),
             ),
             PlatformSectionTitle(
-              title: '最近动态',
-              action: '全部记录',
+              title: AppLocalizations.of(
+                context,
+              ).text('最近动态', 'Recent activity'),
+              action: AppLocalizations.of(context).text('全部记录', 'View all'),
               onAction: () => _push(
                 context,
                 PlatformAccountSecurityPage(controller: controller),
@@ -263,17 +318,31 @@ class PlatformAccountHomePage extends StatelessWidget {
               onPressed: () async {
                 final confirmed = await showPlatformConfirmDialog(
                   context,
-                  title: '退出平台账号？',
-                  message: '当前为模拟账号，退出后仍可再次进入账号中心。',
-                  confirmLabel: '退出登录',
+                  title: AppLocalizations.of(
+                    context,
+                  ).text('退出平台账号？', 'Sign out of the platform account?'),
+                  message: AppLocalizations.of(context).text(
+                    '当前为模拟账号，退出后仍可再次进入账号中心。',
+                    'This is a demo account. You can return to the account center after signing out.',
+                  ),
+                  confirmLabel: AppLocalizations.of(
+                    context,
+                  ).text('退出登录', 'Sign out'),
                   destructive: true,
                 );
                 if (confirmed && context.mounted) {
-                  showPlatformToast(context, '模拟账号已退出');
+                  showPlatformToast(
+                    context,
+                    AppLocalizations.of(
+                      context,
+                    ).text('模拟账号已退出', 'Demo account signed out'),
+                  );
                 }
               },
               icon: const Icon(Icons.logout_rounded, size: 18),
-              label: const Text('退出登录'),
+              label: Text(
+                AppLocalizations.of(context).text('退出登录', 'Sign out'),
+              ),
             ),
           ],
         );

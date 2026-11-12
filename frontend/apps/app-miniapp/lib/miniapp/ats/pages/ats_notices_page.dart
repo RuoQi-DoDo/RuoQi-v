@@ -8,7 +8,7 @@ class AtsNoticesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AtsColors.background,
+      color: AtsColors.resolve(context, AtsColors.background),
       child: ListView.separated(
         padding: const EdgeInsets.all(12),
         itemCount: atsNotices.length,
@@ -25,8 +25,8 @@ class AtsNoticesPage extends StatelessWidget {
                   height: 42,
                   decoration: BoxDecoration(
                     color: notice.unread
-                        ? AtsColors.mint
-                        : AtsColors.background,
+                        ? AtsColors.resolve(context, AtsColors.mint)
+                        : AtsColors.resolve(context, AtsColors.background),
                     borderRadius: BorderRadius.circular(11),
                   ),
                   child: Icon(
@@ -35,7 +35,7 @@ class AtsNoticesPage extends StatelessWidget {
                         : notice.title.contains('简历')
                         ? Icons.assignment_turned_in_outlined
                         : Icons.notifications_none,
-                    color: AtsColors.primary,
+                    color: AtsColors.resolve(context, AtsColors.primary),
                     size: 21,
                   ),
                 ),
@@ -58,8 +58,11 @@ class AtsNoticesPage extends StatelessWidget {
                             Container(
                               width: 6,
                               height: 6,
-                              decoration: const BoxDecoration(
-                                color: AtsColors.red,
+                              decoration: BoxDecoration(
+                                color: AtsColors.resolve(
+                                  context,
+                                  AtsColors.red,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -67,8 +70,11 @@ class AtsNoticesPage extends StatelessWidget {
                           const Spacer(),
                           Text(
                             notice.time,
-                            style: const TextStyle(
-                              color: AtsColors.textMuted,
+                            style: TextStyle(
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.textMuted,
+                              ),
                               fontSize: 10,
                             ),
                           ),
@@ -79,8 +85,11 @@ class AtsNoticesPage extends StatelessWidget {
                         notice.preview,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AtsColors.textSecondary,
+                        style: TextStyle(
+                          color: AtsColors.resolve(
+                            context,
+                            AtsColors.textSecondary,
+                          ),
                           fontSize: 12,
                           height: 1.5,
                         ),

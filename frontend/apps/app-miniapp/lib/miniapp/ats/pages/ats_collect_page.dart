@@ -21,12 +21,15 @@ class AtsCollectPage extends StatelessWidget {
             onTap: () => controller.open(AtsRoute.jobDetail),
           ),
         if (jobs.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(top: 8),
             child: Text(
               '以上为推荐收藏，点击职位详情可收藏更多岗位',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
+              style: TextStyle(
+                color: AtsColors.resolve(context, AtsColors.textMuted),
+                fontSize: 10,
+              ),
             ),
           ),
       ],

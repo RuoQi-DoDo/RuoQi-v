@@ -14,26 +14,32 @@ class HrPayslipDetailPage extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('工资明细', style: HrText.appBarTitle.copyWith(fontSize: 25)),
+        Text(
+          '工资明细',
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
         const SizedBox(height: 5),
         Text(
           '${hrDate(payslip.periodStart)} - ${hrDate(payslip.periodEnd)}',
-          style: HrText.meta,
+          style: HrText.resolve(context, HrText.meta),
         ),
         const SizedBox(height: 17),
         HrCard(
           background: HrColors.ink,
-          borderColor: HrColors.ink,
+          borderColor: HrColors.resolve(context, HrColors.ink),
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('实发工资', style: HrText.eyebrow),
+              Text('实发工资', style: HrText.resolve(context, HrText.eyebrow)),
               const SizedBox(height: 8),
               Text(
                 hrMoney(payslip.netPay),
-                style: HrText.mono.copyWith(
-                  color: HrColors.surface,
+                style: HrText.resolve(context, HrText.mono).copyWith(
+                  color: Colors.white,
                   fontSize: 35,
                   fontWeight: FontWeight.w800,
                 ),
@@ -60,9 +66,15 @@ class HrPayslipDetailPage extends StatelessWidget {
           ),
         ),
         const HrSectionHeader(title: '收入明细'),
-        _PayComponents(items: payslip.earnings, accent: HrColors.success),
+        _PayComponents(
+          items: payslip.earnings,
+          accent: HrColors.resolve(context, HrColors.success),
+        ),
         const HrSectionHeader(title: '扣款明细'),
-        _PayComponents(items: payslip.deductionItems, accent: HrColors.brand),
+        _PayComponents(
+          items: payslip.deductionItems,
+          accent: HrColors.resolve(context, HrColors.brand),
+        ),
         const SizedBox(height: 14),
         Row(
           children: [
@@ -101,13 +113,16 @@ class _PayMetric extends StatelessWidget {
       children: [
         Text(
           label,
-          style: HrText.meta.copyWith(color: HrColors.onDark2, fontSize: 10),
+          style: HrText.resolve(context, HrText.meta).copyWith(
+            color: HrColors.resolve(context, HrColors.onDark2),
+            fontSize: 10,
+          ),
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: HrText.mono.copyWith(
-            color: HrColors.surface,
+          style: HrText.resolve(context, HrText.mono).copyWith(
+            color: Colors.white,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
@@ -131,11 +146,11 @@ class _PayComponents extends StatelessWidget {
         children: [
           for (var i = 0; i < items.length; i++) ...[
             if (i > 0)
-              const Divider(
+              Divider(
                 height: 1,
                 indent: 16,
                 endIndent: 16,
-                color: HrColors.line2,
+                color: HrColors.resolve(context, HrColors.line2),
               ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -150,13 +165,18 @@ class _PayComponents extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Expanded(child: Text(items[i].title, style: HrText.body)),
+                  Expanded(
+                    child: Text(
+                      items[i].title,
+                      style: HrText.resolve(context, HrText.body),
+                    ),
+                  ),
                   Text(
                     hrMoney(items[i].amount),
-                    style: HrText.mono.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: HrText.resolve(
+                      context,
+                      HrText.mono,
+                    ).copyWith(fontSize: 12, fontWeight: FontWeight.w700),
                   ),
                 ],
               ),

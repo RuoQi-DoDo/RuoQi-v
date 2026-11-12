@@ -25,7 +25,11 @@ class _AtsBindPhonePageState extends State<AtsBindPhonePage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(22, 34, 22, 24),
       children: [
-        const Icon(Icons.shield_outlined, color: AtsColors.primary, size: 46),
+        Icon(
+          Icons.shield_outlined,
+          color: AtsColors.resolve(context, AtsColors.primary),
+          size: 46,
+        ),
         const SizedBox(height: 14),
         const Text(
           '手机号快捷登录',
@@ -33,21 +37,24 @@ class _AtsBindPhonePageState extends State<AtsBindPhonePage> {
           style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           '未注册的手机号验证后将自动创建账号',
           textAlign: TextAlign.center,
-          style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
+          style: TextStyle(
+            color: AtsColors.resolve(context, AtsColors.textMuted),
+            fontSize: 10,
+          ),
         ),
         const SizedBox(height: 34),
         TextField(
           controller: _phone,
           keyboardType: TextInputType.phone,
           maxLength: 11,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: '请输入手机号',
             prefixText: '+86  ',
             counterText: '',
-            fillColor: Colors.white,
+            fillColor: AtsColors.resolve(context, AtsColors.surface),
           ),
         ),
         const SizedBox(height: 12),
@@ -57,9 +64,9 @@ class _AtsBindPhonePageState extends State<AtsBindPhonePage> {
               child: TextField(
                 controller: _code,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: '请输入验证码',
-                  fillColor: Colors.white,
+                  fillColor: AtsColors.resolve(context, AtsColors.surface),
                 ),
               ),
             ),

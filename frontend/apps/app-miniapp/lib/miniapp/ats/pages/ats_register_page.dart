@@ -65,10 +65,10 @@ class _AtsRegisterPageState extends State<AtsRegisterPage> {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 7),
-              const Text(
+              Text(
                 '注册完成后，可根据需要选择求职者或招聘者身份',
                 style: TextStyle(
-                  color: AtsColors.textMuted,
+                  color: AtsColors.resolve(context, AtsColors.textMuted),
                   fontSize: 11,
                   height: 1.5,
                 ),
@@ -78,11 +78,11 @@ class _AtsRegisterPageState extends State<AtsRegisterPage> {
                 controller: _phone,
                 keyboardType: TextInputType.phone,
                 maxLength: 11,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: '请输入手机号',
                   prefixIcon: Icon(Icons.phone_iphone, size: 20),
                   counterText: '',
-                  fillColor: Colors.white,
+                  fillColor: AtsColors.resolve(context, AtsColors.surface),
                 ),
               ),
               const SizedBox(height: 12),
@@ -92,10 +92,13 @@ class _AtsRegisterPageState extends State<AtsRegisterPage> {
                     child: TextField(
                       controller: _code,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: '请输入验证码',
                         prefixIcon: Icon(Icons.shield_outlined, size: 20),
-                        fillColor: Colors.white,
+                        fillColor: AtsColors.resolve(
+                          context,
+                          AtsColors.surface,
+                        ),
                       ),
                     ),
                   ),
@@ -106,8 +109,13 @@ class _AtsRegisterPageState extends State<AtsRegisterPage> {
                     child: OutlinedButton(
                       onPressed: _countdown == 0 ? _sendCode : null,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AtsColors.primary,
-                        side: const BorderSide(color: AtsColors.primary),
+                        foregroundColor: AtsColors.resolve(
+                          context,
+                          AtsColors.primary,
+                        ),
+                        side: BorderSide(
+                          color: AtsColors.resolve(context, AtsColors.primary),
+                        ),
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -125,10 +133,10 @@ class _AtsRegisterPageState extends State<AtsRegisterPage> {
               TextField(
                 controller: _password,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: '请设置登录密码（至少 6 位）',
                   prefixIcon: Icon(Icons.lock_outline, size: 20),
-                  fillColor: Colors.white,
+                  fillColor: AtsColors.resolve(context, AtsColors.surface),
                 ),
               ),
               const SizedBox(height: 22),
@@ -142,31 +150,44 @@ class _AtsRegisterPageState extends State<AtsRegisterPage> {
                       value: _agreed,
                       onChanged: (value) =>
                           setState(() => _agreed = value ?? false),
-                      activeColor: AtsColors.primary,
+                      activeColor: AtsColors.resolve(
+                        context,
+                        AtsColors.primary,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
                   ),
                   const SizedBox(width: 7),
-                  const Expanded(
+                  Expanded(
                     child: Text.rich(
                       TextSpan(
                         children: [
                           TextSpan(text: '我已阅读并同意'),
                           TextSpan(
                             text: '《用户协议》',
-                            style: TextStyle(color: AtsColors.primary),
+                            style: TextStyle(
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.primary,
+                              ),
+                            ),
                           ),
                           TextSpan(text: '和'),
                           TextSpan(
                             text: '《隐私政策》',
-                            style: TextStyle(color: AtsColors.primary),
+                            style: TextStyle(
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.primary,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                       style: TextStyle(
-                        color: AtsColors.textMuted,
+                        color: AtsColors.resolve(context, AtsColors.textMuted),
                         fontSize: 10,
                         height: 1.7,
                       ),
@@ -179,7 +200,7 @@ class _AtsRegisterPageState extends State<AtsRegisterPage> {
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-          color: Colors.white,
+          color: AtsColors.resolve(context, AtsColors.surface),
           child: AtsPrimaryButton(label: '注册', onPressed: _register),
         ),
       ],

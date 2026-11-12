@@ -20,7 +20,7 @@ class _HrAttendancePageState extends State<HrAttendancePage> {
       data.month.month + _monthOffset,
     );
     return RefreshIndicator(
-      color: HrColors.brand,
+      color: HrColors.resolve(context, HrColors.brand),
       onRefresh: widget.controller.refresh,
       child: ListView(
         key: const Key('hr-attendance-scroll'),
@@ -32,7 +32,10 @@ class _HrAttendancePageState extends State<HrAttendancePage> {
               Expanded(
                 child: Text(
                   '我的考勤',
-                  style: HrText.appBarTitle.copyWith(fontSize: 25),
+                  style: HrText.resolve(
+                    context,
+                    HrText.appBarTitle,
+                  ).copyWith(fontSize: 25),
                 ),
               ),
               InkWell(
@@ -44,25 +47,27 @@ class _HrAttendancePageState extends State<HrAttendancePage> {
                     vertical: 7,
                   ),
                   decoration: BoxDecoration(
-                    color: HrColors.surface,
+                    color: HrColors.resolve(context, HrColors.surface),
                     borderRadius: BorderRadius.circular(99),
-                    border: Border.all(color: HrColors.line),
+                    border: Border.all(
+                      color: HrColors.resolve(context, HrColors.line),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '${selectedMonth.month}月',
-                        style: const TextStyle(
-                          color: HrColors.brand,
+                        style: TextStyle(
+                          color: HrColors.resolve(context, HrColors.brand),
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(width: 2),
-                      const Icon(
+                      Icon(
                         Icons.arrow_drop_down_rounded,
-                        color: HrColors.brand,
+                        color: HrColors.resolve(context, HrColors.brand),
                         size: 18,
                       ),
                     ],
@@ -88,9 +93,9 @@ class _HrAttendancePageState extends State<HrAttendancePage> {
               children: [
                 for (var i = 0; i < data.days.length; i++) ...[
                   if (i > 0)
-                    const Divider(
+                    Divider(
                       height: 1,
-                      color: HrColors.line2,
+                      color: HrColors.resolve(context, HrColors.line2),
                       indent: 16,
                       endIndent: 16,
                     ),
@@ -108,7 +113,10 @@ class _HrAttendancePageState extends State<HrAttendancePage> {
           Text(
             '点击任意日期可发起补卡申请',
             textAlign: TextAlign.center,
-            style: HrText.meta.copyWith(color: HrColors.ink4),
+            style: HrText.resolve(
+              context,
+              HrText.meta,
+            ).copyWith(color: HrColors.resolve(context, HrColors.ink4)),
           ),
           HrSectionHeader(
             title: '休假与缺勤',
@@ -123,26 +131,35 @@ class _HrAttendancePageState extends State<HrAttendancePage> {
                   width: 46,
                   height: 46,
                   decoration: BoxDecoration(
-                    color: HrColors.brandTint,
+                    color: HrColors.resolve(context, HrColors.brandTint),
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.beach_access_outlined,
-                    color: HrColors.brand,
+                    color: HrColors.resolve(context, HrColors.brand),
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('我的休假', style: HrText.cardTitle),
+                      Text(
+                        '我的休假',
+                        style: HrText.resolve(context, HrText.cardTitle),
+                      ),
                       SizedBox(height: 3),
-                      Text('年假剩余 8 天 · 病假剩余 6 天', style: HrText.meta),
+                      Text(
+                        '年假剩余 8 天 · 病假剩余 6 天',
+                        style: HrText.resolve(context, HrText.meta),
+                      ),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: HrColors.ink4),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: HrColors.resolve(context, HrColors.ink4),
+                ),
               ],
             ),
           ),
@@ -210,7 +227,7 @@ class _HourAccountCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('月度工时', style: HrText.eyebrow),
+          Text('月度工时', style: HrText.resolve(context, HrText.eyebrow)),
           const SizedBox(height: 9),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -218,14 +235,17 @@ class _HourAccountCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   hrMinutes(data.workedMinutes),
-                  style: HrText.mono.copyWith(
+                  style: HrText.resolve(context, HrText.mono).copyWith(
                     fontSize: 27,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -1,
                   ),
                 ),
               ),
-              Text('目标 ${data.expectedHours} 小时', style: HrText.meta),
+              Text(
+                '目标 ${data.expectedHours} 小时',
+                style: HrText.resolve(context, HrText.meta),
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -234,8 +254,10 @@ class _HourAccountCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 8,
-              backgroundColor: HrColors.bg2,
-              valueColor: const AlwaysStoppedAnimation(HrColors.brand),
+              backgroundColor: HrColors.resolve(context, HrColors.bg2),
+              valueColor: AlwaysStoppedAnimation(
+                HrColors.resolve(context, HrColors.brand),
+              ),
             ),
           ),
           const SizedBox(height: 18),
@@ -245,12 +267,16 @@ class _HourAccountCard extends StatelessWidget {
               _Metric(
                 label: '迟到',
                 value: '${data.lateIns} 次',
-                color: data.lateIns > 0 ? HrColors.warning : HrColors.ink,
+                color: data.lateIns > 0
+                    ? HrColors.resolve(context, HrColors.warning)
+                    : HrColors.resolve(context, HrColors.ink),
               ),
               _Metric(
                 label: '早退',
                 value: '${data.earlyOuts} 次',
-                color: data.earlyOuts > 0 ? HrColors.warning : HrColors.ink,
+                color: data.earlyOuts > 0
+                    ? HrColors.resolve(context, HrColors.warning)
+                    : HrColors.resolve(context, HrColors.ink),
               ),
             ],
           ),
@@ -277,15 +303,17 @@ class _Metric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: HrText.meta.copyWith(fontSize: 11)),
+          Text(
+            label,
+            style: HrText.resolve(context, HrText.meta).copyWith(fontSize: 11),
+          ),
           const SizedBox(height: 3),
           Text(
             value,
-            style: HrText.mono.copyWith(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
+            style: HrText.resolve(
+              context,
+              HrText.mono,
+            ).copyWith(fontSize: 16, fontWeight: FontWeight.w800, color: color),
           ),
         ],
       ),
@@ -325,11 +353,11 @@ class _WeekChart extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   '本周工时',
                   style: TextStyle(
-                    color: HrColors.ink,
+                    color: HrColors.resolve(context, HrColors.ink),
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
@@ -337,8 +365,8 @@ class _WeekChart extends StatelessWidget {
               ),
               Text(
                 '${hrWeekday(today)} · ${hrMinutes(values[todayIndex])}',
-                style: HrText.mono.copyWith(
-                  color: HrColors.ink,
+                style: HrText.resolve(context, HrText.mono).copyWith(
+                  color: HrColors.resolve(context, HrColors.ink),
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                 ),
@@ -368,7 +396,7 @@ class _WeekChart extends StatelessWidget {
                               color: i == todayIndex
                                   ? HrColors.brand
                                   : values[i] == 0
-                                  ? HrColors.line2
+                                  ? HrColors.resolve(context, HrColors.line2)
                                   : const Color(0xFFF2D4CE),
                               borderRadius: BorderRadius.circular(7),
                             ),
@@ -376,15 +404,22 @@ class _WeekChart extends StatelessWidget {
                           const SizedBox(height: 7),
                           Text(
                             hrWeekdayShort(week[i]),
-                            style: HrText.mono.copyWith(
-                              color: i == todayIndex
-                                  ? HrColors.brand
-                                  : HrColors.ink4,
-                              fontSize: 10,
-                              fontWeight: i == todayIndex
-                                  ? FontWeight.w800
-                                  : FontWeight.w400,
-                            ),
+                            style: HrText.resolve(context, HrText.mono)
+                                .copyWith(
+                                  color: i == todayIndex
+                                      ? HrColors.resolve(
+                                          context,
+                                          HrColors.brand,
+                                        )
+                                      : HrColors.resolve(
+                                          context,
+                                          HrColors.ink4,
+                                        ),
+                                  fontSize: 10,
+                                  fontWeight: i == todayIndex
+                                      ? FontWeight.w800
+                                      : FontWeight.w400,
+                                ),
                           ),
                         ],
                       ),
@@ -422,16 +457,16 @@ class _AttendanceRow extends StatelessWidget {
                 children: [
                   Text(
                     day.date.day.toString(),
-                    style: HrText.mono.copyWith(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: HrText.resolve(
+                      context,
+                      HrText.mono,
+                    ).copyWith(fontSize: 19, fontWeight: FontWeight.w800),
                   ),
                   Text(
                     hrWeekdayShort(day.date),
-                    style: HrText.meta.copyWith(
+                    style: HrText.resolve(context, HrText.meta).copyWith(
                       fontSize: 10,
-                      color: HrColors.ink4,
+                      color: HrColors.resolve(context, HrColors.ink4),
                     ),
                   ),
                 ],
@@ -444,29 +479,44 @@ class _AttendanceRow extends StatelessWidget {
                 children: [
                   Text(
                     '${day.clockIn ?? '--:--'}  -  ${day.clockOut ?? '工作中'}',
-                    style: HrText.mono.copyWith(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: HrText.resolve(
+                      context,
+                      HrText.mono,
+                    ).copyWith(fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 3),
                   Row(
                     children: [
-                      Text(day.shift, style: HrText.meta),
+                      Text(
+                        day.shift,
+                        style: HrText.resolve(context, HrText.meta),
+                      ),
                       if (day.late) ...[
                         const SizedBox(width: 6),
-                        const HrStatusChip(
+                        HrStatusChip(
                           label: '迟到',
-                          background: HrColors.warningBg,
-                          foreground: HrColors.warning,
+                          background: HrColors.resolve(
+                            context,
+                            HrColors.warningBg,
+                          ),
+                          foreground: HrColors.resolve(
+                            context,
+                            HrColors.warning,
+                          ),
                         ),
                       ],
                       if (day.earlyOut) ...[
                         const SizedBox(width: 4),
-                        const HrStatusChip(
+                        HrStatusChip(
                           label: '早退',
-                          background: HrColors.warningBg,
-                          foreground: HrColors.warning,
+                          background: HrColors.resolve(
+                            context,
+                            HrColors.warningBg,
+                          ),
+                          foreground: HrColors.resolve(
+                            context,
+                            HrColors.warning,
+                          ),
                         ),
                       ],
                     ],
@@ -476,16 +526,16 @@ class _AttendanceRow extends StatelessWidget {
             ),
             Text(
               hrDuration(day.workedMinutes * 60),
-              style: HrText.mono.copyWith(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
+              style: HrText.resolve(
+                context,
+                HrText.mono,
+              ).copyWith(fontSize: 12, fontWeight: FontWeight.w700),
             ),
             const SizedBox(width: 2),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
               size: 17,
-              color: HrColors.ink4,
+              color: HrColors.resolve(context, HrColors.ink4),
             ),
           ],
         ),

@@ -1,3 +1,5 @@
+import '../common/miniapp_localizations.dart';
+
 import 'package:flutter/material.dart';
 
 import 'ats_models.dart';
@@ -18,19 +20,44 @@ class AtsColors {
   static const textMuted = Color(0xFF8F959E);
   static const divider = Color(0xFFEDEFF2);
   static const blue = Color(0xFF3B82F6);
+
+  /// Solid brand surfaces keep contrast with their white foregrounds.
+  static Color solidPrimary(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? primaryDark : primary;
+
+  /// Resolve semantic palette tokens against the inherited host appearance.
+  static Color resolve(BuildContext context, Color color) {
+    if (Theme.of(context).brightness != Brightness.dark) return color;
+    return switch (color) {
+      background => const Color(0xFF14191A),
+      surface => const Color(0xFF202728),
+      text => const Color(0xFFF0F4F3),
+      textSecondary => const Color(0xFFB9C3C0),
+      textMuted => const Color(0xFF97A5A0),
+      divider => const Color(0xFF35413D),
+      mint => const Color(0xFF183C31),
+      mintStrong => const Color(0xFF245442),
+      primary => const Color(0xFF47D4AB),
+      primaryDark => const Color(0xFF36BE98),
+      const Color(0xFFFFFAF4) => const Color(0xFF362C21),
+      const Color(0xFFFFF4EB) => const Color(0xFF3F2D20),
+      const Color(0xFFFFF0F0) => const Color(0xFF422729),
+      _ => color,
+    };
+  }
 }
 
 class AtsTheme {
   const AtsTheme._();
 
-  static ThemeData data() {
+  static ThemeData data({Brightness brightness = Brightness.light}) {
     final scheme = ColorScheme.fromSeed(
       seedColor: AtsColors.primary,
       brightness: Brightness.light,
       primary: AtsColors.primary,
       surface: AtsColors.surface,
     );
-    return ThemeData(
+    final light = ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: AtsColors.background,
@@ -104,6 +131,31 @@ class AtsTheme {
         ),
       ),
     );
+    if (brightness == Brightness.light) return light;
+    final dark = ColorScheme.fromSeed(
+      seedColor: AtsColors.primary,
+      brightness: Brightness.dark,
+      primary: const Color(0xFF47D4AB),
+      surface: const Color(0xFF202728),
+    );
+    return light.copyWith(
+      brightness: Brightness.dark,
+      colorScheme: dark,
+      scaffoldBackgroundColor: const Color(0xFF14191A),
+      textTheme: light.textTheme.apply(
+        bodyColor: dark.onSurface,
+        displayColor: dark.onSurface,
+      ),
+      dividerColor: dark.outlineVariant,
+      snackBarTheme: light.snackBarTheme.copyWith(
+        backgroundColor: dark.inverseSurface,
+        contentTextStyle: TextStyle(color: dark.onInverseSurface, fontSize: 14),
+      ),
+      inputDecorationTheme: light.inputDecorationTheme.copyWith(
+        fillColor: const Color(0xFF14191A),
+        hintStyle: TextStyle(color: dark.onSurfaceVariant, fontSize: 14),
+      ),
+    );
   }
 }
 
@@ -129,7 +181,7 @@ class AtsCard extends StatelessWidget {
     return Padding(
       padding: margin,
       child: Material(
-        color: color,
+        color: AtsColors.resolve(context, color),
         borderRadius: radius,
         child: InkWell(
           onTap: onTap,
@@ -163,25 +215,34 @@ class AtsSectionHeader extends StatelessWidget {
             width: 4,
             height: 16,
             decoration: BoxDecoration(
-              color: AtsColors.primary,
+              color: AtsColors.solidPrimary(context),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
           const SizedBox(width: 8),
-          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            localizeMiniProgramLabel(context, title),
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const Spacer(),
           if (action != null)
             TextButton(
               onPressed: onAction,
               style: TextButton.styleFrom(
-                foregroundColor: AtsColors.textMuted,
+                foregroundColor: AtsColors.resolve(
+                  context,
+                  AtsColors.textMuted,
+                ),
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 4),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(action!, style: const TextStyle(fontSize: 12)),
+                  Text(
+                    localizeMiniProgramLabel(context, action!),
+                    style: const TextStyle(fontSize: 12),
+                  ),
                   const Icon(Icons.chevron_right, size: 16),
                 ],
               ),
@@ -211,14 +272,14 @@ class AtsTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: background,
+        color: AtsColors.resolve(context, background),
         borderRadius: BorderRadius.circular(5),
         border: borderColor == null ? null : Border.all(color: borderColor!),
       ),
       child: Text(
-        label,
+        localizeMiniProgramLabel(context, label),
         style: TextStyle(
-          color: foreground,
+          color: AtsColors.resolve(context, foreground),
           fontSize: 11,
           height: 1.2,
           fontWeight: FontWeight.w500,
@@ -253,10 +314,18 @@ class AtsPrimaryButton extends StatelessWidget {
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
-          backgroundColor: backgroundColor,
+          backgroundColor: backgroundColor == AtsColors.primary
+              ? AtsColors.solidPrimary(context)
+              : AtsColors.resolve(context, backgroundColor),
           foregroundColor: foregroundColor,
-          disabledBackgroundColor: AtsColors.divider,
-          disabledForegroundColor: AtsColors.textMuted,
+          disabledBackgroundColor: AtsColors.resolve(
+            context,
+            AtsColors.divider,
+          ),
+          disabledForegroundColor: AtsColors.resolve(
+            context,
+            AtsColors.textMuted,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -270,7 +339,7 @@ class AtsPrimaryButton extends StatelessWidget {
               Icon(icon, size: 18),
               const SizedBox(width: 6),
             ],
-            Text(label),
+            Text(localizeMiniProgramLabel(context, label)),
           ],
         ),
       ),
@@ -299,8 +368,10 @@ class AtsOutlineButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: foreground,
-          side: const BorderSide(color: AtsColors.divider),
+          foregroundColor: AtsColors.resolve(context, foreground),
+          side: BorderSide(
+            color: AtsColors.resolve(context, AtsColors.divider),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 10),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -315,7 +386,7 @@ class AtsOutlineButton extends StatelessWidget {
               Icon(icon, size: 18),
               const SizedBox(width: 6),
             ],
-            Text(label),
+            Text(localizeMiniProgramLabel(context, label)),
           ],
         ),
       ),
@@ -380,9 +451,11 @@ class AtsJobCard extends StatelessWidget {
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: AtsColors.surface,
+        color: AtsColors.resolve(context, AtsColors.surface),
         borderRadius: BorderRadius.circular(12),
-        border: showBorder ? Border.all(color: AtsColors.divider) : null,
+        border: showBorder
+            ? Border.all(color: AtsColors.resolve(context, AtsColors.divider))
+            : null,
       ),
       child: InkWell(
         onTap: onTap,
@@ -402,16 +475,19 @@ class AtsJobCard extends StatelessWidget {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         if (job.partTime)
-                          const AtsTag(
+                          AtsTag(
                             '兼职',
-                            foreground: AtsColors.orange,
+                            foreground: AtsColors.resolve(
+                              context,
+                              AtsColors.orange,
+                            ),
                             background: Color(0xFFFFF4EB),
                             borderColor: Color(0xFFFFD8B8),
                           ),
                         Text(
                           job.title,
-                          style: const TextStyle(
-                            color: AtsColors.text,
+                          style: TextStyle(
+                            color: AtsColors.resolve(context, AtsColors.text),
                             fontSize: 16,
                             height: 1.3,
                             fontWeight: FontWeight.w600,
@@ -423,8 +499,8 @@ class AtsJobCard extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     job.salary,
-                    style: const TextStyle(
-                      color: AtsColors.primary,
+                    style: TextStyle(
+                      color: AtsColors.resolve(context, AtsColors.primary),
                       fontSize: 15,
                       height: 1.3,
                       fontWeight: FontWeight.w700,
@@ -440,8 +516,11 @@ class AtsJobCard extends StatelessWidget {
                       job.company,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AtsColors.textSecondary,
+                      style: TextStyle(
+                        color: AtsColors.resolve(
+                          context,
+                          AtsColors.textSecondary,
+                        ),
                         fontSize: 12,
                       ),
                     ),
@@ -449,16 +528,16 @@ class AtsJobCard extends StatelessWidget {
                   const _Dot(),
                   Text(
                     job.staffSize,
-                    style: const TextStyle(
-                      color: AtsColors.textMuted,
+                    style: TextStyle(
+                      color: AtsColors.resolve(context, AtsColors.textMuted),
                       fontSize: 12,
                     ),
                   ),
                   const _Dot(),
                   Text(
                     job.industry,
-                    style: const TextStyle(
-                      color: AtsColors.textMuted,
+                    style: TextStyle(
+                      color: AtsColors.resolve(context, AtsColors.textMuted),
                       fontSize: 12,
                     ),
                   ),
@@ -481,22 +560,25 @@ class AtsJobCard extends StatelessWidget {
                   const SizedBox(width: 7),
                   Text(
                     job.publisher,
-                    style: const TextStyle(
-                      color: AtsColors.textSecondary,
+                    style: TextStyle(
+                      color: AtsColors.resolve(
+                        context,
+                        AtsColors.textSecondary,
+                      ),
                       fontSize: 12,
                     ),
                   ),
                   const Spacer(),
-                  const Icon(
+                  Icon(
                     Icons.location_on_outlined,
                     size: 14,
-                    color: AtsColors.textMuted,
+                    color: AtsColors.resolve(context, AtsColors.textMuted),
                   ),
                   const SizedBox(width: 2),
                   Text(
                     job.location,
-                    style: const TextStyle(
-                      color: AtsColors.textMuted,
+                    style: TextStyle(
+                      color: AtsColors.resolve(context, AtsColors.textMuted),
                       fontSize: 12,
                     ),
                   ),
@@ -527,9 +609,11 @@ class AtsResumeCard extends StatelessWidget {
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: AtsColors.surface,
+        color: AtsColors.resolve(context, AtsColors.surface),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AtsColors.divider),
+        border: Border.all(
+          color: AtsColors.resolve(context, AtsColors.divider),
+        ),
       ),
       child: InkWell(
         onTap: onTap,
@@ -546,7 +630,7 @@ class AtsResumeCard extends StatelessWidget {
                     size: 42,
                     color: resume.gender == '女'
                         ? const Color(0xFFEC6A88)
-                        : AtsColors.blue,
+                        : AtsColors.resolve(context, AtsColors.blue),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -555,8 +639,8 @@ class AtsResumeCard extends StatelessWidget {
                       children: [
                         Text(
                           resume.name,
-                          style: const TextStyle(
-                            color: AtsColors.text,
+                          style: TextStyle(
+                            color: AtsColors.resolve(context, AtsColors.text),
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -565,8 +649,11 @@ class AtsResumeCard extends StatelessWidget {
                         Text(
                           '${resume.gender} · ${resume.age}岁 · '
                           '${resume.education} · ${resume.experience}',
-                          style: const TextStyle(
-                            color: AtsColors.textSecondary,
+                          style: TextStyle(
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.textSecondary,
+                            ),
                             fontSize: 12,
                           ),
                         ),
@@ -575,8 +662,8 @@ class AtsResumeCard extends StatelessWidget {
                   ),
                   AtsTag(
                     resume.jobStatus,
-                    foreground: AtsColors.primary,
-                    background: AtsColors.mint,
+                    foreground: AtsColors.resolve(context, AtsColors.primary),
+                    background: AtsColors.resolve(context, AtsColors.mint),
                   ),
                 ],
               ),
@@ -597,8 +684,8 @@ class AtsResumeCard extends StatelessWidget {
                 resume.skill,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AtsColors.textSecondary,
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textSecondary),
                   fontSize: 12,
                   height: 1.55,
                 ),
@@ -635,13 +722,13 @@ class AtsCompanyCard extends StatelessWidget {
             height: 54,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AtsColors.mint,
+              color: AtsColors.resolve(context, AtsColors.mint),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               company.name.characters.first,
-              style: const TextStyle(
-                color: AtsColors.primary,
+              style: TextStyle(
+                color: AtsColors.resolve(context, AtsColors.primary),
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -656,8 +743,8 @@ class AtsCompanyCard extends StatelessWidget {
                   company.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AtsColors.text,
+                  style: TextStyle(
+                    color: AtsColors.resolve(context, AtsColors.text),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -665,8 +752,8 @@ class AtsCompanyCard extends StatelessWidget {
                 const SizedBox(height: 5),
                 Text(
                   '${company.industry} · ${company.staffSize}',
-                  style: const TextStyle(
-                    color: AtsColors.textSecondary,
+                  style: TextStyle(
+                    color: AtsColors.resolve(context, AtsColors.textSecondary),
                     fontSize: 12,
                   ),
                 ),
@@ -678,15 +765,22 @@ class AtsCompanyCard extends StatelessWidget {
                     for (final welfare in company.welfare.take(3))
                       AtsTag(
                         welfare,
-                        foreground: AtsColors.primary,
-                        background: AtsColors.mint,
+                        foreground: AtsColors.resolve(
+                          context,
+                          AtsColors.primary,
+                        ),
+                        background: AtsColors.resolve(context, AtsColors.mint),
                       ),
                   ],
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, size: 20, color: AtsColors.textMuted),
+          Icon(
+            Icons.chevron_right,
+            size: 20,
+            color: AtsColors.resolve(context, AtsColors.textMuted),
+          ),
         ],
       ),
     );
@@ -738,9 +832,9 @@ class AtsListRow extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        title,
-                        style: const TextStyle(
-                          color: AtsColors.text,
+                        localizeMiniProgramLabel(context, title),
+                        style: TextStyle(
+                          color: AtsColors.resolve(context, AtsColors.text),
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -748,9 +842,12 @@ class AtsListRow extends StatelessWidget {
                       if (subtitle != null) ...[
                         const SizedBox(height: 2),
                         Text(
-                          subtitle!,
-                          style: const TextStyle(
-                            color: AtsColors.textMuted,
+                          localizeMiniProgramLabel(context, subtitle!),
+                          style: TextStyle(
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.textMuted,
+                            ),
                             fontSize: 11,
                           ),
                         ),
@@ -759,10 +856,10 @@ class AtsListRow extends StatelessWidget {
                   ),
                 ),
                 trailing ??
-                    const Icon(
+                    Icon(
                       Icons.chevron_right,
                       size: 19,
-                      color: AtsColors.textMuted,
+                      color: AtsColors.resolve(context, AtsColors.textMuted),
                     ),
               ],
             ),
@@ -799,15 +896,17 @@ class AtsFormRow extends StatelessWidget {
               TextSpan(
                 children: [
                   if (required)
-                    const TextSpan(
+                    TextSpan(
                       text: '* ',
-                      style: TextStyle(color: AtsColors.red),
+                      style: TextStyle(
+                        color: AtsColors.resolve(context, AtsColors.red),
+                      ),
                     ),
                   TextSpan(text: label),
                 ],
               ),
-              style: const TextStyle(
-                color: AtsColors.text,
+              style: TextStyle(
+                color: AtsColors.resolve(context, AtsColors.text),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -849,9 +948,12 @@ class AtsFormTextField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hintText,
         isDense: true,
-        fillColor: AtsColors.background,
+        fillColor: AtsColors.resolve(context, AtsColors.background),
       ),
-      style: const TextStyle(color: AtsColors.text, fontSize: 14),
+      style: TextStyle(
+        color: AtsColors.resolve(context, AtsColors.text),
+        fontSize: 14,
+      ),
     );
   }
 }
@@ -881,18 +983,25 @@ class AtsEmptyState extends StatelessWidget {
             Container(
               width: 72,
               height: 72,
-              decoration: const BoxDecoration(
-                color: AtsColors.mint,
+              decoration: BoxDecoration(
+                color: AtsColors.resolve(context, AtsColors.mint),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 34, color: AtsColors.primary),
+              child: Icon(
+                icon,
+                size: 34,
+                color: AtsColors.resolve(context, AtsColors.primary),
+              ),
             ),
             const SizedBox(height: 14),
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              localizeMiniProgramLabel(context, title),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             if (subtitle != null) ...[
               const SizedBox(height: 6),
               Text(
-                subtitle!,
+                localizeMiniProgramLabel(context, subtitle!),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
@@ -913,7 +1022,7 @@ class _Dot extends StatelessWidget {
     return Container(
       width: 1,
       height: 10,
-      color: AtsColors.divider,
+      color: AtsColors.resolve(context, AtsColors.divider),
       margin: const EdgeInsets.symmetric(horizontal: 7),
     );
   }
@@ -930,11 +1039,18 @@ class _IconLine extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: AtsColors.textMuted),
+        Icon(
+          icon,
+          size: 14,
+          color: AtsColors.resolve(context, AtsColors.textMuted),
+        ),
         const SizedBox(width: 4),
         Text(
-          label,
-          style: const TextStyle(color: AtsColors.textSecondary, fontSize: 12),
+          localizeMiniProgramLabel(context, label),
+          style: TextStyle(
+            color: AtsColors.resolve(context, AtsColors.textSecondary),
+            fontSize: 12,
+          ),
         ),
       ],
     );
@@ -946,7 +1062,7 @@ void atsToast(BuildContext context, String message) {
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(localizeMiniProgramLabel(context, message)),
         duration: const Duration(milliseconds: 1600),
       ),
     );

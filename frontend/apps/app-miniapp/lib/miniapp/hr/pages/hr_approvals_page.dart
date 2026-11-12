@@ -20,7 +20,7 @@ class _HrApprovalsPageState extends State<HrApprovalsPage> {
               .where((item) => item.kind == _filter)
               .toList();
     return RefreshIndicator(
-      color: HrColors.brand,
+      color: HrColors.resolve(context, HrColors.brand),
       onRefresh: widget.controller.refresh,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
@@ -30,18 +30,24 @@ class _HrApprovalsPageState extends State<HrApprovalsPage> {
               Expanded(
                 child: Text(
                   '审批中心',
-                  style: HrText.appBarTitle.copyWith(fontSize: 25),
+                  style: HrText.resolve(
+                    context,
+                    HrText.appBarTitle,
+                  ).copyWith(fontSize: 25),
                 ),
               ),
               HrStatusChip(
                 label: '${widget.controller.approvals.length} 待处理',
-                background: HrColors.warningBg,
-                foreground: HrColors.warning,
+                background: HrColors.resolve(context, HrColors.warningBg),
+                foreground: HrColors.resolve(context, HrColors.warning),
               ),
             ],
           ),
           const SizedBox(height: 5),
-          const Text('集中处理团队成员的申请，决策后可立即撤销。', style: HrText.meta),
+          Text(
+            '集中处理团队成员的申请，决策后可立即撤销。',
+            style: HrText.resolve(context, HrText.meta),
+          ),
           const SizedBox(height: 15),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -125,14 +131,22 @@ class _FilterChip extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? HrColors.ink : HrColors.surface,
+          color: selected
+              ? HrColors.ink
+              : HrColors.resolve(context, HrColors.surface),
           borderRadius: BorderRadius.circular(99),
-          border: Border.all(color: selected ? HrColors.ink : HrColors.line),
+          border: Border.all(
+            color: selected
+                ? HrColors.resolve(context, HrColors.ink)
+                : HrColors.resolve(context, HrColors.line),
+          ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? HrColors.surface : HrColors.ink3,
+            color: selected
+                ? Colors.white
+                : HrColors.resolve(context, HrColors.ink3),
             fontSize: 11.5,
             fontWeight: FontWeight.w700,
           ),
@@ -171,16 +185,22 @@ class _ApprovalCard extends StatelessWidget {
                   children: [
                     Text(
                       item.name,
-                      style: HrText.cardTitle.copyWith(fontSize: 14),
+                      style: HrText.resolve(
+                        context,
+                        HrText.cardTitle,
+                      ).copyWith(fontSize: 14),
                     ),
-                    Text(item.kind.label, style: HrText.meta),
+                    Text(
+                      item.kind.label,
+                      style: HrText.resolve(context, HrText.meta),
+                    ),
                   ],
                 ),
               ),
               Text(
                 hrRelative(item.submittedAt),
-                style: HrText.mono.copyWith(
-                  color: HrColors.ink4,
+                style: HrText.resolve(context, HrText.mono).copyWith(
+                  color: HrColors.resolve(context, HrColors.ink4),
                   fontSize: 9.5,
                 ),
               ),
@@ -191,16 +211,25 @@ class _ApprovalCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: HrColors.bg,
+              color: HrColors.resolve(context, HrColors.bg),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.ask, style: HrText.cardTitle.copyWith(fontSize: 13)),
+                Text(
+                  item.ask,
+                  style: HrText.resolve(
+                    context,
+                    HrText.cardTitle,
+                  ).copyWith(fontSize: 13),
+                ),
                 if (item.reason.isNotEmpty) ...[
                   const SizedBox(height: 3),
-                  Text(item.reason, style: HrText.meta),
+                  Text(
+                    item.reason,
+                    style: HrText.resolve(context, HrText.meta),
+                  ),
                 ],
               ],
             ),
@@ -211,14 +240,16 @@ class _ApprovalCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: HrColors.warningBg,
-                border: Border.all(color: HrColors.warningBorder),
+                color: HrColors.resolve(context, HrColors.warningBg),
+                border: Border.all(
+                  color: HrColors.resolve(context, HrColors.warningBorder),
+                ),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 item.warning!,
-                style: HrText.meta.copyWith(
-                  color: HrColors.warningInk,
+                style: HrText.resolve(context, HrText.meta).copyWith(
+                  color: HrColors.resolve(context, HrColors.warningInk),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -246,7 +277,10 @@ class _ApprovalCard extends StatelessWidget {
             const SizedBox(height: 7),
             Text(
               '该类型申请如需驳回，请前往 Horilla 网页端处理。',
-              style: HrText.meta.copyWith(color: HrColors.ink4),
+              style: HrText.resolve(
+                context,
+                HrText.meta,
+              ).copyWith(color: HrColors.resolve(context, HrColors.ink4)),
             ),
           ],
         ],

@@ -34,13 +34,16 @@ class _HrSignInPageState extends State<HrSignInPage> {
         Text(
           'RuoQi 人事',
           textAlign: TextAlign.center,
-          style: HrText.appBarTitle.copyWith(fontSize: 27),
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 27),
         ),
         const SizedBox(height: 6),
         Text(
           '员工自助 · 考勤 · 休假 · 薪酬',
           textAlign: TextAlign.center,
-          style: HrText.meta,
+          style: HrText.resolve(context, HrText.meta),
         ),
         const SizedBox(height: 28),
         HrCard(
@@ -48,11 +51,14 @@ class _HrSignInPageState extends State<HrSignInPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('连接 Horilla HR', style: HrText.cardTitle),
+              Text(
+                '连接 Horilla HR',
+                style: HrText.resolve(context, HrText.cardTitle),
+              ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 '演示环境已预填服务器与账号，真实接入时由 HR 管理员提供地址。',
-                style: HrText.meta,
+                style: HrText.resolve(context, HrText.meta),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -102,18 +108,25 @@ class _HrSignInPageState extends State<HrSignInPage> {
         ),
         const SizedBox(height: 14),
         HrCard(
-          background: HrColors.infoBg,
+          background: HrColors.resolve(context, HrColors.infoBg),
           borderColor: const Color(0xFFC9DBEA),
           shadow: false,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.info_outline, color: HrColors.info, size: 20),
+              Icon(
+                Icons.info_outline,
+                color: HrColors.resolve(context, HrColors.info),
+                size: 20,
+              ),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
                   '当前为静态登录页，不会发送真实密码。关闭模拟数据后，请通过注入的 RuoQiNetworkClient 完成鉴权。',
-                  style: HrText.meta.copyWith(color: HrColors.info),
+                  style: HrText.resolve(
+                    context,
+                    HrText.meta,
+                  ).copyWith(color: HrColors.resolve(context, HrColors.info)),
                 ),
               ),
             ],
@@ -123,7 +136,10 @@ class _HrSignInPageState extends State<HrSignInPage> {
         Text(
           '登录即表示同意企业隐私政策与信息安全规范',
           textAlign: TextAlign.center,
-          style: HrText.meta.copyWith(color: HrColors.ink4, fontSize: 10),
+          style: HrText.resolve(context, HrText.meta).copyWith(
+            color: HrColors.resolve(context, HrColors.ink4),
+            fontSize: 10,
+          ),
         ),
       ],
     );

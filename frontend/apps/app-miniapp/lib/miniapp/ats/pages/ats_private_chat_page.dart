@@ -76,14 +76,21 @@ class _AtsPrivateChatPageState extends State<AtsPrivateChatPage> {
         Container(
           padding: const EdgeInsets.fromLTRB(14, 9, 14, 9),
           color: const Color(0xFFFFFAF4),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.lock_outline, size: 15, color: AtsColors.orange),
+              Icon(
+                Icons.lock_outline,
+                size: 15,
+                color: AtsColors.resolve(context, AtsColors.orange),
+              ),
               SizedBox(width: 5),
               Expanded(
                 child: Text(
                   '请勿向招聘方转账或支付任何费用',
-                  style: TextStyle(color: AtsColors.orange, fontSize: 11),
+                  style: TextStyle(
+                    color: AtsColors.resolve(context, AtsColors.orange),
+                    fontSize: 11,
+                  ),
                 ),
               ),
             ],
@@ -94,10 +101,13 @@ class _AtsPrivateChatPageState extends State<AtsPrivateChatPage> {
             controller: _scrollController,
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
             children: [
-              const Center(
+              Center(
                 child: Text(
                   '10:20',
-                  style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
+                  style: TextStyle(
+                    color: AtsColors.resolve(context, AtsColors.textMuted),
+                    fontSize: 10,
+                  ),
                 ),
               ),
               const SizedBox(height: 14),
@@ -110,29 +120,34 @@ class _AtsPrivateChatPageState extends State<AtsPrivateChatPage> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const AtsAvatar(
+                    AtsAvatar(
                       label: '李',
                       size: 34,
-                      color: AtsColors.blue,
+                      color: AtsColors.resolve(context, AtsColors.blue),
                     ),
                     const SizedBox(width: 8),
                     Container(
                       width: 230,
                       padding: const EdgeInsets.all(11),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AtsColors.resolve(context, AtsColors.surface),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AtsColors.divider),
+                        border: Border.all(
+                          color: AtsColors.resolve(context, AtsColors.divider),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
                             children: [
                               Icon(
                                 Icons.description_outlined,
                                 size: 24,
-                                color: AtsColors.primary,
+                                color: AtsColors.resolve(
+                                  context,
+                                  AtsColors.primary,
+                                ),
                               ),
                               SizedBox(width: 8),
                               Expanded(
@@ -149,10 +164,13 @@ class _AtsPrivateChatPageState extends State<AtsPrivateChatPage> {
                             ],
                           ),
                           const SizedBox(height: 7),
-                          const Text(
+                          Text(
                             '点击可预览简历内容',
                             style: TextStyle(
-                              color: AtsColors.textMuted,
+                              color: AtsColors.resolve(
+                                context,
+                                AtsColors.textMuted,
+                              ),
                               fontSize: 10,
                             ),
                           ),
@@ -179,14 +197,14 @@ class _AtsPrivateChatPageState extends State<AtsPrivateChatPage> {
                     visualDensity: VisualDensity.compact,
                     icon: Icon(
                       _voiceMode ? Icons.keyboard_alt_outlined : Icons.mic_none,
-                      color: AtsColors.text,
+                      color: AtsColors.resolve(context, AtsColors.text),
                     ),
                   ),
                   Expanded(
                     child: Container(
                       constraints: const BoxConstraints(minHeight: 38),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AtsColors.resolve(context, AtsColors.surface),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: _voiceMode
@@ -213,10 +231,13 @@ class _AtsPrivateChatPageState extends State<AtsPrivateChatPage> {
                               maxLines: 3,
                               textInputAction: TextInputAction.send,
                               onSubmitted: (_) => _send(),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 hintText: '发送消息',
                                 isDense: true,
-                                fillColor: Colors.white,
+                                fillColor: AtsColors.resolve(
+                                  context,
+                                  AtsColors.surface,
+                                ),
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 11,
                                   vertical: 10,
@@ -230,9 +251,9 @@ class _AtsPrivateChatPageState extends State<AtsPrivateChatPage> {
                     onPressed: () =>
                         setState(() => _showActions = !_showActions),
                     visualDensity: VisualDensity.compact,
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.add_circle_outline_rounded,
-                      color: AtsColors.text,
+                      color: AtsColors.resolve(context, AtsColors.text),
                     ),
                   ),
                   if (_messageController.text.trim().isNotEmpty)
@@ -285,7 +306,9 @@ class _MessageBubble extends StatelessWidget {
       constraints: const BoxConstraints(maxWidth: 250),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: message.mine ? AtsColors.primary : Colors.white,
+        color: message.mine
+            ? AtsColors.solidPrimary(context)
+            : AtsColors.resolve(context, AtsColors.surface),
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(10),
           topRight: const Radius.circular(10),
@@ -296,7 +319,9 @@ class _MessageBubble extends StatelessWidget {
       child: Text(
         message.text,
         style: TextStyle(
-          color: message.mine ? Colors.white : AtsColors.text,
+          color: message.mine
+              ? Colors.white
+              : AtsColors.resolve(context, AtsColors.text),
           fontSize: 13,
           height: 1.55,
         ),
@@ -309,7 +334,11 @@ class _MessageBubble extends StatelessWidget {
           : MainAxisAlignment.start,
       children: [
         if (!message.mine) ...[
-          const AtsAvatar(label: '李', size: 34, color: AtsColors.blue),
+          AtsAvatar(
+            label: '李',
+            size: 34,
+            color: AtsColors.resolve(context, AtsColors.blue),
+          ),
           const SizedBox(width: 8),
         ],
         bubble,
@@ -347,16 +376,20 @@ class _AttachmentAction extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AtsColors.resolve(context, AtsColors.surface),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: AtsColors.textSecondary, size: 21),
+                child: Icon(
+                  icon,
+                  color: AtsColors.resolve(context, AtsColors.textSecondary),
+                  size: 21,
+                ),
               ),
               const SizedBox(height: 5),
               Text(
                 label,
-                style: const TextStyle(
-                  color: AtsColors.textMuted,
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textMuted),
                   fontSize: 10,
                 ),
               ),

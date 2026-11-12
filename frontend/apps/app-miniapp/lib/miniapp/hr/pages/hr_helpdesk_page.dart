@@ -27,16 +27,25 @@ class _HrHelpdeskPageState extends State<HrHelpdeskPage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
       children: [
-        Text('员工服务台', style: HrText.appBarTitle.copyWith(fontSize: 25)),
+        Text(
+          '员工服务台',
+          style: HrText.resolve(
+            context,
+            HrText.appBarTitle,
+          ).copyWith(fontSize: 25),
+        ),
         const SizedBox(height: 5),
-        const Text('找不到入口或需要人工协助，可以在这里提交服务工单。', style: HrText.meta),
+        Text(
+          '找不到入口或需要人工协助，可以在这里提交服务工单。',
+          style: HrText.resolve(context, HrText.meta),
+        ),
         const SizedBox(height: 17),
         HrCard(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('问题类型', style: HrText.eyebrow),
+              Text('问题类型', style: HrText.resolve(context, HrText.eyebrow)),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
@@ -47,17 +56,23 @@ class _HrHelpdeskPageState extends State<HrHelpdeskPage> {
                       label: Text(category),
                       selected: _category == category,
                       showCheckmark: false,
-                      selectedColor: HrColors.brandTint,
-                      backgroundColor: HrColors.bg2,
+                      selectedColor: HrColors.resolve(
+                        context,
+                        HrColors.brandTint,
+                      ),
+                      backgroundColor: HrColors.resolve(context, HrColors.bg2),
                       side: BorderSide(
                         color: _category == category
-                            ? HrColors.brandTintBorder
-                            : HrColors.line,
+                            ? HrColors.resolve(
+                                context,
+                                HrColors.brandTintBorder,
+                              )
+                            : HrColors.resolve(context, HrColors.line),
                       ),
                       labelStyle: TextStyle(
                         color: _category == category
-                            ? HrColors.brand
-                            : HrColors.ink3,
+                            ? HrColors.resolve(context, HrColors.brand)
+                            : HrColors.resolve(context, HrColors.ink3),
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
@@ -91,21 +106,24 @@ class _HrHelpdeskPageState extends State<HrHelpdeskPage> {
         ),
         const SizedBox(height: 12),
         HrCard(
-          background: HrColors.infoBg,
+          background: HrColors.resolve(context, HrColors.infoBg),
           borderColor: const Color(0xFFC9DBEA),
           shadow: false,
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.support_agent_rounded,
-                color: HrColors.info,
+                color: HrColors.resolve(context, HrColors.info),
                 size: 21,
               ),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
                   '服务时间为工作日 09:00 - 18:00，通常会在 1 个工作日内回复。',
-                  style: HrText.meta.copyWith(color: HrColors.info),
+                  style: HrText.resolve(
+                    context,
+                    HrText.meta,
+                  ).copyWith(color: HrColors.resolve(context, HrColors.info)),
                 ),
               ),
             ],

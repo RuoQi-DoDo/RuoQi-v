@@ -1,3 +1,5 @@
+import '../miniapp_localizations.dart';
+
 import 'package:flutter/material.dart';
 
 import 'miniapp_capsule.dart';
@@ -51,7 +53,7 @@ class MiniProgramNavigationBar extends StatelessWidget {
       left = leading!;
     } else if (canGoBack) {
       left = IconButton(
-        tooltip: '返回',
+        tooltip: localizeMiniProgramLabel(context, '返回'),
         onPressed: onBack,
         visualDensity: VisualDensity.compact,
         icon: Icon(
@@ -75,16 +77,19 @@ class MiniProgramNavigationBar extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           Align(alignment: Alignment.centerLeft, child: left),
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style:
-                titleStyle ??
-                theme.textTheme.titleMedium?.copyWith(
-                  color: foreground,
-                  fontWeight: FontWeight.w600,
-                ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 102),
+            child: Text(
+              localizeMiniProgramLabel(context, title),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  titleStyle ??
+                  theme.textTheme.titleMedium?.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
           ),
           Align(
             alignment: Alignment.centerRight,

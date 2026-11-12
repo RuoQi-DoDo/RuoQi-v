@@ -183,12 +183,18 @@ class _AccountLine extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(color: AtsColors.textSecondary, fontSize: 12),
+          style: TextStyle(
+            color: AtsColors.resolve(context, AtsColors.textSecondary),
+            fontSize: 12,
+          ),
         ),
         const Spacer(),
         Text(
           value,
-          style: const TextStyle(color: AtsColors.text, fontSize: 12),
+          style: TextStyle(
+            color: AtsColors.resolve(context, AtsColors.text),
+            fontSize: 12,
+          ),
         ),
       ],
     );

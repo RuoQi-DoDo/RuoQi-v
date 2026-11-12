@@ -25,17 +25,19 @@ class PlatformMiniProgram extends StatefulWidget {
 }
 
 class _PlatformMiniProgramState extends State<PlatformMiniProgram> {
-  late final PlatformAccountController _controller;
+  PlatformAccountController? _ownedController;
+  late PlatformAccountController _controller;
 
   @override
-  void initState() {
-    super.initState();
-    _controller = PlatformAccountController();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _controller = AccountScope.maybeOf(context) ??
+        (_ownedController ??= PlatformAccountController());
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _ownedController?.dispose();
     super.dispose();
   }
 

@@ -295,7 +295,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('settings-page')), findsOneWidget);
-    expect(find.text('账号与安全'), findsOneWidget);
+    expect(find.text('账号安全'), findsOneWidget);
     expect(find.text('消息通知'), findsOneWidget);
     expect(find.text('个人信息与权限'), findsOneWidget);
 
@@ -352,12 +352,9 @@ void main() {
     await tester.tap(find.byKey(const Key('open-settings')));
     await tester.pumpAndSettle();
 
-    final darkModeSwitch = find.descendant(
-      of: find.byKey(const Key('settings-dark-mode')),
-      matching: find.byType(Switch),
-    );
-    expect(tester.widget<Switch>(darkModeSwitch).value, isFalse);
-    await tester.tap(darkModeSwitch);
+    await tester.tap(find.text('界面与显示'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('display-theme-dark')));
     await tester.pumpAndSettle();
 
     expect(
@@ -366,11 +363,13 @@ void main() {
     );
     expect(
       Theme.of(
-        tester.element(find.byKey(const Key('settings-page'))),
+        tester.element(find.byKey(const Key('display-settings-page'))),
       ).brightness,
       Brightness.dark,
     );
 
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('settings-back')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('通讯录'));

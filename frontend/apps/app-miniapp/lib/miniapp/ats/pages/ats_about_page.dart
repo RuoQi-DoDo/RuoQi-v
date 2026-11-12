@@ -21,15 +21,21 @@ class AtsAboutPage extends StatelessWidget {
               width: 82,
               height: 82,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [AtsColors.primary, Color(0xFF59D2B2)],
+                  colors: [
+                    AtsColors.resolve(context, AtsColors.primary),
+                    Color(0xFF59D2B2),
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: AtsColors.primary.withValues(alpha: 0.24),
+                    color: AtsColors.resolve(
+                      context,
+                      AtsColors.primary,
+                    ).withValues(alpha: 0.24),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -49,10 +55,13 @@ class AtsAboutPage extends StatelessWidget {
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 5),
-          const Text(
+          Text(
             '让每一份热爱都有回响',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AtsColors.textMuted, fontSize: 12),
+            style: TextStyle(
+              color: AtsColors.resolve(context, AtsColors.textMuted),
+              fontSize: 12,
+            ),
           ),
           const SizedBox(height: 34),
           AtsCard(
@@ -64,11 +73,11 @@ class AtsAboutPage extends StatelessWidget {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   '企业直聘是一款面向求职者与招聘方的移动招聘平台。'
                   '我们通过真实、及时、高效的职位信息与沟通工具，帮助人才找到合适的机会，也帮助企业发现优秀伙伴。',
                   style: TextStyle(
-                    color: AtsColors.textSecondary,
+                    color: AtsColors.resolve(context, AtsColors.textSecondary),
                     fontSize: 13,
                     height: 1.8,
                   ),
@@ -106,10 +115,13 @@ class AtsAboutPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 26),
-          const Text(
+          Text(
             '© 2026 企业直聘 · 保留所有权利',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AtsColors.textMuted, fontSize: 9),
+            style: TextStyle(
+              color: AtsColors.resolve(context, AtsColors.textMuted),
+              fontSize: 9,
+            ),
           ),
         ],
       );
@@ -133,25 +145,28 @@ class _LegalContent extends StatelessWidget {
       children: [
         Text(
           isTerms ? '企业直聘用户服务协议' : '企业直聘隐私政策',
-          style: const TextStyle(
-            color: AtsColors.text,
+          style: TextStyle(
+            color: AtsColors.resolve(context, AtsColors.text),
             fontSize: 22,
             height: 1.35,
             fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           '更新日期：2026年11月1日  ·  生效日期：2026年11月8日',
-          style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
+          style: TextStyle(
+            color: AtsColors.resolve(context, AtsColors.textMuted),
+            fontSize: 10,
+          ),
         ),
         const SizedBox(height: 22),
         if (isTerms) ..._termsSections else ..._privacySections,
         const SizedBox(height: 30),
-        const Text(
+        Text(
           '如对本协议或隐私政策有任何疑问，可通过「我的 - 在线客服」联系我们。',
           style: TextStyle(
-            color: AtsColors.textMuted,
+            color: AtsColors.resolve(context, AtsColors.textMuted),
             fontSize: 12,
             height: 1.75,
           ),
@@ -248,8 +263,8 @@ class _LegalSection extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: AtsColors.text,
+            style: TextStyle(
+              color: AtsColors.resolve(context, AtsColors.text),
               fontSize: 15,
               fontWeight: FontWeight.w600,
             ),
@@ -257,8 +272,8 @@ class _LegalSection extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             body,
-            style: const TextStyle(
-              color: AtsColors.textSecondary,
+            style: TextStyle(
+              color: AtsColors.resolve(context, AtsColors.textSecondary),
               fontSize: 13,
               height: 1.85,
             ),
@@ -281,12 +296,18 @@ class _AboutInfoRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(color: AtsColors.textMuted, fontSize: 11),
+          style: TextStyle(
+            color: AtsColors.resolve(context, AtsColors.textMuted),
+            fontSize: 11,
+          ),
         ),
         const Spacer(),
         Text(
           value,
-          style: const TextStyle(color: AtsColors.text, fontSize: 11),
+          style: TextStyle(
+            color: AtsColors.resolve(context, AtsColors.text),
+            fontSize: 11,
+          ),
         ),
       ],
     );

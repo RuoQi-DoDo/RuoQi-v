@@ -13,11 +13,16 @@ class AtsProfilePage extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 22),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [AtsColors.primary, Color(0xFF48C9A8)],
+              colors: [
+                AtsColors.solidPrimary(context),
+                Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF116E56)
+                    : const Color(0xFF48C9A8),
+              ],
             ),
           ),
           child: Column(
@@ -35,7 +40,10 @@ class AtsProfilePage extends StatelessWidget {
                           width: 58,
                           height: 58,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.22),
+                            color: AtsColors.resolve(
+                              context,
+                              AtsColors.surface,
+                            ).withValues(alpha: 0.22),
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: Colors.white.withValues(alpha: 0.7),
@@ -75,7 +83,10 @@ class AtsProfilePage extends StatelessWidget {
                                 vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
+                                color: AtsColors.resolve(
+                                  context,
+                                  AtsColors.surface,
+                                ).withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(99),
                               ),
                               child: Text(
@@ -112,7 +123,10 @@ class AtsProfilePage extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               Material(
-                color: Colors.white.withValues(alpha: 0.18),
+                color: AtsColors.resolve(
+                  context,
+                  AtsColors.surface,
+                ).withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(10),
                 child: InkWell(
                   onTap: () => _showRoleSwitcher(context, controller),
@@ -312,9 +326,12 @@ class AtsProfilePage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 28),
-              const Text(
+              Text(
                 '企业直聘 v1.0.0',
-                style: TextStyle(color: AtsColors.textMuted, fontSize: 10),
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textMuted),
+                  fontSize: 10,
+                ),
               ),
               const SizedBox(height: 30),
             ],
@@ -331,8 +348,8 @@ class AtsProfilePage extends StatelessWidget {
       builder: (sheetContext) {
         return Container(
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: AtsColors.resolve(context, AtsColors.surface),
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
@@ -342,7 +359,7 @@ class AtsProfilePage extends StatelessWidget {
                 width: 34,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AtsColors.divider,
+                  color: AtsColors.resolve(context, AtsColors.divider),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -352,9 +369,12 @@ class AtsProfilePage extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 '不同身份拥有独立的首页和功能入口',
-                style: TextStyle(color: AtsColors.textMuted, fontSize: 11),
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textMuted),
+                  fontSize: 11,
+                ),
               ),
               const SizedBox(height: 18),
               for (final role in AtsUserRole.values)
@@ -362,8 +382,8 @@ class AtsProfilePage extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Material(
                     color: controller.role == role
-                        ? AtsColors.mint
-                        : AtsColors.background,
+                        ? AtsColors.resolve(context, AtsColors.mint)
+                        : AtsColors.resolve(context, AtsColors.background),
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       onTap: () {
@@ -381,8 +401,11 @@ class AtsProfilePage extends StatelessWidget {
                               height: 42,
                               decoration: BoxDecoration(
                                 color: role == AtsUserRole.candidate
-                                    ? AtsColors.primary
-                                    : AtsColors.blue,
+                                    ? AtsColors.solidPrimary(context)
+                                    : AtsColors.resolve(
+                                        context,
+                                        AtsColors.blue,
+                                      ),
                                 borderRadius: BorderRadius.circular(11),
                               ),
                               child: Icon(
@@ -410,8 +433,11 @@ class AtsProfilePage extends StatelessWidget {
                                     role == AtsUserRole.candidate
                                         ? '找工作、投递简历、收藏职位'
                                         : '发布职位、查看简历、招聘人才',
-                                    style: const TextStyle(
-                                      color: AtsColors.textMuted,
+                                    style: TextStyle(
+                                      color: AtsColors.resolve(
+                                        context,
+                                        AtsColors.textMuted,
+                                      ),
                                       fontSize: 11,
                                     ),
                                   ),
@@ -419,9 +445,12 @@ class AtsProfilePage extends StatelessWidget {
                               ),
                             ),
                             if (controller.role == role)
-                              const Icon(
+                              Icon(
                                 Icons.check_circle,
-                                color: AtsColors.primary,
+                                color: AtsColors.resolve(
+                                  context,
+                                  AtsColors.primary,
+                                ),
                                 size: 20,
                               ),
                           ],
@@ -464,7 +493,11 @@ class _QuickAction extends StatelessWidget {
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Icon(icon, size: 24, color: AtsColors.text),
+                  Icon(
+                    icon,
+                    size: 24,
+                    color: AtsColors.resolve(context, AtsColors.text),
+                  ),
                   if (badge != null)
                     Positioned(
                       left: 16,
@@ -475,7 +508,7 @@ class _QuickAction extends StatelessWidget {
                           vertical: 1,
                         ),
                         decoration: BoxDecoration(
-                          color: AtsColors.red,
+                          color: AtsColors.resolve(context, AtsColors.red),
                           borderRadius: BorderRadius.circular(7),
                         ),
                         child: Text(
@@ -492,9 +525,9 @@ class _QuickAction extends StatelessWidget {
               ),
               const SizedBox(height: 7),
               Text(
-                label,
-                style: const TextStyle(
-                  color: AtsColors.textSecondary,
+                localizeMiniProgramLabel(context, label),
+                style: TextStyle(
+                  color: AtsColors.resolve(context, AtsColors.textSecondary),
                   fontSize: 11,
                 ),
               ),
@@ -536,17 +569,21 @@ class _MenuBadge extends StatelessWidget {
           height: 18,
           padding: const EdgeInsets.symmetric(horizontal: 5),
           decoration: BoxDecoration(
-            color: AtsColors.red,
+            color: AtsColors.resolve(context, AtsColors.red),
             borderRadius: BorderRadius.circular(9),
           ),
           alignment: Alignment.center,
           child: Text(
-            text,
+            localizeMiniProgramLabel(context, text),
             style: const TextStyle(color: Colors.white, fontSize: 9, height: 1),
           ),
         ),
         const SizedBox(width: 4),
-        const Icon(Icons.chevron_right, size: 19, color: AtsColors.textMuted),
+        Icon(
+          Icons.chevron_right,
+          size: 19,
+          color: AtsColors.resolve(context, AtsColors.textMuted),
+        ),
       ],
     );
   }

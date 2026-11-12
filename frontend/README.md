@@ -28,8 +28,12 @@ apps/business-pc/
 apps/app-miniapp/
   lib/api/                    # IM / ATS / HR / 客户 / 商户 / 伙伴 / 平台 API 与 DTO
   lib/app_shell.dart          # 共享应用壳与独立入口启动函数
-  lib/pages/im/               # IM 业务组宿主、聊天、通讯录、发现、我的与设置
-  lib/pages/index.dart        # 业务组页面公共导出
+  lib/pages/host/             # 公共业务宿主、底部导航与小程序交互
+  lib/pages/im/               # 当前 IM 聊天业务首页
+  lib/pages/contacts|discover|profile|settings|auth/  # 可复用公共页面
+  lib/pages/account|display/  # 公共账号安全及界面与显示
+  lib/pages/common/           # 公共页面主题、文案与组件
+  lib/pages/index.dart        # 业务首页与公共页面导出
   lib/miniapp/ats/      # 企业直聘 ATS 小程序页面
   lib/miniapp/merchant/  # 商户小程序页面
   lib/miniapp/partner/   # 伙伴小程序页面
@@ -90,8 +94,11 @@ melos run run:app_miniapp
 melos run run:business_pc
 ```
 
-`app-miniapp` 当前由 `lib/main.dart` 直接启动 IM 主业务。ATS、HR、商户、
-伙伴和平台管理仅作为小程序由 IM 宿主打开。
+`app-miniapp` 由 `BusinessAppFrame` 管理全局设置和账号状态，
+`BusinessHostPage` 组合业务首页、通讯录、发现、我的及小程序选择页。当前
+`lib/main.dart` 将 `ImChatPage` 注入宿主的 `homeBuilder`；更换业务时替换首页
+构建器即可，公共页面继续复用。ATS、HR、商户、伙伴和平台管理由公共宿主
+作为小程序打开。具体接入方式见 `apps/app-miniapp/lib/pages/README.md`。
 
 ## 分层约定
 
