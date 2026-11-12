@@ -217,6 +217,23 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
     Navigator.of(context).push<void>(PlatformMiniProgram.route());
   }
 
+  void _openMiniProgramLauncherItem(MiniProgramLauncherItem item) {
+    switch (item.id) {
+      case MiniProgramLauncherIds.ats:
+        _openAtsMiniProgram();
+      case MiniProgramLauncherIds.merchant:
+        _openMerchantMiniProgram();
+      case MiniProgramLauncherIds.partner:
+        _openPartnerMiniProgram();
+      case MiniProgramLauncherIds.hr:
+        _openHrMiniProgram();
+      case MiniProgramLauncherIds.platform:
+        _openPlatformMiniProgram();
+      default:
+        _showHostToast(context, '该小程序为模拟入口');
+    }
+  }
+
   void _openSettingsPage() {
     Navigator.of(context).push<void>(_SettingsPage.route());
   }
@@ -427,13 +444,9 @@ class _ImHomePageState extends State<ImHomePage> with TickerProviderStateMixin {
                   _pullController,
                   _closeController,
                 ]),
-                child: _MiniProgramPickerPage(
+                child: MiniProgramPickerPage(
                   key: const ValueKey('customer-mini-program-picker'),
-                  onOpenAts: _openAtsMiniProgram,
-                  onOpenMerchant: _openMerchantMiniProgram,
-                  onOpenPartner: _openPartnerMiniProgram,
-                  onOpenHr: _openHrMiniProgram,
-                  onOpenPlatform: _openPlatformMiniProgram,
+                  onOpen: _openMiniProgramLauncherItem,
                   onCloseDragStart: _handlePickerCloseDragStart,
                   onCloseDragUpdate: _handlePickerCloseDragUpdate,
                   onCloseDragEnd: _handlePickerCloseDragEnd,
@@ -825,6 +838,118 @@ class _MiniProgramLoadingDots extends StatelessWidget {
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _ChatRow extends StatelessWidget {
+  const _ChatRow({
+    required this.title,
+    required this.preview,
+    required this.time,
+    required this.unread,
+    required this.color,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String title;
+  final String preview;
+  final String time;
+  final int unread;
+  final Color color;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Material(
+      color: scheme.surfaceContainerLowest,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.13),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 23),
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: scheme.onSurface,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          time,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            preview,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        if (unread > 0) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            constraints: const BoxConstraints(minWidth: 18),
+                            height: 18,
+                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                            decoration: BoxDecoration(
+                              color: scheme.error,
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '$unread',
+                              style: TextStyle(
+                                color: scheme.onError,
+                                fontSize: 10,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ruoqi_app_miniapp/mini-program/partner/home_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/partner/home_page.dart';
 
 void main() {
   testWidgets('伙伴 App 原型渲染', (tester) async {

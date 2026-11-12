@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ruoqi_app_miniapp/mini-program/mini_program_shell.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/pages/platform_account_home_page.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/pages/platform_account_links_page.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/pages/platform_account_log_page.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/pages/platform_account_security_page.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/pages/platform_device_management_page.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/pages/platform_email_binding_page.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/pages/platform_password_change_page.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/pages/platform_phone_binding_page.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/pages/platform_profile_edit_page.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/pages/platform_profile_page.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/platform_mini_program.dart';
-import 'package:ruoqi_app_miniapp/mini-program/platform/platform_models.dart';
+import 'package:ruoqi_app_miniapp/miniapp/miniapp_shell.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_account_home_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_account_links_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_account_log_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_account_security_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_device_management_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_email_binding_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_password_change_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_phone_binding_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_profile_edit_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_profile_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/platform_miniapp.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/platform_models.dart';
 
 void main() {
   testWidgets('平台账号中心页面均可使用小程序布局渲染', (tester) async {

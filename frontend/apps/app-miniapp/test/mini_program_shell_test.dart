@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ruoqi_app_miniapp/mini-program/mini_program_shell.dart';
+import 'package:ruoqi_app_miniapp/miniapp/miniapp_shell.dart';
 
 void main() {
   testWidgets('公共胶囊使用固定半透明样式并响应两个操作', (tester) async {

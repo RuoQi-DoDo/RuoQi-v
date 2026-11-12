@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ruoqi_app_miniapp/mini-program/ats/ats_mini_program.dart';
-import 'package:ruoqi_app_miniapp/mini-program/ats/ats_routes.dart';
+import 'package:ruoqi_app_miniapp/miniapp/ats/ats_miniapp.dart';
+import 'package:ruoqi_app_miniapp/miniapp/ats/ats_routes.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 
 void main() {

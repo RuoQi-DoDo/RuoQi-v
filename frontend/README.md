@@ -30,10 +30,10 @@ apps/app-miniapp/
   lib/app_shell.dart          # 共享应用壳与独立入口启动函数
   lib/pages/im/               # IM 业务组宿主、聊天、通讯录、发现、我的与设置
   lib/pages/index.dart        # 业务组页面公共导出
-  lib/mini-program/ats/      # 企业直聘 ATS 小程序页面
-  lib/mini-program/merchant/  # 商户小程序页面
-  lib/mini-program/partner/   # 伙伴小程序页面
-  lib/mini-program/platform/  # 平台账号中心小程序
+  lib/miniapp/ats/      # 企业直聘 ATS 小程序页面
+  lib/miniapp/merchant/  # 商户小程序页面
+  lib/miniapp/partner/   # 伙伴小程序页面
+  lib/miniapp/platform/  # 平台账号中心小程序
 ```
 
 > 说明：应用包名统一使用 `ruoqi_` 前缀；移动小程序宿主目录为 `app-miniapp`，
@@ -103,7 +103,7 @@ melos run run:business_pc
   `json_serializable` 生成 `*.g.dart`，改动后执行 `melos gen`；各端接口本来就不同，
   因此按端各持一份，互不牵连。
 - `apps/<壳>/lib/<域>/`：该域的 UI 页面，按「应用壳 + 端类型」划分——平台 PC 位于
-  `platform-pc`；平台账号中心已收敛为 `app-miniapp/lib/mini-program/platform` 小程序。
+  `platform-pc`；平台账号中心已收敛为 `app-miniapp/lib/miniapp/platform` 小程序。
   业务端（客户 / 商户 / 伙伴）的页面放在同一个壳里，由工作台入口打开。
 
 后端地址通过 `--dart-define` 注入，例如：

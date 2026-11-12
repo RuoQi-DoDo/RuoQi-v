@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/hr_controller.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/hr_mini_program.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/hr_models.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/hr_repository.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/hr_routes.dart';
-import 'package:ruoqi_app_miniapp/mini-program/hr/pages/team_pages.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/hr_controller.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/hr_miniapp.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/hr_models.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/hr_repository.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/hr_routes.dart';
+import 'package:ruoqi_app_miniapp/miniapp/hr/pages/team_pages.dart';
 
 void main() {
   testWidgets('存在系统状态栏时不再绘制模拟状态栏', (tester) async {
