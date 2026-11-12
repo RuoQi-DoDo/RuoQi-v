@@ -5,6 +5,26 @@ import 'package:ruoqi_app_miniapp/mini-program/ats/ats_routes.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 
 void main() {
+  testWidgets('存在系统状态栏时不再绘制模拟状态栏', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) {
+          final mediaQuery = MediaQuery.of(context);
+          return MediaQuery(
+            data: mediaQuery.copyWith(padding: const EdgeInsets.only(top: 24)),
+            child: child!,
+          );
+        },
+        home: AtsMiniProgram(onExit: () {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('9:41'), findsNothing);
+    expect(find.byTooltip('小程序菜单'), findsOneWidget);
+    expect(find.byTooltip('退出小程序'), findsOneWidget);
+  });
+
   testWidgets('应用默认打开客户首页，再进入小程序并可退出', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;

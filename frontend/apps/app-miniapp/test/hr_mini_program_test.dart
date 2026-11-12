@@ -9,6 +9,26 @@ import 'package:ruoqi_app_miniapp/mini-program/hr/hr_routes.dart';
 import 'package:ruoqi_app_miniapp/mini-program/hr/pages/team_pages.dart';
 
 void main() {
+  testWidgets('存在系统状态栏时不再绘制模拟状态栏', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) {
+          final mediaQuery = MediaQuery.of(context);
+          return MediaQuery(
+            data: mediaQuery.copyWith(padding: const EdgeInsets.only(top: 24)),
+            child: child!,
+          );
+        },
+        home: const HrMiniProgram(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('9:41'), findsNothing);
+    expect(find.byTooltip('小程序菜单'), findsOneWidget);
+    expect(find.byTooltip('退出小程序'), findsOneWidget);
+  });
+
   testWidgets('HR 小程序默认展示完整的静态首页', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;

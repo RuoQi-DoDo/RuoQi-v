@@ -369,7 +369,7 @@ class _BannerCarousel extends StatelessWidget {
                   top: 10,
                 ),
                 child: Container(
-                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+                  padding: const EdgeInsets.fromLTRB(18, 12, 18, 8),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(colors: banner.colors),
                     borderRadius: BorderRadius.circular(14),
@@ -403,7 +403,7 @@ class _BannerCarousel extends StatelessWidget {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(height: 5),
+                          const SizedBox(height: 2),
                           Text(
                             banner.title,
                             style: const TextStyle(
@@ -413,7 +413,7 @@ class _BannerCarousel extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: 5),
+                          const SizedBox(height: 2),
                           Text(
                             banner.subtitle,
                             style: TextStyle(
@@ -425,7 +425,7 @@ class _BannerCarousel extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
-                              vertical: 5,
+                              vertical: 4,
                             ),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.18),

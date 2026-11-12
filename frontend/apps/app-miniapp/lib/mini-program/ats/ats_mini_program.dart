@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../mini_program_shell.dart';
 import 'ats_routes.dart';
 import 'ats_style.dart';
 import 'pages/company_pages.dart';
@@ -38,105 +40,14 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
   }
 
   void _showMore() {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return Container(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 22),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 34,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AtsColors.divider,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AtsColors.primary, Color(0xFF5BD2B3)],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.work_outline_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 11),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '企业直聘',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(height: 3),
-                          Text(
-                            '招聘求职 · 微信小程序原型',
-                            style: TextStyle(
-                              color: AtsColors.textMuted,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const _MiniCapsule(light: false),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Divider(height: 1),
-                _MoreMenuItem(
-                  icon: Icons.add_circle_outline,
-                  label: '添加到我的小程序',
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    atsToast(context, '已添加到我的小程序');
-                  },
-                ),
-                _MoreMenuItem(
-                  icon: Icons.replay_rounded,
-                  label: '重新进入小程序',
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    _controller.switchTab(0);
-                    atsToast(context, '已返回小程序首页');
-                  },
-                ),
-                _MoreMenuItem(
-                  icon: Icons.info_outline_rounded,
-                  label: '关于企业直聘',
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    _controller.open(AtsRoute.aboutUs);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
+    showMiniProgramActionsSheet(
+      context,
+      title: '企业直聘',
+      subtitle: '招聘求职 · 微信小程序原型',
+      icon: Icons.work_outline_rounded,
+      onRestart: () {
+        _controller.switchTab(0);
+        atsToast(context, '已返回小程序首页');
       },
     );
   }
@@ -150,65 +61,76 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
         builder: (context, _) {
           final route = _controller.route;
           final greenNav = route.usesGreenNavigation;
-          return Scaffold(
-            backgroundColor: AtsColors.background,
-            body: Material(
-              color: Colors.black,
-              child: ClipRect(
-                child: Column(
-                  children: [
-                    _MiniStatusBar(light: greenNav),
-                    _MiniNavigationBar(
-                      title: route.title,
-                      light: greenNav,
-                      canGoBack: _controller.canGoBack,
-                      onBack: _controller.back,
-                      onMore: _showMore,
-                      onClose: _exit,
-                    ),
-                    Expanded(
-                      child: ColoredBox(
-                        color: AtsColors.background,
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 230),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          layoutBuilder: (currentChild, previousChildren) {
-                            return Stack(
-                              fit: StackFit.expand,
-                              children: [...previousChildren, ?currentChild],
-                            );
-                          },
-                          transitionBuilder: (child, animation) {
-                            final begin = Offset(
-                              _controller.forward ? 0.08 : -0.08,
-                              0,
-                            );
-                            return SlideTransition(
-                              position: Tween<Offset>(
-                                begin: begin,
-                                end: Offset.zero,
-                              ).animate(animation),
-                              child: FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: KeyedSubtree(
-                            key: ValueKey(route),
-                            child: AtsPageRouter.build(route, _controller),
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle(
+              statusBarColor: greenNav ? AtsColors.primary : Colors.white,
+              statusBarIconBrightness: greenNav
+                  ? Brightness.light
+                  : Brightness.dark,
+              statusBarBrightness: greenNav
+                  ? Brightness.dark
+                  : Brightness.light,
+            ),
+            child: Scaffold(
+              backgroundColor: AtsColors.background,
+              body: Material(
+                color: Colors.black,
+                child: ClipRect(
+                  child: Column(
+                    children: [
+                      _MiniStatusBar(light: greenNav),
+                      _MiniNavigationBar(
+                        title: route.title,
+                        light: greenNav,
+                        canGoBack: _controller.canGoBack,
+                        onBack: _controller.back,
+                        onMore: _showMore,
+                        onClose: _exit,
+                      ),
+                      Expanded(
+                        child: ColoredBox(
+                          color: AtsColors.background,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 230),
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeInCubic,
+                            layoutBuilder: (currentChild, previousChildren) {
+                              return Stack(
+                                fit: StackFit.expand,
+                                children: [...previousChildren, ?currentChild],
+                              );
+                            },
+                            transitionBuilder: (child, animation) {
+                              final begin = Offset(
+                                _controller.forward ? 0.08 : -0.08,
+                                0,
+                              );
+                              return SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: begin,
+                                  end: Offset.zero,
+                                ).animate(animation),
+                                child: FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: KeyedSubtree(
+                              key: ValueKey(route),
+                              child: AtsPageRouter.build(route, _controller),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    _MiniBottomChrome(
-                      showTabs: route.isTabRoot,
-                      index: _controller.tabIndex,
-                      onChanged: _controller.switchTab,
-                      onExit: _exit,
-                    ),
-                  ],
+                      _MiniBottomChrome(
+                        showTabs: route.isTabRoot,
+                        index: _controller.tabIndex,
+                        onChanged: _controller.switchTab,
+                        onExit: _exit,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -294,15 +216,17 @@ class _MiniStatusBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final systemTop = MediaQuery.paddingOf(context).top;
     final color = light ? Colors.white : AtsColors.text;
+    final backgroundColor = light ? AtsColors.primary : Colors.white;
+    if (systemTop > 0) {
+      return ColoredBox(
+        color: backgroundColor,
+        child: SizedBox(height: systemTop),
+      );
+    }
     return Container(
-      color: light ? AtsColors.primary : Colors.white,
-      height: systemTop > 0 ? systemTop + 8 : 28,
-      padding: EdgeInsets.fromLTRB(
-        16,
-        systemTop > 0 ? systemTop - 2 : 5,
-        16,
-        0,
-      ),
+      color: backgroundColor,
+      height: 28,
+      padding: const EdgeInsets.fromLTRB(16, 5, 16, 0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -381,90 +305,8 @@ class _MiniNavigationBar extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.centerRight,
-            child: _MiniCapsule(light: light, onMore: onMore, onClose: onClose),
+            child: MiniProgramCapsule(onMore: onMore, onClose: onClose),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MiniCapsule extends StatelessWidget {
-  const _MiniCapsule({required this.light, this.onMore, this.onClose});
-
-  final bool light;
-  final VoidCallback? onMore;
-  final VoidCallback? onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    final foreground = light ? Colors.white : AtsColors.text;
-    final borderColor = light
-        ? Colors.white.withValues(alpha: 0.24)
-        : AtsColors.text.withValues(alpha: 0.12);
-    return Container(
-      width: onClose == null ? 42 : 84,
-      height: 30,
-      decoration: BoxDecoration(
-        color: light
-            ? Colors.white.withValues(alpha: 0.16)
-            : const Color(0xFFF5F6F7),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: borderColor),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Tooltip(
-              message: '小程序菜单',
-              child: InkWell(
-                onTap: onMore,
-                borderRadius: BorderRadius.horizontal(
-                  left: const Radius.circular(99),
-                  right: Radius.circular(onClose == null ? 99 : 0),
-                ),
-                child: Icon(
-                  Icons.more_horiz_rounded,
-                  color: foreground,
-                  size: 19,
-                ),
-              ),
-            ),
-          ),
-          if (onClose != null) ...[
-            Container(width: 1, height: 15, color: borderColor),
-            Expanded(
-              child: Tooltip(
-                message: '退出小程序',
-                child: InkWell(
-                  onTap: onClose,
-                  borderRadius: const BorderRadius.horizontal(
-                    right: Radius.circular(99),
-                  ),
-                  child: Center(
-                    child: Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: foreground, width: 1.7),
-                      ),
-                      child: Center(
-                        child: Container(
-                          width: 5,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            color: foreground,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -644,46 +486,6 @@ class _SwipeUpExitHandleState extends State<_SwipeUpExitHandle> {
           _upwardDistance = 0;
         },
         child: widget.child,
-      ),
-    );
-  }
-}
-
-class _MoreMenuItem extends StatelessWidget {
-  const _MoreMenuItem({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 13),
-        child: Row(
-          children: [
-            Icon(icon, color: AtsColors.text, size: 20),
-            const SizedBox(width: 11),
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(color: AtsColors.text, fontSize: 13),
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              color: AtsColors.textMuted,
-              size: 18,
-            ),
-          ],
-        ),
       ),
     );
   }

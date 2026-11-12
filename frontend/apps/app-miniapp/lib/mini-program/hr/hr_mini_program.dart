@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../mini_program_shell.dart';
 import 'hr_controller.dart';
 import 'hr_repository.dart';
 import 'hr_routes.dart';
@@ -73,78 +75,14 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
   }
 
   void _showMore() {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) {
-        return Container(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
-          decoration: const BoxDecoration(
-            color: HrColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: HrColors.line,
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const Row(
-                  children: [
-                    HrLogoMark(size: 46),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'RuoQi 人事',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          SizedBox(height: 3),
-                          Text('员工自助 · 静态数据预览', style: HrText.meta),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.replay_rounded),
-                  title: const Text('重新进入小程序'),
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    _controller.resetToHome();
-                  },
-                ),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.info_outline_rounded),
-                  title: const Text('小程序信息'),
-                  subtitle: Text(
-                    _controller.useMockData
-                        ? '当前使用模拟数据，真实 API 已保留'
-                        : '当前连接 Horilla API',
-                  ),
-                  onTap: () => Navigator.of(sheetContext).pop(),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    showMiniProgramActionsSheet(
+      context,
+      title: 'RuoQi 人事',
+      subtitle: _controller.useMockData
+          ? '员工自助 · 静态数据预览'
+          : '员工自助 · Horilla API',
+      icon: Icons.badge_outlined,
+      onRestart: _controller.resetToHome,
     );
   }
 
@@ -167,65 +105,72 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                 _exit();
               }
             },
-            child: Scaffold(
-              backgroundColor: Colors.black,
-              body: Material(
-                color: HrColors.bg,
-                child: Column(
-                  children: [
-                    const _HrStatusBar(),
-                    _HrNavigationBar(
-                      title: _controller.route.title,
-                      canGoBack: _controller.canGoBack,
-                      onBack: _controller.back,
-                      onMore: _showMore,
-                      onExit: _exit,
-                    ),
-                    Expanded(
-                      child: ColoredBox(
-                        color: HrColors.bg,
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 210),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          layoutBuilder: (currentChild, previousChildren) {
-                            return Stack(
-                              fit: StackFit.expand,
-                              children: [...previousChildren, ?currentChild],
-                            );
-                          },
-                          transitionBuilder: (child, animation) {
-                            final begin = Offset(
-                              _controller.forward ? 0.07 : -0.07,
-                              0,
-                            );
-                            return SlideTransition(
-                              position: Tween<Offset>(
-                                begin: begin,
-                                end: Offset.zero,
-                              ).animate(animation),
-                              child: FadeTransition(
-                                opacity: animation,
-                                child: child,
+            child: AnnotatedRegion<SystemUiOverlayStyle>(
+              value: const SystemUiOverlayStyle(
+                statusBarColor: HrColors.surface,
+                statusBarIconBrightness: Brightness.dark,
+                statusBarBrightness: Brightness.light,
+              ),
+              child: Scaffold(
+                backgroundColor: Colors.black,
+                body: Material(
+                  color: HrColors.bg,
+                  child: Column(
+                    children: [
+                      const _HrStatusBar(),
+                      _HrNavigationBar(
+                        title: _controller.route.title,
+                        canGoBack: _controller.canGoBack,
+                        onBack: _controller.back,
+                        onMore: _showMore,
+                        onExit: _exit,
+                      ),
+                      Expanded(
+                        child: ColoredBox(
+                          color: HrColors.bg,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 210),
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeInCubic,
+                            layoutBuilder: (currentChild, previousChildren) {
+                              return Stack(
+                                fit: StackFit.expand,
+                                children: [...previousChildren, ?currentChild],
+                              );
+                            },
+                            transitionBuilder: (child, animation) {
+                              final begin = Offset(
+                                _controller.forward ? 0.07 : -0.07,
+                                0,
+                              );
+                              return SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: begin,
+                                  end: Offset.zero,
+                                ).animate(animation),
+                                child: FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: KeyedSubtree(
+                              key: ValueKey(_controller.route),
+                              child: HrPageRouter.build(
+                                _controller.route,
+                                _controller,
                               ),
-                            );
-                          },
-                          child: KeyedSubtree(
-                            key: ValueKey(_controller.route),
-                            child: HrPageRouter.build(
-                              _controller.route,
-                              _controller,
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    if (_controller.route.showsBottomNavigation)
-                      _HrBottomNavigation(
-                        index: _controller.tabIndex,
-                        onChanged: _controller.switchTab,
-                      ),
-                  ],
+                      if (_controller.route.showsBottomNavigation)
+                        _HrBottomNavigation(
+                          index: _controller.tabIndex,
+                          onChanged: _controller.switchTab,
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -281,10 +226,16 @@ class _HrStatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.paddingOf(context).top;
+    if (top > 0) {
+      return ColoredBox(
+        color: HrColors.surface,
+        child: SizedBox(height: top),
+      );
+    }
     return Container(
       color: HrColors.surface,
-      height: top > 0 ? top + 5 : 26,
-      padding: EdgeInsets.only(left: 16, right: 16, top: top > 0 ? top - 1 : 5),
+      height: 26,
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 5),
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -326,8 +277,8 @@ class _HrNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 45,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: const BoxDecoration(
         color: HrColors.surface,
         border: Border(bottom: BorderSide(color: HrColors.line2)),
@@ -360,74 +311,7 @@ class _HrNavigationBar extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.centerRight,
-            child: _HrCapsule(onMore: onMore, onExit: onExit),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HrCapsule extends StatelessWidget {
-  const _HrCapsule({required this.onMore, required this.onExit});
-
-  final VoidCallback onMore;
-  final VoidCallback onExit;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 82,
-      height: 29,
-      decoration: BoxDecoration(
-        color: HrColors.surface,
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: HrColors.line),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Tooltip(
-              message: '小程序菜单',
-              child: Semantics(
-                button: true,
-                label: '小程序菜单',
-                child: InkWell(
-                  onTap: onMore,
-                  borderRadius: const BorderRadius.horizontal(
-                    left: Radius.circular(99),
-                  ),
-                  child: const Icon(
-                    Icons.more_horiz_rounded,
-                    size: 18,
-                    color: HrColors.ink,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Container(width: 1, height: 15, color: HrColors.line),
-          Expanded(
-            child: Tooltip(
-              message: '退出小程序',
-              child: Semantics(
-                button: true,
-                label: '退出小程序',
-                child: InkWell(
-                  onTap: onExit,
-                  borderRadius: const BorderRadius.horizontal(
-                    right: Radius.circular(99),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.radio_button_unchecked_rounded,
-                      size: 11,
-                      color: HrColors.ink,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            child: MiniProgramCapsule(onMore: onMore, onClose: onExit),
           ),
         ],
       ),
