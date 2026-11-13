@@ -15,10 +15,10 @@ class AccentChoice {
 /// 默认强调色：青色。
 const Color defaultAccentColor = Color(0xFF0D9488);
 
-/// 字体缩放范围。85% 对齐微信“标准”字号，并在其下保留一档。
-const double minFontScale = 0.8;
-const double maxFontScale = 1.3;
-const double defaultFontScale = 0.85;
+/// 字体缩放范围。80% 对齐微信“标准”字号，并在其下保留一档。
+const double minFontScale = 0.75;
+const double maxFontScale = 1.2;
+const double defaultFontScale = 0.8;
 
 const accentChoices = <AccentChoice>[
   AccentChoice('绿色', Color(0xFF16A34A)),

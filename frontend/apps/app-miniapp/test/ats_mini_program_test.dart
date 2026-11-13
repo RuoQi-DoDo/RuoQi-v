@@ -57,7 +57,7 @@ void main() {
     await tester.pumpWidget(const BusinessApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('客户模拟'), findsOneWidget);
+    expect(find.text('客户模拟'), findsNothing);
     expect(find.text('最近使用的小程序'), findsNothing);
     expect(find.text('下拉打开最近使用的小程序'), findsNothing);
     expect(find.text('搜索'), findsNothing);
@@ -103,7 +103,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
-    expect(find.text('客户模拟'), findsOneWidget);
+    expect(find.text('企业直聘'), findsOneWidget);
   });
 
   testWidgets('小程序底部导航与招聘者身份可用', (tester) async {
@@ -279,7 +279,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
 
-    expect(find.text('客户模拟'), findsOneWidget);
+    expect(find.text('企业直聘'), findsOneWidget);
     expect(find.byKey(const Key('customer-mini-program-picker')), findsNothing);
   });
 
@@ -367,7 +367,7 @@ void main() {
 
     expect(find.byKey(const Key('settings-page')), findsOneWidget);
     expect(find.text('账号安全'), findsOneWidget);
-    expect(find.text('消息通知'), findsOneWidget);
+    expect(find.text('通知'), findsOneWidget);
     expect(find.text('个人信息与权限'), findsOneWidget);
 
     final notificationSwitch = find.descendant(

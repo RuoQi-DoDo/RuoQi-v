@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../localization.dart';
+import '../common/page_theme.dart';
 import 'account_controller.dart';
 import 'account_security_content.dart';
 import 'account_style.dart';
@@ -39,9 +40,12 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
       key: const Key('account-security-page'),
       backgroundColor: AccountStyle.pageBackground(context),
       appBar: AppBar(
+        backgroundColor: HostChromeStyle.appBarBackground(context),
+        surfaceTintColor: Colors.transparent,
         title: Text(
           AppLocalizations.of(context).text('账号安全', 'Account security'),
         ),
+        shape: Border(bottom: HostChromeStyle.appBarDivider(context)),
       ),
       body: AccountSecurityContent(controller: controller, showAppBar: true),
     );

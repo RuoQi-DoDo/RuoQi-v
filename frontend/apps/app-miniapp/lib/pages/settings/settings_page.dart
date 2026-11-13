@@ -46,8 +46,9 @@ class _SettingsPageState extends State<SettingsPage> {
             key: const Key('settings-page'),
             backgroundColor: scheme.surface,
             appBar: AppBar(
+              toolbarHeight: 50,
               centerTitle: true,
-              backgroundColor: scheme.surfaceContainerLowest,
+              backgroundColor: HostChromeStyle.appBarBackground(context),
               surfaceTintColor: Colors.transparent,
               leading: IconButton(
                 key: const Key('settings-back'),
@@ -62,26 +63,21 @@ class _SettingsPageState extends State<SettingsPage> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              shape: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+              shape: const Border(),
             ),
             body: ListView(
               padding: const EdgeInsets.only(top: 8, bottom: 36),
               children: [
-                _SettingsProfileRow(
-                  onTap: () => _showSettingsMessage(context, '个人信息为演示入口'),
+                _SettingsSearchField(
+                  onTap: () => _showSettingsMessage(context, '搜索设置为演示入口'),
                 ),
+                const _SettingsSectionHeader('账号'),
                 _SettingsGroup(
                   rows: [
                     _SettingsRow(
-                      title: '界面与显示',
-                      onTap: () => Navigator.of(
-                        context,
-                      ).push(DisplaySettingsPage.route()),
+                      title: '个人资料',
+                      onTap: () => _showSettingsMessage(context, '个人资料为演示入口'),
                     ),
-                  ],
-                ),
-                _SettingsGroup(
-                  rows: [
                     _SettingsRow(
                       title: '账号安全',
                       onTap: () => Navigator.of(
@@ -89,71 +85,72 @@ class _SettingsPageState extends State<SettingsPage> {
                       ).push(AccountSecurityPage.route()),
                     ),
                     _SettingsRow(
-                      title: '青少年模式',
-                      trailingText: '未开启',
-                      onTap: () => _showSettingsMessage(context, '青少年模式为演示入口'),
-                    ),
-                    _SettingsRow(
-                      title: '关怀模式',
-                      trailingText: '已关闭',
-                      onTap: () => _showSettingsMessage(context, '关怀模式为演示入口'),
+                      title: '个人信息与权限',
+                      onTap: () =>
+                          _showSettingsMessage(context, '个人信息与权限为演示入口'),
                     ),
                   ],
                 ),
+                const _SettingsSectionHeader('通用'),
                 _SettingsGroup(
                   rows: [
                     _SettingsSwitchRow(
                       key: const Key('settings-message-notifications'),
-                      title: '消息通知',
+                      title: '通知',
                       value: _messageNotificationsEnabled,
                       onChanged: (value) {
                         setState(() => _messageNotificationsEnabled = value);
                       },
                     ),
                     _SettingsRow(
-                      title: '聊天',
-                      onTap: () => _showSettingsMessage(context, '聊天设置为演示入口'),
-                    ),
-                    _SettingsRow(
-                      title: '通用',
-                      onTap: () => _showSettingsMessage(context, '通用设置为演示入口'),
+                      title: '界面与显示',
+                      onTap: () => Navigator.of(
+                        context,
+                      ).push(DisplaySettingsPage.route()),
                     ),
                     _SettingsRow(
                       title: '朋友权限',
                       onTap: () => _showSettingsMessage(context, '朋友权限为演示入口'),
                     ),
+                    _SettingsRow(
+                      title: '存储空间',
+                      onTap: () => _showSettingsMessage(context, '存储空间为演示入口'),
+                    ),
+                    _SettingsRow(
+                      title: '更多',
+                      onTap: () => _showSettingsMessage(context, '更多设置为演示入口'),
+                    ),
+                  ],
+                ),
+                const _SettingsSectionHeader('功能'),
+                _SettingsGroup(
+                  rows: [
+                    _SettingsRow(
+                      title: '聊天',
+                      onTap: () => _showSettingsMessage(context, '聊天设置为演示入口'),
+                    ),
+                    _SettingsRow(
+                      title: '音视频通话',
+                      onTap: () =>
+                          _showSettingsMessage(context, '音视频通话设置为演示入口'),
+                    ),
+                    _SettingsRow(
+                      title: '聊天记录管理',
+                      onTap: () => _showSettingsMessage(context, '聊天记录管理为演示入口'),
+                    ),
                   ],
                 ),
                 _SettingsGroup(
                   rows: [
                     _SettingsRow(
-                      title: '个人信息与权限',
-                      onTap: () =>
-                          _showSettingsMessage(context, '个人信息与权限为演示入口'),
+                      title: '帮助与反馈',
+                      onTap: () => _showSettingsMessage(context, '帮助与反馈为演示入口'),
                     ),
-                    _SettingsRow(
-                      title: '个人信息收集清单',
-                      onTap: () =>
-                          _showSettingsMessage(context, '个人信息收集清单为演示入口'),
-                    ),
-                    _SettingsRow(
-                      title: '第三方信息共享清单',
-                      onTap: () =>
-                          _showSettingsMessage(context, '第三方信息共享清单为演示入口'),
-                    ),
-                  ],
-                ),
-                _SettingsGroup(
-                  rows: [
                     _SettingsRow(
                       title: '关于微信',
                       trailingText: 'v8.0.58',
                       onTap: () =>
                           _showSettingsMessage(context, 'RuoQi 业务端 1.0.0'),
-                    ),
-                    _SettingsRow(
-                      title: '帮助与反馈',
-                      onTap: () => _showSettingsMessage(context, '帮助与反馈为演示入口'),
                     ),
                   ],
                 ),
@@ -225,81 +222,59 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 }
 
-class _SettingsProfileRow extends StatelessWidget {
-  const _SettingsProfileRow({required this.onTap});
+class _SettingsSearchField extends StatelessWidget {
+  const _SettingsSearchField({required this.onTap});
 
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      color: scheme.surfaceContainerLow,
+      height: 36,
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: InkWell(
         onTap: onTap,
-        child: SizedBox(
-          height: 78,
-          child: Row(
-            children: [
-              const SizedBox(width: 18),
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFF0D6B8), Color(0xFFCEA985)],
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: const Icon(
-                  Icons.person_rounded,
-                  color: Colors.white,
-                  size: 29,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Jengro Woo',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: scheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      '微信号：wzgxove',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.qr_code_2_rounded,
-                size: 23,
-                color: scheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 10),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: scheme.onSurfaceVariant,
-                size: 22,
-              ),
-              const SizedBox(width: 10),
-            ],
-          ),
+        borderRadius: BorderRadius.circular(8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_rounded,
+              size: 22,
+              color: scheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              pageLabel(context, '搜索'),
+              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 16),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class _SettingsSectionHeader extends StatelessWidget {
+  const _SettingsSectionHeader(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      height: 30,
+      padding: const EdgeInsets.only(left: 14),
+      alignment: Alignment.centerLeft,
+      child: Text(
+        pageLabel(context, title),
+        style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13),
       ),
     );
   }
@@ -312,6 +287,7 @@ class _SettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hairline = HostChromeStyle.hairline(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -320,11 +296,11 @@ class _SettingsGroup extends StatelessWidget {
           for (var index = 0; index < rows.length; index++) ...[
             if (index > 0)
               Padding(
-                padding: const EdgeInsets.only(left: 18),
+                padding: const EdgeInsets.only(left: 14),
                 child: Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: Theme.of(context).colorScheme.outlineVariant,
+                  height: hairline,
+                  thickness: hairline,
+                  color: HostChromeStyle.dividerColor(context),
                 ),
               ),
             rows[index],
@@ -358,7 +334,7 @@ class _SettingsRow extends StatelessWidget {
           height: 56,
           child: Row(
             children: [
-              const SizedBox(width: 18),
+              const SizedBox(width: 14),
               Expanded(
                 child: Text(
                   pageLabel(context, title),
@@ -413,7 +389,7 @@ class _SettingsSwitchRow extends StatelessWidget {
       height: 56,
       child: Row(
         children: [
-          const SizedBox(width: 18),
+          const SizedBox(width: 14),
           Expanded(
             child: Text(
               pageLabel(context, title),

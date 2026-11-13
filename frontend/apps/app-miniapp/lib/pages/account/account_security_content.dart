@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../localization.dart';
+import '../common/page_theme.dart';
 
 import 'account_controller.dart';
 import 'account_style.dart';
@@ -261,8 +262,17 @@ class AccountSecurityContent extends StatelessWidget {
   void _push(BuildContext context, Widget page) {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (context) =>
-            showAppBar ? Scaffold(appBar: AppBar(), body: page) : page,
+        builder: (context) => showAppBar
+            ? Scaffold(
+                backgroundColor: HostChromeStyle.appBarBackground(context),
+                appBar: AppBar(
+                  backgroundColor: HostChromeStyle.appBarBackground(context),
+                  surfaceTintColor: Colors.transparent,
+                  shape: Border(bottom: HostChromeStyle.appBarDivider(context)),
+                ),
+                body: page,
+              )
+            : page,
       ),
     );
   }

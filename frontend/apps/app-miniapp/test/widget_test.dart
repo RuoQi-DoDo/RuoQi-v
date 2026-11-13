@@ -7,11 +7,50 @@ void main() {
   testWidgets('业务端默认进入客户宿主首页', (tester) async {
     await tester.pumpWidget(const BusinessApp());
 
-    expect(find.text('客户模拟'), findsOneWidget);
-    expect(find.text('企业直聘'), findsOneWidget);
-    expect(find.text('佳佳'), findsOneWidget);
+    expect(find.text('客户模拟'), findsNothing);
+    for (final chat in ['企业直聘', '佳佳', '文件传输助手', '招聘交流群', '腾讯新闻']) {
+      expect(find.text(chat), findsOneWidget);
+    }
+    await tester.drag(
+      find.byKey(const Key('customer-home-scroll')),
+      const Offset(0, -600),
+    );
+    await tester.pumpAndSettle();
+    for (final chat in ['张老师', '林小满', '项目协作群', '服务通知', 'RuoQi 助手']) {
+      expect(find.text(chat), findsOneWidget);
+    }
     expect(find.text('业务工作台'), findsNothing);
     expect(find.text('RuoQi 业务端 App'), findsNothing);
+  });
+
+  testWidgets('IM 首页在真机尺寸下无需滚动展示 10 条会话', (tester) async {
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpAndSettle();
+
+    for (final chat in [
+      '企业直聘',
+      '佳佳',
+      '文件传输助手',
+      '招聘交流群',
+      '腾讯新闻',
+      '张老师',
+      '林小满',
+      '项目协作群',
+      '服务通知',
+      'RuoQi 助手',
+    ]) {
+      expect(find.text(chat), findsOneWidget);
+    }
+    final scrollable = tester.state<ScrollableState>(
+      find.descendant(
+        of: find.byKey(const Key('customer-home-scroll')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    expect(scrollable.position.maxScrollExtent, 0);
   });
 
   testWidgets('商户和伙伴从客户小程序选择页打开', (tester) async {

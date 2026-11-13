@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../common/page_theme.dart';
+
 abstract final class AccountStyle {
   static const double pageInset = 16;
   static const double cardRadius = 16;
@@ -15,9 +17,7 @@ abstract final class AccountStyle {
   static const Duration animation = Duration(milliseconds: 180);
 
   static Color pageBackground(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? const Color(0xFF17191C)
-        : const Color(0xFFF4F5F6);
+    return HostChromeStyle.appBarBackground(context);
   }
 
   static Color cardBackground(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'account_localizations.dart';
+import '../common/page_theme.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -325,14 +326,13 @@ class AccountRowDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hairline = HostChromeStyle.hairline(context);
     return Divider(
-      height: 1,
-      thickness: 1,
+      height: hairline,
+      thickness: hairline,
       indent: indent,
       endIndent: 14,
-      color: Theme.of(
-        context,
-      ).colorScheme.outlineVariant.withValues(alpha: 0.65),
+      color: HostChromeStyle.dividerColor(context),
     );
   }
 }

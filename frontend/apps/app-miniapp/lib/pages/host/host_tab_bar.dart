@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:common/common.dart';
 import 'package:flutter/material.dart';
 import '../common/page_localizations.dart';
+import '../common/page_theme.dart';
 
 enum HostTab { home, contacts, discover, me }
 
@@ -28,6 +29,9 @@ class HostTabBar extends StatelessWidget {
     final muted =
         theme.extension<RuQiThemeExtension>()?.inkMuted ??
         scheme.onSurfaceVariant;
+    final backgroundColor = HostChromeStyle.bottomBarBackground(context);
+    final dividerColor = HostChromeStyle.dividerColor(context);
+    final hairline = HostChromeStyle.hairline(context);
     final items = [
       (HostTab.home, homeIcon, homeActiveIcon, homeLabel, false),
       (
@@ -54,8 +58,10 @@ class HostTabBar extends StatelessWidget {
     ];
     return Container(
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerLowest,
-        border: Border(top: BorderSide(color: scheme.outlineVariant)),
+        color: backgroundColor,
+        border: Border(
+          top: BorderSide(color: dividerColor, width: hairline),
+        ),
       ),
       child: SafeArea(
         top: false,

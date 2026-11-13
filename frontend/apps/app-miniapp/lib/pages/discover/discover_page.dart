@@ -20,15 +20,34 @@ class DiscoverPage extends StatelessWidget {
       MaterialPageRoute<void>(builder: (_) => const DiscoverPage());
 
   @override
-  Widget build(BuildContext context) =>
-      SharedPageFrame(embedded: embedded, title: '发现', builder: _buildContent);
+  Widget build(BuildContext context) {
+    final handleTap = onTap ?? (message) => showPageMessage(context, message);
+    return SharedPageFrame(
+      embedded: embedded,
+      title: '发现',
+      actions: [
+        IconButton(
+          tooltip: '搜索',
+          onPressed: () => handleTap('搜索功能为模拟入口'),
+          icon: const Icon(Icons.search_rounded),
+        ),
+        IconButton(
+          tooltip: '发起',
+          onPressed: () => handleTap('发起功能为模拟入口'),
+          icon: const Icon(Icons.add_circle_outline_rounded),
+        ),
+        const SizedBox(width: 6),
+      ],
+      builder: _buildContent,
+    );
+  }
 
   Widget _buildContent(BuildContext context) {
     final onTap = this.onTap ?? (message) => showPageMessage(context, message);
 
     return ListView(
       key: const Key('discover-page'),
-      padding: const EdgeInsets.only(top: 8, bottom: 24),
+      padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageListGroup(
           children: [
@@ -100,12 +119,6 @@ class DiscoverPage extends StatelessWidget {
         ),
         PageListGroup(
           children: [
-            PageListRow(
-              icon: Icons.shopping_bag_outlined,
-              color: const Color(0xFFF0A52D),
-              title: '购物',
-              onTap: () => onTap('购物为模拟入口'),
-            ),
             PageListRow(
               icon: Icons.sports_esports_outlined,
               color: const Color(0xFF7C62D9),

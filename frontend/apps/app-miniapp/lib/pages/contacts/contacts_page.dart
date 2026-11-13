@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../common/page_localizations.dart';
+import '../common/page_theme.dart';
 import '../common/page_widgets.dart';
 
 class ContactsPage extends StatelessWidget {
@@ -13,8 +14,27 @@ class ContactsPage extends StatelessWidget {
       MaterialPageRoute<void>(builder: (_) => const ContactsPage());
 
   @override
-  Widget build(BuildContext context) =>
-      SharedPageFrame(embedded: embedded, title: '通讯录', builder: _buildContent);
+  Widget build(BuildContext context) {
+    final handleTap = onTap ?? (message) => showPageMessage(context, message);
+    return SharedPageFrame(
+      embedded: embedded,
+      title: '通讯录',
+      actions: [
+        IconButton(
+          tooltip: '搜索',
+          onPressed: () => handleTap('搜索功能为模拟入口'),
+          icon: const Icon(Icons.search_rounded),
+        ),
+        IconButton(
+          tooltip: '发起',
+          onPressed: () => handleTap('发起功能为模拟入口'),
+          icon: const Icon(Icons.add_circle_outline_rounded),
+        ),
+        const SizedBox(width: 6),
+      ],
+      builder: _buildContent,
+    );
+  }
 
   Widget _buildContent(BuildContext context) {
     final onTap = this.onTap ?? (message) => showPageMessage(context, message);
@@ -23,7 +43,7 @@ class ContactsPage extends StatelessWidget {
       children: [
         ListView(
           key: const Key('contacts-page'),
-          padding: const EdgeInsets.only(top: 8, bottom: 24),
+          padding: const EdgeInsets.only(bottom: 24),
           children: [
             PageListGroup(
               children: [
@@ -32,6 +52,12 @@ class ContactsPage extends StatelessWidget {
                   color: const Color(0xFF07C160),
                   title: '新的朋友',
                   onTap: () => onTap('新的朋友为模拟入口'),
+                ),
+                PageListRow(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  color: const Color(0xFFF0A52D),
+                  title: '仅聊天的朋友',
+                  onTap: () => onTap('仅聊天的朋友为模拟入口'),
                 ),
                 PageListRow(
                   icon: Icons.groups_rounded,
@@ -50,6 +76,12 @@ class ContactsPage extends StatelessWidget {
                   color: const Color(0xFF2F88FF),
                   title: '公众号',
                   onTap: () => onTap('公众号为模拟入口'),
+                ),
+                PageListRow(
+                  icon: Icons.business_center_outlined,
+                  color: const Color(0xFF2F88FF),
+                  title: '服务号',
+                  onTap: () => onTap('服务号为模拟入口'),
                 ),
               ],
             ),
@@ -192,16 +224,21 @@ class _ContactsPersonRow extends StatelessWidget {
       child: InkWell(
         onTap: () => onTap('$name 的联系人详情为模拟入口'),
         child: Container(
-          height: 62,
+          height: 50,
           margin: const EdgeInsets.only(left: 18),
           padding: const EdgeInsets.only(right: 18),
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+            border: Border(
+              bottom: BorderSide(
+                color: HostChromeStyle.dividerColor(context),
+                width: HostChromeStyle.hairline(context),
+              ),
+            ),
           ),
           child: Row(
             children: [
               CircleAvatar(
-                radius: 21,
+                radius: 23,
                 backgroundColor: scheme.surfaceContainerHigh,
                 child: Text(
                   name.characters.first,

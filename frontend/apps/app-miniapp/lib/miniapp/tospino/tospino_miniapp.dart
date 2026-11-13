@@ -34,7 +34,7 @@ double tospinoAndroidWidthScale(double logicalWidth) =>
     tospinoAndroidDesignWidth;
 
 /// Matches Tospino Android's `BaseApplication` text scaling:
-/// system font scale * 0.85 * width scale * Inter x-height correction.
+/// system font scale * width scale * Inter x-height correction.
 ///
 /// Font weight only selects Regular or Medium in `font/inter.xml`; it does not
 /// change the Android `sp` value.

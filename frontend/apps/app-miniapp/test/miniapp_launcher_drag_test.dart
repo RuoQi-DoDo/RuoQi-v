@@ -178,7 +178,7 @@ void main() {
     final controller = MiniProgramLibraryScope.maybeOf(context)!;
     settings.setMode(ThemeMode.dark);
     settings.setLocale(const Locale('en'));
-    settings.setFontScale(1.3);
+    settings.setFontScale(1.2);
     await tester.pumpAndSettle();
 
     final gesture = await _startDrag(tester, 'recent', 'file-assistant');

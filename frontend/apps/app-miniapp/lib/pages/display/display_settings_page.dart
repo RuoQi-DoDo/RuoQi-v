@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../appearance.dart';
 import '../../localization.dart';
+import '../common/page_theme.dart';
 
 String _fontSizeLabel(AppLocalizations l10n, double scale) {
   if ((scale - defaultFontScale).abs() < 0.001) {
@@ -23,9 +24,17 @@ class DisplaySettingsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final fontSizeLabel = _fontSizeLabel(l10n, settings.fontScale);
+    final hairline = HostChromeStyle.hairline(context);
+    final dividerColor = HostChromeStyle.dividerColor(context);
     return Scaffold(
       key: const Key('display-settings-page'),
-      appBar: AppBar(title: Text(l10n.text('界面与显示', 'Appearance & display'))),
+      backgroundColor: HostChromeStyle.appBarBackground(context),
+      appBar: AppBar(
+        backgroundColor: HostChromeStyle.appBarBackground(context),
+        surfaceTintColor: Colors.transparent,
+        title: Text(l10n.text('界面与显示', 'Appearance & display')),
+        shape: Border(bottom: HostChromeStyle.appBarDivider(context)),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -56,7 +65,7 @@ class DisplaySettingsPage extends StatelessWidget {
                   : null,
               onTap: () => settings.setMode(choice.$1),
             ),
-          const Divider(height: 32),
+          Divider(height: 32, thickness: hairline, color: dividerColor),
           Text(
             l10n.text('字体大小', 'Font size'),
             style: Theme.of(context).textTheme.titleMedium,
@@ -65,7 +74,7 @@ class DisplaySettingsPage extends StatelessWidget {
             key: const Key('display-font-size'),
             min: minFontScale,
             max: maxFontScale,
-            divisions: 10,
+            divisions: 9,
             label: fontSizeLabel,
             value: settings.fontScale,
             onChanged: settings.setFontScale,
@@ -89,7 +98,7 @@ class DisplaySettingsPage extends StatelessWidget {
               ),
             ),
           ),
-          const Divider(height: 32),
+          Divider(height: 32, thickness: hairline, color: dividerColor),
           Text(
             l10n.text('多语言', 'Language'),
             style: Theme.of(context).textTheme.titleMedium,
@@ -109,7 +118,7 @@ class DisplaySettingsPage extends StatelessWidget {
                   : null,
               onTap: () => settings.setLocale(choice.$1),
             ),
-          const Divider(height: 32),
+          Divider(height: 32, thickness: hairline, color: dividerColor),
           Text(
             l10n.text('横屏模式', 'Screen orientation'),
             style: Theme.of(context).textTheme.titleMedium,

@@ -1,6 +1,6 @@
 import 'package:common/common.dart';
 import 'package:flutter/material.dart';
-import '../common/page_localizations.dart';
+import '../common/page_theme.dart';
 import '../common/page_widgets.dart';
 
 /// IM chat home. Shared navigation is composed by BusinessHostPage.
@@ -13,48 +13,38 @@ class ImChatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final muted =
-        theme.extension<RuQiThemeExtension>()?.inkMuted ??
-        scheme.onSurfaceVariant;
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 42,
         titleSpacing: 16,
-        title: Row(
-          children: [
-            Text(
-              'RuoQi',
-              style: zh(
-                theme.textTheme.headlineMedium!.copyWith(
-                  color: scheme.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+        backgroundColor: HostChromeStyle.appBarBackground(context),
+        title: Text(
+          'RuoQi',
+          style: zh(
+            theme.textTheme.headlineMedium!.copyWith(
+              color: scheme.onSurface,
+              fontWeight: FontWeight.w700,
             ),
-            const SizedBox(width: 7),
-            Expanded(
-              child: Text(
-                pageLabel(context, '客户模拟'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(color: muted),
-              ),
-            ),
-          ],
+          ),
         ),
         actions: [
           IconButton(
             tooltip: '搜索',
+            constraints: const BoxConstraints.tightFor(width: 42, height: 42),
+            padding: EdgeInsets.zero,
             onPressed: () => showPageMessage(context, '搜索功能为模拟入口'),
             icon: const Icon(Icons.search_rounded),
           ),
           IconButton(
             tooltip: '发起',
+            constraints: const BoxConstraints.tightFor(width: 42, height: 42),
+            padding: EdgeInsets.zero,
             onPressed: () => showPageMessage(context, '发起功能为模拟入口'),
             icon: const Icon(Icons.add_circle_outline_rounded),
           ),
           const SizedBox(width: 6),
         ],
-        shape: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+        shape: Border(bottom: HostChromeStyle.appBarDivider(context)),
       ),
       body: CustomScrollView(
         key: const Key('customer-home-scroll'),
@@ -112,6 +102,51 @@ class ImChatPage extends StatelessWidget {
                 icon: Icons.article_outlined,
                 onTap: () => showPageMessage(context, '公众号为模拟入口'),
               ),
+              _ChatRow(
+                title: '张老师',
+                preview: '好的，明天下午两点见',
+                time: '周一',
+                unread: 0,
+                color: const Color(0xFF6366F1),
+                icon: Icons.school_outlined,
+                onTap: () => showPageMessage(context, '聊天详情为模拟入口'),
+              ),
+              _ChatRow(
+                title: '林小满',
+                preview: '简历已经更新，请查收',
+                time: '11/10',
+                unread: 0,
+                color: const Color(0xFF0EA5E9),
+                icon: Icons.description_outlined,
+                onTap: () => showPageMessage(context, '聊天详情为模拟入口'),
+              ),
+              _ChatRow(
+                title: '项目协作群',
+                preview: '王工：需求文档已上传',
+                time: '11/09',
+                unread: 3,
+                color: const Color(0xFF8B5CF6),
+                icon: Icons.groups_2_outlined,
+                onTap: () => showPageMessage(context, '群聊为模拟入口'),
+              ),
+              _ChatRow(
+                title: '服务通知',
+                preview: '你有一条新的系统通知',
+                time: '11/08',
+                unread: 1,
+                color: const Color(0xFF14B8A6),
+                icon: Icons.notifications_outlined,
+                onTap: () => showPageMessage(context, '通知详情为模拟入口'),
+              ),
+              _ChatRow(
+                title: 'RuoQi 助手',
+                preview: '欢迎使用企业招聘服务',
+                time: '11/07',
+                unread: 0,
+                color: scheme.primary,
+                icon: Icons.smart_toy_outlined,
+                onTap: () => showPageMessage(context, '助手详情为模拟入口'),
+              ),
             ]),
           ),
         ],
@@ -143,89 +178,106 @@ class _ChatRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final dividerColor = HostChromeStyle.dividerColor(context);
+    final hairline = HostChromeStyle.hairline(context);
     return Material(
       color: scheme.surfaceContainerLowest,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
-          child: Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.13),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 23),
-              ),
-              const SizedBox(width: 11),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 9.25, 14, 9.25),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 46,
+                    height: 46,
+                    child: Stack(
+                      clipBehavior: Clip.none,
                       children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: scheme.onSurface,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          time,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            preview,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                        if (unread > 0) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            constraints: const BoxConstraints(minWidth: 18),
-                            height: 18,
-                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                        Positioned.fill(
+                          child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: scheme.error,
-                              borderRadius: BorderRadius.circular(9),
+                              color: color.withValues(alpha: 0.13),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '$unread',
-                              style: TextStyle(
-                                color: scheme.onError,
-                                fontSize: 10,
-                                height: 1,
+                            child: Icon(icon, color: color, size: 23),
+                          ),
+                        ),
+                        if (unread > 0)
+                          Positioned(
+                            top: -2,
+                            right: -2,
+                            child: Container(
+                              width: 9,
+                              height: 9,
+                              decoration: BoxDecoration(
+                                color: scheme.error,
+                                shape: BoxShape.circle,
                               ),
                             ),
                           ),
-                        ],
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 11),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                title,
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: scheme.onSurface,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.05,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              time,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                                height: 1.05,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                preview,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                  fontSize: 13,
+                                  height: 1.05,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Positioned(
+              left: 68,
+              right: 0,
+              bottom: 0,
+              height: hairline,
+              child: ColoredBox(color: dividerColor),
+            ),
+          ],
         ),
       ),
     );
