@@ -12,7 +12,12 @@ class AtsProfilePage extends StatelessWidget {
       padding: EdgeInsets.zero,
       children: [
         Container(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 22),
+          padding: EdgeInsets.fromLTRB(
+            18,
+            MediaQuery.paddingOf(context).top + 12,
+            18,
+            22,
+          ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -102,21 +107,6 @@ class AtsProfilePage extends StatelessWidget {
                           ],
                         ),
                       ],
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      if (controller.loggedIn) {
-                        controller.open(AtsRoute.userInfo);
-                      } else {
-                        controller.open(AtsRoute.login);
-                      }
-                    },
-                    tooltip: '基本信息',
-                    icon: const Icon(
-                      Icons.settings_outlined,
-                      color: Colors.white,
                     ),
                   ),
                 ],

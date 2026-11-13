@@ -5,6 +5,7 @@ import 'package:ruoqi_app_miniapp/app_shell.dart';
 import 'package:ruoqi_app_miniapp/appearance.dart';
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_capsule_overlay.dart';
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_navigation_bar.dart';
+import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_status_bar.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/pages/home_page.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_models.dart';
@@ -19,8 +20,9 @@ void main() {
   testWidgets('Tospino 首页数据来自数据源并展示四个主入口', (tester) async {
     _usePhoneSize(tester);
     final api = _FakeTospinoApi();
+    final controller = _controller(api);
     await tester.pumpWidget(
-      MaterialApp(home: TospinoMiniProgram(controller: _controller(api))),
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
     );
     await tester.pumpAndSettle();
 
@@ -87,6 +89,69 @@ void main() {
 
     await controller.toggleFavorite(api.products.first);
     expect(api.favoriteCalls, 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('页面标题和返回属于可滚动内容，胶囊保持固定', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(
+      api,
+      initialProductId: api.products.first.id,
+    );
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('商品详情'), findsOneWidget);
+    expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
+    final verticalScrollable = find
+        .byWidgetPredicate(
+          (widget) =>
+              widget is Scrollable &&
+              widget.axisDirection == AxisDirection.down,
+        )
+        .last;
+    await tester.drag(verticalScrollable, const Offset(0, -500));
+    await tester.pumpAndSettle();
+    expect(find.text('商品详情').hitTestable(), findsNothing);
+    expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
+    expect(find.byType(MiniProgramNavigationBar), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('上滑后状态栏取消品牌底色', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: _controller(api))),
+    );
+    await tester.pumpAndSettle();
+
+    final before = tester
+        .widget<MiniProgramStatusBar>(find.byType(MiniProgramStatusBar))
+        .backgroundColor;
+    await tester.drag(
+      find.byKey(const Key('tospino-home-scroll')),
+      const Offset(0, -500),
+    );
+    await tester.pumpAndSettle();
+    final after = tester
+        .widget<MiniProgramStatusBar>(find.byType(MiniProgramStatusBar))
+        .backgroundColor;
+    expect(after, isNot(before));
+
+    await tester.tap(find.byKey(const Key('tospino-tab-我的')));
+    await tester.pumpAndSettle();
+    expect(find.byType(MiniProgramStatusBar), findsNothing);
+    await tester.drag(
+      find.byKey(const Key('tospino-profile-scroll')),
+      const Offset(0, -500),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(MiniProgramStatusBar), findsNothing);
+    expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

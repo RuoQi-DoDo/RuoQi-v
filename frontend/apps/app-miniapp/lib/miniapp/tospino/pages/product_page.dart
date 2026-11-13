@@ -86,7 +86,9 @@ class TospinoProductPage extends StatelessWidget {
                           Expanded(
                             child: TospinoPriceText(
                               price: product.price,
-                              oldPrice: product.oldPrice,
+                              oldPrice: product.oldPrice > product.price
+                                  ? product.oldPrice
+                                  : null,
                               size: 28,
                             ),
                           ),

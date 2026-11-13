@@ -9,7 +9,12 @@ class HrMePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       key: const Key('hr-me-scroll'),
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        MediaQuery.paddingOf(context).top + 10,
+        16,
+        30,
+      ),
       children: [
         Text(
           '我的',

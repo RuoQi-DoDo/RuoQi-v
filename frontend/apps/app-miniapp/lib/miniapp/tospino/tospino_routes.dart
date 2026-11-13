@@ -226,7 +226,7 @@ class TospinoAppController extends ChangeNotifier {
     notifyListeners();
     try {
       _categoryProducts = await _api.searchProducts(
-        navigationCategoryId: category.firstLeaf.id,
+        navigationCategoryId: category.id,
         pageSize: 20,
       );
     } catch (error) {

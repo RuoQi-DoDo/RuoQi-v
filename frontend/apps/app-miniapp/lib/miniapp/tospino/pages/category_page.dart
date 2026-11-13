@@ -286,7 +286,7 @@ class TospinoCategoryPage extends StatelessWidget {
                                         crossAxisCount: 2,
                                         mainAxisSpacing: 9,
                                         crossAxisSpacing: 9,
-                                        childAspectRatio: 0.62,
+                                        childAspectRatio: 0.54,
                                       ),
                                 ),
                               ),

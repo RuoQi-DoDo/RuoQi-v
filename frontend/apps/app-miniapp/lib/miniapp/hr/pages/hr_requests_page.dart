@@ -16,21 +16,24 @@ class HrRequestsPage extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
         children: [
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  '申请中心',
-                  style: HrText.resolve(
-                    context,
-                    HrText.appBarTitle,
-                  ).copyWith(fontSize: 25),
-                ),
+              Text(
+                '申请中心',
+                style: HrText.resolve(
+                  context,
+                  HrText.appBarTitle,
+                ).copyWith(fontSize: 25),
               ),
-              HrStatusChip(
-                label: '${_pendingCount(controller.requests)} 个审批中',
-                background: HrColors.resolve(context, HrColors.warningBg),
-                foreground: HrColors.resolve(context, HrColors.warning),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: HrStatusChip(
+                  label: '${_pendingCount(controller.requests)} 个审批中',
+                  background: HrColors.resolve(context, HrColors.warningBg),
+                  foreground: HrColors.resolve(context, HrColors.warning),
+                ),
               ),
             ],
           ),

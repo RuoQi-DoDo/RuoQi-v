@@ -55,6 +55,8 @@ class TospinoMiniProgram extends StatefulWidget {
 class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
   late final TospinoAppController _controller;
   late final bool _ownsController;
+  TospinoRoute? _statusRoute;
+  bool _statusScrolled = false;
 
   @override
   void initState() {
@@ -91,6 +93,17 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
     );
   }
 
+  bool _handleScroll(ScrollNotification notification) {
+    _setStatusScrolled(notification.metrics.pixels > 8);
+    return false;
+  }
+
+  void _setStatusScrolled(bool scrolled) {
+    if (scrolled != _statusScrolled) {
+      setState(() => _statusScrolled = scrolled);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Theme(
@@ -99,12 +112,18 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
         animation: _controller,
         builder: (context, _) {
           final route = _controller.route;
+          if (_statusRoute != route) {
+            _statusRoute = route;
+            _statusScrolled = false;
+          }
           final page = TospinoPageRouter.build(route, _controller);
           final brandNavigation = route.isTabRoot && route != TospinoRoute.cart;
-          final background = brandNavigation
+          final transparentStatusBar = route == TospinoRoute.profile;
+          final useBrandStatus = brandNavigation && !_statusScrolled;
+          final background = useBrandStatus
               ? TospinoColors.solidBrand(context)
               : TospinoColors.resolve(context, TospinoColors.surface);
-          final foreground = brandNavigation
+          final foreground = useBrandStatus
               ? Colors.white
               : TospinoColors.resolve(context, TospinoColors.ink);
           return PopScope(
@@ -119,13 +138,15 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
             },
             child: AnnotatedRegion<SystemUiOverlayStyle>(
               value: SystemUiOverlayStyle(
-                statusBarColor: background,
-                statusBarIconBrightness: brandNavigation
+                statusBarColor: transparentStatusBar
+                    ? Colors.transparent
+                    : background,
+                statusBarIconBrightness: useBrandStatus
                     ? Brightness.light
                     : Theme.of(context).brightness == Brightness.dark
                     ? Brightness.light
                     : Brightness.dark,
-                statusBarBrightness: brandNavigation
+                statusBarBrightness: useBrandStatus
                     ? Brightness.dark
                     : Theme.of(context).brightness,
               ),
@@ -141,102 +162,98 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
                   ),
                   child: Column(
                     children: [
-                      MiniProgramStatusBar(
-                        backgroundColor: background,
-                        foregroundColor: foreground,
-                        fallbackHeight: 26,
-                        fontSize: 11,
-                        iconSize: 13,
-                        iconGap: 4,
-                      ),
+                      if (!transparentStatusBar)
+                        MiniProgramStatusBar(
+                          backgroundColor: background,
+                          foregroundColor: foreground,
+                          fallbackHeight: 26,
+                          fontSize: 11,
+                          iconSize: 13,
+                          iconGap: 4,
+                        ),
                       Expanded(
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            ColoredBox(
-                              color: brandNavigation
-                                  ? TospinoColors.solidBrand(context)
-                                  : TospinoColors.resolve(
-                                      context,
-                                      TospinoColors.background,
-                                    ),
-                              child: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 210),
-                                switchInCurve: Curves.easeOutCubic,
-                                switchOutCurve: Curves.easeInCubic,
-                                layoutBuilder:
-                                    (currentChild, previousChildren) {
-                                      return Stack(
-                                        fit: StackFit.expand,
-                                        children: [
-                                          ...previousChildren,
-                                          ?currentChild,
-                                        ],
-                                      );
-                                    },
-                                transitionBuilder: (child, animation) {
-                                  final begin = Offset(
-                                    _controller.forward ? 0.06 : -0.06,
-                                    0,
-                                  );
-                                  return SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: begin,
-                                      end: Offset.zero,
-                                    ).animate(animation),
-                                    child: FadeTransition(
-                                      opacity: animation,
-                                      child: child,
-                                    ),
-                                  );
-                                },
-                                child: KeyedSubtree(
-                                  key: ValueKey(route),
-                                  child: route == TospinoRoute.home
-                                      ? page
-                                      : route.isTabRoot
-                                      ? Padding(
-                                          padding: EdgeInsets.only(
-                                            top: MiniProgramCapsuleOverlay
-                                                .reservedHeight,
-                                          ),
-                                          child: page,
-                                        )
-                                      : Column(
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: _handleScroll,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ColoredBox(
+                                color: brandNavigation
+                                    ? TospinoColors.solidBrand(context)
+                                    : TospinoColors.resolve(
+                                        context,
+                                        TospinoColors.background,
+                                      ),
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 210),
+                                  switchInCurve: Curves.easeOutCubic,
+                                  switchOutCurve: Curves.easeInCubic,
+                                  layoutBuilder:
+                                      (currentChild, previousChildren) {
+                                        return Stack(
+                                          fit: StackFit.expand,
                                           children: [
-                                            ColoredBox(
-                                              color: TospinoColors.resolve(
-                                                context,
-                                                TospinoColors.background,
-                                              ),
-                                              child: MiniProgramPageHeader(
-                                                title: route.title,
-                                                onBack: _controller.canGoBack
-                                                    ? _controller.back
-                                                    : null,
-                                                foregroundColor:
-                                                    TospinoColors.resolve(
-                                                      context,
-                                                      TospinoColors.ink,
-                                                    ),
-                                              ),
-                                            ),
-                                            Expanded(child: page),
+                                            ...previousChildren,
+                                            ?currentChild,
                                           ],
-                                        ),
+                                        );
+                                      },
+                                  transitionBuilder: (child, animation) {
+                                    final begin = Offset(
+                                      _controller.forward ? 0.06 : -0.06,
+                                      0,
+                                    );
+                                    return SlideTransition(
+                                      position: Tween<Offset>(
+                                        begin: begin,
+                                        end: Offset.zero,
+                                      ).animate(animation),
+                                      child: FadeTransition(
+                                        opacity: animation,
+                                        child: child,
+                                      ),
+                                    );
+                                  },
+                                  child: KeyedSubtree(
+                                    key: ValueKey(route),
+                                    child: route == TospinoRoute.home
+                                        ? page
+                                        : MiniProgramPageCanvas(
+                                            title: route.title,
+                                            showTitle:
+                                                !route.isTabRoot ||
+                                                route == TospinoRoute.category,
+                                            onBack:
+                                                !route.isTabRoot &&
+                                                    _controller.canGoBack
+                                                ? _controller.back
+                                                : null,
+                                            foregroundColor:
+                                                TospinoColors.resolve(
+                                                  context,
+                                                  TospinoColors.ink,
+                                                ),
+                                            onScrollChanged: _setStatusScrolled,
+                                            child: page,
+                                          ),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Positioned(
-                              top: 5,
-                              right: 10,
-                              child: MiniProgramCapsuleOverlay(
-                                miniProgramId: MiniProgramLauncherIds.tospino,
-                                onMore: _showMore,
-                                onClose: _exit,
+                              Positioned(
+                                top:
+                                    (transparentStatusBar
+                                        ? MediaQuery.paddingOf(context).top
+                                        : 0) +
+                                    5,
+                                right: 10,
+                                child: MiniProgramCapsuleOverlay(
+                                  miniProgramId: MiniProgramLauncherIds.tospino,
+                                  onMore: _showMore,
+                                  onClose: _exit,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                       if (route.isTabRoot)

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:encrypt/encrypt.dart' as crypt;
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../tospino_models.dart';
@@ -61,6 +62,7 @@ class TospinoSession {
 
   Map<String, String> get headers => {
     'Authorization': authorization,
+    'Accept': 'application/json',
     'clientType': 'android',
     'language': TospinoConfig.language,
     'version': TospinoConfig.appVersion,
@@ -173,10 +175,12 @@ class TospinoApi implements TospinoDataSource {
   }
 
   Options _options({bool authenticated = true}) => Options(
+    contentType: Headers.jsonContentType,
     headers: authenticated
         ? session.headers
         : {
             'Authorization': TospinoConfig.basicAuthorization,
+            'Accept': 'application/json',
             'clientType': 'android',
             'language': TospinoConfig.language,
             'version': TospinoConfig.appVersion,
@@ -184,6 +188,7 @@ class TospinoApi implements TospinoDataSource {
             'site': TospinoConfig.site,
             'termId': session.termId,
           },
+    responseType: ResponseType.json,
   );
 
   Future<dynamic> _get(String path, {Map<String, dynamic>? query}) async {
@@ -195,6 +200,7 @@ class TospinoApi implements TospinoDataSource {
       );
       return _unwrap(response.data);
     } on DioException catch (error) {
+      debugPrint('Tospino GET $path failed: ${error.message}');
       throw _mapError(error);
     }
   }
@@ -213,6 +219,7 @@ class TospinoApi implements TospinoDataSource {
       );
       return _unwrap(response.data);
     } on DioException catch (error) {
+      debugPrint('Tospino POST $path failed: ${error.message}');
       throw _mapError(error);
     }
   }
@@ -602,6 +609,7 @@ class TospinoApi implements TospinoDataSource {
         contentType: Headers.formUrlEncodedContentType,
         headers: {
           'Authorization': TospinoConfig.basicAuthorization,
+          'Accept': 'application/json',
           'clientType': 'android',
           'language': TospinoConfig.language,
           'site': TospinoConfig.site,

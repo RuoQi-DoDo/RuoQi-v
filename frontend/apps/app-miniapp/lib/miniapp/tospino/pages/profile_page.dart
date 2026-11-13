@@ -16,6 +16,7 @@ class TospinoProfilePage extends StatelessWidget {
       key: const Key('tospino-profile-page'),
       color: TospinoColors.resolve(context, TospinoColors.background),
       child: ListView(
+        key: const Key('tospino-profile-scroll'),
         padding: EdgeInsets.zero,
         children: [
           _ProfileHeader(controller: controller),
@@ -56,7 +57,12 @@ class _ProfileHeader extends StatelessWidget {
     final displayName = user?.displayName ?? '';
     final initial = displayName.isEmpty ? 'T' : displayName.substring(0, 1);
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 15, 18, 60),
+      padding: EdgeInsets.fromLTRB(
+        18,
+        MediaQuery.paddingOf(context).top + 15,
+        18,
+        60,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -156,15 +162,6 @@ class _ProfileHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              IconButton(
-                tooltip: localizeMiniProgramLabel(context, '设置'),
-                onPressed: () => controller.open(TospinoRoute.settings),
-                icon: const Icon(
-                  Icons.settings_outlined,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 22),
@@ -219,14 +216,19 @@ class _ProfileStat extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
             children: [
-              Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
+              SizedBox(
+                width: double.infinity,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 4),

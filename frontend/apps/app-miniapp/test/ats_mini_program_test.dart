@@ -4,6 +4,7 @@ import 'package:ruoqi_app_miniapp/miniapp/ats/ats_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/ats/ats_routes.dart';
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_capsule_overlay.dart';
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_navigation_bar.dart';
+import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_status_bar.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 
 void main() {
@@ -27,6 +28,25 @@ void main() {
     expect(find.byTooltip('退出小程序'), findsOneWidget);
     expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
     expect(find.byType(MiniProgramNavigationBar), findsNothing);
+  });
+
+  testWidgets('企业直聘上滑后状态栏取消绿色底色', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(const MaterialApp(home: AtsMiniProgram()));
+    await tester.pumpAndSettle();
+
+    final before = tester
+        .widget<MiniProgramStatusBar>(find.byType(MiniProgramStatusBar))
+        .backgroundColor;
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -500));
+    await tester.pumpAndSettle();
+    final after = tester
+        .widget<MiniProgramStatusBar>(find.byType(MiniProgramStatusBar))
+        .backgroundColor;
+    expect(after, isNot(before));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('应用默认打开客户首页，再进入小程序并可退出', (tester) async {

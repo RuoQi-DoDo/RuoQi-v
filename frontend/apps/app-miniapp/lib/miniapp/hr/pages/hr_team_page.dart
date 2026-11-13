@@ -23,22 +23,24 @@ class HrTeamPage extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
         children: [
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  '我的团队',
-                  style: HrText.resolve(
-                    context,
-                    HrText.appBarTitle,
-                  ).copyWith(fontSize: 25),
-                ),
+              Text(
+                '我的团队',
+                style: HrText.resolve(
+                  context,
+                  HrText.appBarTitle,
+                ).copyWith(fontSize: 25),
               ),
               if (controller.approvals.isNotEmpty)
-                HrStatusChip(
-                  label: '${controller.approvals.length} 待审批',
-                  background: HrColors.resolve(context, HrColors.warningBg),
-                  foreground: HrColors.resolve(context, HrColors.warning),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: HrStatusChip(
+                    label: '${controller.approvals.length} 待审批',
+                    background: HrColors.resolve(context, HrColors.warningBg),
+                    foreground: HrColors.resolve(context, HrColors.warning),
+                  ),
                 ),
             ],
           ),

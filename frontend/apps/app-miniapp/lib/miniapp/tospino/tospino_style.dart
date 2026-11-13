@@ -433,43 +433,45 @@ class TospinoPriceText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          'GH₵',
-          style: TextStyle(
-            color: TospinoColors.price,
-            fontSize: size * 0.58,
-            fontWeight: FontWeight.w800,
-            height: 1.4,
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            'GH₵',
+            style: TextStyle(
+              color: TospinoColors.price,
+              fontSize: size * 0.58,
+              fontWeight: FontWeight.w800,
+              height: 1.4,
+            ),
           ),
-        ),
-        Text(
-          price.toStringAsFixed(price == price.roundToDouble() ? 0 : 2),
-          style: TextStyle(
-            color: TospinoColors.price,
-            fontSize: size,
-            fontWeight: FontWeight.w900,
-            height: 1,
+          Text(
+            price.toStringAsFixed(price == price.roundToDouble() ? 0 : 2),
+            style: TextStyle(
+              color: TospinoColors.price,
+              fontSize: size,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
           ),
-        ),
-        if (oldPrice != null) ...[
-          const SizedBox(width: 5),
-          Flexible(
-            child: Text(
+          if (oldPrice != null) ...[
+            const SizedBox(width: 5),
+            Text(
               'GH₵${oldPrice!.toStringAsFixed(0)}',
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: TospinoColors.resolve(context, TospinoColors.hint),
                 fontSize: size * 0.58,
                 decoration: TextDecoration.lineThrough,
               ),
             ),
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -528,7 +530,9 @@ class TospinoProductTile extends StatelessWidget {
                     const Spacer(),
                     TospinoPriceText(
                       price: product.price,
-                      oldPrice: product.oldPrice,
+                      oldPrice: product.oldPrice > product.price
+                          ? product.oldPrice
+                          : null,
                       size: 18,
                     ),
                     const SizedBox(height: 4),

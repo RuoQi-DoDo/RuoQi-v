@@ -8,6 +8,7 @@ export 'widgets/miniapp_actions_sheet.dart';
 export 'widgets/miniapp_capsule.dart';
 export 'widgets/miniapp_capsule_overlay.dart';
 export 'widgets/miniapp_navigation_bar.dart';
+export 'widgets/miniapp_page_canvas.dart';
 export 'widgets/miniapp_page_header.dart';
 export 'widgets/miniapp_status_bar.dart';
 export 'widgets/miniapp_swipe_exit.dart';
