@@ -35,8 +35,19 @@ flutter:
 
   assets:
     - lib/miniapp/merchant/assets/images/
+    - lib/miniapp/tospino/assets/
 
   fonts:
+    - family: Inter
+      fonts:
+        - asset: lib/miniapp/tospino/assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: lib/miniapp/tospino/assets/fonts/Inter-Regular.ttf
+          weight: 500
+        - asset: lib/miniapp/tospino/assets/fonts/Inter-Medium.ttf
+          weight: 600
+        - asset: lib/miniapp/tospino/assets/fonts/Inter-Medium.ttf
+          weight: 700
     - family: lightIconFont
       fonts:
         - asset: lib/miniapp/merchant/assets/fonts/lightIconFont.ttf

@@ -9,6 +9,7 @@ const defaultRecentMiniPrograms = <MiniProgramLauncherItem>[
     label: 'Tospino',
     icon: Icons.storefront_rounded,
     color: Color(0xFF42B7AE),
+    assetPath: tospinoMiniProgramIconAsset,
   ),
   MiniProgramLauncherItem(
     id: MiniProgramLauncherIds.ats,
@@ -66,6 +67,7 @@ const defaultMyMiniPrograms = <MiniProgramLauncherItem>[
     label: 'Tospino',
     icon: Icons.storefront_rounded,
     color: Color(0xFF42B7AE),
+    assetPath: tospinoMiniProgramIconAsset,
     tileKey: Key('mini-program-picker-tospino'),
   ),
   MiniProgramLauncherItem(

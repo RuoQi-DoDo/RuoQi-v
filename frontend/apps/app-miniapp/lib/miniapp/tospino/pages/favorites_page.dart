@@ -44,16 +44,16 @@ class TospinoFavoritesPage extends StatelessWidget {
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
                       child: Text(
                         '${products.length} '
                         '${localizeMiniProgramLabel(context, '件商品')}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: TospinoText.meta(context),
                       ),
                     ),
                   ),
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(14, 0, 14, 24),
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
                     sliver: SliverGrid(
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final product = products[index];
@@ -61,7 +61,7 @@ class TospinoFavoritesPage extends StatelessWidget {
                           children: [
                             TospinoProductTile(
                               product: product,
-                              artworkHeight: 150,
+                              artworkHeight: 138,
                               onTap: () => controller.openProduct(product),
                             ),
                             Positioned(
@@ -105,9 +105,9 @@ class TospinoFavoritesPage extends StatelessWidget {
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 10,
-                            childAspectRatio: 0.66,
+                            mainAxisSpacing: 9,
+                            crossAxisSpacing: 9,
+                            childAspectRatio: 0.63,
                           ),
                     ),
                   ),

@@ -15,17 +15,17 @@ class TospinoAboutPage extends StatelessWidget {
       key: const Key('tospino-about-page'),
       color: TospinoColors.resolve(context, TospinoColors.background),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(18, 34, 18, 28),
+        padding: const EdgeInsets.fromLTRB(16, 30, 16, 28),
         children: [
-          const Center(child: TospinoBrandMark(size: 78)),
-          const SizedBox(height: 15),
+          const Center(child: TospinoBrandMark(size: 64)),
+          const SizedBox(height: 13),
           const Center(
             child: Text(
               'Tospino',
               style: TextStyle(
                 color: TospinoColors.brandDeep,
-                fontSize: 27,
-                fontWeight: FontWeight.w900,
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
               ),
             ),
@@ -34,37 +34,33 @@ class TospinoAboutPage extends StatelessWidget {
           Center(
             child: Text(
               '${localizeMiniProgramLabel(context, '版本')} 1.0.0',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: TospinoText.meta(context),
             ),
           ),
-          const SizedBox(height: 33),
-          Material(
-            color: TospinoColors.resolve(context, TospinoColors.surface),
-            borderRadius: BorderRadius.circular(18),
+          const SizedBox(height: 28),
+          TospinoSurface(
             child: Padding(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Shop smarter with Tospino',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: TospinoText.section(context),
                   ),
                   const SizedBox(height: 10),
                   Text(
                     'Tospino brings trusted products, local delivery and everyday '
                     'value to customers across Ghana.',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: TospinoText.body(context),
                   ),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 12),
-          Material(
-            color: TospinoColors.resolve(context, TospinoColors.surface),
-            borderRadius: BorderRadius.circular(18),
-            clipBehavior: Clip.antiAlias,
+          TospinoSurface(
+            padding: EdgeInsets.zero,
             child: Column(
               children: [
                 ListTile(
@@ -91,7 +87,7 @@ class TospinoAboutPage extends StatelessWidget {
           Center(
             child: Text(
               '© 2026 Tospino. All rights reserved.',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: TospinoText.meta(context),
             ),
           ),
         ],

@@ -18,6 +18,7 @@ const List<MiniProgramLauncherItem> availableMiniPrograms = [
     label: 'Tospino',
     icon: Icons.storefront_rounded,
     color: Color(0xFF42B7AE),
+    assetPath: tospinoMiniProgramIconAsset,
     searchTerms: ['Tospino', 'Mall', 'Shopping', '商城', '购物', '电商'],
   ),
   MiniProgramLauncherItem(

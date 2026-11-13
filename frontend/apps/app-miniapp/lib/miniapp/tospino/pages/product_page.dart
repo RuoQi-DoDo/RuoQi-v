@@ -70,12 +70,12 @@ class TospinoProductPage extends StatelessWidget {
               children: [
                 TospinoProductArtwork(
                   product: product,
-                  height: 320,
+                  height: MediaQuery.sizeOf(context).width,
                   radius: 0,
                   hero: false,
                 ),
                 Container(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
                   color: TospinoColors.resolve(context, TospinoColors.surface),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +89,7 @@ class TospinoProductPage extends StatelessWidget {
                               oldPrice: product.oldPrice > product.price
                                   ? product.oldPrice
                                   : null,
-                              size: 28,
+                              size: 16,
                             ),
                           ),
                           if (product.discountPercent > 0)
@@ -102,25 +102,28 @@ class TospinoProductPage extends StatelessWidget {
                                 color: TospinoColors.price.withValues(
                                   alpha: 0.1,
                                 ),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(
+                                  TospinoMetrics.tagRadius,
+                                ),
                               ),
                               child: Text(
                                 '-${product.discountPercent}%',
                                 style: const TextStyle(
                                   color: TospinoColors.price,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       Text(
                         product.title,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleLarge?.copyWith(height: 1.35),
+                        style: TospinoText.body(context).copyWith(
+                          fontWeight: TospinoText.emphasis,
+                          height: 1.35,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -136,7 +139,9 @@ class TospinoProductPage extends StatelessWidget {
                                   context,
                                   TospinoColors.brandPale,
                                 ),
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: BorderRadius.circular(
+                                  TospinoMetrics.tagRadius,
+                                ),
                               ),
                               child: Text(
                                 product.brand,
@@ -160,8 +165,8 @@ class TospinoProductPage extends StatelessWidget {
                                 context,
                                 TospinoColors.secondary,
                               ),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                           const SizedBox(width: 9),
@@ -174,11 +179,11 @@ class TospinoProductPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 9),
+                const SizedBox(height: 10),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 13,
+                    horizontal: 12,
+                    vertical: 12,
                   ),
                   color: TospinoColors.resolve(context, TospinoColors.surface),
                   child: Row(
@@ -200,28 +205,30 @@ class TospinoProductPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 9),
+                const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   color: TospinoColors.resolve(context, TospinoColors.surface),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         localizeMiniProgramLabel(context, '商品介绍'),
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: TospinoText.section(context),
                       ),
                       const SizedBox(height: 10),
                       Text(
                         detail.description.isEmpty
                             ? product.title
                             : detail.description,
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: TospinoText.body(context),
                       ),
                       if (detail.galleryUrls.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(
+                            TospinoMetrics.imageRadius,
+                          ),
                           child: Image.network(
                             detail.galleryUrls.first,
                             height: 240,
@@ -260,7 +267,7 @@ class TospinoProductPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 _ProductRecommendations(
                   controller: controller,
                   currentProductId: product.id,
@@ -453,7 +460,7 @@ class _ProductActionBar extends StatelessWidget {
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 9,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: TospinoText.strong,
                             ),
                           ),
                         ),
@@ -464,67 +471,82 @@ class _ProductActionBar extends StatelessWidget {
             ),
             const SizedBox(width: 5),
             Expanded(
-              child: OutlinedButton(
-                key: const Key('tospino-product-add-cart'),
-                onPressed: controller.busy
-                    ? null
-                    : () async {
-                        try {
-                          final added = await controller.addToCart(product);
-                          if (added && context.mounted) {
-                            showTospinoToast(context, '已加入购物车');
-                          }
-                        } catch (error) {
-                          if (context.mounted) {
-                            showTospinoToast(context, error.toString());
-                          }
-                        }
-                      },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: TospinoColors.solidBrand(context),
-                  side: BorderSide(color: TospinoColors.solidBrand(context)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: Text(
-                  localizeMiniProgramLabel(context, '加入购物车'),
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
+              child: Opacity(
+                opacity: controller.busy ? 0.5 : 1,
+                child: Material(
+                  color: Colors.transparent,
+                  clipBehavior: Clip.antiAlias,
+                  child: Ink(
+                    height: 50,
+                    color: TospinoColors.lightOrange,
+                    child: InkWell(
+                      key: const Key('tospino-product-add-cart'),
+                      onTap: controller.busy
+                          ? null
+                          : () async {
+                              try {
+                                final added = await controller.addToCart(
+                                  product,
+                                );
+                                if (added && context.mounted) {
+                                  showTospinoToast(context, '已加入购物车');
+                                }
+                              } catch (error) {
+                                if (context.mounted) {
+                                  showTospinoToast(context, error.toString());
+                                }
+                              }
+                            },
+                      child: Center(
+                        child: Text(
+                          localizeMiniProgramLabel(context, '加入购物车'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
             Expanded(
-              child: FilledButton(
-                key: const Key('tospino-product-buy-now'),
-                onPressed: controller.busy
-                    ? null
-                    : () async {
-                        try {
-                          await controller.buyNow(product);
-                        } catch (error) {
-                          if (context.mounted) {
-                            showTospinoToast(context, error.toString());
-                          }
-                        }
-                      },
-                style: FilledButton.styleFrom(
-                  backgroundColor: TospinoColors.solidBrand(context),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: Text(
-                  localizeMiniProgramLabel(context, '立即购买'),
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
+              child: Opacity(
+                opacity: controller.busy ? 0.5 : 1,
+                child: Material(
+                  color: Colors.transparent,
+                  clipBehavior: Clip.antiAlias,
+                  child: Ink(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: TospinoColors.brandGradient(context),
+                    ),
+                    child: InkWell(
+                      key: const Key('tospino-product-buy-now'),
+                      onTap: controller.busy
+                          ? null
+                          : () async {
+                              try {
+                                await controller.buyNow(product);
+                              } catch (error) {
+                                if (context.mounted) {
+                                  showTospinoToast(context, error.toString());
+                                }
+                              }
+                            },
+                      child: Center(
+                        child: Text(
+                          localizeMiniProgramLabel(context, '立即购买'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),

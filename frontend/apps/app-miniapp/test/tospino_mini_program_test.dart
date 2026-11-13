@@ -6,15 +6,100 @@ import 'package:ruoqi_app_miniapp/appearance.dart';
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_capsule_overlay.dart';
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_navigation_bar.dart';
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_status_bar.dart';
+import 'package:ruoqi_app_miniapp/miniapp/launcher/miniapp_launcher_item.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/pages/home_page.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_models.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_routes.dart';
+import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_style.dart';
 import 'package:ruoqi_app_miniapp/pages/mini_programs/mini_programs_page.dart';
 
 void main() {
+  test('Tospino 默认使用生产 API 和 SSO 地址', () {
+    expect(TospinoConfig.apiBaseUrl, 'https://gh2capi.tospino.com.gh');
+    expect(TospinoConfig.ssoBaseUrl, 'https://oauthapi.tospino.com.gh');
+  });
+
+  test('Tospino 装修商品请求使用 Android 的 productIds 字段', () {
+    final payload = tospinoProductsByIdsPayload(['product-1', '', 'product-2']);
+
+    expect(payload, {
+      'productIds': ['product-1', 'product-2'],
+    });
+    expect(payload.containsKey('goodsIdList'), isFalse);
+  });
+
   test('Tospino 登录密码使用安卓同款 AES-CBC 零填充', () {
     expect(tospinoEncryptPassword('123456'), '7BmTCgWd212/bXiQZSW3CQ==');
+  });
+
+  test('Tospino 字体按 Android 宽度和字形比例修正', () {
+    final scaler = tospinoAndroidTextScaler(const TextScaler.linear(0.85), 360);
+
+    expect(scaler.scale(100), closeTo(77.55, 0.02));
+  });
+
+  test('Tospino 首页装修 JSON 按 Android 字段解析', () {
+    final page = parseTospinoHomePageDecoration({
+      'id': 'style-1',
+      'name': 'Recommend',
+      'templateID': 'template-1',
+      'style': {'baseColor': '#FDFCFC'},
+      'config': {
+        'backgroundImage': {'imageLink': 'https://example.com/background.jpg'},
+      },
+      'componentList': [
+        {
+          'type': 4,
+          'config': {
+            'showTitle': {'display': 1, 'name': 'Quick entries'},
+            'imageName': {'display': 1},
+          },
+          'style': {
+            'baseColor': '',
+            'lowerGap': '30',
+            'leftGap': '36',
+            'rightGap': '36',
+            'height': '',
+            'displayRows': '2',
+          },
+          'detailList': [
+            {
+              'link': {
+                'imageLink': 'https://example.com/coupon.jpg',
+                'imageName': 'Coupon Center',
+                'linkType': 2,
+                'linkAddress': '',
+              },
+              'frontCategoryIds': ['category-1'],
+              'goodsIds': [],
+            },
+          ],
+        },
+        {
+          'type': 14,
+          'config': {
+            'salesLabel': {'display': 0},
+            'evaluationLabel': {'display': 1},
+          },
+          'detailList': [],
+        },
+      ],
+    });
+
+    expect(page.name, 'Recommend');
+    expect(page.backgroundImageUrl, endsWith('background.jpg'));
+    expect(page.components.first.type, TospinoHomeComponent.diamondArea);
+    expect(page.components.first.lowerGap, 30);
+    expect(page.components.first.items.single.title, 'Coupon Center');
+    expect(page.components.first.showImageName, isTrue);
+    expect(
+      page.components.first.items.single.categoryIds,
+      contains('category-1'),
+    );
+    expect(page.recommendationComponent, isNotNull);
+    expect(page.recommendationComponent!.showSales, isFalse);
+    expect(page.recommendationComponent!.showRating, isTrue);
   });
 
   testWidgets('Tospino 首页数据来自数据源并展示四个主入口', (tester) async {
@@ -27,17 +112,66 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('tospino-home-page')), findsOneWidget);
-    expect(find.text('Tospino'), findsWidgets);
+    expect(find.byKey(const Key('tospino-home-logo')), findsOneWidget);
     expect(find.text(api.products.first.title), findsOneWidget);
-    expect(find.text('首页'), findsOneWidget);
-    expect(find.text('分类'), findsOneWidget);
-    expect(find.text('购物车'), findsOneWidget);
-    expect(find.text('我的'), findsOneWidget);
+    expect(tester.widget<Text>(find.text('搜索感兴趣商品')).style?.fontSize, 12);
+    expect(find.byKey(const Key('tospino-tab-首页')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-tab-分类')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-tab-购物车')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-tab-我的')), findsOneWidget);
     expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
     expect(find.byType(MiniProgramNavigationBar), findsNothing);
     expect(api.searchCalls, greaterThan(0));
     expect(api.categoryCalls, 1);
+    await tester.drag(
+      find.byKey(const Key('tospino-home-scroll')),
+      const Offset(0, -900),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(SliverCrossAxisGroup), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Tospino 首页按装修接口组件顺序渲染', (tester) async {
+    _usePhoneSize(tester);
+    final api = _DecoratedTospinoApi();
+    final controller = _controller(api);
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(controller.homePages, hasLength(2));
+    expect(find.text('Recommend'), findsOneWidget);
+    expect(find.text('Beauty'), findsOneWidget);
+    expect(find.text('Phone'), findsOneWidget);
+    expect(find.text('Coupon Center'), findsOneWidget);
+    expect(find.text('优惠券中心'), findsNothing);
+
+    await controller.selectHomePage(1);
+    await tester.pumpAndSettle();
+    expect(api.lazyDecorationCalls, 1);
+    expect(controller.currentHomePage?.components, isNotEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  test('Tospino 首页瀑布流按页加载并去重', () async {
+    final api = _PagedTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+
+    expect(controller.homeProducts, hasLength(20));
+    expect(controller.homeHasMore, isTrue);
+
+    await controller.loadMoreHome();
+
+    expect(controller.homeProducts, hasLength(23));
+    expect(controller.homeHasMore, isTrue);
+
+    await controller.loadMoreHome();
+
+    expect(controller.homeHasMore, isFalse);
+    expect(api.pages, [1, 2, 3]);
   });
 
   testWidgets('小屏幕下首页、分类和我的页面无布局异常', (tester) async {
@@ -178,6 +312,43 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('购物车降价、常买筛选和常买开关调用真实协议', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+    controller.switchTab(2);
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('tospino-cart-filter-2')));
+    await tester.pumpAndSettle();
+    expect(controller.cartFilter, TospinoCartFilter.priceCut);
+    expect(api.cartQueryTypes, contains(2));
+    expect(find.byKey(const Key('tospino-cart-list')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('tospino-cart-filter-3')));
+    await tester.pumpAndSettle();
+    expect(controller.cartFilter, TospinoCartFilter.oftenBuy);
+    expect(api.cartQueryTypes, contains(3));
+
+    await tester.tap(find.byKey(const Key('tospino-cart-filter-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tospino-cart-often-sku-1')));
+    await tester.pumpAndSettle();
+    expect(api.setOftenBuyCalls, 1);
+    expect(api.cart.single.isOftenBuy, isTrue);
+    expect(controller.cartLines.single.isOftenBuy, isTrue);
+
+    await tester.tap(find.byKey(const Key('tospino-cart-filter-3')));
+    await tester.pumpAndSettle();
+    expect(controller.cartLines, hasLength(1));
+    expect(find.byKey(const Key('tospino-cart-list')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('搜索通过 API 请求并显示结果与空状态', (tester) async {
     _usePhoneSize(tester);
     final api = _FakeTospinoApi();
@@ -229,7 +400,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('mini-program-entry-tospino')), findsOneWidget);
+    final tospinoEntry = find.byKey(const Key('mini-program-entry-tospino'));
+    expect(tospinoEntry, findsOneWidget);
+    final icon = tester.widget<Image>(
+      find.descendant(of: tospinoEntry, matching: find.byType(Image)),
+    );
+    expect((icon.image as AssetImage).assetName, tospinoMiniProgramIconAsset);
     expect(tester.takeException(), isNull);
   });
 
@@ -276,12 +452,142 @@ void main() {
     settings.setLocale(const Locale('en'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Categories'), findsOneWidget);
-    expect(find.text('Cart'), findsOneWidget);
-    expect(find.text('Me'), findsOneWidget);
+    expect(find.byTooltip('Home'), findsOneWidget);
+    expect(find.byTooltip('Categories'), findsOneWidget);
+    expect(find.byTooltip('Cart'), findsOneWidget);
+    expect(find.byTooltip('Me'), findsOneWidget);
     expect(find.byTooltip('Close mini-program'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Tospino 登录页使用安卓账号密码布局', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+    controller.openLogin();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('登录 Tospino'), findsOneWidget);
+    expect(
+      find.byKey(const Key('tospino-login-password-method')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('tospino-login-account')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('tospino-login-password-method')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('tospino-login-account')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-login-password')), findsOneWidget);
+    expect(find.text('忘记密码'), findsOneWidget);
+    expect(find.text('其他登录方式'), findsOneWidget);
+    expect(find.byKey(const Key('tospino-login-agreement')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Tospino 我的页面六个入口均打开对应页面', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+    controller.switchTab(3);
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    const entries = [
+      ('tospino-profile-free-gift', 'tospino-free-gift-page'),
+      ('tospino-profile-wallet', 'tospino-wallet-page'),
+      ('tospino-profile-coupons', 'tospino-coupons-page'),
+      ('tospino-profile-address', 'tospino-address-page'),
+      ('tospino-profile-shops', 'tospino-shop-follow-page'),
+      ('tospino-profile-settings', 'tospino-settings-page'),
+    ];
+    for (final (entryKey, pageKey) in entries) {
+      final entry = find.byKey(Key(entryKey));
+      await tester.ensureVisible(entry);
+      await tester.tap(entry);
+      await tester.pumpAndSettle();
+      expect(find.byKey(Key(pageKey)), findsOneWidget, reason: entryKey);
+      expect(tester.takeException(), isNull, reason: pageKey);
+      controller.back();
+      await tester.pumpAndSettle();
+    }
+  });
+
+  testWidgets('Tospino 深色模式沿用主体表面层级', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(brightness: Brightness.dark),
+        home: TospinoMiniProgram(controller: _controller(api)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byKey(const Key('tospino-home-page')));
+    final theme = Theme.of(context);
+    expect(theme.brightness, Brightness.dark);
+    expect(theme.scaffoldBackgroundColor, const Color(0xFF0B0C0F));
+    expect(
+      TospinoColors.resolve(context, TospinoColors.surface),
+      const Color(0xFF141518),
+    );
+    expect(
+      TospinoColors.resolve(context, TospinoColors.imagePlaceholder),
+      const Color(0xFF1C1E23),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Tospino 使用 Inter 与 Android 字重映射', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: _controller(api))),
+    );
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byKey(const Key('tospino-home-page')));
+    expect(TospinoText.body(context).fontFamily, 'Inter');
+    expect(TospinoText.body(context).fontWeight, FontWeight.w400);
+    expect(TospinoText.body(context).height, 1.2);
+    expect(TospinoText.bodyStrong(context).fontWeight, FontWeight.w600);
+    expect(TospinoText.pageTitle(context).fontWeight, FontWeight.w700);
+  });
+
+  testWidgets('Tospino 全部路由在深色模式下可构建', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+
+    for (final route in TospinoRoute.values) {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(brightness: Brightness.dark),
+          home: Scaffold(
+            body: SizedBox(
+              width: 390,
+              height: 760,
+              child: TospinoPageRouter.build(route, controller),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'Tospino 深色页面 ${route.name} 构建失败',
+      );
+    }
   });
 }
 
@@ -390,6 +696,8 @@ class _FakeTospinoApi implements TospinoDataSource {
   int detailCalls = 0;
   int favoriteCalls = 0;
   int addCartCalls = 0;
+  int setOftenBuyCalls = 0;
+  final cartQueryTypes = <int>[];
   int saleInfoCalls = 0;
   int submitOrderCalls = 0;
   TospinoOrderStatus? lastOrderStatus;
@@ -421,6 +729,22 @@ class _FakeTospinoApi implements TospinoDataSource {
 
   @override
   Future<void> initialize() async {}
+
+  @override
+  Future<List<TospinoHomePageDecoration>> fetchHomeDecoration({
+    String? templateId,
+    String? styleId,
+  }) async => const [];
+
+  @override
+  Future<List<String>> fetchHomeRecommendWords() async => const [];
+
+  @override
+  Future<List<TospinoFreeGift>> fetchFreeGifts() async => const [];
+
+  @override
+  Future<List<TospinoProduct>> fetchProductsByIds(List<String> ids) async =>
+      products.where((product) => ids.contains(product.id)).toList();
 
   @override
   Future<List<TospinoCategory>> fetchCategories() async {
@@ -463,7 +787,21 @@ class _FakeTospinoApi implements TospinoDataSource {
   }
 
   @override
-  Future<List<TospinoCartLine>> fetchCart() async => List.of(cart);
+  Future<List<TospinoCartLine>> fetchCart({int queryType = 1}) async {
+    cartQueryTypes.add(queryType);
+    if (queryType == 2) return List.of(cart);
+    if (queryType == 3) {
+      return cart.where((line) => line.isOftenBuy).toList();
+    }
+    return List.of(cart);
+  }
+
+  @override
+  Future<TospinoCartCounts> fetchCartCounts() async => TospinoCartCounts(
+    allTotal: cart.fold(0, (sum, line) => sum + line.quantity),
+    priceCutTotal: cart.isEmpty ? 0 : 1,
+    oftenBuyTotal: cart.where((line) => line.isOftenBuy).length,
+  );
 
   @override
   Future<void> addToCart(String skuId, {int quantity = 1}) async {
@@ -493,6 +831,15 @@ class _FakeTospinoApi implements TospinoDataSource {
   Future<void> updateCartQuantity(String skuId, int quantity) async {
     final index = cart.indexWhere((line) => line.skuId == skuId);
     if (index >= 0) cart[index] = cart[index].copyWith(quantity: quantity);
+  }
+
+  @override
+  Future<void> setOftenBuy(String skuId, {required bool isOftenBuy}) async {
+    setOftenBuyCalls++;
+    final index = cart.indexWhere((line) => line.skuId == skuId);
+    if (index >= 0) {
+      cart[index] = cart[index].copyWith(isOftenBuy: isOftenBuy);
+    }
   }
 
   @override
@@ -592,4 +939,125 @@ class _FakeTospinoApi implements TospinoDataSource {
   Future<void> logout() async {
     _loggedIn = false;
   }
+}
+
+class _PagedTospinoApi extends _FakeTospinoApi {
+  final pages = <int>[];
+
+  @override
+  Future<List<TospinoProduct>> searchProducts({
+    String keyword = '',
+    String? navigationCategoryId,
+    int page = 0,
+    int pageSize = 20,
+  }) {
+    if (keyword.isNotEmpty || navigationCategoryId != null) {
+      return super.searchProducts(
+        keyword: keyword,
+        navigationCategoryId: navigationCategoryId,
+        page: page,
+        pageSize: pageSize,
+      );
+    }
+    pages.add(page);
+    if (page == 1) {
+      return Future.value([
+        for (var index = 1; index <= 20; index++)
+          TospinoProduct(
+            id: 'page-one-$index',
+            title: 'Page one product $index',
+            price: index.toDouble(),
+          ),
+      ]);
+    }
+    if (page == 2) {
+      return Future.value([
+        for (var index = 21; index <= 23; index++)
+          TospinoProduct(
+            id: 'page-two-$index',
+            title: 'Page two product $index',
+            price: index.toDouble(),
+          ),
+      ]);
+    }
+    return Future.value(const []);
+  }
+}
+
+class _DecoratedTospinoApi extends _FakeTospinoApi {
+  int lazyDecorationCalls = 0;
+
+  @override
+  Future<List<TospinoHomePageDecoration>> fetchHomeDecoration({
+    String? templateId,
+    String? styleId,
+  }) async {
+    if (styleId != null) {
+      lazyDecorationCalls++;
+      return const [
+        TospinoHomePageDecoration(
+          id: 'style-2',
+          name: 'Beauty',
+          templateId: 'template-1',
+          components: [
+            TospinoHomeComponent(
+              type: TospinoHomeComponent.threeImages,
+              items: [
+                TospinoHomeComponentItem(
+                  imageUrl: 'https://example.com/beauty.jpg',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ];
+    }
+    return const [
+      TospinoHomePageDecoration(
+        id: 'style-1',
+        name: 'Recommend',
+        templateId: 'template-1',
+        components: [
+          TospinoHomeComponent(
+            type: TospinoHomeComponent.diamondArea,
+            showImageName: true,
+            items: [
+              TospinoHomeComponentItem(
+                imageUrl: 'https://example.com/coupon.jpg',
+                title: 'Coupon Center',
+              ),
+            ],
+          ),
+          TospinoHomeComponent(
+            type: TospinoHomeComponent.banner,
+            items: [
+              TospinoHomeComponentItem(
+                imageUrl: 'https://example.com/banner.jpg',
+              ),
+            ],
+          ),
+          TospinoHomeComponent(
+            type: TospinoHomeComponent.waterfall,
+            title: 'For You',
+            showTitle: true,
+          ),
+        ],
+      ),
+      TospinoHomePageDecoration(
+        id: 'style-2',
+        name: 'Beauty',
+        templateId: 'template-1',
+      ),
+    ];
+  }
+
+  @override
+  Future<List<String>> fetchHomeRecommendWords() async => const [
+    'Phone',
+    'Bag',
+  ];
+
+  @override
+  Future<List<TospinoProduct>> fetchProductsByIds(List<String> ids) async =>
+      products.where((product) => ids.contains(product.id)).toList();
 }

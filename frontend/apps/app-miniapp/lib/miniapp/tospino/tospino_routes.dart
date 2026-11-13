@@ -16,6 +16,10 @@ enum TospinoRoute {
   orders(path: '/pages/order/list', title: '我的订单'),
   orderDetail(path: '/pages/order/detail', title: '订单详情'),
   favorites(path: '/pages/user/favorites', title: '我的收藏'),
+  freeGift(path: '/pages/free/list', title: '免费拿'),
+  wallet(path: '/pages/user/wallet', title: '我的钱包'),
+  coupons(path: '/pages/user/coupons', title: '我的优惠券'),
+  shopFollow(path: '/pages/user/shops', title: '店铺关注'),
   address(path: '/pages/user/address', title: '收货地址'),
   login(path: '/pages/login/login', title: '登录 Tospino'),
   settings(path: '/pages/user/settings', title: '设置'),
@@ -30,9 +34,21 @@ enum TospinoRoute {
   bool get isTabRoot => tabIndex != null;
 }
 
+enum TospinoCartFilter {
+  all(queryType: 1),
+  priceCut(queryType: 2),
+  oftenBuy(queryType: 3);
+
+  const TospinoCartFilter({required this.queryType});
+
+  final int queryType;
+}
+
 class TospinoAppController extends ChangeNotifier {
   TospinoAppController({TospinoDataSource? api, this.initialProductId})
     : _api = api ?? TospinoApi();
+
+  static const _homePageSize = 20;
 
   final TospinoDataSource _api;
   final String? initialProductId;
@@ -47,29 +63,43 @@ class TospinoAppController extends ChangeNotifier {
   bool _initialized = false;
   bool _busy = false;
   bool _loadingHome = false;
+  bool _loadingMoreHome = false;
+  bool _homeHasMore = true;
   bool _loadingCategory = false;
   bool _loadingSearch = false;
   bool _loadingCart = false;
   bool _loadingOrders = false;
   bool _loadingDetail = false;
   bool _loadingCheckout = false;
+  bool _loadingFreeGifts = false;
+  int _cartRequestVersion = 0;
   String? _homeError;
+  String? _homeMoreError;
   String? _categoryError;
   String? _searchError;
   String? _cartError;
   String? _ordersError;
   String? _detailError;
   String? _checkoutError;
+  String? _freeGiftError;
   String? _loginError;
+  int _nextHomePage = 1;
   List<TospinoCategory> _categories = const [];
+  List<TospinoHomePageDecoration> _homePages = const [];
+  List<String> _homeRecommendWords = const [];
+  final Set<String> _loadingHomePages = <String>{};
+  final Map<String, List<TospinoProduct>> _homeComponentProducts = {};
   List<TospinoProduct> _homeProducts = const [];
   List<TospinoProduct> _categoryProducts = const [];
   List<TospinoProduct> _searchResults = const [];
   List<TospinoProduct> _favorites = const [];
   List<TospinoCartLine> _cartLines = const [];
+  TospinoCartCounts _cartCounts = const TospinoCartCounts();
   List<TospinoOrder> _orders = const [];
+  List<TospinoFreeGift> _freeGifts = const [];
   TospinoUser? _user;
   TospinoAddress? _defaultAddress;
+  TospinoAddress? _localAddress;
   TospinoProductDetail? _productDetail;
   TospinoOrder? _selectedOrder;
   TospinoSaleInfo? _saleInfo;
@@ -79,6 +109,8 @@ class TospinoAppController extends ChangeNotifier {
   String _searchQuery = '';
   String? _selectedProductId;
   TospinoOrderStatus? _orderFilter;
+  int _homePageIndex = 0;
+  TospinoCartFilter _cartFilter = TospinoCartFilter.all;
 
   TospinoRoute get route => _route;
   int get tabIndex => _tabIndex;
@@ -88,29 +120,43 @@ class TospinoAppController extends ChangeNotifier {
   bool get busy => _busy;
   bool get isLoggedIn => _api.isLoggedIn;
   bool get loadingHome => _loadingHome;
+  bool get loadingMoreHome => _loadingMoreHome;
+  bool get homeHasMore => _homeHasMore;
   bool get loadingCategory => _loadingCategory;
   bool get loadingSearch => _loadingSearch;
   bool get loadingCart => _loadingCart;
   bool get loadingOrders => _loadingOrders;
   bool get loadingDetail => _loadingDetail;
   bool get loadingCheckout => _loadingCheckout;
+  bool get loadingFreeGifts => _loadingFreeGifts;
   String? get homeError => _homeError;
+  String? get homeMoreError => _homeMoreError;
   String? get categoryError => _categoryError;
   String? get searchError => _searchError;
   String? get cartError => _cartError;
   String? get ordersError => _ordersError;
   String? get detailError => _detailError;
   String? get checkoutError => _checkoutError;
+  String? get freeGiftError => _freeGiftError;
   String? get loginError => _loginError;
   List<TospinoCategory> get categories => List.unmodifiable(_categories);
+  List<TospinoHomePageDecoration> get homePages =>
+      List.unmodifiable(_homePages);
+  List<String> get homeRecommendWords => List.unmodifiable(_homeRecommendWords);
+  int get homePageIndex => _homePageIndex;
+  TospinoHomePageDecoration? get currentHomePage =>
+      _homePages.isEmpty ? null : _homePages[_homePageIndex];
+  bool get hasHomeDecoration =>
+      _homePages.any((page) => page.hasContent) || _homePages.length > 1;
   List<TospinoProduct> get homeProducts => List.unmodifiable(_homeProducts);
   List<TospinoProduct> get categoryProducts =>
       List.unmodifiable(_categoryProducts);
   List<TospinoProduct> get searchResults => List.unmodifiable(_searchResults);
   List<TospinoProduct> get favorites => List.unmodifiable(_favorites);
   List<TospinoOrder> get orders => List.unmodifiable(_orders);
+  List<TospinoFreeGift> get freeGifts => List.unmodifiable(_freeGifts);
   TospinoUser? get user => _user;
-  TospinoAddress? get defaultAddress => _defaultAddress;
+  TospinoAddress? get defaultAddress => _localAddress ?? _defaultAddress;
   TospinoProductDetail? get productDetail => _productDetail;
   TospinoOrder? get selectedOrder => _selectedOrder;
   TospinoSaleInfo? get saleInfo => _saleInfo;
@@ -134,7 +180,13 @@ class TospinoAppController extends ChangeNotifier {
   List<TospinoCartLine> get selectedCartLines =>
       cartLines.where((line) => line.selected && line.valid).toList();
 
-  int get cartCount => _cartLines.fold(0, (sum, line) => sum + line.quantity);
+  int get cartCount {
+    if (_cartCounts.allTotal > 0) return _cartCounts.allTotal;
+    return _cartLines.fold(0, (sum, line) => sum + line.quantity);
+  }
+
+  TospinoCartCounts get cartCounts => _cartCounts;
+  TospinoCartFilter get cartFilter => _cartFilter;
   double get cartTotal =>
       selectedCartLines.fold(0, (sum, line) => sum + line.subtotal);
   List<TospinoCartLine> get checkoutLines => List.unmodifiable(_checkoutLines);
@@ -180,15 +232,173 @@ class TospinoAppController extends ChangeNotifier {
   }
 
   Future<void> refreshHome() async {
+    _homeComponentProducts.clear();
     _loadingHome = true;
+    _loadingMoreHome = false;
     _homeError = null;
+    _homeMoreError = null;
+    notifyListeners();
+    List<TospinoHomePageDecoration>? pages;
+    List<String>? recommendWords;
+    List<TospinoProduct>? products;
+    Object? productError;
+    await Future.wait([
+      () async {
+        try {
+          pages = await _api.fetchHomeDecoration();
+        } catch (_) {
+          // The catalogue remains usable when decoration is temporarily down.
+        }
+      }(),
+      () async {
+        try {
+          recommendWords = await _api.fetchHomeRecommendWords();
+        } catch (_) {
+          recommendWords = const [];
+        }
+      }(),
+      () async {
+        try {
+          products = await _api.searchProducts(
+            page: 1,
+            pageSize: _homePageSize,
+          );
+        } catch (error) {
+          productError = error;
+        }
+      }(),
+    ]);
+    if (pages != null) {
+      _homePages = pages!;
+      _homePageIndex = _homePages.isEmpty
+          ? 0
+          : _homePageIndex.clamp(0, _homePages.length - 1).toInt();
+    }
+    if (recommendWords != null) {
+      _homeRecommendWords = recommendWords!;
+    }
+    if (products != null) {
+      _homeProducts = products!;
+      _nextHomePage = 2;
+      _homeHasMore = _homeProducts.isNotEmpty;
+    } else if (productError != null) {
+      _homeError = productError.toString();
+    }
+    _loadingHome = false;
+    notifyListeners();
+  }
+
+  Future<void> selectHomePage(int index) async {
+    if (index < 0 || index >= _homePages.length || index == _homePageIndex) {
+      return;
+    }
+    _homePageIndex = index;
+    notifyListeners();
+    final page = _homePages[index];
+    if (page.components.isEmpty &&
+        page.id.isNotEmpty &&
+        page.templateId.isNotEmpty) {
+      await _loadHomePage(index);
+    }
+  }
+
+  bool isHomePageLoading(int index) =>
+      index >= 0 &&
+      index < _homePages.length &&
+      _loadingHomePages.contains(_homePages[index].id);
+
+  Future<void> _loadHomePage(int index) async {
+    if (index < 0 || index >= _homePages.length) return;
+    final current = _homePages[index];
+    if (!_loadingHomePages.add(current.id)) return;
     notifyListeners();
     try {
-      _homeProducts = await _api.searchProducts(page: 0, pageSize: 20);
-    } catch (error) {
-      _homeError = error.toString();
+      final pages = await _api.fetchHomeDecoration(
+        templateId: current.templateId,
+        styleId: current.id,
+      );
+      if (pages.isNotEmpty) {
+        final loaded = pages.first;
+        final replacement = loaded.copyWith(
+          components: loaded.components,
+          backgroundImageUrl: loaded.backgroundImageUrl.isNotEmpty
+              ? loaded.backgroundImageUrl
+              : current.backgroundImageUrl,
+        );
+        _homePages = [
+          for (var pageIndex = 0; pageIndex < _homePages.length; pageIndex++)
+            pageIndex == index ? replacement : _homePages[pageIndex],
+        ];
+      }
+    } catch (_) {
+      // Keep the tab selected and show its empty/loading state.
     } finally {
-      _loadingHome = false;
+      _loadingHomePages.remove(current.id);
+      notifyListeners();
+    }
+  }
+
+  Future<List<TospinoProduct>> productsForHomeComponent(
+    String key,
+    List<String> ids,
+  ) async {
+    final cacheKey = '$key:${ids.join(',')}';
+    final cached = _homeComponentProducts[cacheKey];
+    if (cached != null) return cached;
+    final products = await _api.fetchProductsByIds(ids);
+    _homeComponentProducts[cacheKey] = products;
+    return products;
+  }
+
+  Future<void> refreshFreeGifts() async {
+    if (_loadingFreeGifts) return;
+    _loadingFreeGifts = true;
+    _freeGiftError = null;
+    notifyListeners();
+    try {
+      _freeGifts = await _api.fetchFreeGifts();
+    } catch (error) {
+      _freeGiftError = error.toString();
+    } finally {
+      _loadingFreeGifts = false;
+      notifyListeners();
+    }
+  }
+
+  void saveLocalAddress({
+    required String name,
+    required String phone,
+    required String completeAddress,
+  }) {
+    _localAddress = TospinoAddress(
+      id: _localAddress?.id ?? 'local-address',
+      name: name,
+      phone: phone,
+      completeAddress: completeAddress,
+      isDefault: true,
+    );
+    notifyListeners();
+  }
+
+  Future<void> loadMoreHome() async {
+    if (_loadingHome || _loadingMoreHome || !_homeHasMore) return;
+    _loadingMoreHome = true;
+    _homeMoreError = null;
+    notifyListeners();
+    try {
+      final products = await _api.searchProducts(
+        page: _nextHomePage,
+        pageSize: _homePageSize,
+      );
+      final ids = _homeProducts.map((product) => product.id).toSet();
+      final added = products.where((product) => ids.add(product.id)).toList();
+      _homeProducts = [..._homeProducts, ...added];
+      _nextHomePage++;
+      _homeHasMore = products.isNotEmpty && added.isNotEmpty;
+    } catch (error) {
+      _homeMoreError = error.toString();
+    } finally {
+      _loadingMoreHome = false;
       notifyListeners();
     }
   }
@@ -358,11 +568,18 @@ class TospinoAppController extends ChangeNotifier {
 
   Future<void> refreshCart() async {
     if (!_api.isLoggedIn) return;
+    final requestVersion = ++_cartRequestVersion;
+    final queryType = _cartFilter.queryType;
     _loadingCart = true;
     _cartError = null;
     notifyListeners();
     try {
-      _cartLines = await _api.fetchCart();
+      final countsFuture = _loadCartCounts();
+      final lines = await _api.fetchCart(queryType: queryType);
+      if (requestVersion != _cartRequestVersion) return;
+      _cartLines = lines;
+      _cartCounts = await countsFuture ?? _cartCounts;
+      if (requestVersion != _cartRequestVersion) return;
       _selectedSkuIds
         ..removeWhere((skuId) => !_cartLines.any((line) => line.skuId == skuId))
         ..addAll(
@@ -373,12 +590,14 @@ class TospinoAppController extends ChangeNotifier {
     } catch (error) {
       if (_requiresLogin(error)) {
         openLogin(returnTo: TospinoRoute.cart);
-      } else {
+      } else if (requestVersion == _cartRequestVersion) {
         _cartError = error.toString();
       }
     } finally {
-      _loadingCart = false;
-      notifyListeners();
+      if (requestVersion == _cartRequestVersion) {
+        _loadingCart = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -469,6 +688,38 @@ class TospinoAppController extends ChangeNotifier {
   Future<void> removeFromCart(String skuId) async {
     await _api.removeFromCart(skuId);
     await refreshCart();
+  }
+
+  Future<void> selectCartFilter(TospinoCartFilter filter) async {
+    if (_cartFilter == filter) return;
+    _cartFilter = filter;
+    notifyListeners();
+    await refreshCart();
+  }
+
+  Future<bool> toggleOftenBuy(String skuId) async {
+    final line = _cartLines.where((item) => item.skuId == skuId).firstOrNull;
+    if (line == null) return false;
+    final next = !line.isOftenBuy;
+    try {
+      await _api.setOftenBuy(skuId, isOftenBuy: next);
+      await refreshCart();
+      return true;
+    } catch (error) {
+      if (_requiresLogin(error)) {
+        openLogin(returnTo: TospinoRoute.cart);
+        return false;
+      }
+      rethrow;
+    }
+  }
+
+  Future<TospinoCartCounts?> _loadCartCounts() async {
+    try {
+      return await _api.fetchCartCounts();
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> startCheckout({

@@ -80,6 +80,7 @@ class MiniProgramLibraryController extends ChangeNotifier {
     label: item.label,
     icon: item.icon,
     color: item.color,
+    assetPath: item.assetPath,
     searchTerms: List.unmodifiable(item.searchTerms),
   );
 
@@ -89,6 +90,7 @@ class MiniProgramLibraryController extends ChangeNotifier {
         label: item.label,
         icon: item.icon,
         color: item.color,
+        assetPath: item.assetPath,
         tileKey: switch (item.id) {
           MiniProgramLauncherIds.tospino ||
           MiniProgramLauncherIds.ats ||
@@ -111,6 +113,7 @@ class MiniProgramLibraryController extends ChangeNotifier {
       left.label == right.label &&
       left.icon == right.icon &&
       left.color == right.color &&
+      left.assetPath == right.assetPath &&
       listEquals(left.searchTerms, right.searchTerms);
 }
 

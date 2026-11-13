@@ -12,6 +12,9 @@ abstract final class MiniProgramLauncherIds {
   static const platform = 'platform';
 }
 
+const tospinoMiniProgramIconAsset =
+    'lib/miniapp/tospino/assets/tospino-app-icon.png';
+
 /// 小程序启动器中的单个入口。
 @immutable
 class MiniProgramLauncherItem {
@@ -20,6 +23,7 @@ class MiniProgramLauncherItem {
     required this.label,
     required this.icon,
     required this.color,
+    this.assetPath,
     this.tileKey,
     this.searchTerms = const [],
   });
@@ -28,6 +32,43 @@ class MiniProgramLauncherItem {
   final String label;
   final IconData icon;
   final Color color;
+  final String? assetPath;
   final Key? tileKey;
   final List<String> searchTerms;
+}
+
+class MiniProgramLauncherIcon extends StatelessWidget {
+  const MiniProgramLauncherIcon({
+    super.key,
+    required this.item,
+    required this.size,
+  });
+
+  final MiniProgramLauncherItem item;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final assetPath = item.assetPath;
+    return Container(
+      width: size,
+      height: size,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: item.color,
+        shape: assetPath == null ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: assetPath == null
+            ? null
+            : BorderRadius.circular(size * 0.24),
+      ),
+      child: assetPath == null
+          ? Icon(item.icon, color: Colors.white, size: size * 0.53)
+          : Image.asset(
+              assetPath,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) =>
+                  Icon(item.icon, color: Colors.white, size: size * 0.53),
+            ),
+    );
+  }
 }

@@ -4,120 +4,214 @@ import '../../common/miniapp_localizations.dart';
 import '../tospino_routes.dart';
 import '../tospino_style.dart';
 
-class TospinoSettingsPage extends StatefulWidget {
+class TospinoSettingsPage extends StatelessWidget {
   const TospinoSettingsPage({super.key, required this.controller});
 
   final TospinoAppController controller;
 
   @override
-  State<TospinoSettingsPage> createState() => _TospinoSettingsPageState();
-}
-
-class _TospinoSettingsPageState extends State<TospinoSettingsPage> {
-  bool _orderUpdates = true;
-  bool _promotions = false;
-
-  @override
   Widget build(BuildContext context) {
+    final user = controller.user;
+    final languageLabel = Localizations.localeOf(context).languageCode == 'en'
+        ? 'English'
+        : '中文';
     return ColoredBox(
       key: const Key('tospino-settings-page'),
       color: TospinoColors.resolve(context, TospinoColors.background),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 28),
+        padding: EdgeInsets.zero,
         children: [
-          _SettingsCard(
-            children: [
-              SwitchListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                title: const Text('Order updates'),
-                subtitle: Text(localizeMiniProgramLabel(context, '订单提交成功')),
-                value: _orderUpdates,
-                activeThumbColor: TospinoColors.solidBrand(context),
-                onChanged: (value) => setState(() => _orderUpdates = value),
+          if (user != null) ...[
+            Container(
+              color: TospinoColors.resolve(context, TospinoColors.surface),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: TospinoColors.resolve(
+                        context,
+                        TospinoColors.brandPale,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      user.displayName.isEmpty
+                          ? 'T'
+                          : user.displayName.characters.first,
+                      style: TextStyle(
+                        color: TospinoColors.solidBrand(context),
+                        fontSize: 21,
+                        fontWeight: TospinoText.emphasis,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 13),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.displayName.isEmpty ? '--' : user.displayName,
+                          style: TospinoText.pageTitle(context),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'ID:${user.id}',
+                          style: TospinoText.secondary(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              SwitchListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                title: const Text('Promotions'),
-                subtitle: Text(localizeMiniProgramLabel(context, '优惠券')),
-                value: _promotions,
-                activeThumbColor: TospinoColors.solidBrand(context),
-                onChanged: (value) => setState(() => _promotions = value),
+            ),
+            Divider(
+              height: 0.5,
+              color: TospinoColors.resolve(context, TospinoColors.line),
+            ),
+          ],
+          _SettingsGroup(
+            children: [
+              _SettingsRow(
+                label: '收货地址',
+                onTap: () => controller.open(TospinoRoute.address),
+              ),
+              _SettingsRow(
+                label: '账户与安全',
+                onTap: () => showTospinoToast(context, '账户与安全'),
+              ),
+              _SettingsRow(
+                label: '支付设置',
+                onTap: () => showTospinoToast(context, '支付设置'),
+              ),
+              _SettingsRow(
+                label: '语言设置',
+                value: languageLabel,
+                showDivider: false,
+                onTap: () => showTospinoToast(context, '请在主体显示设置中切换语言'),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          _SettingsCard(
+          _SettingsGroup(
             children: [
-              ListTile(
-                leading: const Icon(Icons.shield_outlined),
-                title: Text(localizeMiniProgramLabel(context, '隐私政策')),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => showTospinoToast(context, '隐私政策'),
+              _SettingsRow(
+                label: '清除缓存',
+                value: '立即清理',
+                showDivider: false,
+                onTap: () => showTospinoToast(context, '缓存已清理'),
               ),
-              Divider(
-                height: 1,
-                indent: 52,
-                color: TospinoColors.resolve(context, TospinoColors.line),
-              ),
-              ListTile(
-                leading: const Icon(Icons.description_outlined),
-                title: Text(localizeMiniProgramLabel(context, '用户协议')),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => showTospinoToast(context, '用户协议'),
-              ),
-              Divider(
-                height: 1,
-                indent: 52,
-                color: TospinoColors.resolve(context, TospinoColors.line),
-              ),
-              ListTile(
-                leading: const Icon(Icons.info_outline_rounded),
-                title: Text(localizeMiniProgramLabel(context, '关于 Tospino')),
-                subtitle: Text(
-                  '${localizeMiniProgramLabel(context, '版本')} 1.0.0',
-                ),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => widget.controller.open(TospinoRoute.about),
-              ),
-              if (widget.controller.isLoggedIn) ...[
-                Divider(
-                  height: 1,
-                  indent: 52,
-                  color: TospinoColors.resolve(context, TospinoColors.line),
-                ),
-                ListTile(
-                  key: const Key('tospino-logout'),
-                  leading: const Icon(Icons.logout_rounded),
-                  title: Text(localizeMiniProgramLabel(context, '退出登录')),
-                  onTap: () async {
-                    await widget.controller.logout();
-                    if (!context.mounted) return;
-                    widget.controller
-                      ..back()
-                      ..switchTab(3);
-                  },
-                ),
-              ],
             ],
           ),
+          if (controller.isLoggedIn) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+              child: OutlinedButton(
+                key: const Key('tospino-logout'),
+                onPressed: () async {
+                  await controller.logout();
+                  if (context.mounted) controller.back();
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: TospinoColors.resolve(
+                    context,
+                    TospinoColors.price,
+                  ),
+                  side: BorderSide(
+                    color: TospinoColors.resolve(
+                      context,
+                      TospinoColors.lineStrong,
+                    ),
+                  ),
+                  backgroundColor: TospinoColors.resolve(
+                    context,
+                    TospinoColors.surface,
+                  ),
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+                child: Text(
+                  localizeMiniProgramLabel(context, '退出登录'),
+                  style: const TextStyle(fontWeight: TospinoText.emphasis),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-class _SettingsCard extends StatelessWidget {
-  const _SettingsCard({required this.children});
+class _SettingsGroup extends StatelessWidget {
+  const _SettingsGroup({required this.children});
 
   final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    return ColoredBox(
       color: TospinoColors.resolve(context, TospinoColors.surface),
-      borderRadius: BorderRadius.circular(17),
-      clipBehavior: Clip.antiAlias,
       child: Column(children: children),
+    );
+  }
+}
+
+class _SettingsRow extends StatelessWidget {
+  const _SettingsRow({
+    required this.label,
+    required this.onTap,
+    this.value,
+    this.showDivider = true,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final String? value;
+  final bool showDivider;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 53,
+        margin: const EdgeInsets.only(left: 20),
+        padding: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          border: showDivider
+              ? Border(
+                  bottom: BorderSide(
+                    color: TospinoColors.resolve(context, TospinoColors.line),
+                  ),
+                )
+              : null,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                localizeMiniProgramLabel(context, label),
+                style: TospinoText.body(context),
+              ),
+            ),
+            if (value != null)
+              Text(
+                localizeMiniProgramLabel(context, value!),
+                style: TospinoText.hint(context),
+              ),
+            const SizedBox(width: 5),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 19,
+              color: TospinoColors.resolve(context, TospinoColors.hint),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

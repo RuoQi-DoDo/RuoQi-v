@@ -59,7 +59,7 @@ class TospinoCheckoutPage extends StatelessWidget {
         children: [
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 18),
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 18),
               children: [
                 _AddressCard(address: address, controller: controller),
                 const SizedBox(height: 10),
@@ -97,7 +97,7 @@ class TospinoCheckoutPage extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           localizeMiniProgramLabel(context, '预计 2-5 个工作日送达'),
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: TospinoText.meta(context),
                         ),
                       ),
                       Divider(
@@ -121,7 +121,7 @@ class TospinoCheckoutPage extends StatelessWidget {
                                 context,
                                 saleInfo.isCashDelivery ? '货到付款' : '在线支付',
                               ),
-                              style: Theme.of(context).textTheme.bodyLarge,
+                              style: TospinoText.body(context),
                             ),
                           ),
                           const Icon(
@@ -183,12 +183,13 @@ class TospinoCheckoutPage extends StatelessWidget {
                           localizeMiniProgramLabel(context, '实付款'),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
-                        TospinoPriceText(price: saleInfo.payable, size: 23),
+                        TospinoPriceText(price: saleInfo.payable, size: 18),
                       ],
                     ),
                   ),
-                  FilledButton(
+                  TospinoGradientButton(
                     key: const Key('tospino-place-order'),
+                    label: '提交订单',
                     onPressed: controller.busy
                         ? null
                         : () async {
@@ -203,24 +204,8 @@ class TospinoCheckoutPage extends StatelessWidget {
                               }
                             }
                           },
-                    style: FilledButton.styleFrom(
-                      backgroundColor: TospinoColors.solidBrand(context),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 13,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(21),
-                      ),
-                    ),
-                    child: Text(
-                      localizeMiniProgramLabel(context, '提交订单'),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    height: 48,
+                    expand: false,
                   ),
                 ],
               ),
@@ -242,10 +227,10 @@ class _AddressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: TospinoColors.resolve(context, TospinoColors.surface),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(TospinoMetrics.cardRadius),
       child: InkWell(
         onTap: controller.openAddress,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(TospinoMetrics.cardRadius),
         child: Padding(
           padding: const EdgeInsets.all(15),
           child: Row(
@@ -258,7 +243,9 @@ class _AddressCard extends StatelessWidget {
                     context,
                     TospinoColors.brandPale,
                   ),
-                  borderRadius: BorderRadius.circular(13),
+                  borderRadius: BorderRadius.circular(
+                    TospinoMetrics.imageRadius,
+                  ),
                 ),
                 child: Icon(
                   Icons.location_on_outlined,
@@ -278,7 +265,7 @@ class _AddressCard extends StatelessWidget {
                             address.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: TospinoText.bodyStrong(context),
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -287,7 +274,7 @@ class _AddressCard extends StatelessWidget {
                             address.phone,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall,
+                            style: TospinoText.meta(context),
                           ),
                         ),
                       ],
@@ -297,7 +284,7 @@ class _AddressCard extends StatelessWidget {
                       address.completeAddress,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: TospinoText.secondary(context),
                     ),
                   ],
                 ),
@@ -344,7 +331,7 @@ class _CheckoutCard extends StatelessWidget {
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: TospinoColors.resolve(context, TospinoColors.surface),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(TospinoMetrics.cardRadius),
       ),
       child: child,
     );
@@ -361,21 +348,27 @@ class _CheckoutLine extends StatelessWidget {
     return Row(
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(11),
+          borderRadius: BorderRadius.circular(TospinoMetrics.imageRadius),
           child: SizedBox(
             width: 76,
             height: 76,
             child: line.imageUrl.isEmpty
-                ? const ColoredBox(
-                    color: TospinoColors.line,
-                    child: Icon(Icons.shopping_bag_outlined),
+                ? ColoredBox(
+                    color: TospinoColors.resolve(
+                      context,
+                      TospinoColors.imagePlaceholder,
+                    ),
+                    child: const Icon(Icons.image_outlined),
                   )
                 : Image.network(
                     line.imageUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const ColoredBox(
-                      color: TospinoColors.line,
-                      child: Icon(Icons.shopping_bag_outlined),
+                    errorBuilder: (_, _, _) => ColoredBox(
+                      color: TospinoColors.resolve(
+                        context,
+                        TospinoColors.imagePlaceholder,
+                      ),
+                      child: const Icon(Icons.image_outlined),
                     ),
                   ),
           ),
@@ -391,9 +384,7 @@ class _CheckoutLine extends StatelessWidget {
                   line.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                  style: TospinoText.bodyStrong(context),
                 ),
                 const Spacer(),
                 Row(
@@ -401,10 +392,7 @@ class _CheckoutLine extends StatelessWidget {
                     Expanded(
                       child: TospinoPriceText(price: line.price, size: 16),
                     ),
-                    Text(
-                      '×${line.quantity}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
+                    Text('×${line.quantity}', style: TospinoText.meta(context)),
                   ],
                 ),
               ],
@@ -433,7 +421,7 @@ class _CheckoutRow extends StatelessWidget {
       children: [
         Text(
           localizeMiniProgramLabel(context, label),
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: TospinoText.secondary(context),
         ),
         const Spacer(),
         Text(

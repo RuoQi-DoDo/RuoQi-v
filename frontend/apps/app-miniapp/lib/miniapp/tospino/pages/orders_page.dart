@@ -20,9 +20,9 @@ class TospinoOrdersPage extends StatelessWidget {
       child: Column(
         children: [
           SizedBox(
-            height: 51,
+            height: 50,
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
               scrollDirection: Axis.horizontal,
               children: [
                 _StatusChip(
@@ -78,9 +78,9 @@ class TospinoOrdersPage extends StatelessWidget {
                     onRefresh: controller.loadOrders,
                     child: ListView.separated(
                       key: const Key('tospino-orders-list'),
-                      padding: const EdgeInsets.fromLTRB(14, 4, 14, 24),
+                      padding: const EdgeInsets.fromLTRB(12, 6, 12, 24),
                       itemCount: orders.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) => _OrderCard(
                         order: orders[index],
                         onTap: () => controller.openOrder(orders[index]),
@@ -108,23 +108,25 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 7),
+      padding: const EdgeInsets.only(right: 4),
       child: ChoiceChip(
         label: Text(localizeMiniProgramLabel(context, label)),
         selected: selected,
         onSelected: (_) => onTap(),
         showCheckmark: false,
-        selectedColor: TospinoColors.solidBrand(context),
-        backgroundColor: TospinoColors.resolve(context, TospinoColors.surface),
+        selectedColor: TospinoColors.resolve(context, TospinoColors.brandPale),
+        backgroundColor: Colors.transparent,
         side: BorderSide.none,
         labelStyle: TextStyle(
           color: selected
-              ? Colors.white
+              ? TospinoColors.solidBrand(context)
               : TospinoColors.resolve(context, TospinoColors.secondary),
-          fontSize: 11.5,
-          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          fontSize: 13,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(17)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(TospinoMetrics.tagRadius),
+        ),
       ),
     );
   }
@@ -142,10 +144,10 @@ class _OrderCard extends StatelessWidget {
     return Material(
       key: Key('tospino-order-${order.id}'),
       color: TospinoColors.resolve(context, TospinoColors.surface),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(TospinoMetrics.cardRadius),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(TospinoMetrics.cardRadius),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -165,16 +167,14 @@ class _OrderCard extends StatelessWidget {
                           ? status?.label ?? '全部订单'
                           : order.statusLabel,
                     ),
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TospinoText.bodyStrong(context),
                   ),
                   const Spacer(),
                   Text(
                     order.createdAt,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: TospinoText.meta(context),
                   ),
                 ],
               ),
@@ -191,25 +191,30 @@ class _OrderCard extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final item = order.items[index];
                           return ClipRRect(
-                            borderRadius: BorderRadius.circular(11),
+                            borderRadius: BorderRadius.circular(
+                              TospinoMetrics.imageRadius,
+                            ),
                             child: SizedBox(
                               width: 80,
                               height: 80,
                               child: item.imageUrl.isEmpty
-                                  ? const ColoredBox(
-                                      color: TospinoColors.line,
-                                      child: Icon(Icons.shopping_bag_outlined),
+                                  ? ColoredBox(
+                                      color: TospinoColors.resolve(
+                                        context,
+                                        TospinoColors.imagePlaceholder,
+                                      ),
+                                      child: const Icon(Icons.image_outlined),
                                     )
                                   : Image.network(
                                       item.imageUrl,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, _, _) =>
-                                          const ColoredBox(
-                                            color: TospinoColors.line,
-                                            child: Icon(
-                                              Icons.shopping_bag_outlined,
-                                            ),
-                                          ),
+                                      errorBuilder: (_, _, _) => ColoredBox(
+                                        color: TospinoColors.resolve(
+                                          context,
+                                          TospinoColors.imagePlaceholder,
+                                        ),
+                                        child: const Icon(Icons.image_outlined),
+                                      ),
                                     ),
                             ),
                           );
@@ -222,12 +227,12 @@ class _OrderCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          TospinoPriceText(price: order.total, size: 17),
+                          TospinoPriceText(price: order.total, size: 16),
                           const SizedBox(height: 5),
                           Text(
                             '${order.items.length} '
                             '${localizeMiniProgramLabel(context, '件商品')}',
-                            style: Theme.of(context).textTheme.bodySmall,
+                            style: TospinoText.meta(context),
                           ),
                         ],
                       ),
@@ -247,7 +252,7 @@ class _OrderCard extends StatelessWidget {
                       '${order.orderSn.isEmpty ? order.id : order.orderSn}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: TospinoText.meta(context),
                     ),
                   ),
                   TextButton(

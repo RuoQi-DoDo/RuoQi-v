@@ -13,11 +13,11 @@ class TospinoConfig {
 
   static const apiBaseUrl = String.fromEnvironment(
     'TOSPINO_API_BASE_URL',
-    defaultValue: 'https://tospinomallapi-test.tospinomall.com',
+    defaultValue: 'https://gh2capi.tospino.com.gh',
   );
   static const ssoBaseUrl = String.fromEnvironment(
     'TOSPINO_SSO_BASE_URL',
-    defaultValue: 'https://oauthapi-test.tospinomall.com',
+    defaultValue: 'https://oauthapi.tospino.com.gh',
   );
   static const configuredAccessToken = String.fromEnvironment(
     'TOSPINO_ACCESS_TOKEN',
@@ -38,6 +38,10 @@ class TospinoConfig {
   static const appVersionCode = '1';
   static const basicAuthorization = 'Basic YnV5ZXI6YnV5ZXI=';
 }
+
+Map<String, dynamic> tospinoProductsByIdsPayload(List<String> ids) => {
+  'productIds': ids.where((id) => id.isNotEmpty).toSet().toList(),
+};
 
 class TospinoSession {
   TospinoSession({
@@ -78,7 +82,14 @@ abstract interface class TospinoDataSource {
   TospinoUser? get currentUser;
 
   Future<void> initialize();
+  Future<List<TospinoHomePageDecoration>> fetchHomeDecoration({
+    String? templateId,
+    String? styleId,
+  });
+  Future<List<String>> fetchHomeRecommendWords();
+  Future<List<TospinoFreeGift>> fetchFreeGifts();
   Future<List<TospinoCategory>> fetchCategories();
+  Future<List<TospinoProduct>> fetchProductsByIds(List<String> ids);
   Future<List<TospinoProduct>> searchProducts({
     String keyword = '',
     String? navigationCategoryId,
@@ -86,9 +97,11 @@ abstract interface class TospinoDataSource {
     int pageSize = 20,
   });
   Future<TospinoProductDetail> fetchProductDetail(String productId);
-  Future<List<TospinoCartLine>> fetchCart();
+  Future<List<TospinoCartLine>> fetchCart({int queryType = 1});
+  Future<TospinoCartCounts> fetchCartCounts();
   Future<void> addToCart(String skuId, {int quantity = 1});
   Future<void> updateCartQuantity(String skuId, int quantity);
+  Future<void> setOftenBuy(String skuId, {required bool isOftenBuy});
   Future<void> removeFromCart(String skuId);
   Future<List<TospinoOrder>> fetchOrders({TospinoOrderStatus? status});
   Future<TospinoOrder> fetchOrderDetail(String orderId);
@@ -297,9 +310,67 @@ class TospinoApi implements TospinoDataSource {
   }
 
   @override
+  Future<List<TospinoHomePageDecoration>> fetchHomeDecoration({
+    String? templateId,
+    String? styleId,
+  }) async {
+    final path = templateId == null || templateId.isEmpty
+        ? '/cms/index/decoration/mall'
+        : '/cms/index/decoration/$templateId/1';
+    final data = await _get(
+      path,
+      query: styleId == null || styleId.isEmpty ? null : {'styleID': styleId},
+    );
+    return _asList(
+      data,
+    ).map(parseTospinoHomePageDecoration).toList(growable: false);
+  }
+
+  @override
+  Future<List<String>> fetchHomeRecommendWords() async {
+    final data = await _get(
+      '/basics/base/operator/indexRecommendWords/findAll',
+    );
+    return _asList(data)
+        .map((value) => _asString(_asMap(value)['name']))
+        .where((name) => name.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  @override
+  Future<List<TospinoFreeGift>> fetchFreeGifts() async {
+    final data = await _post(
+      '/discount/feign/bargain/activity/activityList',
+      data: <String, dynamic>{
+        'pageNum': '1',
+        'pageSize': '100',
+        if (session.userId.isNotEmpty) 'userId': session.userId,
+      },
+    );
+    final records = _asMap(data)['records'];
+    return _asList(records).map(_freeGiftFromJson).toList(growable: false);
+  }
+
+  @override
   Future<List<TospinoCategory>> fetchCategories() async {
     final data = await _get('/product/nav/category/list/tree/1');
     return _asList(data).map(_categoryFromJson).toList(growable: false);
+  }
+
+  @override
+  Future<List<TospinoProduct>> fetchProductsByIds(List<String> ids) async {
+    final uniqueIds = ids.where((id) => id.isNotEmpty).toSet().toList();
+    if (uniqueIds.isEmpty) return const [];
+    final data = await _post(
+      '/search/productsearch/query',
+      // Android HomeAdapter3 sends an exact component product list through
+      // SearchInfo.productIds. Extra search fields cause the server to fall
+      // back to default recommendations.
+      data: tospinoProductsByIdsPayload(uniqueIds),
+    );
+    return _asList(
+      _asMap(data)['items'],
+    ).map(_productFromJson).toList(growable: false);
   }
 
   @override
@@ -396,10 +467,10 @@ class TospinoApi implements TospinoDataSource {
   }
 
   @override
-  Future<List<TospinoCartLine>> fetchCart() async {
+  Future<List<TospinoCartLine>> fetchCart({int queryType = 1}) async {
     final data = await _get(
       '/carts/shoppingCart/findListPage',
-      query: {'queryType': '1'},
+      query: {'queryType': '$queryType'},
     );
     final result = <TospinoCartLine>[];
     for (final storeValue in _asList(_asMap(data)['storeList'])) {
@@ -426,11 +497,24 @@ class TospinoApi implements TospinoDataSource {
                 )
                 .toList(growable: false),
             valid: _asString(item['status']) != '0',
+            isOftenBuy:
+                _asInt(item['isOftenBuy']) == 1 ||
+                _asString(item['isOftenBuy']).toLowerCase() == 'true',
           ),
         );
       }
     }
     return result;
+  }
+
+  @override
+  Future<TospinoCartCounts> fetchCartCounts() async {
+    final data = _asMap(await _get('/carts/shoppingCart/findCount'));
+    return TospinoCartCounts(
+      allTotal: _asInt(data['allTotal']) ?? 0,
+      priceCutTotal: _asInt(data['priceCutTotal']) ?? 0,
+      oftenBuyTotal: _asInt(data['oftenBuyTotal']) ?? 0,
+    );
   }
 
   @override
@@ -446,6 +530,14 @@ class TospinoApi implements TospinoDataSource {
     await _put(
       '/carts/shoppingCart/updateCartNumById',
       query: {'skuId': skuId, 'quantity': '$quantity'},
+    );
+  }
+
+  @override
+  Future<void> setOftenBuy(String skuId, {required bool isOftenBuy}) async {
+    await _put(
+      '/carts/shoppingCart/setOftenBuy',
+      query: {'isOftenBuy': isOftenBuy ? '1' : '0', 'skuId': skuId},
     );
   }
 
@@ -699,6 +791,114 @@ String tospinoEncryptPassword(String password) {
     ),
   );
   return encrypter.encryptBytes(padded, iv: crypt.IV.fromUtf8(keyText)).base64;
+}
+
+TospinoFreeGift _freeGiftFromJson(dynamic value) {
+  final map = _asMap(value);
+  return TospinoFreeGift(
+    id: _asString(map['id']),
+    activityCode: _asString(map['activityCode']),
+    productId: _asString(map['productId']),
+    productName: _asString(map['productName']),
+    productImage: _normalizeUrl(_asString(map['productImg'])),
+    storeName: _asString(map['storeName']),
+    minPrice: _asDouble(map['minActivityPrice']),
+    maxPrice: _asDouble(map['maxActivityPrice']),
+    receiveNum: _asInt(map['receiveNum']) ?? 0,
+    requiredHelpers: _asInt(map['assistRatio']) ?? 0,
+    durationHours: _asInt(map['duration']) ?? 0,
+  );
+}
+
+@visibleForTesting
+TospinoHomePageDecoration parseTospinoHomePageDecoration(dynamic value) {
+  final map = _asMap(value);
+  final config = _asMap(map['config']);
+  final backgroundImage = _asMap(config['backgroundImage']);
+  return TospinoHomePageDecoration(
+    id: _asString(map['id']),
+    name: _asString(map['name']),
+    templateId: _asString(map['templateID']),
+    baseColor: _asString(_asMap(map['style'])['baseColor']),
+    backgroundImageUrl: _normalizeUrl(_asString(backgroundImage['imageLink'])),
+    components: _asList(
+      map['componentList'],
+    ).map(_homeComponentFromJson).toList(growable: false),
+  );
+}
+
+TospinoHomeComponent _homeComponentFromJson(dynamic value) {
+  final map = _asMap(value);
+  final style = _asMap(map['style']);
+  final config = _asMap(map['config']);
+  final componentLink = _asMap(map['link']);
+  final showTitle = _asMap(config['showTitle']);
+  final imageName = _asMap(config['imageName']);
+  final salesLabel = _asMap(config['salesLabel']);
+  final evaluationLabel = _asMap(config['evaluationLabel']);
+  final details = _asList(map['detailList']);
+  final goodsIds = <String>{};
+  final items = <TospinoHomeComponentItem>[];
+  for (final detailValue in details) {
+    final detail = _asMap(detailValue);
+    final link = _asMap(detail['link']);
+    final position = _asMap(detail['position']);
+    final detailGoodsIds = _asList(
+      detail['goodsIds'],
+    ).map(_asString).where((id) => id.isNotEmpty).toList(growable: false);
+    goodsIds.addAll(detailGoodsIds);
+    final categoryIds = <String>{
+      ..._asList(detail['frontCategoryIds']).map(_asString),
+      ..._asList(detail['backCategoryIds']).map(_asString),
+      for (final category in _asList(detail['frontCategoryList']))
+        _asString(_asMap(category)['id']),
+    }.where((id) => id.isNotEmpty).toList(growable: false);
+    final imageName = _asString(link['imageName']);
+    final categoryNames = _asList(detail['frontCategoryList'])
+        .map((category) => _asString(_asMap(category)['name']))
+        .where((name) => name.isNotEmpty)
+        .toList(growable: false);
+    items.add(
+      TospinoHomeComponentItem(
+        imageUrl: _normalizeUrl(_asString(link['imageLink'])),
+        videoCoverUrl: _normalizeUrl(_asString(link['videoCoverLink'])),
+        title: imageName.isNotEmpty
+            ? imageName
+            : categoryNames.isNotEmpty
+            ? categoryNames.first
+            : '',
+        linkType: _asString(link['linkType']),
+        linkAddress: _asString(link['linkAddress']),
+        goodsIds: detailGoodsIds,
+        categoryIds: categoryIds,
+        positionTop: _asDouble(position['top']),
+        positionLeft: _asDouble(position['left']),
+        positionWidth: _asDouble(position['width']),
+        positionHeight: _asDouble(position['height']),
+      ),
+    );
+  }
+  final title = _asString(showTitle['name']);
+  return TospinoHomeComponent(
+    type: _asInt(map['type']) ?? 0,
+    name: _asString(map['name']),
+    title: title.isNotEmpty ? title : _asString(map['name']),
+    showTitle: _asString(showTitle['display']) == '1',
+    showImageName: _asString(imageName['display']) == '1',
+    showSales: _asString(salesLabel['display']) == '1',
+    showRating: _asString(evaluationLabel['display']) == '1',
+    imageUrl: _normalizeUrl(_asString(componentLink['imageLink'])),
+    videoCoverUrl: _normalizeUrl(_asString(componentLink['videoCoverLink'])),
+    proportion: _asDouble(componentLink['proportion']),
+    baseColor: _asString(style['baseColor']),
+    lowerGap: _asDouble(style['lowerGap']),
+    leftGap: _asDouble(style['leftGap']),
+    rightGap: _asDouble(style['rightGap']),
+    height: _asDouble(style['height']),
+    displayRows: _asInt(style['displayRows']) ?? 0,
+    items: items,
+    goodsIds: goodsIds.toList(growable: false),
+  );
 }
 
 TospinoCategory _categoryFromJson(dynamic value) {

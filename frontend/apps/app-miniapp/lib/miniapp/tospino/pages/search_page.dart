@@ -48,7 +48,7 @@ class _TospinoSearchPageState extends State<TospinoSearchPage> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
             child: TextField(
               key: const Key('tospino-search-field'),
               controller: _textController,
@@ -56,8 +56,14 @@ class _TospinoSearchPageState extends State<TospinoSearchPage> {
               textInputAction: TextInputAction.search,
               onSubmitted: widget.controller.search,
               decoration: InputDecoration(
+                filled: true,
+                fillColor: TospinoColors.resolve(
+                  context,
+                  TospinoColors.surfaceMuted,
+                ),
                 hintText: localizeMiniProgramLabel(context, '搜索商品、品牌或关键词'),
                 prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 suffixIcon: query.isEmpty
                     ? null
                     : IconButton(
@@ -89,7 +95,7 @@ class _TospinoSearchPageState extends State<TospinoSearchPage> {
                           Text(
                             localizeMiniProgramLabel(context, '搜索商品、品牌或关键词'),
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: TospinoText.secondary(context),
                           ),
                         ],
                       ),
@@ -128,29 +134,29 @@ class _SearchResults extends StatelessWidget {
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
             child: Text(
               '${results.length} ${localizeMiniProgramLabel(context, '件商品')}',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: TospinoText.meta(context),
             ),
           ),
         ),
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(14, 0, 14, 24),
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
           sliver: SliverGrid(
             delegate: SliverChildBuilderDelegate((context, index) {
               final product = results[index];
               return TospinoProductTile(
                 product: product,
-                artworkHeight: 148,
+                artworkHeight: 138,
                 onTap: () => controller.openProduct(product),
               );
             }, childCount: results.length),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              childAspectRatio: 0.66,
+              mainAxisSpacing: 9,
+              crossAxisSpacing: 9,
+              childAspectRatio: 0.63,
             ),
           ),
         ),

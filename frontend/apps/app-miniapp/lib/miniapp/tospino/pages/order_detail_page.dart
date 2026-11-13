@@ -24,17 +24,20 @@ class TospinoOrderDetailPage extends StatelessWidget {
       key: const Key('tospino-order-detail-page'),
       color: TospinoColors.resolve(context, TospinoColors.background),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 26),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 26),
         children: [
           Container(
-            padding: const EdgeInsets.all(17),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF163E46), TospinoColors.brand],
+                colors: [
+                  TospinoColors.solidBrand(context),
+                  TospinoColors.brandDeep,
+                ],
               ),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(TospinoMetrics.cardRadius),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,7 +49,9 @@ class TospinoOrderDetailPage extends StatelessWidget {
                       height: 42,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(13),
+                        borderRadius: BorderRadius.circular(
+                          TospinoMetrics.imageRadius,
+                        ),
                       ),
                       child: Icon(status.icon, color: Colors.white, size: 22),
                     ),
@@ -60,7 +65,7 @@ class TospinoOrderDetailPage extends StatelessWidget {
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 19,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: TospinoText.strong,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -91,7 +96,7 @@ class TospinoOrderDetailPage extends StatelessWidget {
                   children: [
                     Text(
                       localizeMiniProgramLabel(context, '收货地址'),
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: TospinoText.bodyStrong(context),
                     ),
                     const Spacer(),
                     Container(
@@ -128,7 +133,7 @@ class TospinoOrderDetailPage extends StatelessWidget {
                         (order.receiverAddress.isEmpty
                             ? ''
                             : '\n${order.receiverAddress}'),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: TospinoText.secondary(context),
                   ),
                 ),
               ],
@@ -142,21 +147,29 @@ class TospinoOrderDetailPage extends StatelessWidget {
                   Row(
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(
+                          TospinoMetrics.imageRadius,
+                        ),
                         child: SizedBox(
                           width: 70,
                           height: 70,
                           child: order.items[index].imageUrl.isEmpty
-                              ? const ColoredBox(
-                                  color: TospinoColors.line,
-                                  child: Icon(Icons.shopping_bag_outlined),
+                              ? ColoredBox(
+                                  color: TospinoColors.resolve(
+                                    context,
+                                    TospinoColors.imagePlaceholder,
+                                  ),
+                                  child: const Icon(Icons.image_outlined),
                                 )
                               : Image.network(
                                   order.items[index].imageUrl,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => const ColoredBox(
-                                    color: TospinoColors.line,
-                                    child: Icon(Icons.shopping_bag_outlined),
+                                  errorBuilder: (_, _, _) => ColoredBox(
+                                    color: TospinoColors.resolve(
+                                      context,
+                                      TospinoColors.imagePlaceholder,
+                                    ),
+                                    child: const Icon(Icons.image_outlined),
                                   ),
                                 ),
                         ),
@@ -167,8 +180,7 @@ class TospinoOrderDetailPage extends StatelessWidget {
                           order.items[index].title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(fontWeight: FontWeight.w600),
+                          style: TospinoText.bodyStrong(context),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -214,7 +226,7 @@ class TospinoOrderDetailPage extends StatelessWidget {
                     const Spacer(),
                     Text(
                       localizeMiniProgramLabel(context, '实付款'),
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: TospinoText.secondary(context),
                     ),
                     const SizedBox(width: 8),
                     TospinoPriceText(price: order.total, size: 21),
@@ -233,7 +245,9 @@ class TospinoOrderDetailPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 13),
               side: BorderSide(color: TospinoColors.solidBrand(context)),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(
+                  TospinoMetrics.controlRadius,
+                ),
               ),
             ),
           ),
@@ -317,7 +331,7 @@ class _DetailCard extends StatelessWidget {
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: TospinoColors.resolve(context, TospinoColors.surface),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(TospinoMetrics.cardRadius),
       ),
       child: child,
     );
@@ -336,7 +350,7 @@ class _SummaryRow extends StatelessWidget {
       children: [
         Text(
           localizeMiniProgramLabel(context, label),
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: TospinoText.secondary(context),
         ),
         const Spacer(),
         Flexible(
