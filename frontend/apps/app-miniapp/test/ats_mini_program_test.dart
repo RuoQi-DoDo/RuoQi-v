@@ -106,6 +106,53 @@ void main() {
     expect(find.text('公司管理'), findsOneWidget);
   });
 
+  testWidgets('首页搜索栏与轮播图保持视觉间距', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpAndSettle();
+    await _openAts(tester);
+
+    final searchBar = find.byKey(const Key('ats-home-search'));
+    final firstBanner = find.byKey(const ValueKey('ats-home-banner-card-0'));
+    expect(searchBar, findsOneWidget);
+    expect(firstBanner, findsOneWidget);
+
+    final gap =
+        tester.getTopLeft(firstBanner).dy - tester.getBottomLeft(searchBar).dy;
+    expect(gap, greaterThanOrEqualTo(24));
+  });
+
+  testWidgets('从底部导航上滑不会误退出小程序', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpAndSettle();
+    await _openAts(tester);
+
+    await tester.drag(
+      find.byKey(const Key('mini-program-tab-bar')),
+      const Offset(0, -80),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('搜索岗位或关键词'), findsOneWidget);
+    expect(find.text('搜索小程序'), findsNothing);
+
+    await tester.drag(
+      find.byKey(const Key('mini-program-exit-swipe')),
+      const Offset(0, -80),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('搜索岗位或关键词'), findsNothing);
+    expect(find.text('搜索小程序'), findsOneWidget);
+  });
+
   testWidgets('ATS 右上角胶囊退出按钮返回客户首页', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;

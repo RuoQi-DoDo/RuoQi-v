@@ -76,6 +76,7 @@ class _AtsHomePageState extends State<AtsHomePage> {
                 onTap: () => controller.open(AtsRoute.search),
                 borderRadius: BorderRadius.circular(22),
                 child: SizedBox(
+                  key: const Key('ats-home-search'),
                   height: 40,
                   child: Row(
                     children: [
@@ -103,7 +104,7 @@ class _AtsHomePageState extends State<AtsHomePage> {
             ),
           ),
           Transform.translate(
-            offset: const Offset(0, -10),
+            offset: Offset.zero,
             child: Column(
               children: [
                 _BannerCarousel(
@@ -403,6 +404,7 @@ class _BannerCarousel extends StatelessWidget {
                   top: 10,
                 ),
                 child: Container(
+                  key: ValueKey('ats-home-banner-card-$i'),
                   padding: const EdgeInsets.fromLTRB(18, 12, 18, 8),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(colors: banner.colors),
