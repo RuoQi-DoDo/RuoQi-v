@@ -94,6 +94,7 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
+          final page = HrPageRouter.build(_controller.route, _controller);
           return PopScope(
             canPop: false,
             onPopInvokedWithResult: (didPop, result) {
@@ -138,71 +139,142 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                         iconSize: 13,
                         iconGap: 4,
                       ),
-                      MiniProgramNavigationBar(
-                        title: _controller.route.title,
-                        miniProgramId: MiniProgramLauncherIds.hr,
-                        canGoBack: _controller.canGoBack,
-                        onBack: _controller.back,
-                        onMore: _showMore,
-                        onClose: _exit,
-                        leading: _controller.canGoBack
-                            ? null
-                            : const Padding(
-                                padding: EdgeInsets.only(left: 5),
-                                child: HrLogoMark(size: 30),
-                              ),
-                        backgroundColor: HrColors.resolve(
-                          context,
-                          HrColors.surface,
-                        ),
-                        foregroundColor: HrColors.resolve(
-                          context,
-                          HrColors.ink,
-                        ),
-                        borderColor: HrColors.resolve(context, HrColors.line2),
-                        backIconSize: 18,
-                        titleStyle: HrText.resolve(
-                          context,
-                          HrText.cardTitle,
-                        ).copyWith(fontSize: 14),
-                      ),
                       Expanded(
-                        child: ColoredBox(
-                          color: HrColors.resolve(context, HrColors.bg),
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 210),
-                            switchInCurve: Curves.easeOutCubic,
-                            switchOutCurve: Curves.easeInCubic,
-                            layoutBuilder: (currentChild, previousChildren) {
-                              return Stack(
-                                fit: StackFit.expand,
-                                children: [...previousChildren, ?currentChild],
-                              );
-                            },
-                            transitionBuilder: (child, animation) {
-                              final begin = Offset(
-                                _controller.forward ? 0.07 : -0.07,
-                                0,
-                              );
-                              return SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: begin,
-                                  end: Offset.zero,
-                                ).animate(animation),
-                                child: FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                ),
-                              );
-                            },
-                            child: KeyedSubtree(
-                              key: ValueKey(_controller.route),
-                              child: HrPageRouter.build(
-                                _controller.route,
-                                _controller,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            ColoredBox(
+                              color: HrColors.resolve(context, HrColors.bg),
+                              child: _controller.route.isTabRoot
+                                  ? _controller.route == HrRoute.home
+                                        ? AnimatedSwitcher(
+                                            duration: const Duration(
+                                              milliseconds: 210,
+                                            ),
+                                            switchInCurve: Curves.easeOutCubic,
+                                            switchOutCurve: Curves.easeInCubic,
+                                            layoutBuilder:
+                                                (
+                                                  currentChild,
+                                                  previousChildren,
+                                                ) {
+                                                  return Stack(
+                                                    fit: StackFit.expand,
+                                                    children: [
+                                                      ...previousChildren,
+                                                      ?currentChild,
+                                                    ],
+                                                  );
+                                                },
+                                            transitionBuilder:
+                                                (child, animation) {
+                                                  final begin = Offset(
+                                                    _controller.forward
+                                                        ? 0.07
+                                                        : -0.07,
+                                                    0,
+                                                  );
+                                                  return SlideTransition(
+                                                    position: Tween<Offset>(
+                                                      begin: begin,
+                                                      end: Offset.zero,
+                                                    ).animate(animation),
+                                                    child: FadeTransition(
+                                                      opacity: animation,
+                                                      child: child,
+                                                    ),
+                                                  );
+                                                },
+                                            child: KeyedSubtree(
+                                              key: ValueKey(_controller.route),
+                                              child: page,
+                                            ),
+                                          )
+                                        : Padding(
+                                            padding: EdgeInsets.only(
+                                              top: MiniProgramCapsuleOverlay
+                                                  .reservedHeight,
+                                            ),
+                                            child: AnimatedSwitcher(
+                                              duration: const Duration(
+                                                milliseconds: 210,
+                                              ),
+                                              switchInCurve:
+                                                  Curves.easeOutCubic,
+                                              switchOutCurve:
+                                                  Curves.easeInCubic,
+                                              layoutBuilder:
+                                                  (
+                                                    currentChild,
+                                                    previousChildren,
+                                                  ) {
+                                                    return Stack(
+                                                      fit: StackFit.expand,
+                                                      children: [
+                                                        ...previousChildren,
+                                                        ?currentChild,
+                                                      ],
+                                                    );
+                                                  },
+                                              transitionBuilder:
+                                                  (child, animation) {
+                                                    final begin = Offset(
+                                                      _controller.forward
+                                                          ? 0.07
+                                                          : -0.07,
+                                                      0,
+                                                    );
+                                                    return SlideTransition(
+                                                      position: Tween<Offset>(
+                                                        begin: begin,
+                                                        end: Offset.zero,
+                                                      ).animate(animation),
+                                                      child: FadeTransition(
+                                                        opacity: animation,
+                                                        child: child,
+                                                      ),
+                                                    );
+                                                  },
+                                              child: KeyedSubtree(
+                                                key: ValueKey(
+                                                  _controller.route,
+                                                ),
+                                                child: page,
+                                              ),
+                                            ),
+                                          )
+                                  : Column(
+                                      children: [
+                                        ColoredBox(
+                                          color: HrColors.resolve(
+                                            context,
+                                            HrColors.bg,
+                                          ),
+                                          child: MiniProgramPageHeader(
+                                            title: _controller.route.title,
+                                            onBack: _controller.canGoBack
+                                                ? _controller.back
+                                                : null,
+                                            foregroundColor: HrColors.resolve(
+                                              context,
+                                              HrColors.ink,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(child: page),
+                                      ],
+                                    ),
+                            ),
+                            Positioned(
+                              top: 5,
+                              right: 10,
+                              child: MiniProgramCapsuleOverlay(
+                                miniProgramId: MiniProgramLauncherIds.hr,
+                                onMore: _showMore,
+                                onClose: _exit,
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                       if (_controller.route.showsBottomNavigation)

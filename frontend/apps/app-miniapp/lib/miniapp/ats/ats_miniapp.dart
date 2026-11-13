@@ -70,6 +70,7 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
         builder: (context, _) {
           final route = _controller.route;
           final greenNav = route.usesGreenNavigation;
+          final page = AtsPageRouter.build(route, _controller);
           final content = AnnotatedRegion<SystemUiOverlayStyle>(
             value: SystemUiOverlayStyle(
               statusBarColor: greenNav
@@ -99,65 +100,149 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
                             ? Colors.white
                             : AtsColors.resolve(context, AtsColors.text),
                       ),
-                      MiniProgramNavigationBar(
-                        title: route.title,
-                        miniProgramId: MiniProgramLauncherIds.ats,
-                        canGoBack: _controller.canGoBack,
-                        onBack: _controller.back,
-                        onMore: _showMore,
-                        onClose: _exit,
-                        backgroundColor: greenNav
-                            ? AtsColors.solidPrimary(context)
-                            : AtsColors.resolve(context, AtsColors.surface),
-                        foregroundColor: greenNav
-                            ? Colors.white
-                            : AtsColors.resolve(context, AtsColors.text),
-                        borderColor: Colors.transparent,
-                        titleStyle: TextStyle(
-                          color: greenNav
-                              ? Colors.white
-                              : AtsColors.resolve(context, AtsColors.text),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
                       Expanded(
-                        child: ColoredBox(
-                          color: AtsColors.resolve(
-                            context,
-                            AtsColors.background,
-                          ),
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 230),
-                            switchInCurve: Curves.easeOutCubic,
-                            switchOutCurve: Curves.easeInCubic,
-                            layoutBuilder: (currentChild, previousChildren) {
-                              return Stack(
-                                fit: StackFit.expand,
-                                children: [...previousChildren, ?currentChild],
-                              );
-                            },
-                            transitionBuilder: (child, animation) {
-                              final begin = Offset(
-                                _controller.forward ? 0.08 : -0.08,
-                                0,
-                              );
-                              return SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: begin,
-                                  end: Offset.zero,
-                                ).animate(animation),
-                                child: FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                ),
-                              );
-                            },
-                            child: KeyedSubtree(
-                              key: ValueKey(route),
-                              child: AtsPageRouter.build(route, _controller),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            ColoredBox(
+                              color: greenNav
+                                  ? AtsColors.solidPrimary(context)
+                                  : AtsColors.resolve(
+                                      context,
+                                      AtsColors.background,
+                                    ),
+                              child: route.isTabRoot
+                                  ? route == AtsRoute.home
+                                        ? AnimatedSwitcher(
+                                            duration: const Duration(
+                                              milliseconds: 230,
+                                            ),
+                                            switchInCurve: Curves.easeOutCubic,
+                                            switchOutCurve: Curves.easeInCubic,
+                                            layoutBuilder:
+                                                (
+                                                  currentChild,
+                                                  previousChildren,
+                                                ) {
+                                                  return Stack(
+                                                    fit: StackFit.expand,
+                                                    children: [
+                                                      ...previousChildren,
+                                                      ?currentChild,
+                                                    ],
+                                                  );
+                                                },
+                                            transitionBuilder:
+                                                (child, animation) {
+                                                  final begin = Offset(
+                                                    _controller.forward
+                                                        ? 0.08
+                                                        : -0.08,
+                                                    0,
+                                                  );
+                                                  return SlideTransition(
+                                                    position: Tween<Offset>(
+                                                      begin: begin,
+                                                      end: Offset.zero,
+                                                    ).animate(animation),
+                                                    child: FadeTransition(
+                                                      opacity: animation,
+                                                      child: child,
+                                                    ),
+                                                  );
+                                                },
+                                            child: KeyedSubtree(
+                                              key: ValueKey(route),
+                                              child: page,
+                                            ),
+                                          )
+                                        : Padding(
+                                            padding: EdgeInsets.only(
+                                              top: MiniProgramCapsuleOverlay
+                                                  .reservedHeight,
+                                            ),
+                                            child: AnimatedSwitcher(
+                                              duration: const Duration(
+                                                milliseconds: 230,
+                                              ),
+                                              switchInCurve:
+                                                  Curves.easeOutCubic,
+                                              switchOutCurve:
+                                                  Curves.easeInCubic,
+                                              layoutBuilder:
+                                                  (
+                                                    currentChild,
+                                                    previousChildren,
+                                                  ) {
+                                                    return Stack(
+                                                      fit: StackFit.expand,
+                                                      children: [
+                                                        ...previousChildren,
+                                                        ?currentChild,
+                                                      ],
+                                                    );
+                                                  },
+                                              transitionBuilder:
+                                                  (child, animation) {
+                                                    final begin = Offset(
+                                                      _controller.forward
+                                                          ? 0.08
+                                                          : -0.08,
+                                                      0,
+                                                    );
+                                                    return SlideTransition(
+                                                      position: Tween<Offset>(
+                                                        begin: begin,
+                                                        end: Offset.zero,
+                                                      ).animate(animation),
+                                                      child: FadeTransition(
+                                                        opacity: animation,
+                                                        child: child,
+                                                      ),
+                                                    );
+                                                  },
+                                              child: KeyedSubtree(
+                                                key: ValueKey(route),
+                                                child: page,
+                                              ),
+                                            ),
+                                          )
+                                  : Column(
+                                      children: [
+                                        ColoredBox(
+                                          color: greenNav
+                                              ? AtsColors.solidPrimary(context)
+                                              : AtsColors.resolve(
+                                                  context,
+                                                  AtsColors.background,
+                                                ),
+                                          child: MiniProgramPageHeader(
+                                            title: route.title,
+                                            onBack: _controller.canGoBack
+                                                ? _controller.back
+                                                : null,
+                                            foregroundColor: greenNav
+                                                ? Colors.white
+                                                : AtsColors.resolve(
+                                                    context,
+                                                    AtsColors.text,
+                                                  ),
+                                          ),
+                                        ),
+                                        Expanded(child: page),
+                                      ],
+                                    ),
                             ),
-                          ),
+                            Positioned(
+                              top: 5,
+                              right: 10,
+                              child: MiniProgramCapsuleOverlay(
+                                miniProgramId: MiniProgramLauncherIds.ats,
+                                onMore: _showMore,
+                                onClose: _exit,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       _MiniBottomChrome(

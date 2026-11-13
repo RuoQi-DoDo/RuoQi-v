@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ruoqi_app_miniapp/api/merchant/models/dashboard_summary.dart';
+import 'package:ruoqi_app_miniapp/miniapp/merchant/api/models/dashboard_summary.dart';
 
 void main() {
   test('DashboardSummary roundtrip', () {

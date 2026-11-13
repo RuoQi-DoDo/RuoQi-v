@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/miniapp/ats/ats_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/ats/ats_routes.dart';
+import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_capsule_overlay.dart';
+import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_navigation_bar.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 
 void main() {
@@ -23,6 +25,8 @@ void main() {
     expect(find.text('9:41'), findsNothing);
     expect(find.byTooltip('小程序菜单'), findsOneWidget);
     expect(find.byTooltip('退出小程序'), findsOneWidget);
+    expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
+    expect(find.byType(MiniProgramNavigationBar), findsNothing);
   });
 
   testWidgets('应用默认打开客户首页，再进入小程序并可退出', (tester) async {

@@ -1,6 +1,6 @@
 import 'package:network/network.dart';
 
-import '../../api/hr/hr_api.dart';
+import 'api/hr_api.dart';
 import 'hr_mock_data.dart';
 import 'hr_models.dart';
 

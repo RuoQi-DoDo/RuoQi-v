@@ -90,6 +90,7 @@ class MiniProgramLibraryController extends ChangeNotifier {
         icon: item.icon,
         color: item.color,
         tileKey: switch (item.id) {
+          MiniProgramLauncherIds.tospino ||
           MiniProgramLauncherIds.ats ||
           MiniProgramLauncherIds.hr ||
           MiniProgramLauncherIds.merchant ||

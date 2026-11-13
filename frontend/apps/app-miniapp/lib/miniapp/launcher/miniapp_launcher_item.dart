@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 ///
 /// 启动器负责展示和上报选择，公共目录负责根据标识分发路由。
 abstract final class MiniProgramLauncherIds {
+  static const tospino = 'tospino';
   static const ats = 'ats';
   static const merchant = 'merchant';
   static const partner = 'partner';

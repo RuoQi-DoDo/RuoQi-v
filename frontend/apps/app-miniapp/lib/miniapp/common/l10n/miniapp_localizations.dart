@@ -6,6 +6,7 @@ import '../../hr/l10n/hr_labels.dart';
 import '../../launcher/l10n/launcher_labels.dart';
 import '../../merchant/l10n/merchant_labels.dart';
 import '../../partner/l10n/partner_labels.dart';
+import '../../tospino/l10n/tospino_labels.dart';
 import 'common_labels.dart';
 
 /// Shared navigation labels are translated at render time so open mini-programs
@@ -26,5 +27,6 @@ const _navigationLabels = <String, String>{
   ...hrMiniProgramLabels,
   ...merchantMiniProgramLabels,
   ...partnerMiniProgramLabels,
+  ...tospinoMiniProgramLabels,
   ...launcherMiniProgramLabels,
 };

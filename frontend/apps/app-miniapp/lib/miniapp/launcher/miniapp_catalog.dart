@@ -7,11 +7,19 @@ import '../hr/hr_miniapp.dart';
 import '../merchant/home_page.dart';
 import '../partner/home_page.dart';
 import '../platform/platform_miniapp.dart';
+import '../tospino/tospino_miniapp.dart';
 import 'miniapp_launcher_item.dart';
 import 'miniapp_library_controller.dart';
 
 /// Implemented mini-programs that can be launched from any shared page.
 const List<MiniProgramLauncherItem> availableMiniPrograms = [
+  MiniProgramLauncherItem(
+    id: MiniProgramLauncherIds.tospino,
+    label: 'Tospino',
+    icon: Icons.storefront_rounded,
+    color: Color(0xFF42B7AE),
+    searchTerms: ['Tospino', 'Mall', 'Shopping', '商城', '购物', '电商'],
+  ),
   MiniProgramLauncherItem(
     id: MiniProgramLauncherIds.ats,
     label: '企业直聘',
@@ -55,6 +63,7 @@ Future<void> openMiniProgram(
   MiniProgramLauncherItem item,
 ) async {
   final route = switch (item.id) {
+    MiniProgramLauncherIds.tospino => TospinoMiniProgram.route(),
     MiniProgramLauncherIds.ats => AtsMiniProgram.route(),
     MiniProgramLauncherIds.hr => HrMiniProgram.route(),
     MiniProgramLauncherIds.merchant => MiniProgramShell.route(

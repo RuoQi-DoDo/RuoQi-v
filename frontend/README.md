@@ -2,7 +2,8 @@
 
 RuoQi 多项目 Flutter 巨仓（monorepo），基于 Dart 原生 pub workspace 与 [melos](https://melos.invertase.dev) 管理。
 平台端保留 PC 外壳，平台账号中心以 `app-miniapp` 内的“平台管理”小程序承载；
-业务端仍提供 App（移动端）与 PC（Web）两个 UI 项目。各应用壳在 `lib/api/` 下持有本端的域 API 层。
+业务端仍提供 App（移动端）与 PC（Web）两个 UI 项目。应用公共域 API 位于
+`lib/api/`，小程序私有 API 与 DTO 位于各自的 `lib/miniapp/<name>/api/`。
 
 ## 目录结构
 
@@ -26,7 +27,7 @@ apps/business-pc/
   lib/customer|merchant|partner/  # 对应域的 UI 页面
 
 apps/app-miniapp/
-  lib/api/                    # IM / ATS / HR / 客户 / 商户 / 伙伴 / 平台 API 与 DTO
+  lib/api/                    # 应用公共 IM / 客户域 API 与 DTO
   lib/app_shell.dart          # 共享应用壳与独立入口启动函数
   lib/pages/host/             # 公共业务宿主、底部导航与小程序交互
   lib/pages/im/               # 当前 IM 聊天业务首页
@@ -34,10 +35,12 @@ apps/app-miniapp/
   lib/pages/account|display/  # 公共账号安全及界面与显示
   lib/pages/common/           # 公共页面主题、文案与组件
   lib/pages/index.dart        # 业务首页与公共页面导出
-  lib/miniapp/ats/      # 企业直聘 ATS 小程序页面
-  lib/miniapp/merchant/  # 商户小程序页面
-  lib/miniapp/partner/   # 伙伴小程序页面
-  lib/miniapp/platform/  # 平台账号中心小程序
+  lib/miniapp/ats/       # 企业直聘小程序：页面、资源、翻译与 api/
+  lib/miniapp/hr/        # 人事小程序：页面、资源、翻译与 api/
+  lib/miniapp/merchant/  # 商户小程序：页面、资源、翻译与 api/
+  lib/miniapp/partner/   # 伙伴小程序：页面、资源、翻译与 api/
+  lib/miniapp/platform/  # 平台账号中心小程序：页面、资源、翻译与 api/
+  lib/miniapp/tospino/   # Tospino 商城小程序：页面、资源、翻译与 api/
 ```
 
 > 说明：应用包名统一使用 `ruoqi_` 前缀；移动小程序宿主目录为 `app-miniapp`，
@@ -85,7 +88,7 @@ flutter pub get
 melos analyze
 melos test
 
-# 重新生成 JSON 序列化代码（改过 apps/*/lib/api 下的 models 后执行）
+# 重新生成 JSON 序列化代码（改过 lib/api 或 lib/miniapp/*/api 下的 models 后执行）
 melos gen
 
 # 运行某个端（App 或 PC）
@@ -109,6 +112,8 @@ melos run run:business_pc
 - `apps/<壳>/lib/api/<域>/`：该应用壳自己的域 API 层（DTO + `<域>_api.dart` 客户端），
   `json_serializable` 生成 `*.g.dart`，改动后执行 `melos gen`；各端接口本来就不同，
   因此按端各持一份，互不牵连。
+- `apps/app-miniapp/lib/miniapp/<name>/api/`：小程序私有 API 与 DTO。ATS、HR、
+  商户、伙伴、平台管理和 Tospino 的接口不得放到宿主的公共 `lib/api/`。
 - `apps/<壳>/lib/<域>/`：该域的 UI 页面，按「应用壳 + 端类型」划分——平台 PC 位于
   `platform-pc`；平台账号中心已收敛为 `app-miniapp/lib/miniapp/platform` 小程序。
   业务端（客户 / 商户 / 伙伴）的页面放在同一个壳里，由工作台入口打开。
@@ -132,7 +137,8 @@ flutter run --dart-define=CUSTOMER_API_BASE_URL=https://customer.example.com
 
 ## 新增域
 
-1. 在对应的应用壳里新增域 API 目录 `lib/api/<域>/`（DTO + 客户端，参考现有域）；
+1. 在对应的应用壳里新增 API 目录：普通业务域使用 `lib/api/<域>/`，小程序私有域
+   使用 `lib/miniapp/<name>/api/`（DTO + 客户端，参考现有域）；
 2. 在同一个壳里新增 `lib/<域>/` 页面目录与工作台入口卡片：
 
 ```bash

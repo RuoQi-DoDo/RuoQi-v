@@ -52,6 +52,7 @@ void main() {
       'merchant': 'l10n/merchant_labels.dart',
       'partner': 'l10n/partner_labels.dart',
       'platform': 'l10n/platform_localizations.dart',
+      'tospino': 'l10n/tospino_labels.dart',
     };
 
     for (final entry in expectedOwners.entries) {
@@ -66,11 +67,42 @@ void main() {
     final commonAggregator = File(
       'lib/miniapp/common/l10n/miniapp_localizations.dart',
     ).readAsStringSync();
-    for (final owner in ['ats', 'hr', 'merchant', 'partner', 'launcher']) {
+    for (final owner in [
+      'ats',
+      'hr',
+      'merchant',
+      'partner',
+      'tospino',
+      'launcher',
+    ]) {
       expect(
         commonAggregator,
         contains("import '../../$owner/l10n/${owner}_labels.dart';"),
       );
     }
+  });
+
+  test('小程序私有 API 位于所属小程序目录', () {
+    const owners = ['ats', 'hr', 'merchant', 'partner', 'platform', 'tospino'];
+
+    for (final owner in owners) {
+      expect(
+        Directory('lib/api/$owner').existsSync(),
+        isFalse,
+        reason: '$owner 的 API 不应继续放在宿主公共 lib/api 目录',
+      );
+      expect(
+        Directory('lib/miniapp/$owner/api').existsSync(),
+        isTrue,
+        reason: '$owner 的 API 应位于 lib/miniapp/$owner/api',
+      );
+    }
+
+    final sharedApiOwners = Directory('lib/api')
+        .listSync()
+        .whereType<Directory>()
+        .map((directory) => directory.path.split(Platform.pathSeparator).last)
+        .toSet();
+    expect(sharedApiOwners, {'customer', 'im'});
   });
 }

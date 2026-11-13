@@ -66,6 +66,13 @@ class _AtsHomePageState extends State<AtsHomePage> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
         children: [
+          ColoredBox(
+            color: AtsColors.solidPrimary(context),
+            child: MiniProgramPageHeader(
+              title: controller.route.title,
+              foregroundColor: Colors.white,
+            ),
+          ),
           Container(
             color: AtsColors.solidPrimary(context),
             padding: const EdgeInsets.fromLTRB(14, 6, 14, 18),
