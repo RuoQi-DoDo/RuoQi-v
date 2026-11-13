@@ -23,7 +23,7 @@ class dCsxukoWPPage extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(0),
               child: Image.asset(
-                'assets/images/948feea0-a64f-11eb-aa52-d523d3e00506.png',
+                'lib/miniapp/merchant/assets/images/948feea0-a64f-11eb-aa52-d523d3e00506.png',
                 fit: BoxFit.contain,
                 width: 375,
                 height: 813,
@@ -308,7 +308,7 @@ class dCsxukoWPPage extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(100),
               child: Image.asset(
-                'assets/images/41b4fff0-a4e1-11eb-b082-a72ce0a75548.png',
+                'lib/miniapp/merchant/assets/images/41b4fff0-a4e1-11eb-b082-a72ce0a75548.png',
                 fit: BoxFit.contain,
                 width: 72,
                 height: 72,

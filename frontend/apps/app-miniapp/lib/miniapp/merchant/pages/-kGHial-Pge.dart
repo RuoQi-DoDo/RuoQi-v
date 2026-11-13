@@ -408,7 +408,7 @@ class kGHialPgePage extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(0),
               child: Image.asset(
-                'assets/images/dab01e20-c6b8-11ec-8096-b163ad9fb6b1.png',
+                'lib/miniapp/merchant/assets/images/dab01e20-c6b8-11ec-8096-b163ad9fb6b1.png',
                 fit: BoxFit.contain,
                 width: 375,
                 height: 813,

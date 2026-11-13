@@ -32,12 +32,12 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
+    - lib/miniapp/merchant/assets/images/
 
   fonts:
     - family: lightIconFont
       fonts:
-        - asset: assets/fonts/lightIconFont.ttf
+        - asset: lib/miniapp/merchant/assets/fonts/lightIconFont.ttf
     - family: boldIconFont
       fonts:
-        - asset: assets/fonts/boldIconFont.ttf
+        - asset: lib/miniapp/merchant/assets/fonts/boldIconFont.ttf

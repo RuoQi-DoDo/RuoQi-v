@@ -23,7 +23,7 @@ class P6EyhbjTAFKPage extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(0),
               child: Image.asset(
-                'assets/images/5ab99880-a400-11eb-aaac-9b4c15d96fd6.png',
+                'lib/miniapp/merchant/assets/images/5ab99880-a400-11eb-aaac-9b4c15d96fd6.png',
                 fit: BoxFit.contain,
                 width: 375,
                 height: 813,

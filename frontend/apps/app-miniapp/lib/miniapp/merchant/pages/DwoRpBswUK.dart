@@ -23,7 +23,7 @@ class DwoRpBswUKPage extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(0),
               child: Image.asset(
-                'assets/images/4035e040-a400-11eb-bdf2-0d5d8aa102d6.png',
+                'lib/miniapp/merchant/assets/images/4035e040-a400-11eb-bdf2-0d5d8aa102d6.png',
                 fit: BoxFit.contain,
                 width: 375,
                 height: 813,

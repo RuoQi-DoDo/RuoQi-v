@@ -23,7 +23,7 @@ class P14r2GOdmpQnPage extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(0),
               child: Image.asset(
-                'assets/images/4e619210-a3fe-11eb-8c12-9f0eb824a007.png',
+                'lib/miniapp/merchant/assets/images/4e619210-a3fe-11eb-8c12-9f0eb824a007.png',
                 fit: BoxFit.contain,
                 width: 375,
                 height: 813,
