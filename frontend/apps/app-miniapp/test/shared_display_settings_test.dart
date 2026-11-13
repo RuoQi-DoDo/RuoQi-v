@@ -10,8 +10,60 @@ import 'package:ruoqi_app_miniapp/miniapp/ats/ats_style.dart';
 import 'package:ruoqi_app_miniapp/miniapp/common/common.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/hr_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/hr_style.dart';
+import 'package:ruoqi_app_miniapp/pages/display/display_settings_page.dart';
 
 void main() {
+  test('字体默认对齐微信标准的最终显示字号', () {
+    final controller = BusinessThemeController();
+    addTearDown(controller.dispose);
+
+    expect(controller.fontScale, defaultFontScale);
+    expect(defaultFontScale, 0.85);
+    expect(minFontScale, 0.8);
+    expect(defaultFontScale - minFontScale, closeTo(0.05, 0.0001));
+  });
+
+  test('字体大小可在微信标准字号下再调小一档', () {
+    final controller = BusinessThemeController();
+    addTearDown(controller.dispose);
+
+    controller.setFontScale(0.7);
+    expect(controller.fontScale, minFontScale);
+
+    controller.setFontScale(defaultFontScale);
+    expect(controller.fontScale, 0.85);
+  });
+
+  testWidgets('显示设置恢复默认时回到微信标准字号档', (tester) async {
+    await tester.pumpWidget(
+      BusinessAppFrame(title: 'test', home: (_) => const DisplaySettingsPage()),
+    );
+    await tester.pumpAndSettle();
+
+    final settings = BusinessThemeScope.of(
+      tester.element(find.byKey(const Key('display-settings-page'))),
+    );
+    expect(find.text('标准'), findsOneWidget);
+    settings.setFontScale(maxFontScale);
+    await tester.pumpAndSettle();
+    expect(settings.fontScale, maxFontScale);
+    expect(find.text('标准'), findsNothing);
+    expect(find.text('130%'), findsOneWidget);
+
+    await tester.tap(find.text('恢复默认'));
+    await tester.pumpAndSettle();
+
+    expect(settings.fontScale, defaultFontScale);
+    expect(find.text('标准'), findsOneWidget);
+    expect(find.text('85%'), findsNothing);
+    final slider = tester.widget<Slider>(
+      find.byKey(const Key('display-font-size')),
+    );
+    expect(slider.value, defaultFontScale);
+    expect(slider.min, 0.8);
+    expect(slider.divisions, 10);
+  });
+
   testWidgets('公共显示页更新已打开的小程序并保留内部路由和状态', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;

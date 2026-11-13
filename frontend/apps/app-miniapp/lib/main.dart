@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 
 import 'app_shell.dart';
+import 'miniapp/common/miniapp_pin.dart';
 import 'pages/host/business_host_page.dart';
 import 'pages/im/im_chat_page.dart';
 
-void main() {
-  runApp(const BusinessApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final miniProgramPinController = MiniProgramPinController();
+  await miniProgramPinController.initialize();
+  runApp(BusinessApp(miniProgramPinController: miniProgramPinController));
 }
 
 /// Default business home; replace this builder to launch another business.
@@ -25,6 +29,7 @@ class BusinessApp extends StatelessWidget {
     this.homeActiveIcon = Icons.chat_bubble_rounded,
     this.loginBuilder,
     this.onLogout,
+    this.miniProgramPinController,
   });
 
   final String title;
@@ -34,6 +39,7 @@ class BusinessApp extends StatelessWidget {
   final IconData homeActiveIcon;
   final WidgetBuilder? loginBuilder;
   final VoidCallback? onLogout;
+  final MiniProgramPinController? miniProgramPinController;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +53,7 @@ class BusinessApp extends StatelessWidget {
         loginBuilder: loginBuilder,
         onLogout: onLogout,
       ),
+      miniProgramPinController: miniProgramPinController,
     );
   }
 }

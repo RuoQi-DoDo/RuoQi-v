@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import '../../miniapp/ats/ats_miniapp.dart';
+import '../../miniapp/common/miniapp_pin.dart';
 import '../../miniapp/launcher/launcher.dart';
 import '../../miniapp/launcher/miniapp_catalog.dart';
 import '../common/page_theme.dart';
@@ -65,9 +66,11 @@ class _BusinessHostPageState extends State<BusinessHostPage>
   double _pullPointerLastY = 0;
   bool _closeDragging = false;
   bool _closeAnimating = false;
+  bool _startupRestoreScheduled = false;
   int _closeAnimationGeneration = 0;
   int _pullAnimationGeneration = 0;
   VelocityTracker? _pullVelocityTracker;
+  MiniProgramPinController? _pinController;
 
   @override
   void initState() {
@@ -79,6 +82,20 @@ class _BusinessHostPageState extends State<BusinessHostPage>
       duration: const Duration(milliseconds: 1200),
     );
     _hostScrollController = ScrollController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final controller = MiniProgramPinScope.maybeOf(context);
+    _pinController = controller;
+    if (_startupRestoreScheduled || !(controller?.isInitialized ?? false)) {
+      return;
+    }
+    _startupRestoreScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _restorePinnedMiniProgram();
+    });
   }
 
   @override
@@ -198,6 +215,25 @@ class _BusinessHostPageState extends State<BusinessHostPage>
       return;
     }
     await openMiniProgram(context, item);
+  }
+
+  Future<void> _restorePinnedMiniProgram() async {
+    final pinnedId = _pinController?.pinnedId;
+    if (!mounted || pinnedId == null) {
+      return;
+    }
+    MiniProgramLauncherItem? pinnedItem;
+    for (final item in availableMiniPrograms) {
+      if (item.id == pinnedId) {
+        pinnedItem = item;
+        break;
+      }
+    }
+    if (pinnedItem == null) {
+      await _pinController?.unpin();
+      return;
+    }
+    await _openMiniProgramLauncherItem(pinnedItem);
   }
 
   void _openSettingsPage() {

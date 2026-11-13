@@ -15,6 +15,11 @@ class AccentChoice {
 /// 默认强调色：青色。
 const Color defaultAccentColor = Color(0xFF0D9488);
 
+/// 字体缩放范围。85% 对齐微信“标准”字号，并在其下保留一档。
+const double minFontScale = 0.8;
+const double maxFontScale = 1.3;
+const double defaultFontScale = 0.85;
+
 const accentChoices = <AccentChoice>[
   AccentChoice('绿色', Color(0xFF16A34A)),
   AccentChoice('青色', defaultAccentColor),
@@ -46,7 +51,7 @@ const backgroundChoices = <BackgroundChoice>[
 class BusinessThemeController extends ChangeNotifier {
   ThemeMode _mode = ThemeMode.light;
   Locale? _locale = const Locale('zh');
-  double _fontScale = 1;
+  double _fontScale = defaultFontScale;
   AppOrientation _orientation = AppOrientation.system;
 
   ThemeMode get mode => _mode;
@@ -61,7 +66,7 @@ class BusinessThemeController extends ChangeNotifier {
   }
 
   void setFontScale(double scale) {
-    final next = scale.clamp(0.85, 1.3);
+    final next = scale.clamp(minFontScale, maxFontScale);
     if (_fontScale == next) return;
     _fontScale = next;
     notifyListeners();

@@ -1,7 +1,11 @@
 import '../miniapp_localizations.dart';
 
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../miniapp_pin.dart';
 import 'miniapp_capsule.dart';
 
 /// 小程序统一顶部导航栏。
@@ -14,6 +18,7 @@ class MiniProgramNavigationBar extends StatelessWidget {
     required this.title,
     required this.onMore,
     required this.onClose,
+    this.miniProgramId,
     this.canGoBack = false,
     this.onBack,
     this.leading,
@@ -29,6 +34,7 @@ class MiniProgramNavigationBar extends StatelessWidget {
   final String title;
   final VoidCallback onMore;
   final VoidCallback onClose;
+  final String? miniProgramId;
   final bool canGoBack;
   final VoidCallback? onBack;
   final Widget? leading;
@@ -47,6 +53,14 @@ class MiniProgramNavigationBar extends StatelessWidget {
     final foreground = foregroundColor ?? scheme.onSurface;
     final background = backgroundColor ?? scheme.surface;
     final divider = borderColor ?? scheme.outlineVariant;
+    final pinController = MiniProgramPinScope.maybeOf(context);
+    final canTogglePin =
+        miniProgramId != null &&
+        pinController != null &&
+        pinController.isInitialized;
+    final isPinned =
+        miniProgramId != null &&
+        (pinController?.isPinned(miniProgramId!) ?? false);
 
     final Widget left;
     if (leading != null) {
@@ -93,7 +107,17 @@ class MiniProgramNavigationBar extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.centerRight,
-            child: MiniProgramCapsule(onMore: onMore, onClose: onClose),
+            child: MiniProgramCapsule(
+              onMore: onMore,
+              onClose: onClose,
+              isPinned: isPinned,
+              onLongPressClose: canTogglePin
+                  ? () {
+                      unawaited(HapticFeedback.mediumImpact());
+                      unawaited(pinController.togglePin(miniProgramId!));
+                    }
+                  : null,
+            ),
           ),
         ],
       ),

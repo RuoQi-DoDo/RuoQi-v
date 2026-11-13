@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../common/common.dart';
+import '../launcher/miniapp_launcher_item.dart';
 import 'hr_controller.dart';
 import 'hr_repository.dart';
 import 'hr_routes.dart';
@@ -139,6 +140,7 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                       ),
                       MiniProgramNavigationBar(
                         title: _controller.route.title,
+                        miniProgramId: MiniProgramLauncherIds.hr,
                         canGoBack: _controller.canGoBack,
                         onBack: _controller.back,
                         onMore: _showMore,

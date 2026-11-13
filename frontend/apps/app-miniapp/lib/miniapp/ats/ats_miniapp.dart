@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../common/common.dart';
+import '../launcher/miniapp_launcher_item.dart';
 import 'ats_routes.dart';
 import 'ats_style.dart';
 import 'pages/company_pages.dart';
@@ -100,6 +101,7 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
                       ),
                       MiniProgramNavigationBar(
                         title: route.title,
+                        miniProgramId: MiniProgramLauncherIds.ats,
                         canGoBack: _controller.canGoBack,
                         onBack: _controller.back,
                         onMore: _showMore,
@@ -271,29 +273,30 @@ class _MiniBottomChrome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
-    return MiniProgramSwipeExitRegion(
-      key: const Key('mini-program-exit-swipe'),
-      onExit: onExit,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AtsColors.resolve(context, AtsColors.surface),
-          border: showTabs
-              ? Border(
-                  top: BorderSide(
-                    color: AtsColors.resolve(context, AtsColors.divider),
-                  ),
-                )
-              : null,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (showTabs)
-              SizedBox(
-                height: 48,
-                child: _MiniTabBar(index: index, onChanged: onChanged),
-              ),
+    return Container(
+      decoration: BoxDecoration(
+        color: AtsColors.resolve(context, AtsColors.surface),
+        border: showTabs
+            ? Border(
+                top: BorderSide(
+                  color: AtsColors.resolve(context, AtsColors.divider),
+                ),
+              )
+            : null,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showTabs)
             SizedBox(
+              key: const Key('mini-program-tab-bar'),
+              height: 48,
+              child: _MiniTabBar(index: index, onChanged: onChanged),
+            ),
+          MiniProgramSwipeExitRegion(
+            key: const Key('mini-program-exit-swipe'),
+            onExit: onExit,
+            child: SizedBox(
               height: bottomInset > 0 ? bottomInset : 12,
               child: Center(
                 child: Container(
@@ -306,8 +309,8 @@ class _MiniBottomChrome extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

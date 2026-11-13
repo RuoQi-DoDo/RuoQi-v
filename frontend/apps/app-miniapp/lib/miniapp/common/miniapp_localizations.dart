@@ -131,6 +131,8 @@ const _navigationLabels = <String, String>{
   '底部上滑离开小程序': 'Swipe up to leave this mini-program',
   '小程序菜单': 'Mini-program menu',
   '退出小程序': 'Close mini-program',
+  '长按钉住': 'Long-press to pin',
+  '长按取消钉住': 'Long-press to unpin',
   '微信小程序': 'Mini-program',
   'RuoQi 业务小程序': 'RuoQi mini-program',
   '招聘求职 · 微信小程序原型': 'Recruitment mini-program',
