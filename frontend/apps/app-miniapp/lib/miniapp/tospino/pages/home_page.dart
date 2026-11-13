@@ -14,6 +14,24 @@ class TospinoHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!controller.homeLoaded) {
+      return ColoredBox(
+        key: const Key('tospino-home-page'),
+        color: TospinoColors.resolve(context, TospinoColors.background),
+        child: Column(
+          children: [
+            _HomeHeader(controller: controller),
+            const Expanded(
+              child: Center(
+                child: CircularProgressIndicator(
+                  key: Key('tospino-home-loading'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     final products = controller.homeProducts;
     final page = controller.currentHomePage;
     final decoratedFlow = page != null && controller.hasHomeDecoration;

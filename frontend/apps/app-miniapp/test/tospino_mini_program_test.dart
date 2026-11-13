@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/api/tospino_api.dart';
@@ -130,6 +132,24 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(SliverCrossAxisGroup), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Tospino 首次加载不会闪现兜底首页', (tester) async {
+    _usePhoneSize(tester);
+    final api = _DelayedInitializeTospinoApi();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: _controller(api))),
+    );
+
+    expect(find.byKey(const Key('tospino-home-loading')), findsOneWidget);
+    expect(find.text('暂无匹配商品'), findsNothing);
+    expect(find.text('优惠券中心'), findsNothing);
+
+    api.initializeCompleter.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('tospino-home-loading')), findsNothing);
+    expect(find.text(api.products.first.title), findsOneWidget);
   });
 
   testWidgets('Tospino 首页按装修接口组件顺序渲染', (tester) async {
@@ -939,6 +959,13 @@ class _FakeTospinoApi implements TospinoDataSource {
   Future<void> logout() async {
     _loggedIn = false;
   }
+}
+
+class _DelayedInitializeTospinoApi extends _FakeTospinoApi {
+  final initializeCompleter = Completer<void>();
+
+  @override
+  Future<void> initialize() => initializeCompleter.future;
 }
 
 class _PagedTospinoApi extends _FakeTospinoApi {

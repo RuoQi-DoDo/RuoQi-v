@@ -61,6 +61,7 @@ class TospinoAppController extends ChangeNotifier {
   int _tabIndex = 0;
   bool _forward = true;
   bool _initialized = false;
+  bool _homeLoaded = false;
   bool _busy = false;
   bool _loadingHome = false;
   bool _loadingMoreHome = false;
@@ -117,6 +118,7 @@ class TospinoAppController extends ChangeNotifier {
   bool get forward => _forward;
   bool get canGoBack => _history.length > 1;
   bool get initialized => _initialized;
+  bool get homeLoaded => _homeLoaded;
   bool get busy => _busy;
   bool get isLoggedIn => _api.isLoggedIn;
   bool get loadingHome => _loadingHome;
@@ -285,6 +287,7 @@ class TospinoAppController extends ChangeNotifier {
       _homeError = productError.toString();
     }
     _loadingHome = false;
+    _homeLoaded = true;
     notifyListeners();
   }
 

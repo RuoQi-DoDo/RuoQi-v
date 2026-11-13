@@ -1,5 +1,5 @@
 # RuoQi 工具链版本；CI 从 [tools].flutter 读取 Flutter 版本。
 # 升级 Flutter 后需在 frontend 下执行 flutter pub get 并提交 pubspec.lock。
 [tools]
-flutter = "3.47.9"
+flutter = "3.50.0"
 java = "temurin-17"
