@@ -79,10 +79,11 @@ class _BusinessAppFrameState extends State<BusinessAppFrame> {
                     GlobalWidgetsLocalizations.delegate,
                     GlobalCupertinoLocalizations.delegate,
                   ],
-                  theme: ruoQiTheme(accent: defaultAccentColor),
+                  theme: ruoQiTheme(accent: defaultAccentColor, mobile: true),
                   darkTheme: ruoQiTheme(
                     brightness: Brightness.dark,
                     accent: defaultAccentColor,
+                    mobile: true,
                   ),
                   themeMode: _themeController.mode,
                   home: Builder(builder: widget.home),

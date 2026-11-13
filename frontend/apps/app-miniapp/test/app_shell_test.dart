@@ -10,6 +10,10 @@ void main() {
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(app.builder, isNotNull);
     expect(find.byType(SelectionArea), findsNothing);
+    expect(app.theme!.textTheme.titleLarge?.fontSize, 17);
+    expect(app.theme!.textTheme.bodyLarge?.fontSize, 17);
+    expect(app.theme!.textTheme.bodyMedium?.fontSize, 15);
+    expect(app.theme!.textTheme.bodySmall?.fontSize, 12);
   });
 
   test('只有 Web 使用全局文案选择包装', () {

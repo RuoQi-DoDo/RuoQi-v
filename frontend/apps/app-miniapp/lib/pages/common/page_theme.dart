@@ -4,7 +4,11 @@ import 'package:flutter/material.dart';
 ThemeData sharedPageTheme(BuildContext context) {
   final accent = Theme.of(context).colorScheme.primary;
   final brightness = Theme.of(context).brightness;
-  final baseTheme = ruoQiTheme(brightness: brightness, accent: accent);
+  final baseTheme = ruoQiTheme(
+    brightness: brightness,
+    accent: accent,
+    mobile: true,
+  );
   if (brightness == Brightness.light) {
     return baseTheme.copyWith(
       scaffoldBackgroundColor: const Color(0xFFEDEDED),

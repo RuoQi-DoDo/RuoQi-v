@@ -108,7 +108,11 @@ class _MiniProgramPickerPageState extends State<MiniProgramPickerPage> {
   Widget _buildWithTheme(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
     final brightness = Theme.of(context).brightness;
-    final baseTheme = ruoQiTheme(brightness: brightness, accent: accent);
+    final baseTheme = ruoQiTheme(
+      brightness: brightness,
+      accent: accent,
+      mobile: true,
+    );
     if (brightness == Brightness.light) {
       final pickerTheme = baseTheme.copyWith(
         scaffoldBackgroundColor: const Color(0xFFF2F2F2),

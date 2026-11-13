@@ -22,6 +22,7 @@ ThemeData ruoQiTheme({
   RuQiPurpose purpose = RuQiPurpose.standard,
   String? fontFamily = 'Inter',
   Color? accent,
+  bool mobile = false,
 }) {
   final colors = RuQiColors.forMode(
     brightness,
@@ -30,7 +31,7 @@ ThemeData ruoQiTheme({
   );
   final isDark = brightness == Brightness.dark;
   final scheme = colors.toColorScheme(brightness);
-  final textTheme = _ruoQiTextTheme(brightness);
+  final textTheme = _ruoQiTextTheme(brightness, mobile: mobile);
   final ext = RuQiThemeExtension.fromColors(colors);
 
   return ThemeData(
@@ -71,9 +72,7 @@ ThemeData ruoQiTheme({
     cardTheme: CardThemeData(
       // 规范 §1.4：需要底色时用最浅的中性表面。亮色卡片取白底 + 1px 描边，
       // 不再整块铺灰（大面积色块）；暗色仍靠比页面更亮的表面分层。
-      color: isDark
-          ? scheme.surfaceContainer
-          : scheme.surfaceContainerLowest,
+      color: isDark ? scheme.surfaceContainer : scheme.surfaceContainerLowest,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       margin: EdgeInsets.zero,
@@ -125,9 +124,7 @@ ThemeData ruoQiTheme({
         color: scheme.onSurfaceVariant,
         fontWeight: FontWeight.w600,
       ),
-      dataTextStyle: textTheme.bodyMedium?.copyWith(
-        color: scheme.onSurface,
-      ),
+      dataTextStyle: textTheme.bodyMedium?.copyWith(color: scheme.onSurface),
       dividerThickness: 1,
       horizontalMargin: RuQiSpacing.lg,
       headingRowHeight: 48,
@@ -237,10 +234,7 @@ InputDecorationTheme _ruoQiInputDecoration(
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(6),
       // 聚焦沿用默认中性描边色，只把 1px 加粗到 1.5px（不再上主色）。
-      borderSide: BorderSide(
-        width: 1.5,
-        color: colors.hairlineInput,
-      ),
+      borderSide: BorderSide(width: 1.5, color: colors.hairlineInput),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(6),
@@ -273,7 +267,7 @@ ChipThemeData _ruoQiChipTheme(ColorScheme scheme) {
   );
 }
 
-TextTheme _ruoQiTextTheme(Brightness brightness) {
+TextTheme _ruoQiTextTheme(Brightness brightness, {bool mobile = false}) {
   final display = displayWeightFor(brightness);
   final features = [FontFeature.stylisticSet(1)];
 
@@ -292,7 +286,7 @@ TextTheme _ruoQiTextTheme(Brightness brightness) {
     );
   }
 
-  return TextTheme(
+  final theme = TextTheme(
     displayLarge: displayStyle(64, display, 1.05, -2.0),
     displayMedium: displayStyle(48, display, 1.08, -1.4),
     displaySmall: displayStyle(36, display, 1.12, -0.8),
@@ -308,5 +302,18 @@ TextTheme _ruoQiTextTheme(Brightness brightness) {
     labelLarge: displayStyle(14, FontWeight.w500, 1.20, 0),
     labelMedium: displayStyle(12, FontWeight.w500, 1.20, 0),
     labelSmall: displayStyle(13, FontWeight.w500, 1.30, 0.3),
+  );
+
+  if (!mobile) return theme;
+
+  // 微信小程序设计指南常用字号：22 / 17 / 15 / 14 / 12pt。
+  return theme.copyWith(
+    titleLarge: theme.titleLarge?.copyWith(fontSize: 17),
+    bodyLarge: theme.bodyLarge?.copyWith(fontSize: 17),
+    bodyMedium: theme.bodyMedium?.copyWith(fontSize: 15),
+    titleSmall: theme.titleSmall?.copyWith(fontSize: 14),
+    bodySmall: theme.bodySmall?.copyWith(fontSize: 12),
+    labelLarge: theme.labelLarge?.copyWith(fontSize: 14),
+    labelMedium: theme.labelMedium?.copyWith(fontSize: 12),
   );
 }

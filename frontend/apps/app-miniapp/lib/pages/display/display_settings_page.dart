@@ -3,6 +3,13 @@ import 'package:flutter/material.dart';
 import '../../appearance.dart';
 import '../../localization.dart';
 
+String _fontSizeLabel(AppLocalizations l10n, double scale) {
+  if ((scale - defaultFontScale).abs() < 0.001) {
+    return l10n.text('标准', 'Standard');
+  }
+  return '${(scale * 100).round()}%';
+}
+
 /// 宿主和所有业务系统共用的显示设置。
 class DisplaySettingsPage extends StatelessWidget {
   const DisplaySettingsPage({super.key});
@@ -15,6 +22,7 @@ class DisplaySettingsPage extends StatelessWidget {
     final settings = BusinessThemeScope.of(context);
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final fontSizeLabel = _fontSizeLabel(l10n, settings.fontScale);
     return Scaffold(
       key: const Key('display-settings-page'),
       appBar: AppBar(title: Text(l10n.text('界面与显示', 'Appearance & display'))),
@@ -55,10 +63,10 @@ class DisplaySettingsPage extends StatelessWidget {
           ),
           Slider(
             key: const Key('display-font-size'),
-            min: 0.85,
-            max: 1.3,
-            divisions: 9,
-            label: '${(settings.fontScale * 100).round()}%',
+            min: minFontScale,
+            max: maxFontScale,
+            divisions: 10,
+            label: fontSizeLabel,
             value: settings.fontScale,
             onChanged: settings.setFontScale,
           ),
@@ -66,9 +74,9 @@ class DisplaySettingsPage extends StatelessWidget {
             alignment: WrapAlignment.spaceBetween,
             spacing: 16,
             children: [
-              Text('${(settings.fontScale * 100).round()}%'),
+              Text(fontSizeLabel, key: const Key('display-font-size-label')),
               TextButton(
-                onPressed: () => settings.setFontScale(1),
+                onPressed: () => settings.setFontScale(defaultFontScale),
                 child: Text(l10n.text('恢复默认', 'Reset')),
               ),
             ],
