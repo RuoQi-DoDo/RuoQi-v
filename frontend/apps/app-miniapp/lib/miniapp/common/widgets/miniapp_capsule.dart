@@ -62,21 +62,9 @@ class MiniProgramCapsule extends StatelessWidget {
                       : localizeMiniProgramLabel(context, '长按钉住'),
                   onTap: onClose,
                   onLongPress: onLongPressClose,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 160),
-                    switchInCurve: Curves.easeOutBack,
-                    switchOutCurve: Curves.easeIn,
-                    child: isPinned
-                        ? const Icon(
-                            Icons.push_pin_rounded,
-                            key: Key('mini-program-pin-icon'),
-                            color: foregroundColor,
-                            size: 17,
-                          )
-                        : const _MiniProgramCloseMark(
-                            key: Key('mini-program-close-icon'),
-                            color: foregroundColor,
-                          ),
+                  child: _MiniProgramCapsuleMark(
+                    color: foregroundColor,
+                    isPinned: isPinned,
                   ),
                 ),
               ),
@@ -88,27 +76,42 @@ class MiniProgramCapsule extends StatelessWidget {
   }
 }
 
-class _MiniProgramCloseMark extends StatelessWidget {
-  const _MiniProgramCloseMark({super.key, required this.color});
+class _MiniProgramCapsuleMark extends StatelessWidget {
+  const _MiniProgramCapsuleMark({required this.color, required this.isPinned});
 
   final Color color;
+  final bool isPinned;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 15,
-        height: 15,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: color, width: 2.2),
-        ),
-        child: Center(
-          child: Container(
-            width: 5,
-            height: 5,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
+    return Container(
+      width: 15,
+      height: 15,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: color, width: 2.2),
+      ),
+      child: Center(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 160),
+          switchInCurve: Curves.easeOutBack,
+          switchOutCurve: Curves.easeIn,
+          child: isPinned
+              ? Icon(
+                  Icons.push_pin_rounded,
+                  key: const Key('mini-program-pin-icon'),
+                  color: color,
+                  size: 10,
+                )
+              : Container(
+                  key: const Key('mini-program-close-icon'),
+                  width: 5,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
         ),
       ),
     );
