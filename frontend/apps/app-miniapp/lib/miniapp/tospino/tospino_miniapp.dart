@@ -33,10 +33,11 @@ double tospinoAndroidWidthScale(double logicalWidth) =>
     logicalWidth.clamp(0, tospinoAndroidDesignWidth) /
     tospinoAndroidDesignWidth;
 
-/// Applies the same relative correction as Android's iOS font metrics.
+/// Matches Tospino Android's `BaseApplication` text scaling:
+/// system font scale * 0.85 * width scale * Inter x-height correction.
 ///
-/// The host already scales text to 85%. Android additionally compensates for
-/// the device width and the SF Pro/Inter x-height difference.
+/// Font weight only selects Regular or Medium in `font/inter.xml`; it does not
+/// change the Android `sp` value.
 TextScaler tospinoAndroidTextScaler(
   TextScaler hostScaler,
   double logicalWidth,
