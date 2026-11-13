@@ -11,6 +11,8 @@ class MiniProgramCapsule extends StatelessWidget {
     super.key,
     required this.onMore,
     required this.onClose,
+    this.isPinned = false,
+    this.onLongPressClose,
   });
 
   static const double width = 94;
@@ -21,6 +23,8 @@ class MiniProgramCapsule extends StatelessWidget {
 
   final VoidCallback onMore;
   final VoidCallback onClose;
+  final bool isPinned;
+  final VoidCallback? onLongPressClose;
 
   @override
   Widget build(BuildContext context) {
@@ -53,30 +57,57 @@ class MiniProgramCapsule extends StatelessWidget {
               Expanded(
                 child: _MiniProgramCapsuleAction(
                   tooltip: localizeMiniProgramLabel(context, '退出小程序'),
+                  semanticsHint: isPinned
+                      ? localizeMiniProgramLabel(context, '长按取消钉住')
+                      : localizeMiniProgramLabel(context, '长按钉住'),
                   onTap: onClose,
-                  child: Center(
-                    child: Container(
-                      width: 15,
-                      height: 15,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: foregroundColor, width: 2.2),
-                      ),
-                      child: Center(
-                        child: Container(
-                          width: 5,
-                          height: 5,
-                          decoration: BoxDecoration(
+                  onLongPress: onLongPressClose,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 160),
+                    switchInCurve: Curves.easeOutBack,
+                    switchOutCurve: Curves.easeIn,
+                    child: isPinned
+                        ? const Icon(
+                            Icons.push_pin_rounded,
+                            key: Key('mini-program-pin-icon'),
                             color: foregroundColor,
-                            shape: BoxShape.circle,
+                            size: 17,
+                          )
+                        : const _MiniProgramCloseMark(
+                            key: Key('mini-program-close-icon'),
+                            color: foregroundColor,
                           ),
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniProgramCloseMark extends StatelessWidget {
+  const _MiniProgramCloseMark({super.key, required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 15,
+        height: 15,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: color, width: 2.2),
+        ),
+        child: Center(
+          child: Container(
+            width: 5,
+            height: 5,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
         ),
       ),
@@ -131,22 +162,29 @@ class _MiniProgramCapsuleAction extends StatelessWidget {
     required this.tooltip,
     required this.onTap,
     required this.child,
+    this.onLongPress,
+    this.semanticsHint,
   });
 
   final String tooltip;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final Widget child;
+  final String? semanticsHint;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
       label: tooltip,
+      hint: semanticsHint,
       child: Tooltip(
         message: tooltip,
         excludeFromSemantics: true,
+        triggerMode: TooltipTriggerMode.manual,
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           child: Center(child: child),
         ),
       ),

@@ -13,23 +13,31 @@ class MiniProgramShell extends StatefulWidget {
     super.key,
     required this.title,
     required this.child,
+    this.miniProgramId,
     this.icon = Icons.apps_rounded,
   });
 
   final String title;
   final Widget child;
+  final String? miniProgramId;
   final IconData icon;
 
   static Route<void> route({
     required String title,
     required Widget child,
+    String? miniProgramId,
     IconData icon = Icons.apps_rounded,
   }) {
     return PageRouteBuilder<void>(
       transitionDuration: const Duration(milliseconds: 300),
       reverseTransitionDuration: const Duration(milliseconds: 240),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return MiniProgramShell(title: title, icon: icon, child: child);
+        return MiniProgramShell(
+          title: title,
+          miniProgramId: miniProgramId,
+          icon: icon,
+          child: child,
+        );
       },
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final curved = CurvedAnimation(
@@ -113,6 +121,7 @@ class _MiniProgramShellState extends State<MiniProgramShell> {
             children: [
               MiniProgramNavigationBar(
                 title: widget.title,
+                miniProgramId: widget.miniProgramId,
                 canGoBack: _canGoBack,
                 onBack: _back,
                 onMore: _showMore,

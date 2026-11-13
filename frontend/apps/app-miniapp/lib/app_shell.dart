@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:common/common.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'appearance.dart';
 import 'localization.dart';
+import 'miniapp/common/miniapp_pin.dart';
 import 'miniapp/launcher/miniapp_library_controller.dart';
 import 'pages/account/account.dart';
 
@@ -15,10 +18,16 @@ TransitionBuilder? platformSelectionBuilder({bool isWeb = kIsWeb}) {
 
 /// 业务应用共享外壳，不依赖业务组注册表。
 class BusinessAppFrame extends StatefulWidget {
-  const BusinessAppFrame({super.key, required this.title, required this.home});
+  const BusinessAppFrame({
+    super.key,
+    required this.title,
+    required this.home,
+    this.miniProgramPinController,
+  });
 
   final String title;
   final WidgetBuilder home;
+  final MiniProgramPinController? miniProgramPinController;
 
   @override
   State<BusinessAppFrame> createState() => _BusinessAppFrameState();
@@ -29,67 +38,85 @@ class _BusinessAppFrameState extends State<BusinessAppFrame> {
   final AccountController _accountController = AccountController();
   final MiniProgramLibraryController _miniProgramLibrary =
       MiniProgramLibraryController();
+  MiniProgramPinController? _ownedMiniProgramPinController;
+  late final MiniProgramPinController _miniProgramPinController;
+
+  @override
+  void initState() {
+    super.initState();
+    _miniProgramPinController =
+        widget.miniProgramPinController ??
+        (_ownedMiniProgramPinController = MiniProgramPinController());
+    unawaited(_miniProgramPinController.initialize());
+  }
 
   @override
   void dispose() {
     _themeController.dispose();
     _accountController.dispose();
     _miniProgramLibrary.dispose();
+    _ownedMiniProgramPinController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MiniProgramLibraryScope(
-      controller: _miniProgramLibrary,
-      child: BusinessThemeScope(
-        controller: _themeController,
-        child: AccountScope(
-          controller: _accountController,
-          child: ListenableBuilder(
-            listenable: _themeController,
-            builder: (context, child) {
-              return RuoQiPlatformScope(
-                platform: RuoQiPlatform.mobile,
-                child: MaterialApp(
-                  title: widget.title,
-                  debugShowCheckedModeBanner: false,
-                  builder: (context, child) {
-                    final media = MediaQuery.of(context);
-                    Widget content = MediaQuery(
-                      data: media.copyWith(
-                        textScaler: _PreferenceTextScaler(
-                          media.textScaler,
-                          _themeController.fontScale,
+    return MiniProgramPinScope(
+      controller: _miniProgramPinController,
+      child: MiniProgramLibraryScope(
+        controller: _miniProgramLibrary,
+        child: BusinessThemeScope(
+          controller: _themeController,
+          child: AccountScope(
+            controller: _accountController,
+            child: ListenableBuilder(
+              listenable: Listenable.merge([
+                _themeController,
+                _miniProgramPinController,
+              ]),
+              builder: (context, child) {
+                return RuoQiPlatformScope(
+                  platform: RuoQiPlatform.mobile,
+                  child: MaterialApp(
+                    title: widget.title,
+                    debugShowCheckedModeBanner: false,
+                    builder: (context, child) {
+                      final media = MediaQuery.of(context);
+                      Widget content = MediaQuery(
+                        data: media.copyWith(
+                          textScaler: _PreferenceTextScaler(
+                            media.textScaler,
+                            _themeController.fontScale,
+                          ),
                         ),
-                      ),
-                      child: child!,
-                    );
-                    final selectionBuilder = platformSelectionBuilder();
-                    if (selectionBuilder != null) {
-                      content = selectionBuilder(context, content);
-                    }
-                    return content;
-                  },
-                  locale: _themeController.locale,
-                  supportedLocales: AppLocalizations.supportedLocales,
-                  localizationsDelegates: const [
-                    AppLocalizations.delegate,
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                  ],
-                  theme: ruoQiTheme(accent: defaultAccentColor, mobile: true),
-                  darkTheme: ruoQiTheme(
-                    brightness: Brightness.dark,
-                    accent: defaultAccentColor,
-                    mobile: true,
+                        child: child!,
+                      );
+                      final selectionBuilder = platformSelectionBuilder();
+                      if (selectionBuilder != null) {
+                        content = selectionBuilder(context, content);
+                      }
+                      return content;
+                    },
+                    locale: _themeController.locale,
+                    supportedLocales: AppLocalizations.supportedLocales,
+                    localizationsDelegates: const [
+                      AppLocalizations.delegate,
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate,
+                    ],
+                    theme: ruoQiTheme(accent: defaultAccentColor, mobile: true),
+                    darkTheme: ruoQiTheme(
+                      brightness: Brightness.dark,
+                      accent: defaultAccentColor,
+                      mobile: true,
+                    ),
+                    themeMode: _themeController.mode,
+                    home: Builder(builder: widget.home),
                   ),
-                  themeMode: _themeController.mode,
-                  home: Builder(builder: widget.home),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),

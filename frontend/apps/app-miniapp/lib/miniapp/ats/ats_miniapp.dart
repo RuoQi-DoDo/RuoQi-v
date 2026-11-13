@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../common/common.dart';
+import '../launcher/miniapp_launcher_item.dart';
 import 'ats_routes.dart';
 import 'ats_style.dart';
 import 'pages/company_pages.dart';
@@ -100,6 +101,7 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
                       ),
                       MiniProgramNavigationBar(
                         title: route.title,
+                        miniProgramId: MiniProgramLauncherIds.ats,
                         canGoBack: _controller.canGoBack,
                         onBack: _controller.back,
                         onMore: _showMore,

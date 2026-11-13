@@ -3,6 +3,7 @@ library;
 
 export 'miniapp_shell.dart';
 export 'miniapp_localizations.dart';
+export 'miniapp_pin.dart';
 export 'widgets/miniapp_actions_sheet.dart';
 export 'widgets/miniapp_capsule.dart';
 export 'widgets/miniapp_navigation_bar.dart';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../common/common.dart';
+import '../launcher/miniapp_launcher_item.dart';
 import 'pages/platform_account_home_page.dart';
 import 'platform_models.dart';
 import 'platform_style.dart';
@@ -15,6 +16,7 @@ class PlatformMiniProgram extends StatefulWidget {
   static Route<void> route() {
     return MiniProgramShell.route(
       title: '平台管理',
+      miniProgramId: MiniProgramLauncherIds.platform,
       icon: Icons.admin_panel_settings_outlined,
       child: const PlatformMiniProgram(),
     );
@@ -31,7 +33,8 @@ class _PlatformMiniProgramState extends State<PlatformMiniProgram> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = AccountScope.maybeOf(context) ??
+    _controller =
+        AccountScope.maybeOf(context) ??
         (_ownedController ??= PlatformAccountController());
   }
 

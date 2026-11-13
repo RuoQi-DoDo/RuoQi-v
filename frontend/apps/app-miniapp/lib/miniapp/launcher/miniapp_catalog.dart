@@ -59,11 +59,13 @@ Future<void> openMiniProgram(
     MiniProgramLauncherIds.hr => HrMiniProgram.route(),
     MiniProgramLauncherIds.merchant => MiniProgramShell.route(
       title: '商户',
+      miniProgramId: item.id,
       icon: Icons.fingerprint,
       child: const MerchantHomePage(embedded: true),
     ),
     MiniProgramLauncherIds.partner => MiniProgramShell.route(
       title: '伙伴',
+      miniProgramId: item.id,
       icon: Icons.handshake_outlined,
       child: const PartnerHomePage(embedded: true),
     ),
