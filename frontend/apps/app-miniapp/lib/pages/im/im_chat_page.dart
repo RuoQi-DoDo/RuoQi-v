@@ -16,14 +16,15 @@ class ImChatPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 42,
-        titleSpacing: 16,
+        centerTitle: true,
+        titleSpacing: 0,
         backgroundColor: HostChromeStyle.appBarBackground(context),
         title: Text(
           'RuoQi',
           style: zh(
-            theme.textTheme.headlineMedium!.copyWith(
+            theme.textTheme.titleLarge!.copyWith(
               color: scheme.onSurface,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -147,6 +148,96 @@ class ImChatPage extends StatelessWidget {
                 icon: Icons.smart_toy_outlined,
                 onTap: () => showPageMessage(context, '助手详情为模拟入口'),
               ),
+              _ChatRow(
+                title: '王工',
+                preview: '需求文档我再看一下',
+                time: '11/06',
+                unread: 0,
+                color: const Color(0xFF64748B),
+                icon: Icons.engineering_outlined,
+                onTap: () => showPageMessage(context, '聊天详情为模拟入口'),
+              ),
+              _ChatRow(
+                title: '产品设计群',
+                preview: '新版原型已经同步',
+                time: '11/05',
+                unread: 4,
+                color: const Color(0xFF8B5CF6),
+                icon: Icons.draw_outlined,
+                onTap: () => showPageMessage(context, '群聊为模拟入口'),
+              ),
+              _ChatRow(
+                title: '系统提醒',
+                preview: '本周招聘数据已更新',
+                time: '11/04',
+                unread: 1,
+                color: const Color(0xFF0EA5E9),
+                icon: Icons.insights_outlined,
+                onTap: () => showPageMessage(context, '系统提醒为模拟入口'),
+              ),
+              _ChatRow(
+                title: '陈一鸣',
+                preview: '面试安排在周四上午',
+                time: '11/03',
+                unread: 0,
+                color: const Color(0xFFEC6A88),
+                icon: Icons.person_outline_rounded,
+                onTap: () => showPageMessage(context, '聊天详情为模拟入口'),
+              ),
+              _ChatRow(
+                title: '运营协作群',
+                preview: '活动物料已准备完成',
+                time: '11/02',
+                unread: 0,
+                color: const Color(0xFF07C160),
+                icon: Icons.campaign_outlined,
+                onTap: () => showPageMessage(context, '群聊为模拟入口'),
+              ),
+              _ChatRow(
+                title: '刘洋',
+                preview: '收到，我马上处理',
+                time: '11/01',
+                unread: 0,
+                color: const Color(0xFF2F88FF),
+                icon: Icons.person_outline_rounded,
+                onTap: () => showPageMessage(context, '聊天详情为模拟入口'),
+              ),
+              _ChatRow(
+                title: '订阅号消息',
+                preview: '你关注的内容有新更新',
+                time: '10/31',
+                unread: 0,
+                color: const Color(0xFF14B8A6),
+                icon: Icons.article_outlined,
+                onTap: () => showPageMessage(context, '订阅号为模拟入口'),
+              ),
+              _ChatRow(
+                title: '何川',
+                preview: '文档已上传到共享空间',
+                time: '10/30',
+                unread: 0,
+                color: const Color(0xFF6366F1),
+                icon: Icons.description_outlined,
+                onTap: () => showPageMessage(context, '聊天详情为模拟入口'),
+              ),
+              _ChatRow(
+                title: '客户服务',
+                preview: '感谢你的反馈，我们会尽快处理',
+                time: '10/29',
+                unread: 0,
+                color: const Color(0xFFE36A2E),
+                icon: Icons.support_agent_outlined,
+                onTap: () => showPageMessage(context, '客户服务为模拟入口'),
+              ),
+              _ChatRow(
+                title: '招聘助手',
+                preview: '今日新增 3 位候选人',
+                time: '10/28',
+                unread: 2,
+                color: scheme.primary,
+                icon: Icons.work_outline_rounded,
+                onTap: () => showPageMessage(context, '招聘助手为模拟入口'),
+              ),
             ]),
           ),
         ],
@@ -233,6 +324,7 @@ class _ChatRow extends StatelessWidget {
                                 title,
                                 style: theme.textTheme.bodyLarge?.copyWith(
                                   color: scheme.onSurface,
+                                fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                   height: 1.05,
                                 ),
@@ -241,7 +333,10 @@ class _ChatRow extends StatelessWidget {
                             Text(
                               time,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: scheme.onSurfaceVariant,
+                                color: theme.brightness == Brightness.dark
+                                    ? const Color(0xFF8A8A8A)
+                                    : const Color(0xFF999999),
+                                fontSize: 11,
                                 height: 1.05,
                               ),
                             ),
@@ -256,8 +351,10 @@ class _ChatRow extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: scheme.onSurfaceVariant,
-                                  fontSize: 13,
+                                  color: theme.brightness == Brightness.dark
+                                      ? const Color(0xFF8A8A8A)
+                                      : const Color(0xFF999999),
+                                  fontSize: 12,
                                   height: 1.05,
                                 ),
                               ),

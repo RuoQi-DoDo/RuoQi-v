@@ -132,7 +132,7 @@ class PageListRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: scheme.onSurface,
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
               ),
