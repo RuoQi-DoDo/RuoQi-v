@@ -142,6 +142,21 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const Key('tospino-home-trending-rail')), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('tospino-home-sort-forYou')),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const Key('tospino-home-scroll')),
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is Scrollable &&
+                  widget.axisDirection == AxisDirection.down,
+            ),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('tospino-home-sort-forYou')), findsOneWidget);
     expect(find.byKey(const Key('tospino-home-product-grid')), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -308,6 +323,56 @@ void main() {
     expect(find.textContaining('30-hour battery'), findsOneWidget);
     expect(find.textContaining('<p>'), findsNothing);
     expect(find.byType(Image), findsOneWidget);
+  });
+
+  testWidgets('商品 HTML 会压缩空白断行并应用常用 CSS', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: TospinoProductHtmlView(
+              description:
+                  '<style>'
+                  '.description{text-align:center;font-size:15px;color:#123456}'
+                  '.description .price{font-weight:700;color:#ff0000}'
+                  '</style>'
+                  '<div class="description">'
+                  '<p>PRODUCT&nbsp;DESCRIPTION</p>'
+                  '<p>&nbsp;</p><p><br><br></p>'
+                  '<p>Key <strong>attributes</strong></p>'
+                  '<p>Product Type<br><br><span class="price">BRAS</span></p>'
+                  '</div>',
+              fallback: 'Fallback',
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('PRODUCT DESCRIPTION'), findsOneWidget);
+    expect(find.textContaining('Key attributes'), findsOneWidget);
+    expect(find.textContaining('Product Type'), findsOneWidget);
+    expect(find.textContaining('BRAS'), findsOneWidget);
+    expect(find.textContaining('\u00A0'), findsNothing);
+
+    final title = tester.widget<Text>(
+      find.textContaining('PRODUCT DESCRIPTION').first,
+    );
+    expect(title.textAlign, TextAlign.center);
+
+    final blankTexts = find
+        .descendant(
+          of: find.byKey(const Key('tospino-product-html')),
+          matching: find.byType(Text),
+        )
+        .evaluate()
+        .where((element) {
+          final widget = element.widget as Text;
+          final text = widget.data ?? widget.textSpan?.toPlainText() ?? '';
+          return text.trim().isEmpty;
+        });
+    expect(blankTexts, isEmpty);
   });
 
   testWidgets('商品详情主图支持左右滑动并显示页码', (tester) async {

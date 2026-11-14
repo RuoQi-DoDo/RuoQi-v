@@ -8,6 +8,8 @@ import '../tospino_models.dart';
 import '../tospino_routes.dart';
 import '../tospino_style.dart';
 
+const double _homeSideInset = 6;
+
 class TospinoHomePage extends StatefulWidget {
   const TospinoHomePage({super.key, required this.controller});
 
@@ -186,7 +188,12 @@ class _HomeHeader extends StatelessWidget {
     return ColoredBox(
       color: TospinoColors.resolve(context, TospinoColors.surface),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 3, 12, 9),
+        padding: const EdgeInsets.fromLTRB(
+          _homeSideInset,
+          3,
+          _homeSideInset,
+          9,
+        ),
         child: Column(
           children: [
             SizedBox(
@@ -426,7 +433,7 @@ class _HomeGiftBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      padding: const EdgeInsets.fromLTRB(_homeSideInset, 14, _homeSideInset, 0),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(18),
@@ -607,7 +614,7 @@ class _HomeCategorySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final categories = controller.categories.take(8).toList(growable: false);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      padding: const EdgeInsets.fromLTRB(_homeSideInset, 8, _homeSideInset, 0),
       child: Container(
         padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
         decoration: BoxDecoration(
@@ -919,7 +926,7 @@ class _GroupBuyCampaignSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final shown = products.take(2).toList(growable: false);
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      margin: const EdgeInsets.fromLTRB(_homeSideInset, 14, _homeSideInset, 0),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -1044,7 +1051,7 @@ class _MegaSaleCampaignSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final shown = products.take(3).toList(growable: false);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
+      padding: const EdgeInsets.fromLTRB(_homeSideInset, 16, _homeSideInset, 0),
       child: Column(
         children: [
           _CampaignHeader(
@@ -1110,8 +1117,8 @@ class _FlashSaleCampaignSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 14, 12, 0),
-      padding: const EdgeInsets.fromLTRB(12, 12, 0, 12),
+      margin: const EdgeInsets.fromLTRB(_homeSideInset, 14, _homeSideInset, 0),
+      padding: const EdgeInsets.fromLTRB(10, 12, 0, 12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -1134,7 +1141,7 @@ class _FlashSaleCampaignSection extends StatelessWidget {
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: 10),
             itemCount: products.take(4).length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
@@ -1206,7 +1213,7 @@ class _BrandSaleCampaignSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      padding: const EdgeInsets.fromLTRB(_homeSideInset, 14, _homeSideInset, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1320,7 +1327,7 @@ class _NewcomerCampaignSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final product = products.first;
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      margin: const EdgeInsets.fromLTRB(_homeSideInset, 14, _homeSideInset, 0),
       height: 176,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -1413,7 +1420,7 @@ class _NewcomerCampaignSection extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                width: 132,
+                width: 142,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8, 18, 14, 18),
                   child: Material(
@@ -1472,7 +1479,7 @@ class _ClearanceCampaignSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final shown = products.take(4).toList(growable: false);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      padding: const EdgeInsets.fromLTRB(_homeSideInset, 14, _homeSideInset, 0),
       child: Column(
         children: [
           _CampaignHeader(
@@ -1557,7 +1564,7 @@ class _CategoryCampaignSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      padding: const EdgeInsets.fromLTRB(_homeSideInset, 14, _homeSideInset, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1648,8 +1655,8 @@ class _ZeroYuanCampaignSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final shown = products.take(4).toList(growable: false);
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 14, 12, 0),
-      padding: const EdgeInsets.all(13),
+      margin: const EdgeInsets.fromLTRB(_homeSideInset, 14, _homeSideInset, 0),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -1839,7 +1846,7 @@ class _SubsidyCampaignSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final shown = products.take(3).toList(growable: false);
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      margin: const EdgeInsets.fromLTRB(_homeSideInset, 14, _homeSideInset, 0),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFFFEEF2),
@@ -1932,7 +1939,7 @@ class _ShippingCampaignSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+      padding: const EdgeInsets.fromLTRB(_homeSideInset, 12, _homeSideInset, 0),
       child: Material(
         color: const Color(0xFFEAF8EF),
         borderRadius: BorderRadius.circular(15),
@@ -2287,8 +2294,8 @@ class _HomeTrendingRail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 16, 12, 0),
-      padding: const EdgeInsets.fromLTRB(12, 12, 0, 12),
+      margin: const EdgeInsets.fromLTRB(_homeSideInset, 16, _homeSideInset, 0),
+      padding: const EdgeInsets.fromLTRB(10, 12, 0, 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -2308,7 +2315,7 @@ class _HomeTrendingRail extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: 8),
             child: Row(
               children: [
                 Container(
@@ -2359,7 +2366,7 @@ class _HomeTrendingRail extends StatelessWidget {
             child: ListView.separated(
               key: const Key('tospino-home-trending-rail'),
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.only(right: 8),
               itemCount: products.length,
               separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
@@ -2392,7 +2399,7 @@ class _HomeTrendingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 132,
+      width: 140,
       child: Material(
         color: TospinoColors.resolve(context, TospinoColors.surface),
         borderRadius: BorderRadius.circular(14),
@@ -2526,7 +2533,7 @@ class _HomeDiscoveryControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 18, 12, 8),
+      padding: const EdgeInsets.fromLTRB(_homeSideInset, 18, _homeSideInset, 8),
       child: Row(
         children: [
           for (var index = 0; index < _HomeSort.values.length; index++) ...[
@@ -2615,7 +2622,7 @@ class _HomeWaterfall extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(12, 2, 12, 0),
+      padding: const EdgeInsets.fromLTRB(_homeSideInset, 2, _homeSideInset, 0),
       sliver: SliverCrossAxisGroup(
         slivers: [
           SliverCrossAxisExpanded(
@@ -2918,7 +2925,7 @@ class _HomePagingFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     if (controller.loadingMoreHome) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 26),
+        padding: const EdgeInsets.fromLTRB(8, 12, 8, 26),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -2941,7 +2948,7 @@ class _HomePagingFooter extends StatelessWidget {
     }
     if (controller.homeMoreError != null) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 22),
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 22),
         child: Center(
           child: TextButton(
             onPressed: controller.loadMoreHome,
@@ -2952,7 +2959,7 @@ class _HomePagingFooter extends StatelessWidget {
     }
     if (!controller.homeHasMore) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 25),
+        padding: const EdgeInsets.fromLTRB(8, 12, 8, 25),
         child: Center(
           child: Text(
             localizeMiniProgramLabel(context, '没有更多商品了'),
@@ -2974,7 +2981,7 @@ class _HomeInlineNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      margin: const EdgeInsets.fromLTRB(_homeSideInset, 8, _homeSideInset, 0),
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
       decoration: BoxDecoration(
         color: TospinoColors.resolve(context, TospinoColors.brandPale),
@@ -3074,7 +3081,12 @@ class _HomeLoadingPage extends StatelessWidget {
             child: SingleChildScrollView(
               key: const Key('tospino-home-loading'),
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+              padding: const EdgeInsets.fromLTRB(
+                _homeSideInset,
+                12,
+                _homeSideInset,
+                24,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
