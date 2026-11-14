@@ -602,12 +602,14 @@ class TospinoProductArtwork extends StatelessWidget {
   const TospinoProductArtwork({
     super.key,
     required this.product,
+    this.imageUrl,
     this.height = 150,
     this.radius = TospinoMetrics.imageRadius,
     this.hero = true,
   });
 
   final TospinoProduct product;
+  final String? imageUrl;
   final double height;
   final double radius;
   final bool hero;
@@ -618,15 +620,18 @@ class TospinoProductArtwork extends StatelessWidget {
       context,
       TospinoColors.imagePlaceholder,
     );
+    final resolvedImageUrl = imageUrl?.trim().isNotEmpty == true
+        ? imageUrl!.trim()
+        : product.imageUrl;
     final artwork = ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: Stack(
         fit: StackFit.expand,
         children: [
           ColoredBox(color: placeholder),
-          if (product.imageUrl.isNotEmpty)
+          if (resolvedImageUrl.isNotEmpty)
             Image.network(
-              product.imageUrl,
+              resolvedImageUrl,
               fit: BoxFit.cover,
               errorBuilder: (_, _, _) => _ProductImageFallback(height: height),
               loadingBuilder: (context, child, progress) => progress == null

@@ -532,6 +532,7 @@ class TospinoApi implements TospinoDataSource {
     );
     final map = _asMap(data);
     final spu = _asMap(map['goodSpuVo']);
+    final storeInfo = _asMap(map['storeInfo']);
     final gallery = _asList(map['carouselMapUrls'])
         .map((item) => _normalizeUrl(_asString(_asMap(item)['imgUrl'])))
         .where((url) => url.isNotEmpty)
@@ -546,7 +547,23 @@ class TospinoApi implements TospinoDataSource {
       oldPrice: _asDouble(spu['maxPrice']),
       rating: _asDouble(spu['starLevel']),
       imageUrl: gallery.isNotEmpty ? gallery.first : mainPicture,
-      shopName: _asString(_asMap(map['storeInfo'])['storeName']),
+      shopName: _asString(storeInfo['storeName']),
+      deliveryType: _asInt(spu['deliveryType']) ?? 0,
+      supplyCountryName: _asString(
+        spu['supplyCountryName'],
+        fallback: _asString(spu['supplyCountry']),
+      ),
+      supplyCountryCode: _asString(
+        spu['supplyCountryCode'],
+        fallback: _asString(
+          spu['supplyCountry'],
+          fallback: _asString(storeInfo['deliveryCountryCode']),
+        ),
+      ),
+      transportModes: _asTransportModes(
+        spu['transportModes'],
+        fallback: spu['transportMode'],
+      ),
     );
     var skuId = '';
     final attrs = _asList(map['saleAttr']);
@@ -572,8 +589,11 @@ class TospinoApi implements TospinoDataSource {
       servicePromises: _asList(
         map['servicePromises'],
       ).map(_asString).where((item) => item.isNotEmpty).toList(growable: false),
-      storeName: _asString(_asMap(map['storeInfo'])['storeName']),
+      storeName: _asString(storeInfo['storeName']),
       isFavorite: _asInt(spu['isAttention']) == 1,
+      storeDeliveryCountryName: _asString(storeInfo['deliveryCountryName']),
+      storeDeliveryCountryCode: _asString(storeInfo['deliveryCountryCode']),
+      storeDeliveryAddress: _asString(storeInfo['deliveryAddress']),
     );
   }
 
@@ -1052,6 +1072,12 @@ TospinoProduct _productFromJson(dynamic value) {
     shopName: _asString(map['shopName']),
     stock: _asInt(map['stock']) ?? 0,
     deliveryType: _asInt(map['deliveryType']) ?? 0,
+    supplyCountryName: _asString(map['supplyCountryName']),
+    supplyCountryCode: _asString(map['supplyCountry']),
+    transportModes: _asTransportModes(
+      map['transportModes'],
+      fallback: map['transportMode'],
+    ),
   );
 }
 
@@ -1093,19 +1119,56 @@ TospinoOrder _orderFromJson(dynamic value) {
   );
 }
 
-TospinoAddress _addressFromJson(Map<String, dynamic> map) => TospinoAddress(
-  id: _asString(map['id']),
-  name: _asString(map['name']),
-  phone: '${_asString(map['phonePrefix'])} ${_asString(map['phone'])}'.trim(),
-  completeAddress: _asString(
-    map['completeAddressDetail'],
-    fallback: _asString(
-      map['completeAddress'],
-      fallback: _asString(map['address']),
+TospinoAddress _addressFromJson(Map<String, dynamic> map) {
+  final areas = _asList(map['areaList'])
+      .map(_asMap)
+      .where((area) => _asString(area['name']).isNotEmpty)
+      .toList(growable: false);
+  String areaName(String level) {
+    for (final area in areas) {
+      if (_asString(area['level']) == level) return _asString(area['name']);
+    }
+    return '';
+  }
+
+  return TospinoAddress(
+    id: _asString(map['id']),
+    name: _asString(map['name']),
+    phone: '${_asString(map['phonePrefix'])} ${_asString(map['phone'])}'.trim(),
+    completeAddress: _asString(
+      map['completeAddressDetail'],
+      fallback: _asString(
+        map['completeAddress'],
+        fallback: _asString(map['address']),
+      ),
     ),
-  ),
-  isDefault: _asInt(map['isDefault']) == 1,
-);
+    isDefault: _asInt(map['isDefault']) == 1,
+    countryCode: _asString(map['countryCode']),
+    countryName: _asString(map['countryName'], fallback: areaName('0')),
+    province: _asString(map['provinceName'], fallback: areaName('1')),
+    city: _asString(map['cityName'], fallback: areaName('2')),
+  );
+}
+
+List<String> _asTransportModes(dynamic value, {dynamic fallback}) {
+  final values = <String>[];
+  if (value is List) {
+    values.addAll(value.map(_asString));
+  }
+  if (values.isEmpty) {
+    final text = _asString(
+      value is List ? null : value,
+      fallback: _asString(fallback),
+    );
+    if (text.isNotEmpty) {
+      values.addAll(text.split(RegExp(r'[,|;]')).map((item) => item.trim()));
+    }
+  }
+  return values
+      .where((item) => item.isNotEmpty)
+      .toSet()
+      .toList(growable: false);
+}
 
 Map<String, dynamic> _asMap(dynamic value) {
   if (value is Map<String, dynamic>) return value;

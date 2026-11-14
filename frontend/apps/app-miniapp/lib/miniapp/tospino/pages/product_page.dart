@@ -4,6 +4,9 @@ import '../../common/miniapp_localizations.dart';
 import '../tospino_models.dart';
 import '../tospino_routes.dart';
 import '../tospino_style.dart';
+import '../widgets/product_gallery.dart';
+import '../widgets/product_html_view.dart';
+import '../widgets/tospino_fulfillment_card.dart';
 
 class TospinoProductPage extends StatelessWidget {
   const TospinoProductPage({super.key, required this.controller});
@@ -68,14 +71,14 @@ class TospinoProductPage extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                TospinoProductArtwork(
+                TospinoProductGallery(
+                  key: const Key('tospino-product-gallery'),
                   product: product,
+                  imageUrls: detail.galleryUrls,
                   height: MediaQuery.sizeOf(context).width,
-                  radius: 0,
-                  hero: false,
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                  padding: const EdgeInsets.only(top: 10),
                   child: TospinoSurface(
                     radius: 16,
                     padding: const EdgeInsets.fromLTRB(15, 14, 15, 15),
@@ -184,150 +187,85 @@ class TospinoProductPage extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 11),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: TospinoColors.resolve(
-                              context,
-                              TospinoColors.surfaceMuted,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.local_shipping_rounded,
-                                size: 17,
-                                color: TospinoColors.solidBrand(context),
-                              ),
-                              const SizedBox(width: 7),
-                              Expanded(
-                                child: Text(
-                                  localizeMiniProgramLabel(
-                                    context,
-                                    '预计 2-5 个工作日送达',
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TospinoText.meta(context).copyWith(
-                                    fontWeight: TospinoText.emphasis,
-                                    color: TospinoColors.resolve(
+                        const SizedBox(height: 12),
+                        TospinoFulfillmentCard(
+                          key: const Key('tospino-product-fulfillment'),
+                          detail: detail,
+                          destination: controller.defaultAddress,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TospinoSurface(
+                  radius: 16,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      _ProtectionItem(
+                        icon: Icons.storefront_outlined,
+                        label: detail.storeName.isNotEmpty
+                            ? detail.storeName
+                            : '安心配送',
+                      ),
+                      _ProtectionItem(
+                        icon: Icons.verified_user_outlined,
+                        label: '正品保障',
+                      ),
+                      _ProtectionItem(
+                        icon: Icons.assignment_return_outlined,
+                        label: '7 天无忧退换',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TospinoSurface(
+                  radius: 16,
+                  padding: const EdgeInsets.all(15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        localizeMiniProgramLabel(context, '商品介绍'),
+                        style: TospinoText.section(context),
+                      ),
+                      const SizedBox(height: 10),
+                      TospinoProductHtmlView(
+                        description: detail.description,
+                        fallback: product.title,
+                      ),
+                      if (detail.servicePromises.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        for (final promise in detail.servicePromises.take(4))
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(
+                                  Icons.check_circle_outline_rounded,
+                                  color: TospinoColors.brand,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 7),
+                                Expanded(
+                                  child: Text(
+                                    promise,
+                                    style: Theme.of(
                                       context,
-                                      TospinoColors.secondary,
-                                    ),
+                                    ).textTheme.bodySmall,
                                   ),
                                 ),
-                              ),
-                              Text(
-                                localizeMiniProgramLabel(context, '官方配送'),
-                                style: TospinoText.meta(
-                                  context,
-                                ).copyWith(fontSize: 11),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: TospinoSurface(
-                    radius: 16,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 12,
-                    ),
-                    child: Row(
-                      children: [
-                        _ProtectionItem(
-                          icon: Icons.storefront_outlined,
-                          label: detail.storeName.isNotEmpty
-                              ? detail.storeName
-                              : '安心配送',
-                        ),
-                        _ProtectionItem(
-                          icon: Icons.verified_user_outlined,
-                          label: '正品保障',
-                        ),
-                        _ProtectionItem(
-                          icon: Icons.assignment_return_outlined,
-                          label: '7 天无忧退换',
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: TospinoSurface(
-                    radius: 16,
-                    padding: const EdgeInsets.all(15),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          localizeMiniProgramLabel(context, '商品介绍'),
-                          style: TospinoText.section(context),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          detail.description.isEmpty
-                              ? product.title
-                              : detail.description,
-                          style: TospinoText.body(context),
-                        ),
-                        if (detail.galleryUrls.isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(
-                              TospinoMetrics.imageRadius,
-                            ),
-                            child: Image.network(
-                              detail.galleryUrls.first,
-                              height: 240,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) =>
-                                  const SizedBox.shrink(),
+                              ],
                             ),
                           ),
-                        ],
-                        if (detail.servicePromises.isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          for (final promise in detail.servicePromises.take(4))
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Icon(
-                                    Icons.check_circle_outline_rounded,
-                                    color: TospinoColors.brand,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 7),
-                                  Expanded(
-                                    child: Text(
-                                      promise,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodySmall,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -440,140 +378,192 @@ class _ProductActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 9),
-      decoration: BoxDecoration(
-        color: TospinoColors.resolve(context, TospinoColors.surface),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-        border: Border(
-          top: BorderSide(
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(8, 7, 8, 8),
+        decoration: BoxDecoration(
+          color: TospinoColors.resolve(context, TospinoColors.surface),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+          border: Border.all(
             color: TospinoColors.resolve(context, TospinoColors.line),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.07),
+              blurRadius: 16,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            InkWell(
-              key: const Key('tospino-product-favorite'),
-              onTap: controller.busy
-                  ? null
-                  : () async {
-                      try {
-                        final active = await controller.toggleFavorite(product);
-                        if (!context.mounted) return;
-                        if (active || controller.isFavorite(product.id)) {
-                          showTospinoToast(context, '已收藏');
+        child: SafeArea(
+          top: false,
+          child: Row(
+            children: [
+              InkWell(
+                key: const Key('tospino-product-favorite'),
+                onTap: controller.busy
+                    ? null
+                    : () async {
+                        try {
+                          final active = await controller.toggleFavorite(
+                            product,
+                          );
+                          if (!context.mounted) return;
+                          if (active || controller.isFavorite(product.id)) {
+                            showTospinoToast(context, '已收藏');
+                          }
+                        } catch (error) {
+                          if (context.mounted) {
+                            showTospinoToast(context, error.toString());
+                          }
                         }
-                      } catch (error) {
-                        if (context.mounted) {
-                          showTospinoToast(context, error.toString());
-                        }
-                      }
-                    },
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                width: 42,
-                height: 44,
-                child: Icon(
-                  favorite
-                      ? Icons.favorite_rounded
-                      : Icons.favorite_border_rounded,
-                  color: favorite
-                      ? TospinoColors.price
-                      : TospinoColors.resolve(context, TospinoColors.secondary),
-                  size: 23,
+                      },
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 42,
+                  height: 44,
+                  child: Icon(
+                    favorite
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    color: favorite
+                        ? TospinoColors.price
+                        : TospinoColors.resolve(
+                            context,
+                            TospinoColors.secondary,
+                          ),
+                    size: 23,
+                  ),
                 ),
               ),
-            ),
-            InkWell(
-              onTap: () => controller.switchTab(2),
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                width: 42,
-                height: 44,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Icon(
-                      Icons.shopping_cart_outlined,
-                      color: TospinoColors.resolve(
-                        context,
-                        TospinoColors.secondary,
+              InkWell(
+                onTap: () => controller.switchTab(2),
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 42,
+                  height: 44,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        Icons.shopping_cart_outlined,
+                        color: TospinoColors.resolve(
+                          context,
+                          TospinoColors.secondary,
+                        ),
+                        size: 23,
                       ),
-                      size: 23,
-                    ),
-                    if (controller.cartCount > 0)
-                      Positioned(
-                        right: 2,
-                        top: 2,
-                        child: Container(
-                          constraints: const BoxConstraints(
-                            minWidth: 17,
-                            minHeight: 17,
+                      if (controller.cartCount > 0)
+                        Positioned(
+                          right: 2,
+                          top: 2,
+                          child: Container(
+                            constraints: const BoxConstraints(
+                              minWidth: 17,
+                              minHeight: 17,
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              color: TospinoColors.price,
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '${controller.cartCount}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11.5,
+                                fontWeight: TospinoText.strong,
+                              ),
+                            ),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            color: TospinoColors.price,
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                          alignment: Alignment.center,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Opacity(
+                  opacity: controller.busy ? 0.5 : 1,
+                  child: Material(
+                    color: Colors.transparent,
+                    clipBehavior: Clip.antiAlias,
+                    child: Ink(
+                      height: 50,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFFFFB43F), Color(0xFFFF8A32)],
+                        ),
+                      ),
+                      child: InkWell(
+                        key: const Key('tospino-product-add-cart'),
+                        onTap: controller.busy
+                            ? null
+                            : () async {
+                                try {
+                                  final added = await controller.addToCart(
+                                    product,
+                                  );
+                                  if (added && context.mounted) {
+                                    showTospinoToast(context, '已加入购物车');
+                                  }
+                                } catch (error) {
+                                  if (context.mounted) {
+                                    showTospinoToast(context, error.toString());
+                                  }
+                                }
+                              },
+                        child: Center(
                           child: Text(
-                            '${controller.cartCount}',
+                            localizeMiniProgramLabel(context, '加入购物车'),
                             style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11.5,
-                              fontWeight: TospinoText.strong,
+                              color: Color(0xFF3B2400),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
                       ),
-                  ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              child: Opacity(
-                opacity: controller.busy ? 0.5 : 1,
-                child: Material(
-                  color: Colors.transparent,
-                  clipBehavior: Clip.antiAlias,
-                  child: Ink(
-                    height: 50,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFFFFB43F), Color(0xFFFF8A32)],
+              Expanded(
+                child: Opacity(
+                  opacity: controller.busy ? 0.5 : 1,
+                  child: Material(
+                    color: Colors.transparent,
+                    clipBehavior: Clip.antiAlias,
+                    child: Ink(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        gradient: TospinoColors.brandGradient(context),
                       ),
-                    ),
-                    child: InkWell(
-                      key: const Key('tospino-product-add-cart'),
-                      onTap: controller.busy
-                          ? null
-                          : () async {
-                              try {
-                                final added = await controller.addToCart(
-                                  product,
-                                );
-                                if (added && context.mounted) {
-                                  showTospinoToast(context, '已加入购物车');
+                      child: InkWell(
+                        key: const Key('tospino-product-buy-now'),
+                        onTap: controller.busy
+                            ? null
+                            : () async {
+                                try {
+                                  await controller.buyNow(product);
+                                } catch (error) {
+                                  if (context.mounted) {
+                                    showTospinoToast(context, error.toString());
+                                  }
                                 }
-                              } catch (error) {
-                                if (context.mounted) {
-                                  showTospinoToast(context, error.toString());
-                                }
-                              }
-                            },
-                      child: Center(
-                        child: Text(
-                          localizeMiniProgramLabel(context, '加入购物车'),
-                          style: const TextStyle(
-                            color: Color(0xFF3B2400),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                              },
+                        child: Center(
+                          child: Text(
+                            localizeMiniProgramLabel(context, '立即购买'),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
@@ -581,47 +571,8 @@ class _ProductActionBar extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Opacity(
-                opacity: controller.busy ? 0.5 : 1,
-                child: Material(
-                  color: Colors.transparent,
-                  clipBehavior: Clip.antiAlias,
-                  child: Ink(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      gradient: TospinoColors.brandGradient(context),
-                    ),
-                    child: InkWell(
-                      key: const Key('tospino-product-buy-now'),
-                      onTap: controller.busy
-                          ? null
-                          : () async {
-                              try {
-                                await controller.buyNow(product);
-                              } catch (error) {
-                                if (context.mounted) {
-                                  showTospinoToast(context, error.toString());
-                                }
-                              }
-                            },
-                      child: Center(
-                        child: Text(
-                          localizeMiniProgramLabel(context, '立即购买'),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

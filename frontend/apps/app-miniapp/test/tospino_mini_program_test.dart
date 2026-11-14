@@ -14,6 +14,9 @@ import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_models.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_routes.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_style.dart';
+import 'package:ruoqi_app_miniapp/miniapp/tospino/widgets/product_html_view.dart';
+import 'package:ruoqi_app_miniapp/miniapp/tospino/widgets/product_gallery.dart';
+import 'package:ruoqi_app_miniapp/miniapp/tospino/widgets/tospino_fulfillment_card.dart';
 import 'package:ruoqi_app_miniapp/pages/mini_programs/mini_programs_page.dart';
 
 void main() {
@@ -277,6 +280,169 @@ void main() {
     await tester.tap(find.byKey(const Key('tospino-message-order-order-1')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('tospino-order-detail-page')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('商品描述支持常用 HTML 标签', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: TospinoProductHtmlView(
+              description:
+                  '<h2>Product details</h2>'
+                  '<p>Premium <strong>wireless</strong> headphones.</p>'
+                  '<ul><li>30-hour battery</li><li>Fast charging</li></ul>'
+                  '<img src="https://example.com/detail.jpg"/>',
+              fallback: 'Fallback',
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('tospino-product-html')), findsOneWidget);
+    expect(find.textContaining('Product details'), findsOneWidget);
+    expect(find.textContaining('Premium wireless headphones.'), findsOneWidget);
+    expect(find.textContaining('30-hour battery'), findsOneWidget);
+    expect(find.textContaining('<p>'), findsNothing);
+    expect(find.byType(Image), findsOneWidget);
+  });
+
+  testWidgets('商品详情主图支持左右滑动并显示页码', (tester) async {
+    const product = TospinoProduct(
+      id: 'gallery-product',
+      title: 'Gallery product',
+      price: 10,
+      imageUrl: 'https://example.com/gallery-1.jpg',
+    );
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 390,
+            height: 400,
+            child: TospinoProductGallery(
+              product: product,
+              imageUrls: [
+                'https://example.com/gallery-1.jpg',
+                'https://example.com/gallery-2.jpg',
+                'https://example.com/gallery-3.jpg',
+              ],
+              height: 390,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 / 3'), findsOneWidget);
+    await tester.drag(
+      find.byKey(const Key('tospino-product-gallery-pages')),
+      const Offset(-360, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('2 / 3'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  test('Tospino 物流运输方式与 Android 映射一致', () {
+    expect(tospinoTransportModeFromCode('1'), TospinoTransportMode.air);
+    expect(tospinoTransportModeFromCode('2'), TospinoTransportMode.sea);
+    expect(tospinoTransportModeFromCode('3'), TospinoTransportMode.land);
+    expect(tospinoTransportModeFromCode(''), isNull);
+  });
+
+  testWidgets('Tospino 商品详情区分 FBT、FBM 本土和 FBM 跨境', (tester) async {
+    Future<void> pumpDetail({
+      required int deliveryType,
+      String sourceCountryCode = 'GH',
+      String sourceCountryName = 'Ghana',
+      String sourceAddress = '12 Independence Avenue, Accra, Ghana',
+      String destinationCountryCode = 'GH',
+      String destinationCountryName = 'Ghana',
+      String destinationCity = 'Accra',
+    }) async {
+      final detail = TospinoProductDetail(
+        product: TospinoProduct(
+          id: 'delivery-product',
+          title: 'Delivery product',
+          price: 10,
+          deliveryType: deliveryType,
+          transportModes: const ['1'],
+        ),
+        skuId: 'delivery-sku',
+        storeDeliveryCountryCode: sourceCountryCode,
+        storeDeliveryCountryName: sourceCountryName,
+        storeDeliveryAddress: sourceAddress,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: TospinoFulfillmentCard(
+                detail: detail,
+                destination: TospinoAddress(
+                  id: 'destination',
+                  name: 'Ama',
+                  phone: '+233000000000',
+                  completeAddress: 'Accra, Ghana',
+                  countryCode: destinationCountryCode,
+                  countryName: destinationCountryName,
+                  city: destinationCity,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await pumpDetail(deliveryType: 2);
+    expect(find.byKey(const Key('tospino-fulfillment-fbt')), findsOneWidget);
+    expect(find.text('FBT'), findsOneWidget);
+    expect(find.text('Tospino 官方履约'), findsOneWidget);
+    expect(find.byKey(const Key('tospino-fulfillment-transit')), findsNothing);
+
+    await pumpDetail(deliveryType: 1);
+    expect(
+      find.byKey(const Key('tospino-fulfillment-fbmLocalCity')),
+      findsOneWidget,
+    );
+    expect(find.text('FBM 本土'), findsOneWidget);
+    expect(find.text('Accra'), findsOneWidget);
+    expect(
+      find.byKey(const Key('tospino-fulfillment-transport-air')),
+      findsOneWidget,
+    );
+
+    await pumpDetail(
+      deliveryType: 1,
+      sourceCountryCode: 'CN',
+      sourceCountryName: 'China',
+      sourceAddress: 'Shenzhen, China',
+    );
+    expect(
+      find.byKey(const Key('tospino-fulfillment-fbmCrossBorder')),
+      findsOneWidget,
+    );
+    expect(find.text('FBM 跨境'), findsOneWidget);
+    expect(find.text('China'), findsOneWidget);
+    expect(find.text('本地中转仓'), findsOneWidget);
+    expect(
+      find.byKey(const Key('tospino-fulfillment-transit')),
+      findsOneWidget,
+    );
+
+    await pumpDetail(deliveryType: 0);
+    expect(
+      find.byKey(const Key('tospino-fulfillment-official')),
+      findsOneWidget,
+    );
+    expect(find.text('物流信息待确认'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -898,6 +1064,10 @@ class _FakeTospinoApi implements TospinoDataSource {
     phone: '+233 55 123 4567',
     completeAddress: '12 Independence Avenue, Accra, Ghana',
     isDefault: true,
+    countryCode: 'GH',
+    countryName: 'Ghana',
+    city: 'Accra',
+    province: 'Greater Accra',
   );
 
   @override

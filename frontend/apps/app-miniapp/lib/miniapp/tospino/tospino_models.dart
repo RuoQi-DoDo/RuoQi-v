@@ -44,6 +44,9 @@ class TospinoProduct {
     this.shopName = '',
     this.stock = 0,
     this.deliveryType = 0,
+    this.supplyCountryName = '',
+    this.supplyCountryCode = '',
+    this.transportModes = const [],
   });
 
   final String id;
@@ -60,6 +63,12 @@ class TospinoProduct {
   final String shopName;
   final int stock;
   final int deliveryType;
+  final String supplyCountryName;
+  final String supplyCountryCode;
+  final List<String> transportModes;
+
+  bool get isFbt => deliveryType == 2;
+  bool get isFbm => deliveryType == 1;
 
   int get discountPercent {
     if (oldPrice <= price || oldPrice <= 0) return 0;
@@ -78,6 +87,9 @@ class TospinoProductDetail {
     this.servicePromises = const [],
     this.storeName = '',
     this.isFavorite = false,
+    this.storeDeliveryCountryName = '',
+    this.storeDeliveryCountryCode = '',
+    this.storeDeliveryAddress = '',
   });
 
   final TospinoProduct product;
@@ -87,6 +99,9 @@ class TospinoProductDetail {
   final List<String> servicePromises;
   final String storeName;
   final bool isFavorite;
+  final String storeDeliveryCountryName;
+  final String storeDeliveryCountryCode;
+  final String storeDeliveryAddress;
 }
 
 class TospinoCartLine {
@@ -252,6 +267,10 @@ class TospinoAddress {
     required this.phone,
     required this.completeAddress,
     this.isDefault = false,
+    this.countryCode = '',
+    this.countryName = '',
+    this.city = '',
+    this.province = '',
   });
 
   final String id;
@@ -259,6 +278,10 @@ class TospinoAddress {
   final String phone;
   final String completeAddress;
   final bool isDefault;
+  final String countryCode;
+  final String countryName;
+  final String city;
+  final String province;
 }
 
 class TospinoHomeDecoration {

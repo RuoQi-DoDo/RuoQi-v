@@ -496,6 +496,7 @@ class TospinoAppController extends ChangeNotifier {
     }
     _loadingDetail = true;
     notifyListeners();
+    unawaited(_loadDefaultAddressForProduct());
     try {
       _productDetail = await _api.fetchProductDetail(product.id);
     } catch (error) {
@@ -503,6 +504,18 @@ class TospinoAppController extends ChangeNotifier {
     } finally {
       _loadingDetail = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _loadDefaultAddressForProduct() async {
+    if (!_api.isLoggedIn || _defaultAddress != null) return;
+    try {
+      final address = await _api.fetchDefaultAddress();
+      if (address == null) return;
+      _defaultAddress = address;
+      notifyListeners();
+    } catch (_) {
+      // Delivery type can still be shown using the configured site country.
     }
   }
 
@@ -837,6 +850,9 @@ class TospinoAppController extends ChangeNotifier {
         servicePromises: detail.servicePromises,
         storeName: detail.storeName,
         isFavorite: !active,
+        storeDeliveryCountryName: detail.storeDeliveryCountryName,
+        storeDeliveryCountryCode: detail.storeDeliveryCountryCode,
+        storeDeliveryAddress: detail.storeDeliveryAddress,
       );
     }
     if (active) {
