@@ -41,7 +41,6 @@ class _TospinoHomePageState extends State<TospinoHomePage> {
 
     final products = controller.homeProducts;
     final recommendations = _sortedProducts(products, _sort);
-    final picks = _editorialProducts(products);
     final trending = _trendingProducts(products);
     final gift = controller.freeGifts.isEmpty
         ? null
@@ -92,12 +91,6 @@ class _TospinoHomePageState extends State<TospinoHomePage> {
                   ),
                 )
               else ...[
-                SliverToBoxAdapter(
-                  child: _HomeEditorialHero(
-                    products: picks.take(3).toList(growable: false),
-                    controller: controller,
-                  ),
-                ),
                 if (gift != null)
                   SliverToBoxAdapter(
                     child: _HomeGiftBanner(
@@ -109,17 +102,9 @@ class _TospinoHomePageState extends State<TospinoHomePage> {
                   SliverToBoxAdapter(
                     child: _HomeCategorySection(controller: controller),
                   ),
-                const SliverToBoxAdapter(child: _HomeTrustStrip()),
                 SliverToBoxAdapter(
                   child: _HomeCampaignHub(controller: controller),
                 ),
-                if (picks.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: _HomeDealRail(
-                      products: picks.take(8).toList(growable: false),
-                      controller: controller,
-                    ),
-                  ),
                 if (trending.isNotEmpty)
                   SliverToBoxAdapter(
                     child: _HomeTrendingRail(
@@ -192,17 +177,6 @@ class _TospinoHomePageState extends State<TospinoHomePage> {
         });
     }
     return sorted;
-  }
-
-  List<TospinoProduct> _editorialProducts(List<TospinoProduct> products) {
-    final ranked = [...products];
-    ranked.sort((left, right) {
-      final discount = right.discountPercent.compareTo(left.discountPercent);
-      if (discount != 0) return discount;
-      final sales = right.sales.compareTo(left.sales);
-      return sales != 0 ? sales : right.rating.compareTo(left.rating);
-    });
-    return ranked;
   }
 
   List<TospinoProduct> _trendingProducts(List<TospinoProduct> products) {
@@ -458,331 +432,6 @@ class _HomeSearchField extends StatelessWidget {
   }
 }
 
-class _HomeEditorialHero extends StatelessWidget {
-  const _HomeEditorialHero({required this.products, required this.controller});
-
-  final List<TospinoProduct> products;
-  final TospinoAppController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    if (products.isEmpty) return const SizedBox.shrink();
-    final lead = products.first;
-    final supporting = products.skip(1).take(2).toList(growable: false);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 2),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 194,
-            child: _HomeHeroCard(
-              key: const Key('tospino-home-hero'),
-              product: lead,
-              onTap: () => controller.openProduct(lead),
-            ),
-          ),
-          if (supporting.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                for (var index = 0; index < supporting.length; index++) ...[
-                  if (index > 0) const SizedBox(width: 8),
-                  Expanded(
-                    child: _HomeHeroSupportCard(
-                      product: supporting[index],
-                      onTap: () => controller.openProduct(supporting[index]),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _HomeHeroCard extends StatelessWidget {
-  const _HomeHeroCard({super.key, required this.product, required this.onTap});
-
-  final TospinoProduct product;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final discount = product.discountPercent;
-    final title = product.title.trim().isEmpty
-        ? localizeMiniProgramLabel(context, '好物推荐')
-        : product.title;
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(20),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Ink(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: dark
-                  ? const [Color(0xFF0B2A31), Color(0xFF0A4F59)]
-                  : const [Color(0xFF062E36), Color(0xFF0B8E9A)],
-            ),
-          ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Positioned(
-                right: -48,
-                top: -70,
-                child: Container(
-                  width: 220,
-                  height: 220,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.07),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 10,
-                top: 18,
-                bottom: 18,
-                width: 126,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: ColoredBox(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    child: product.imageUrl.isEmpty
-                        ? const Icon(
-                            Icons.shopping_bag_outlined,
-                            color: Colors.white54,
-                            size: 38,
-                          )
-                        : Image.network(
-                            product.imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => const Icon(
-                              Icons.shopping_bag_outlined,
-                              color: Colors.white54,
-                              size: 38,
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                right: 108,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withValues(alpha: 0.25),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(17, 15, 148, 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: TospinoColors.orange,
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: const Text(
-                                'TOSPINO SELECTS',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Color(0xFF1C2526),
-                                  fontSize: 11,
-                                  fontWeight: TospinoText.strong,
-                                  height: 1,
-                                  letterSpacing: 0.4,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (discount > 0) ...[
-                          const SizedBox(width: 5),
-                          Text(
-                            'SAVE $discount%',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11.5,
-                              fontWeight: TospinoText.emphasis,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: TospinoText.strong,
-                        height: 1.12,
-                        letterSpacing: -0.25,
-                      ),
-                    ),
-                    const Spacer(),
-                    TospinoPriceText(
-                      price: product.price,
-                      oldPrice: product.oldPrice > product.price
-                          ? product.oldPrice
-                          : null,
-                      size: 20,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(10, 6, 8, 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(9),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            localizeMiniProgramLabel(context, '立即抢购'),
-                            style: const TextStyle(
-                              color: Color(0xFF083A40),
-                              fontSize: 11.5,
-                              fontWeight: TospinoText.strong,
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          const Icon(
-                            Icons.arrow_forward_rounded,
-                            size: 13,
-                            color: Color(0xFF083A40),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HomeHeroSupportCard extends StatelessWidget {
-  const _HomeHeroSupportCard({required this.product, required this.onTap});
-
-  final TospinoProduct product;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: TospinoColors.resolve(context, TospinoColors.surface),
-      borderRadius: BorderRadius.circular(15),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        key: Key('tospino-home-hero-mini-${product.id}'),
-        onTap: onTap,
-        child: SizedBox(
-          height: 82,
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: SizedBox(
-                    width: 58,
-                    height: 66,
-                    child: product.imageUrl.isEmpty
-                        ? ColoredBox(
-                            color: TospinoColors.resolve(
-                              context,
-                              TospinoColors.imagePlaceholder,
-                            ),
-                            child: const Icon(
-                              Icons.shopping_bag_outlined,
-                              size: 20,
-                            ),
-                          )
-                        : Image.network(
-                            product.imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => ColoredBox(
-                              color: TospinoColors.resolve(
-                                context,
-                                TospinoColors.imagePlaceholder,
-                              ),
-                              child: const Icon(
-                                Icons.shopping_bag_outlined,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(width: 7),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TospinoText.body(context).copyWith(
-                          fontSize: 11.5,
-                          fontWeight: TospinoText.emphasis,
-                          height: 1.18,
-                        ),
-                      ),
-                      const Spacer(),
-                      TospinoPriceText(
-                        price: product.price,
-                        size: 12.5,
-                        color: TospinoColors.resolve(
-                          context,
-                          TospinoColors.price,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _HomeGiftBanner extends StatelessWidget {
   const _HomeGiftBanner({required this.gift, required this.onTap});
 
@@ -974,33 +623,59 @@ class _HomeCategorySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final categories = controller.categories.take(8).toList(growable: false);
     return Padding(
-      padding: const EdgeInsets.only(top: 16),
-      child: Column(
-        children: [
-          TospinoSectionHeader(
-            title: '按分类选购',
-            action: '全部分类',
-            onAction: controller.openCategory,
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+        decoration: BoxDecoration(
+          color: TospinoColors.resolve(context, TospinoColors.surface),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: TospinoColors.resolve(context, TospinoColors.line),
+            width: 0.5,
           ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12),
-            padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
-            decoration: BoxDecoration(
-              color: TospinoColors.resolve(context, TospinoColors.surface),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: TospinoColors.resolve(context, TospinoColors.line),
-                width: 0.5,
-              ),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    localizeMiniProgramLabel(context, '按分类选购'),
+                    style: TospinoText.section(context).copyWith(fontSize: 17),
+                  ),
+                ),
+                TextButton(
+                  onPressed: controller.openCategory,
+                  style: TextButton.styleFrom(
+                    foregroundColor: TospinoColors.resolve(
+                      context,
+                      TospinoColors.secondary,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        localizeMiniProgramLabel(context, '全部分类'),
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      const Icon(Icons.chevron_right_rounded, size: 17),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            child: GridView.builder(
+            const SizedBox(height: 5),
+            GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               padding: EdgeInsets.zero,
               itemCount: categories.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 4,
-                mainAxisExtent: 76,
+                mainAxisExtent: 92,
               ),
               itemBuilder: (context, index) {
                 final category = categories[index];
@@ -1011,8 +686,8 @@ class _HomeCategorySection extends StatelessWidget {
                 );
               },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1168,71 +843,6 @@ class _HomeCategoryItem extends StatelessWidget {
       keywords.any(value.contains);
 }
 
-class _HomeTrustStrip extends StatelessWidget {
-  const _HomeTrustStrip();
-
-  @override
-  Widget build(BuildContext context) {
-    const items = <(IconData, String)>[
-      (Icons.local_shipping_outlined, '安心配送'),
-      (Icons.verified_user_outlined, '正品保障'),
-      (Icons.assignment_return_outlined, '轻松退换'),
-    ];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
-        decoration: BoxDecoration(
-          color: TospinoColors.resolve(context, TospinoColors.brandPale),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: [
-            for (var index = 0; index < items.length; index++) ...[
-              if (index > 0)
-                Container(
-                  width: 0.5,
-                  height: 17,
-                  color: TospinoColors.solidBrand(
-                    context,
-                  ).withValues(alpha: 0.22),
-                ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      items[index].$1,
-                      size: 16,
-                      color: TospinoColors.solidBrand(context),
-                    ),
-                    const SizedBox(width: 5),
-                    Flexible(
-                      child: Text(
-                        localizeMiniProgramLabel(context, items[index].$2),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: TospinoColors.resolve(
-                            context,
-                            TospinoColors.secondary,
-                          ),
-                          fontSize: 11,
-                          fontWeight: TospinoText.emphasis,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _HomeCampaignHub extends StatelessWidget {
   const _HomeCampaignHub({required this.controller});
 
@@ -1240,108 +850,354 @@ class _HomeCampaignHub extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final entries = [
+    final activeEntries = [
       for (final campaign in tospinoCampaigns)
-        (
-          campaign: campaign,
-          products: tospinoCampaignProducts(campaign, controller),
-        ),
+        if (tospinoCampaignProducts(campaign, controller) case final products
+            when products.isNotEmpty)
+          (campaign: campaign, products: products),
     ];
-    final activeCount = entries
-        .where((entry) => entry.products.isNotEmpty)
-        .length;
+    if (activeEntries.isEmpty) return const SizedBox.shrink();
+    return Column(
+      children: [
+        for (final entry in activeEntries)
+          KeyedSubtree(
+            key: Key('tospino-home-campaign-${entry.campaign.id}'),
+            child: switch (entry.campaign.kind) {
+              TospinoCampaignKind.groupBuy => _GroupBuyCampaignSection(
+                campaign: entry.campaign,
+                products: entry.products,
+                controller: controller,
+              ),
+              TospinoCampaignKind.platformMegaSale => _MegaSaleCampaignSection(
+                campaign: entry.campaign,
+                products: entry.products,
+                controller: controller,
+              ),
+              TospinoCampaignKind.flashSale => _FlashSaleCampaignSection(
+                campaign: entry.campaign,
+                products: entry.products,
+                controller: controller,
+              ),
+              TospinoCampaignKind.brandFlashSale => _BrandSaleCampaignSection(
+                campaign: entry.campaign,
+                products: entry.products,
+                controller: controller,
+              ),
+              TospinoCampaignKind.newcomer => _NewcomerCampaignSection(
+                campaign: entry.campaign,
+                products: entry.products,
+                controller: controller,
+              ),
+              TospinoCampaignKind.clearance => _ClearanceCampaignSection(
+                campaign: entry.campaign,
+                products: entry.products,
+                controller: controller,
+              ),
+              TospinoCampaignKind.categoryEvent => _CategoryCampaignSection(
+                campaign: entry.campaign,
+                products: entry.products,
+                controller: controller,
+              ),
+              TospinoCampaignKind.zeroYuan => _ZeroYuanCampaignSection(
+                campaign: entry.campaign,
+                products: entry.products,
+                controller: controller,
+              ),
+              TospinoCampaignKind.subsidy => _SubsidyCampaignSection(
+                campaign: entry.campaign,
+                products: entry.products,
+                controller: controller,
+              ),
+              TospinoCampaignKind.shippingDiscount => _ShippingCampaignSection(
+                campaign: entry.campaign,
+                products: entry.products,
+                controller: controller,
+              ),
+            },
+          ),
+      ],
+    );
+  }
+}
+
+class _GroupBuyCampaignSection extends StatelessWidget {
+  const _GroupBuyCampaignSection({
+    required this.campaign,
+    required this.products,
+    required this.controller,
+  });
+
+  final TospinoCampaign campaign;
+  final List<TospinoProduct> products;
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = products.take(2).toList(growable: false);
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 16, 12, 0),
-      padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
+      margin: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: TospinoColors.resolve(context, TospinoColors.surface),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: TospinoColors.resolve(context, TospinoColors.line),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFF4E8), Color(0xFFFFE2C9)],
         ),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
+          _CampaignHeader(
+            campaign: campaign,
+            count: products.length,
+            foreground: const Color(0xFF6B3411),
+            onMore: () =>
+                showTospinoCampaignSheet(context, controller, campaign),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 176,
             child: Row(
               children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    gradient: TospinoColors.saleGradient(context),
-                    borderRadius: BorderRadius.circular(11),
+                for (var index = 0; index < shown.length; index++) ...[
+                  if (index > 0) const SizedBox(width: 8),
+                  Expanded(
+                    child: Material(
+                      color: TospinoColors.resolve(
+                        context,
+                        TospinoColors.surface,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () => controller.openProduct(shown[index]),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _CampaignProductImage(
+                              product: shown[index],
+                              width: double.infinity,
+                              height: 112,
+                              radius: 0,
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(8, 7, 8, 8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    TospinoPriceText(
+                                      price: shown[index].price,
+                                      oldPrice:
+                                          shown[index].oldPrice >
+                                              shown[index].price
+                                          ? shown[index].oldPrice
+                                          : null,
+                                      size: 13,
+                                      color: TospinoColors.resolve(
+                                        context,
+                                        TospinoColors.price,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.groups_rounded,
+                                          size: 13,
+                                          color: campaign.accent,
+                                        ),
+                                        const SizedBox(width: 3),
+                                        Expanded(
+                                          child: Text(
+                                            localizeMiniProgramLabel(
+                                              context,
+                                              '去拼团',
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: campaign.accent,
+                                              fontSize: 10,
+                                              fontWeight: TospinoText.strong,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.campaign_rounded,
-                    color: Colors.white,
-                    size: 19,
-                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MegaSaleCampaignSection extends StatelessWidget {
+  const _MegaSaleCampaignSection({
+    required this.campaign,
+    required this.products,
+    required this.controller,
+  });
+
+  final TospinoCampaign campaign;
+  final List<TospinoProduct> products;
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = products.take(3).toList(growable: false);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
+      child: Column(
+        children: [
+          _CampaignHeader(
+            campaign: campaign,
+            count: products.length,
+            onMore: () =>
+                showTospinoCampaignSheet(context, controller, campaign),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 5,
+                child: _MegaSaleProductTile(
+                  product: shown.first,
+                  rank: 1,
+                  onTap: () => controller.openProduct(shown.first),
                 ),
-                const SizedBox(width: 9),
+              ),
+              if (shown.length > 1) ...[
+                const SizedBox(width: 8),
                 Expanded(
+                  flex: 4,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        localizeMiniProgramLabel(context, '活动中心'),
-                        style: TospinoText.section(
-                          context,
-                        ).copyWith(fontSize: 16),
+                      _MegaSaleCompactTile(
+                        product: shown[1],
+                        rank: 2,
+                        onTap: () => controller.openProduct(shown[1]),
                       ),
-                      Text(
-                        localizeMiniProgramLabel(context, '限时优惠、补贴与品牌专场'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TospinoText.meta(context).copyWith(fontSize: 11),
-                      ),
+                      if (shown.length > 2) ...[
+                        const SizedBox(height: 8),
+                        _MegaSaleCompactTile(
+                          product: shown[2],
+                          rank: 3,
+                          onTap: () => controller.openProduct(shown[2]),
+                        ),
+                      ],
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: TospinoColors.resolve(
-                      context,
-                      TospinoColors.brandPale,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '$activeCount/${entries.length}',
-                    style: TextStyle(
-                      color: TospinoColors.solidBrand(context),
-                      fontSize: 11.5,
-                      fontWeight: TospinoText.emphasis,
-                    ),
-                  ),
-                ),
               ],
-            ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FlashSaleCampaignSection extends StatelessWidget {
+  const _FlashSaleCampaignSection({
+    required this.campaign,
+    required this.products,
+    required this.controller,
+  });
+
+  final TospinoCampaign campaign;
+  final List<TospinoProduct> products;
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      padding: const EdgeInsets.fromLTRB(12, 12, 0, 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2A1710), Color(0xFF6B2714)],
+        ),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _CampaignHeader(
+            campaign: campaign,
+            count: products.length,
+            foreground: Colors.white,
+            onMore: () =>
+                showTospinoCampaignSheet(context, controller, campaign),
           ),
           const SizedBox(height: 9),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            itemCount: entries.length,
+            padding: const EdgeInsets.only(right: 12),
+            itemCount: products.take(4).length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 5,
-              mainAxisExtent: 87,
+              crossAxisCount: 2,
+              mainAxisExtent: 108,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
             ),
             itemBuilder: (context, index) {
-              final entry = entries[index];
-              return _HomeCampaignTile(
-                campaign: entry.campaign,
-                productCount: entry.products.length,
-                onTap: () => showTospinoCampaignSheet(
-                  context,
-                  controller,
-                  entry.campaign,
+              final product = products[index];
+              return Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => controller.openProduct(product),
+                  child: Padding(
+                    padding: const EdgeInsets.all(7),
+                    child: Row(
+                      children: [
+                        _CampaignProductImage(
+                          product: product,
+                          width: 68,
+                          height: 94,
+                        ),
+                        const SizedBox(width: 7),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                product.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TospinoText.meta(context),
+                              ),
+                              const Spacer(),
+                              TospinoPriceText(
+                                price: product.price,
+                                size: 13,
+                                color: campaign.accent,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               );
             },
@@ -1352,91 +1208,110 @@ class _HomeCampaignHub extends StatelessWidget {
   }
 }
 
-class _HomeCampaignTile extends StatelessWidget {
-  const _HomeCampaignTile({
+class _BrandSaleCampaignSection extends StatelessWidget {
+  const _BrandSaleCampaignSection({
     required this.campaign,
-    required this.productCount,
-    required this.onTap,
+    required this.products,
+    required this.controller,
   });
 
   final TospinoCampaign campaign;
-  final int productCount;
+  final List<TospinoProduct> products;
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _CampaignHeader(
+            campaign: campaign,
+            count: products.length,
+            onMore: () =>
+                showTospinoCampaignSheet(context, controller, campaign),
+          ),
+          const SizedBox(height: 9),
+          Row(
+            children: [
+              for (var index = 0; index < products.take(2).length; index++) ...[
+                if (index > 0) const SizedBox(width: 8),
+                Expanded(
+                  child: _BrandSaleHeroCard(
+                    product: products[index],
+                    onTap: () => controller.openProduct(products[index]),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BrandSaleHeroCard extends StatelessWidget {
+  const _BrandSaleHeroCard({required this.product, required this.onTap});
+
+  final TospinoProduct product;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final active = productCount > 0;
-    final muted = TospinoColors.resolve(context, TospinoColors.muted);
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        key: Key('tospino-home-campaign-${campaign.id}'),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 3),
-          child: Column(
+    return SizedBox(
+      height: 154,
+      child: Material(
+        borderRadius: BorderRadius.circular(15),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              Container(
-                width: 42,
-                height: 42,
+              _CampaignProductImage(
+                product: product,
+                width: double.infinity,
+                height: 154,
+                radius: 0,
+              ),
+              const DecoratedBox(
                 decoration: BoxDecoration(
-                  color: active
-                      ? campaign.accent.withValues(alpha: 0.11)
-                      : TospinoColors.resolve(
-                          context,
-                          TospinoColors.surfaceMuted,
-                        ),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: Icon(
-                  campaign.icon,
-                  color: active ? campaign.accent : muted,
-                  size: 21,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black87],
+                  ),
                 ),
               ),
-              const SizedBox(height: 5),
-              Text(
-                localizeMiniProgramLabel(context, campaign.title),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TospinoText.meta(context).copyWith(
-                  color: TospinoColors.resolve(
-                    context,
-                    active ? TospinoColors.ink : TospinoColors.muted,
-                  ),
-                  fontSize: 11,
-                  fontWeight: TospinoText.emphasis,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 5,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: active ? const Color(0xFF28A96B) : muted,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 3),
-                  Flexible(
-                    child: Text(
-                      active
-                          ? '$productCount'
-                          : localizeMiniProgramLabel(context, '活动已结束'),
+              Positioned(
+                left: 9,
+                right: 9,
+                bottom: 9,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.brand.isEmpty
+                          ? localizeMiniProgramLabel(context, '品牌')
+                          : product.brand,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TospinoText.hint(context).copyWith(
-                        fontSize: 11,
-                        color: active ? const Color(0xFF28A96B) : muted,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: TospinoText.strong,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 2),
+                    TospinoPriceText(
+                      price: product.price,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -1446,39 +1321,761 @@ class _HomeCampaignTile extends StatelessWidget {
   }
 }
 
-class _HomeDealRail extends StatelessWidget {
-  const _HomeDealRail({required this.products, required this.controller});
+class _NewcomerCampaignSection extends StatelessWidget {
+  const _NewcomerCampaignSection({
+    required this.campaign,
+    required this.products,
+    required this.controller,
+  });
 
+  final TospinoCampaign campaign;
   final List<TospinoProduct> products;
   final TospinoAppController controller;
 
   @override
   Widget build(BuildContext context) {
-    final hasDiscount = products.any((product) => product.discountPercent > 0);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TospinoSectionHeader(
-          title: hasDiscount ? '今日精选' : '好物推荐',
-          subtitle: hasDiscount ? '大牌好物，限时直降' : '人气商品，精选呈现',
-          action: '查看全部',
-          onAction: controller.openCategory,
+    final product = products.first;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      height: 176,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFE4FBFC), Color(0xFFB9F0F3)],
         ),
-        SizedBox(
-          height: 218,
-          child: ListView.separated(
-            key: const Key('tospino-home-deal-rail'),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            scrollDirection: Axis.horizontal,
-            itemCount: products.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 8),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: -28,
+            top: -38,
+            child: Container(
+              width: 130,
+              height: 130,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.42),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            campaign.icon,
+                            color: const Color(0xFF087F89),
+                            size: 18,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            localizeMiniProgramLabel(context, campaign.title),
+                            style: const TextStyle(
+                              color: Color(0xFF075D64),
+                              fontSize: 16,
+                              fontWeight: TospinoText.strong,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        localizeMiniProgramLabel(context, campaign.subtitle),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF2F686D),
+                          fontSize: 11.5,
+                          height: 1.35,
+                        ),
+                      ),
+                      const Spacer(),
+                      Material(
+                        color: TospinoColors.solidBrand(context),
+                        borderRadius: BorderRadius.circular(9),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: () => showTospinoCampaignSheet(
+                            context,
+                            controller,
+                            campaign,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 11,
+                              vertical: 6,
+                            ),
+                            child: Text(
+                              '${localizeMiniProgramLabel(context, '新人专享')} · ${products.length}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10.5,
+                                fontWeight: TospinoText.strong,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 132,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 18, 14, 18),
+                  child: Material(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () => controller.openProduct(product),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: _CampaignProductImage(
+                              product: product,
+                              width: double.infinity,
+                              height: double.infinity,
+                              radius: 0,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(7, 6, 7, 7),
+                            child: TospinoPriceText(
+                              price: product.price,
+                              oldPrice: product.oldPrice > product.price
+                                  ? product.oldPrice
+                                  : null,
+                              size: 14,
+                              color: const Color(0xFF087F89),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ClearanceCampaignSection extends StatelessWidget {
+  const _ClearanceCampaignSection({
+    required this.campaign,
+    required this.products,
+    required this.controller,
+  });
+
+  final TospinoCampaign campaign;
+  final List<TospinoProduct> products;
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = products.take(4).toList(growable: false);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      child: Column(
+        children: [
+          _CampaignHeader(
+            campaign: campaign,
+            count: products.length,
+            onMore: () =>
+                showTospinoCampaignSheet(context, controller, campaign),
+          ),
+          const SizedBox(height: 9),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: shown.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisExtent: 78,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+            ),
             itemBuilder: (context, index) {
-              final product = products[index];
-              return _HomeDealCard(
-                product: product,
-                onTap: () => controller.openProduct(product),
+              final product = shown[index];
+              return Material(
+                color: TospinoColors.resolve(context, TospinoColors.surface),
+                borderRadius: BorderRadius.circular(12),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => controller.openProduct(product),
+                  child: Padding(
+                    padding: const EdgeInsets.all(7),
+                    child: Row(
+                      children: [
+                        _CampaignProductImage(
+                          product: product,
+                          width: 60,
+                          height: 64,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                product.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TospinoText.meta(context),
+                              ),
+                              const Spacer(),
+                              TospinoPriceText(
+                                price: product.price,
+                                size: 13,
+                                color: campaign.accent,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               );
             },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryCampaignSection extends StatelessWidget {
+  const _CategoryCampaignSection({
+    required this.campaign,
+    required this.products,
+    required this.controller,
+  });
+
+  final TospinoCampaign campaign;
+  final List<TospinoProduct> products;
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _CampaignHeader(
+            campaign: campaign,
+            count: products.length,
+            onMore: () =>
+                showTospinoCampaignSheet(context, controller, campaign),
+          ),
+          const SizedBox(height: 9),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: products.take(4).length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisExtent: 104,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+            ),
+            itemBuilder: (context, index) {
+              final product = products[index];
+              return Material(
+                borderRadius: BorderRadius.circular(12),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => controller.openProduct(product),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      _CampaignProductImage(
+                        product: product,
+                        width: double.infinity,
+                        height: 104,
+                        radius: 0,
+                      ),
+                      const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black87],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 8,
+                        right: 8,
+                        bottom: 7,
+                        child: Text(
+                          product.categoryName.isEmpty
+                              ? product.title
+                              : product.categoryName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: TospinoText.emphasis,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ZeroYuanCampaignSection extends StatelessWidget {
+  const _ZeroYuanCampaignSection({
+    required this.campaign,
+    required this.products,
+    required this.controller,
+  });
+
+  final TospinoCampaign campaign;
+  final List<TospinoProduct> products;
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = products.take(4).toList(growable: false);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFF8DE), Color(0xFFFFE7D7)],
+        ),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: campaign.accent,
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: const Icon(
+                  Icons.card_giftcard_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      localizeMiniProgramLabel(context, campaign.title),
+                      style: TospinoText.section(
+                        context,
+                      ).copyWith(fontSize: 17),
+                    ),
+                    Text(
+                      localizeMiniProgramLabel(context, campaign.subtitle),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TospinoText.meta(context),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton(
+                onPressed: () => controller.open(TospinoRoute.freeGift),
+                style: TextButton.styleFrom(
+                  foregroundColor: campaign.accent,
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${products.length} ${localizeMiniProgramLabel(context, '件')}',
+                      style: const TextStyle(fontSize: 10.5),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, size: 16),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: shown.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisExtent: 142,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+            ),
+            itemBuilder: (context, index) {
+              final product = shown[index];
+              return Material(
+                borderRadius: BorderRadius.circular(13),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => controller.open(TospinoRoute.freeGift),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      _CampaignProductImage(
+                        product: product,
+                        width: double.infinity,
+                        height: 142,
+                        radius: 0,
+                      ),
+                      const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black87],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: campaign.accent,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            '0元',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: TospinoText.strong,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 9,
+                        right: 9,
+                        bottom: 9,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              localizeMiniProgramLabel(context, '邀请好友领取'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.82),
+                                fontSize: 9.5,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                Text(
+                                  localizeMiniProgramLabel(context, '立即领取'),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11.5,
+                                    fontWeight: TospinoText.strong,
+                                  ),
+                                ),
+                                const SizedBox(width: 3),
+                                const Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: Colors.white,
+                                  size: 13,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SubsidyCampaignSection extends StatelessWidget {
+  const _SubsidyCampaignSection({
+    required this.campaign,
+    required this.products,
+    required this.controller,
+  });
+
+  final TospinoCampaign campaign;
+  final List<TospinoProduct> products;
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = products.take(3).toList(growable: false);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFEEF2),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          _CampaignHeader(
+            campaign: campaign,
+            count: products.length,
+            foreground: const Color(0xFF7A1F35),
+            onMore: () =>
+                showTospinoCampaignSheet(context, controller, campaign),
+          ),
+          const SizedBox(height: 7),
+          for (var index = 0; index < shown.length; index++) ...[
+            InkWell(
+              onTap: () => controller.openProduct(shown[index]),
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 7),
+                child: Row(
+                  children: [
+                    _CampaignProductImage(
+                      product: shown[index],
+                      width: 58,
+                      height: 58,
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: Text(
+                        shown[index].title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TospinoText.meta(
+                          context,
+                        ).copyWith(color: const Color(0xFF5C2836)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        TospinoPriceText(
+                          price: shown[index].price,
+                          oldPrice: shown[index].oldPrice > shown[index].price
+                              ? shown[index].oldPrice
+                              : null,
+                          size: 13,
+                          color: campaign.accent,
+                        ),
+                        if (shown[index].discountPercent > 0)
+                          Text(
+                            '${localizeMiniProgramLabel(context, '补贴')} -${shown[index].discountPercent}%',
+                            style: TextStyle(
+                              color: campaign.accent,
+                              fontSize: 9,
+                              fontWeight: TospinoText.emphasis,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (index != shown.length - 1)
+              Divider(
+                height: 1,
+                color: campaign.accent.withValues(alpha: 0.12),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ShippingCampaignSection extends StatelessWidget {
+  const _ShippingCampaignSection({
+    required this.campaign,
+    required this.products,
+    required this.controller,
+  });
+
+  final TospinoCampaign campaign;
+  final List<TospinoProduct> products;
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+      child: Material(
+        color: const Color(0xFFEAF8EF),
+        borderRadius: BorderRadius.circular(15),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => showTospinoCampaignSheet(context, controller, campaign),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(13, 10, 10, 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: campaign.accent.withValues(alpha: 0.13),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(campaign.icon, color: campaign.accent, size: 22),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        localizeMiniProgramLabel(context, campaign.title),
+                        style: TospinoText.bodyStrong(context),
+                      ),
+                      Text(
+                        '${localizeMiniProgramLabel(context, campaign.subtitle)} · ${products.length}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TospinoText.meta(context),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 34,
+                  height: 34,
+                  child: _CampaignProductImage(
+                    product: products.first,
+                    width: 34,
+                    height: 34,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: campaign.accent,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CampaignHeader extends StatelessWidget {
+  const _CampaignHeader({
+    required this.campaign,
+    required this.count,
+    required this.onMore,
+    this.foreground,
+  });
+
+  final TospinoCampaign campaign;
+  final int count;
+  final VoidCallback onMore;
+  final Color? foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    final color =
+        foreground ?? TospinoColors.resolve(context, TospinoColors.ink);
+    return Row(
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: campaign.accent.withValues(alpha: 0.11),
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Icon(campaign.icon, color: campaign.accent, size: 19),
+        ),
+        const SizedBox(width: 9),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                localizeMiniProgramLabel(context, campaign.title),
+                style: TospinoText.section(
+                  context,
+                ).copyWith(fontSize: 16, color: color),
+              ),
+              Text(
+                localizeMiniProgramLabel(context, campaign.subtitle),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TospinoText.meta(
+                  context,
+                ).copyWith(color: color.withValues(alpha: 0.68)),
+              ),
+            ],
+          ),
+        ),
+        TextButton(
+          onPressed: onMore,
+          style: TextButton.styleFrom(
+            foregroundColor: campaign.accent,
+            visualDensity: VisualDensity.compact,
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$count ${localizeMiniProgramLabel(context, '件')}',
+                style: const TextStyle(fontSize: 10.5),
+              ),
+              const Icon(Icons.chevron_right_rounded, size: 16),
+            ],
           ),
         ),
       ],
@@ -1486,67 +2083,143 @@ class _HomeDealRail extends StatelessWidget {
   }
 }
 
-class _HomeDealCard extends StatelessWidget {
-  const _HomeDealCard({required this.product, required this.onTap});
+class _MegaSaleProductTile extends StatelessWidget {
+  const _MegaSaleProductTile({
+    required this.product,
+    required this.rank,
+    required this.onTap,
+  });
 
   final TospinoProduct product;
+  final int rank;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final discount = product.discountPercent;
-    return SizedBox(
-      width: 142,
-      child: Material(
-        color: TospinoColors.resolve(context, TospinoColors.surface),
-        borderRadius: BorderRadius.circular(15),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          key: Key('tospino-home-deal-${product.id}'),
-          onTap: onTap,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                children: [
-                  TospinoProductArtwork(
-                    product: product,
-                    height: 116,
-                    radius: 0,
-                    hero: false,
+    return Material(
+      color: TospinoColors.resolve(context, TospinoColors.surface),
+      borderRadius: BorderRadius.circular(14),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                _CampaignProductImage(
+                  product: product,
+                  width: double.infinity,
+                  height: 102,
+                  radius: 0,
+                ),
+                Positioned(
+                  left: 6,
+                  top: 6,
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF4D5E),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '$rank',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: TospinoText.strong,
+                      ),
+                    ),
                   ),
-                  if (discount > 0)
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(7, 6, 7, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TospinoText.meta(context).copyWith(height: 1.2),
+                  ),
+                  const SizedBox(height: 4),
+                  TospinoPriceText(
+                    price: product.price,
+                    size: 14,
+                    color: TospinoColors.resolve(context, TospinoColors.price),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MegaSaleCompactTile extends StatelessWidget {
+  const _MegaSaleCompactTile({
+    required this.product,
+    required this.rank,
+    required this.onTap,
+  });
+
+  final TospinoProduct product;
+  final int rank;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: TospinoColors.resolve(context, TospinoColors.surface),
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: SizedBox(
+            height: 72,
+            child: Row(
+              children: [
+                Stack(
+                  children: [
+                    _CampaignProductImage(
+                      product: product,
+                      width: 58,
+                      height: 72,
+                    ),
                     Positioned(
-                      left: 7,
-                      top: 7,
+                      left: 4,
+                      top: 4,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 3,
-                        ),
+                        width: 17,
+                        height: 17,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: TospinoColors.resolve(
-                            context,
-                            TospinoColors.price,
-                          ),
+                          color: const Color(0xFFFF4D5E),
                           borderRadius: BorderRadius.circular(5),
                         ),
                         child: Text(
-                          '-$discount%',
+                          '$rank',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 11.5,
+                            fontSize: 8,
                             fontWeight: TospinoText.strong,
-                            height: 1,
                           ),
                         ),
                       ),
                     ),
-                ],
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(9, 8, 9, 8),
+                  ],
+                ),
+                const SizedBox(width: 7),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1554,40 +2227,68 @@ class _HomeDealCard extends StatelessWidget {
                         product.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TospinoText.body(context).copyWith(
-                          fontSize: 12.5,
-                          fontWeight: TospinoText.emphasis,
-                          height: 1.2,
-                        ),
+                        style: TospinoText.meta(context),
                       ),
                       const Spacer(),
                       TospinoPriceText(
                         price: product.price,
-                        oldPrice: product.oldPrice > product.price
-                            ? product.oldPrice
-                            : null,
-                        size: 15,
+                        size: 12,
                         color: TospinoColors.resolve(
                           context,
                           TospinoColors.price,
                         ),
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        product.sales > 0
-                            ? '${product.sales} ${localizeMiniProgramLabel(context, '已售')}'
-                            : localizeMiniProgramLabel(context, '免运费'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TospinoText.hint(context).copyWith(fontSize: 11),
-                      ),
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CampaignProductImage extends StatelessWidget {
+  const _CampaignProductImage({
+    required this.product,
+    required this.width,
+    required this.height,
+    this.radius = 9,
+  });
+
+  final TospinoProduct product;
+  final double width;
+  final double height;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: product.imageUrl.isEmpty
+            ? ColoredBox(
+                color: TospinoColors.resolve(
+                  context,
+                  TospinoColors.imagePlaceholder,
+                ),
+                child: const Icon(Icons.image_outlined),
+              )
+            : Image.network(
+                product.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => ColoredBox(
+                  color: TospinoColors.resolve(
+                    context,
+                    TospinoColors.imagePlaceholder,
+                  ),
+                  child: const Icon(Icons.image_outlined),
+                ),
+              ),
       ),
     );
   }

@@ -13,7 +13,7 @@ enum TospinoCampaignKind {
   newcomer,
   clearance,
   categoryEvent,
-  nYuan,
+  zeroYuan,
   subsidy,
   shippingDiscount,
 }
@@ -87,11 +87,11 @@ const tospinoCampaigns = <TospinoCampaign>[
     accent: Color(0xFF2B8FE8),
   ),
   TospinoCampaign(
-    kind: TospinoCampaignKind.nYuan,
-    title: 'N元购',
-    subtitle: 'GH₵50 封顶精选',
-    icon: Icons.sell_rounded,
-    accent: Color(0xFFF4B400),
+    kind: TospinoCampaignKind.zeroYuan,
+    title: '0元购',
+    subtitle: '邀请好友，0元拿好物',
+    icon: Icons.card_giftcard_rounded,
+    accent: Color(0xFFF2A20C),
   ),
   TospinoCampaign(
     kind: TospinoCampaignKind.subsidy,
@@ -136,9 +136,19 @@ List<TospinoProduct> tospinoCampaignProducts(
       source.where((product) => product.discountPercent >= 30).toList(),
     TospinoCampaignKind.categoryEvent =>
       source.where((product) => product.categoryName.isNotEmpty).toList(),
-    TospinoCampaignKind.nYuan =>
-      source
-          .where((product) => product.price > 0 && product.price <= 50)
+    TospinoCampaignKind.zeroYuan =>
+      controller.freeGifts
+          .map(
+            (gift) => TospinoProduct(
+              id: gift.productId,
+              title: gift.productName,
+              price: 0,
+              imageUrl: gift.productImage,
+              shopName: gift.storeName,
+              stock: 1,
+            ),
+          )
+          .where((product) => product.id.isNotEmpty)
           .toList(),
     TospinoCampaignKind.subsidy =>
       source.where((product) => product.oldPrice > product.price).toList(),

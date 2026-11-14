@@ -118,9 +118,7 @@ void main() {
     expect(find.byKey(const Key('tospino-home-delivery')), findsOneWidget);
     expect(find.text(api.products.first.title), findsWidgets);
     expect(tester.widget<Text>(find.text('搜索商品、品牌或关键词')).style?.fontSize, 12.5);
-    expect(find.byKey(const Key('tospino-home-hero')), findsOneWidget);
     expect(find.byKey(const Key('tospino-home-category-1')), findsOneWidget);
-    expect(find.byKey(const Key('tospino-home-deal-rail')), findsOneWidget);
     expect(find.byKey(const Key('tospino-tab-首页')), findsOneWidget);
     expect(find.byKey(const Key('tospino-tab-消息')), findsOneWidget);
     expect(find.byKey(const Key('tospino-tab-购物车')), findsOneWidget);
@@ -179,8 +177,6 @@ void main() {
     expect(find.text('Coupon Center'), findsNothing);
     expect(find.text('Phone'), findsOneWidget);
     expect(find.text('Bag'), findsOneWidget);
-    expect(find.byKey(const Key('tospino-home-hero')), findsOneWidget);
-    expect(find.byKey(const Key('tospino-home-deal-rail')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
