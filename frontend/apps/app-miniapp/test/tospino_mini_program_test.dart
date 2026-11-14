@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/api/tospino_api.dart';
 import 'package:ruoqi_app_miniapp/app_shell.dart';
@@ -274,6 +275,37 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('商品详情长服务承诺自动换行且不横向溢出', (tester) async {
+    _usePhoneSize(tester);
+    tester.view.physicalSize = const Size(360, 800);
+    final api = _FakeTospinoApi();
+    final controller = _controller(
+      api,
+      initialProductId: api.products.first.id,
+    );
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    final verticalScrollable = find
+        .byWidgetPredicate(
+          (widget) =>
+              widget is Scrollable &&
+              widget.axisDirection == AxisDirection.down,
+        )
+        .last;
+    for (var index = 0; index < 4; index++) {
+      await tester.drag(verticalScrollable, const Offset(0, -420));
+      await tester.pumpAndSettle();
+    }
+    expect(
+      find.textContaining('FBT products: 7 days without reason'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('消息页使用订单数据展示动态并进入订单详情', (tester) async {
     _usePhoneSize(tester);
     final api = _FakeTospinoApi();
@@ -525,6 +557,22 @@ void main() {
 
     expect(find.text('商品详情'), findsOneWidget);
     expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
+    expect(
+      find.byKey(const Key('miniapp-extended-page-header')),
+      findsOneWidget,
+    );
+    expect(find.byType(MiniProgramStatusBar), findsNothing);
+    final overlay = tester.widget<AnnotatedRegion<SystemUiOverlayStyle>>(
+      find
+          .ancestor(
+            of: find.byKey(const Key('tospino-product-page')),
+            matching: find.byWidgetPredicate(
+              (widget) => widget is AnnotatedRegion<SystemUiOverlayStyle>,
+            ),
+          )
+          .first,
+    );
+    expect(overlay.value.statusBarColor, Colors.transparent);
     final verticalScrollable = find
         .byWidgetPredicate(
           (widget) =>
@@ -1240,6 +1288,10 @@ class _FakeTospinoApi implements TospinoDataSource {
       galleryUrls: [product.imageUrl],
       description: 'Live API product description',
       storeName: 'Tospino Store',
+      servicePromises: const [
+        'False a compensate ten',
+        'FBT products: 7 days without reason to return or exchange',
+      ],
     );
   }
 

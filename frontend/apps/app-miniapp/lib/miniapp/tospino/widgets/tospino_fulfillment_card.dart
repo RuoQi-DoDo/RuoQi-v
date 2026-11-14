@@ -127,8 +127,8 @@ class TospinoFulfillmentCard extends StatelessWidget {
       destination: destination,
     );
     return TospinoSurface(
-      radius: 16,
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 15),
+      radius: 22,
+      padding: const EdgeInsets.fromLTRB(17, 16, 17, 17),
       border: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,19 +137,19 @@ class TospinoFulfillmentCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
                   color: TospinoColors.resolve(
                     context,
                     TospinoColors.brandPale,
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(13),
                 ),
                 child: Icon(
                   _kindIcon(info.kind),
                   color: TospinoColors.solidBrand(context),
-                  size: 21,
+                  size: 22,
                 ),
               ),
               const SizedBox(width: 10),
@@ -173,7 +173,7 @@ class TospinoFulfillmentCard extends StatelessWidget {
                       localizeMiniProgramLabel(context, _kindTitle(info.kind)),
                       style: TospinoText.bodyStrong(
                         context,
-                      ).copyWith(fontSize: 14),
+                      ).copyWith(fontSize: 14.5),
                     ),
                     const SizedBox(height: 3),
                     Text(
@@ -301,10 +301,13 @@ class _FulfillmentRoute extends StatelessWidget {
     );
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 11),
       decoration: BoxDecoration(
-        color: TospinoColors.resolve(context, TospinoColors.surfaceMuted),
-        borderRadius: BorderRadius.circular(12),
+        color: TospinoColors.resolve(context, TospinoColors.surface),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: TospinoColors.resolve(context, TospinoColors.line),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

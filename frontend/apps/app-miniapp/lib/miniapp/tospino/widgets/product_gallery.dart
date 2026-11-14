@@ -54,6 +54,10 @@ class _TospinoProductGalleryState extends State<TospinoProductGallery> {
   @override
   Widget build(BuildContext context) {
     final imageUrls = _imageUrls;
+    final indicatorCount = imageUrls.length.clamp(1, 8);
+    final activeIndicator = imageUrls.length <= 8
+        ? _index
+        : ((_index / (imageUrls.length - 1)) * (indicatorCount - 1)).round();
     if (imageUrls.isEmpty) {
       return TospinoProductArtwork(
         product: widget.product,
@@ -83,15 +87,66 @@ class _TospinoProductGalleryState extends State<TospinoProductGallery> {
             ),
           ),
           if (imageUrls.length > 1)
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 92,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Color(0x66000000)],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          if (imageUrls.length > 1)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 14,
+              child: IgnorePointer(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    for (var index = 0; index < indicatorCount; index++)
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOut,
+                        width: index == activeIndicator ? 16 : 5,
+                        height: 5,
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        decoration: BoxDecoration(
+                          color: index == activeIndicator
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.52),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          if (imageUrls.length > 1)
             Positioned(
               right: 14,
-              bottom: 12,
+              bottom: 11,
               child: Container(
                 key: const Key('tospino-product-gallery-counter'),
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.55),
+                  color: const Color(0x990F1A1D),
                   borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.16),
+                  ),
                 ),
                 child: Text(
                   '${_index + 1} / ${imageUrls.length}',

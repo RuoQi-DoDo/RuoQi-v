@@ -153,7 +153,20 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
       _statusScrolled = false;
     }
     final page = TospinoPageRouter.build(route, _controller);
-    final transparentStatusBar = route == TospinoRoute.profile;
+    final transparentStatusBar =
+        route == TospinoRoute.profile || route == TospinoRoute.product;
+    final productHeaderDecoration = route == TospinoRoute.product
+        ? BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                TospinoColors.resolve(context, TospinoColors.brandPale),
+                TospinoColors.resolve(context, TospinoColors.surface),
+              ],
+            ),
+          )
+        : null;
     final background = route.isTabRoot && _statusScrolled
         ? TospinoColors.resolve(context, TospinoColors.background)
         : TospinoColors.resolve(context, TospinoColors.surface);
@@ -255,6 +268,9 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
                                         TospinoColors.ink,
                                       ),
                                       onScrollChanged: _setStatusScrolled,
+                                      headerDecoration: productHeaderDecoration,
+                                      extendHeaderBehindStatusBar:
+                                          route == TospinoRoute.product,
                                       child: page,
                                     ),
                             ),
