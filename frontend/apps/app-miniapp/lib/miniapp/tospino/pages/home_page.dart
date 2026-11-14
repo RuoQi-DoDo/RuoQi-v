@@ -118,26 +118,10 @@ class _TospinoHomePageState extends State<TospinoHomePage> {
                     onChanged: (value) => setState(() => _sort = value),
                   ),
                 ),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(12, 2, 12, 0),
-                  sliver: SliverGrid.builder(
-                    key: const Key('tospino-home-product-grid'),
-                    itemCount: recommendations.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                          childAspectRatio: 0.62,
-                        ),
-                    itemBuilder: (context, index) {
-                      final product = recommendations[index];
-                      return _HomeProductCard(
-                        product: product,
-                        onTap: () => controller.openProduct(product),
-                      );
-                    },
-                  ),
+                _HomeWaterfall(
+                  key: const Key('tospino-home-product-grid'),
+                  products: recommendations,
+                  controller: controller,
                 ),
                 SliverToBoxAdapter(
                   child: _HomePagingFooter(controller: controller),
@@ -2613,10 +2597,103 @@ class _HomeSortChip extends StatelessWidget {
   }
 }
 
+class _HomeWaterfall extends StatelessWidget {
+  const _HomeWaterfall({
+    super.key,
+    required this.products,
+    required this.controller,
+  });
+
+  final List<TospinoProduct> products;
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(12, 2, 12, 0),
+      sliver: SliverCrossAxisGroup(
+        slivers: [
+          SliverCrossAxisExpanded(
+            flex: 1,
+            sliver: SliverPadding(
+              padding: const EdgeInsets.only(right: 4),
+              sliver: _HomeWaterfallColumn(
+                products: products,
+                startIndex: 0,
+                controller: controller,
+              ),
+            ),
+          ),
+          SliverCrossAxisExpanded(
+            flex: 1,
+            sliver: SliverPadding(
+              padding: const EdgeInsets.only(left: 4),
+              sliver: _HomeWaterfallColumn(
+                products: products,
+                startIndex: 1,
+                controller: controller,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeWaterfallColumn extends StatelessWidget {
+  const _HomeWaterfallColumn({
+    required this.products,
+    required this.startIndex,
+    required this.controller,
+  });
+
+  final List<TospinoProduct> products;
+  final int startIndex;
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final count = (products.length + 1 - startIndex) ~/ 2;
+    return SliverList(
+      delegate: SliverChildBuilderDelegate((context, index) {
+        final productIndex = startIndex + index * 2;
+        final product = products[productIndex];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: _HomeProductCard(
+            product: product,
+            artworkHeight: _artworkHeight(product, productIndex),
+            onTap: () => controller.openProduct(product),
+          ),
+        );
+      }, childCount: count),
+    );
+  }
+
+  double _artworkHeight(TospinoProduct product, int index) {
+    final seed = product.id.isEmpty
+        ? index
+        : product.id.codeUnits.fold<int>(0, (sum, code) => sum + code);
+    return switch (seed % 5) {
+      0 => 146,
+      1 => 174,
+      2 => 158,
+      3 => 188,
+      _ => 166,
+    };
+  }
+}
+
 class _HomeProductCard extends StatelessWidget {
-  const _HomeProductCard({required this.product, required this.onTap});
+  const _HomeProductCard({
+    required this.product,
+    required this.artworkHeight,
+    required this.onTap,
+  });
 
   final TospinoProduct product;
+  final double artworkHeight;
   final VoidCallback onTap;
 
   @override
@@ -2625,83 +2702,126 @@ class _HomeProductCard extends StatelessWidget {
     final detail = product.brand.trim().isNotEmpty
         ? product.brand.trim()
         : product.categoryName.trim();
-    return Material(
-      color: TospinoColors.resolve(context, TospinoColors.surface),
-      borderRadius: BorderRadius.circular(14),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        key: Key('tospino-product-${product.id}'),
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 7,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  ColoredBox(
-                    color: TospinoColors.resolve(
-                      context,
-                      TospinoColors.imagePlaceholder,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: TospinoColors.resolve(context, TospinoColors.surface),
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: Key('tospino-product-${product.id}'),
+          onTap: onTap,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: artworkHeight,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ColoredBox(
+                      color: TospinoColors.resolve(
+                        context,
+                        TospinoColors.imagePlaceholder,
+                      ),
                     ),
-                  ),
-                  if (product.imageUrl.isNotEmpty)
-                    Image.network(
-                      product.imageUrl,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, progress) =>
-                          progress == null
-                          ? child
-                          : Center(
-                              child: SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 1.5,
-                                  color: TospinoColors.solidBrand(context),
+                    if (product.imageUrl.isNotEmpty)
+                      Image.network(
+                        product.imageUrl,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, progress) =>
+                            progress == null
+                            ? child
+                            : Center(
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 1.5,
+                                    color: TospinoColors.solidBrand(context),
+                                  ),
                                 ),
                               ),
-                            ),
-                      errorBuilder: (_, _, _) =>
-                          const Center(child: Icon(Icons.image_outlined)),
-                    )
-                  else
-                    const Center(child: Icon(Icons.image_outlined)),
-                  if (discount > 0)
-                    Positioned(
-                      left: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: TospinoColors.resolve(
-                            context,
-                            TospinoColors.price,
+                        errorBuilder: (_, _, _) =>
+                            const Center(child: Icon(Icons.image_outlined)),
+                      )
+                    else
+                      const Center(child: Icon(Icons.image_outlined)),
+                    if (discount > 0)
+                      Positioned(
+                        left: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
                           ),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Text(
-                          '-$discount%',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11.5,
-                            fontWeight: TospinoText.strong,
-                            height: 1,
+                          decoration: BoxDecoration(
+                            color: TospinoColors.resolve(
+                              context,
+                              TospinoColors.price,
+                            ),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '-$discount%',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: TospinoText.strong,
+                              height: 1,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                    if (product.rating > 0)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.56),
+                            borderRadius: BorderRadius.circular(7),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.star_rounded,
+                                color: Color(0xFFFFD45C),
+                                size: 11,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                product.rating.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9.5,
+                                  fontWeight: TospinoText.emphasis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              flex: 5,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(9, 7, 9, 8),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 9, 10, 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -2712,48 +2832,48 @@ class _HomeProductCard extends StatelessWidget {
                       style: TospinoText.body(context).copyWith(
                         fontSize: 13,
                         fontWeight: TospinoText.emphasis,
-                        height: 1.2,
+                        height: 1.22,
                       ),
                     ),
                     if (detail.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        detail,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TospinoText.hint(context).copyWith(fontSize: 11),
+                      const SizedBox(height: 5),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: TospinoColors.resolve(
+                            context,
+                            TospinoColors.surfaceMuted,
+                          ),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          detail,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TospinoText.hint(
+                            context,
+                          ).copyWith(fontSize: 9.5),
+                        ),
                       ),
                     ],
-                    const Spacer(),
+                    const SizedBox(height: 9),
                     TospinoPriceText(
                       price: product.price,
                       oldPrice: product.oldPrice > product.price
                           ? product.oldPrice
                           : null,
-                      size: 16,
+                      size: 17,
                       color: TospinoColors.resolve(
                         context,
                         TospinoColors.price,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Row(
                       children: [
-                        if (product.rating > 0) ...[
-                          const Icon(
-                            Icons.star_rounded,
-                            size: 11,
-                            color: TospinoColors.orange,
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            product.rating.toStringAsFixed(1),
-                            style: TospinoText.meta(
-                              context,
-                            ).copyWith(fontSize: 11),
-                          ),
-                          const SizedBox(width: 5),
-                        ],
                         Expanded(
                           child: Text(
                             product.sales > 0
@@ -2763,16 +2883,21 @@ class _HomeProductCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TospinoText.hint(
                               context,
-                            ).copyWith(fontSize: 11),
+                            ).copyWith(fontSize: 10),
                           ),
+                        ),
+                        Icon(
+                          Icons.arrow_outward_rounded,
+                          size: 14,
+                          color: TospinoColors.solidBrand(context),
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
