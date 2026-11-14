@@ -6,8 +6,8 @@ import '../../miniapp/ats/ats_miniapp.dart';
 import '../../miniapp/common/miniapp_pin.dart';
 import '../../miniapp/launcher/launcher.dart';
 import '../../miniapp/launcher/miniapp_catalog.dart';
+import '../calls/calls_page.dart';
 import '../common/page_theme.dart';
-import '../contacts/contacts_page.dart';
 import '../discover/discover_page.dart';
 import '../profile/me_page.dart';
 import '../settings/settings_page.dart';
@@ -25,7 +25,7 @@ class BusinessHostPage extends StatefulWidget {
   const BusinessHostPage({
     super.key,
     required this.homeBuilder,
-    this.homeLabel = 'RuoQi',
+    this.homeLabel = '聊天',
     this.homeIcon = Icons.home_outlined,
     this.homeActiveIcon = Icons.home_rounded,
     this.loginBuilder,
@@ -564,7 +564,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
                   ),
                 ),
               ),
-              const ContactsPage(),
+              const CallsPage(),
               const DiscoverPage(),
               MePage(onOpenSettings: _openSettingsPage),
             ],

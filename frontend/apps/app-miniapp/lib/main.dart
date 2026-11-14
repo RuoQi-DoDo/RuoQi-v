@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'app_shell.dart';
 import 'miniapp/common/miniapp_pin.dart';
+import 'pages/auth/business_session.dart';
 import 'pages/auth/phone_login_page.dart';
 import 'pages/auth/phone_verification_page.dart';
 import 'pages/host/business_host_page.dart';
@@ -12,7 +15,15 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final miniProgramPinController = MiniProgramPinController();
   await miniProgramPinController.initialize();
-  runApp(BusinessApp(miniProgramPinController: miniProgramPinController));
+  const sessionStore = SharedPreferencesBusinessSessionStore();
+  final signedIn = await sessionStore.readSignedIn();
+  runApp(
+    BusinessApp(
+      miniProgramPinController: miniProgramPinController,
+      sessionStore: sessionStore,
+      initiallyAuthenticated: signedIn,
+    ),
+  );
 }
 
 /// Default business home; replace this builder to launch another business.
@@ -27,13 +38,14 @@ class BusinessApp extends StatefulWidget {
     super.key,
     this.title = 'RuoQi',
     this.homeBuilder = buildImChatPage,
-    this.homeLabel = 'RuoQi',
+    this.homeLabel = '聊天',
     this.homeIcon = Icons.chat_bubble_outline_rounded,
     this.homeActiveIcon = Icons.chat_bubble_rounded,
     this.loginBuilder,
     this.onLogout,
     this.miniProgramPinController,
     this.initiallyAuthenticated = false,
+    this.sessionStore,
   });
 
   final String title;
@@ -45,6 +57,7 @@ class BusinessApp extends StatefulWidget {
   final VoidCallback? onLogout;
   final MiniProgramPinController? miniProgramPinController;
   final bool initiallyAuthenticated;
+  final BusinessSessionStore? sessionStore;
 
   @override
   State<BusinessApp> createState() => _BusinessAppState();
@@ -71,6 +84,7 @@ class _BusinessAppState extends State<BusinessApp> {
       _authenticated = true;
       _pendingPhoneNumber = null;
     });
+    _persistSession(true);
   }
 
   void _requestPhoneVerification(String phoneNumber) {
@@ -79,6 +93,22 @@ class _BusinessAppState extends State<BusinessApp> {
 
   void _returnToPhoneEntry() {
     setState(() => _pendingPhoneNumber = null);
+  }
+
+  void _persistSession(bool signedIn) {
+    final store = widget.sessionStore;
+    if (store == null) {
+      return;
+    }
+    unawaited(_writeSession(store, signedIn));
+  }
+
+  Future<void> _writeSession(BusinessSessionStore store, bool signedIn) async {
+    try {
+      await store.writeSignedIn(signedIn);
+    } catch (_) {
+      // A storage failure should not break the current app session.
+    }
   }
 
   Widget _buildHome(BuildContext context) {
@@ -107,6 +137,7 @@ class _BusinessAppState extends State<BusinessApp> {
       loginBuilder: widget.loginBuilder,
       onLogout: () {
         widget.onLogout?.call();
+        _persistSession(false);
         Navigator.of(context).popUntil((route) => route.isFirst);
         setState(() {
           _authenticated = false;

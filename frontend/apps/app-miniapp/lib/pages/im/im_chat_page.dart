@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../common/page_theme.dart';
 import '../common/page_widgets.dart';
 import 'im_localizations.dart';
+import 'im_style.dart';
 
 /// Authenticated IM business home. Unauthenticated entry is handled by the app
 /// shell's welcome and login gates.
@@ -106,7 +107,6 @@ class _ImChatList extends StatelessWidget {
 }
 
 List<_Conversation> _conversations(BuildContext context) {
-  final scheme = Theme.of(context).colorScheme;
   String text(String chinese, String english) =>
       imText(context, chinese, english);
   return [
@@ -118,7 +118,7 @@ List<_Conversation> _conversations(BuildContext context) {
       ),
       time: text('刚刚', 'Just now'),
       unread: 1,
-      color: scheme.primary,
+      color: ImColors.brandStrong,
       icon: Icons.work_outline_rounded,
       actionChinese: '该聊天由小程序消息模拟',
       actionEnglish: 'This chat is simulated by the mini-program',
@@ -151,7 +151,7 @@ List<_Conversation> _conversations(BuildContext context) {
       ),
       time: text('昨天', 'Yesterday'),
       unread: 0,
-      color: scheme.primary,
+      color: ImColors.brandStrong,
       icon: Icons.groups_outlined,
       actionChinese: '群聊为模拟入口',
       actionEnglish: 'Group chat is a demo entry',
@@ -193,7 +193,7 @@ List<_Conversation> _conversations(BuildContext context) {
         'Engineer Wang: The requirements doc is uploaded',
       ),
       time: '11/09',
-      unread: 3,
+      unread: 12,
       color: const Color(0xFF8B5CF6),
       icon: Icons.groups_2_outlined,
       actionChinese: '群聊为模拟入口',
@@ -214,7 +214,7 @@ List<_Conversation> _conversations(BuildContext context) {
       preview: text('欢迎使用企业招聘服务', 'Welcome to RuoQi Recruiting'),
       time: '11/07',
       unread: 0,
-      color: scheme.primary,
+      color: ImColors.brandStrong,
       icon: Icons.smart_toy_outlined,
       actionChinese: '助手详情为模拟入口',
       actionEnglish: 'Assistant details are a demo entry',
@@ -267,7 +267,7 @@ List<_Conversation> _conversations(BuildContext context) {
       preview: text('活动物料已准备完成', 'Event materials are ready'),
       time: '11/02',
       unread: 0,
-      color: const Color(0xFF07C160),
+      color: ImColors.brandStrong,
       icon: Icons.campaign_outlined,
       actionChinese: '群聊为模拟入口',
       actionEnglish: 'Group chat is a demo entry',
@@ -323,7 +323,7 @@ List<_Conversation> _conversations(BuildContext context) {
       preview: text('今日新增 3 位候选人', '3 new candidates today'),
       time: '10/28',
       unread: 2,
-      color: scheme.primary,
+      color: ImColors.brandStrong,
       icon: Icons.work_outline_rounded,
       actionChinese: '招聘助手为模拟入口',
       actionEnglish: 'Recruiting assistant is a demo entry',
@@ -390,95 +390,128 @@ class _ChatRow extends StatelessWidget {
         onTap: onTap,
         child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 9.25, 14, 9.25),
-              child: Row(
-                children: [
-                  Semantics(
-                    label: unread > 0 ? unreadLabel : null,
-                    child: SizedBox(
-                      width: 46,
-                      height: 46,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Positioned.fill(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: color.withValues(alpha: 0.13),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(icon, color: color, size: 23),
-                            ),
-                          ),
-                          if (unread > 0)
-                            Positioned(
-                              top: -2,
-                              right: -2,
-                              child: Container(
-                                width: 9,
-                                height: 9,
+            SizedBox(
+              height: 65,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 9.5, 16, 9.5),
+                child: Row(
+                  children: [
+                    Semantics(
+                      label: unread > 0 ? unreadLabel : null,
+                      child: SizedBox(
+                        width: 44,
+                        height: 44,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned.fill(
+                              child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: scheme.error,
+                                  color: color.withValues(alpha: 0.12),
                                   shape: BoxShape.circle,
                                 ),
+                                child: Icon(icon, color: color, size: 22),
                               ),
                             ),
+                            if (unread > 0)
+                              Positioned(
+                                top: -4,
+                                right: -4,
+                                child: unread > 9
+                                    ? Container(
+                                        key: const Key('im-icon-unread'),
+                                        width: 7,
+                                        height: 7,
+                                        decoration: const BoxDecoration(
+                                          color: ImColors.brandStrong,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      )
+                                    : Container(
+                                        key: const Key('im-icon-unread'),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 14,
+                                        ),
+                                        height: 14,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 3,
+                                        ),
+                                        decoration: const BoxDecoration(
+                                          color: ImColors.brandStrong,
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(7),
+                                          ),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          '$unread',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 8.5,
+                                            fontWeight: FontWeight.w700,
+                                            height: 1,
+                                          ),
+                                        ),
+                                      ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 13),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    color: scheme.onSurface,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.08,
+                                    letterSpacing: -0.1,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                time,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.brightness == Brightness.dark
+                                      ? const Color(0xFF939B97)
+                                      : const Color(0xFF737B77),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.1,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            preview,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.brightness == Brightness.dark
+                                  ? const Color(0xFFA5ADA9)
+                                  : const Color(0xFF5F6864),
+                              fontSize: 13,
+                              height: 1.12,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 11),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                title,
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  color: scheme.onSurface,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.05,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              time,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.brightness == Brightness.dark
-                                    ? const Color(0xFF8A8A8A)
-                                    : const Color(0xFF999999),
-                                fontSize: 11,
-                                height: 1.05,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          preview,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.brightness == Brightness.dark
-                                ? const Color(0xFF8A8A8A)
-                                : const Color(0xFF999999),
-                            fontSize: 12,
-                            height: 1.05,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             Positioned(
-              left: 68,
+              left: 71,
               right: 0,
               bottom: 0,
               height: hairline,

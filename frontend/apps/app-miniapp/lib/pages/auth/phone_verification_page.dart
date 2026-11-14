@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../localization.dart';
+import '../common/whatsapp_colors.dart';
 
 /// Verification-code step used after submitting a phone number.
 ///
@@ -24,7 +25,7 @@ class PhoneVerificationPage extends StatefulWidget {
 }
 
 class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
-  static const _accent = Color(0xFF1DAA61);
+  static const _accent = WhatsAppColors.brandStrong;
   static const _background = Color(0xFFF7F7F7);
   static const _titleColor = Color(0xFF4F565A);
   static const _bodyColor = Color(0xFF70777B);
@@ -186,7 +187,7 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
                   key: const Key('phone-code-verify'),
                   onPressed: _canVerify ? _verify : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF25D366),
+                    backgroundColor: WhatsAppColors.brand,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor:
                         theme.colorScheme.surfaceContainerHighest,

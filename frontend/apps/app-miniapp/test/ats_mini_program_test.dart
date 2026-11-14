@@ -323,7 +323,7 @@ void main() {
     expect(find.text('最近'), findsOneWidget);
   });
 
-  testWidgets('通讯录、发现、我三个底栏页面可切换', (tester) async {
+  testWidgets('通话、发现、我三个底栏页面可切换', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -331,11 +331,11 @@ void main() {
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('通讯录'));
+    await tester.tap(find.text('通话'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('contacts-page')), findsOneWidget);
-    expect(find.text('新的朋友'), findsOneWidget);
-    expect(find.text('群聊'), findsOneWidget);
+    expect(find.byKey(const Key('calls-page')), findsOneWidget);
+    expect(find.byKey(const Key('new-call-button')), findsOneWidget);
+    expect(find.text('佳佳'), findsOneWidget);
 
     await tester.tap(find.text('发现').last);
     await tester.pumpAndSettle();
@@ -350,6 +350,32 @@ void main() {
     expect(find.text('Jengro Woo'), findsOneWidget);
     expect(find.text('服务'), findsOneWidget);
     expect(find.text('设置'), findsOneWidget);
+  });
+
+  testWidgets('只有发起通话时才打开通讯录选择联系人', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('通话'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('calls-page')), findsOneWidget);
+    expect(find.byKey(const Key('contact-picker-page')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('new-call-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('contact-picker-page')), findsOneWidget);
+    expect(find.text('选择一位联系人发起通话'), findsOneWidget);
+    expect(find.text('新通话链接'), findsOneWidget);
+    expect(find.text('拨打电话号码'), findsOneWidget);
+    expect(find.text('RuoQi 联系人'), findsOneWidget);
+
+    await tester.tap(find.text('Annie'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('calls-page')), findsOneWidget);
+    expect(find.text('正在呼叫 Annie（模拟）'), findsOneWidget);
   });
 
   testWidgets('我可以进入设置页，通知开关与退出入口可用', (tester) async {
@@ -397,7 +423,7 @@ void main() {
     expect(find.byKey(const Key('me-page')), findsOneWidget);
   });
 
-  testWidgets('正常模式与黑色模式可切换并覆盖通讯录', (tester) async {
+  testWidgets('正常模式与黑色模式可切换并覆盖通话页', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -409,12 +435,10 @@ void main() {
       tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
       ThemeMode.light,
     );
-    await tester.tap(find.text('通讯录'));
+    await tester.tap(find.text('通话'));
     await tester.pumpAndSettle();
     expect(
-      Theme.of(
-        tester.element(find.byKey(const Key('contacts-page'))),
-      ).brightness,
+      Theme.of(tester.element(find.byKey(const Key('calls-page')))).brightness,
       Brightness.light,
     );
 
@@ -445,17 +469,15 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('settings-back')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('通讯录'));
+    await tester.tap(find.text('通话'));
     await tester.pumpAndSettle();
     expect(
-      Theme.of(
-        tester.element(find.byKey(const Key('contacts-page'))),
-      ).brightness,
+      Theme.of(tester.element(find.byKey(const Key('calls-page')))).brightness,
       Brightness.dark,
     );
   });
 
-  testWidgets('通讯录、发现、我和设置页在小屏下无布局异常', (tester) async {
+  testWidgets('通话、发现、我和设置页在小屏下无布局异常', (tester) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -463,7 +485,7 @@ void main() {
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('通讯录'));
+    await tester.tap(find.text('通话'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../localization.dart';
+import '../common/whatsapp_colors.dart';
 import 'phone_country.dart';
 import 'phone_country_picker_page.dart';
 
@@ -23,7 +24,7 @@ class PhoneLoginPage extends StatefulWidget {
 }
 
 class _PhoneLoginPageState extends State<PhoneLoginPage> {
-  static const _accent = Color(0xFF1DAA61);
+  static const _accent = WhatsAppColors.brandStrong;
   static const _background = Color(0xFFF7F7F7);
   static const _titleColor = Color(0xFF4F565A);
   static const _bodyColor = Color(0xFF70777B);
@@ -237,7 +238,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                   key: const Key('phone-next'),
                   onPressed: _canContinue ? _submit : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF25D366),
+                    backgroundColor: WhatsAppColors.brand,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor: scheme.surfaceContainerHighest,
                     disabledForegroundColor: scheme.onSurfaceVariant.withValues(
@@ -333,7 +334,7 @@ class _PhoneDescription extends StatelessWidget {
             text: l10n.text('我的电话号码是多少？', "What's my number?"),
             recognizer: helpRecognizer,
             style: style?.copyWith(
-              color: const Color(0xFF1DAA61),
+              color: WhatsAppColors.brandStrong,
               fontWeight: FontWeight.w600,
             ),
           ),

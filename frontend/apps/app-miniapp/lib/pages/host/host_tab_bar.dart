@@ -1,10 +1,10 @@
 import 'dart:math' as math;
-import 'package:common/common.dart';
 import 'package:flutter/material.dart';
 import '../common/page_localizations.dart';
 import '../common/page_theme.dart';
+import '../common/whatsapp_colors.dart';
 
-enum HostTab { home, contacts, discover, me }
+enum HostTab { home, calls, discover, me }
 
 class HostTabBar extends StatelessWidget {
   const HostTabBar({
@@ -26,21 +26,13 @@ class HostTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final muted =
-        theme.extension<RuQiThemeExtension>()?.inkMuted ??
-        scheme.onSurfaceVariant;
+    final inactiveColor = scheme.onSurface;
     final backgroundColor = HostChromeStyle.bottomBarBackground(context);
     final dividerColor = HostChromeStyle.dividerColor(context);
     final hairline = HostChromeStyle.hairline(context);
     final items = [
       (HostTab.home, homeIcon, homeActiveIcon, homeLabel, false),
-      (
-        HostTab.contacts,
-        Icons.contacts_outlined,
-        Icons.contacts_rounded,
-        '通讯录',
-        false,
-      ),
+      (HostTab.calls, Icons.call_outlined, Icons.call_rounded, '通话', false),
       (
         HostTab.discover,
         Icons.explore_outlined,
@@ -80,30 +72,38 @@ class HostTabBar extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Icon(
-                              selected == tab ? activeIcon : icon,
-                              size: 25,
-                              color: selected == tab
-                                  ? const Color(0xFF07C160)
-                                  : muted,
-                            ),
-                            if (showDot)
-                              Positioned(
-                                right: -2,
-                                top: -1,
-                                child: Container(
-                                  width: 7,
-                                  height: 7,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFF05656),
-                                    shape: BoxShape.circle,
+                        Container(
+                          width: 46,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.center,
+                            children: [
+                              Icon(
+                                selected == tab ? activeIcon : icon,
+                                size: 24,
+                                color: selected == tab
+                                    ? WhatsAppColors.brandStrong
+                                    : inactiveColor,
+                              ),
+                              if (showDot)
+                                const Positioned(
+                                  right: 5,
+                                  top: 2,
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFFF05656),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: SizedBox(width: 7, height: 7),
                                   ),
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -112,9 +112,12 @@ class HostTabBar extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: selected == tab
-                                ? const Color(0xFF07C160)
-                                : muted,
-                            fontSize: 9.5,
+                                ? WhatsAppColors.brandStrong
+                                : inactiveColor,
+                            fontSize: 10,
+                            fontWeight: selected == tab
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                           ),
                         ),
                       ],

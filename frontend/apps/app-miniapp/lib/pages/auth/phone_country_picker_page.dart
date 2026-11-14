@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../localization.dart';
+import '../common/whatsapp_colors.dart';
 import 'phone_country.dart';
 
 class PhoneCountryPickerPage extends StatefulWidget {
@@ -19,7 +20,7 @@ class PhoneCountryPickerPage extends StatefulWidget {
 }
 
 class _PhoneCountryPickerPageState extends State<PhoneCountryPickerPage> {
-  static const _accent = Color(0xFF1DAA61);
+  static const _accent = WhatsAppColors.brandStrong;
 
   String _query = '';
 
