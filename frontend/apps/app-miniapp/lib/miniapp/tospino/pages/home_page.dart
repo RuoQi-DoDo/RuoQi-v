@@ -2559,10 +2559,8 @@ class _HomeSortChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected
-          ? TospinoColors.solidBrand(context)
-          : TospinoColors.resolve(context, TospinoColors.surface),
-      borderRadius: BorderRadius.circular(9),
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         key: Key('tospino-home-sort-${sort.name}'),
@@ -2570,26 +2568,33 @@ class _HomeSortChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           height: 32,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(9),
-            border: Border.all(
-              color: selected
-                  ? TospinoColors.solidBrand(context)
-                  : TospinoColors.resolve(context, TospinoColors.line),
-              width: 0.8,
-            ),
-          ),
-          child: Text(
-            localizeMiniProgramLabel(context, sort.label),
-            maxLines: 1,
-            style: TospinoText.meta(context).copyWith(
-              color: selected
-                  ? Colors.white
-                  : TospinoColors.resolve(context, TospinoColors.secondary),
-              fontSize: 11.5,
-              fontWeight: selected ? TospinoText.emphasis : TospinoText.regular,
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                localizeMiniProgramLabel(context, sort.label),
+                maxLines: 1,
+                style: TospinoText.meta(context).copyWith(
+                  color: selected
+                      ? TospinoColors.solidBrand(context)
+                      : TospinoColors.resolve(context, TospinoColors.secondary),
+                  fontSize: 12,
+                  fontWeight: selected
+                      ? TospinoText.emphasis
+                      : TospinoText.regular,
+                ),
+              ),
+              const SizedBox(height: 3),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: selected ? 18 : 0,
+                height: 2,
+                decoration: BoxDecoration(
+                  color: TospinoColors.solidBrand(context),
+                  borderRadius: BorderRadius.circular(1),
+                ),
+              ),
+            ],
           ),
         ),
       ),

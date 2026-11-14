@@ -512,6 +512,15 @@ void main() {
     expect(find.byTooltip('Cart'), findsOneWidget);
     expect(find.byTooltip('Me'), findsOneWidget);
     expect(find.byTooltip('Close mini-program'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('tospino-tab-我的')));
+    await tester.pumpAndSettle();
+    expect(find.text('Quick actions'), findsOneWidget);
+    expect(find.text('My wallet'), findsOneWidget);
+    expect(find.text('Recently viewed'), findsOneWidget);
+    expect(find.text('Invite friends'), findsOneWidget);
+    expect(find.text('Contact support'), findsOneWidget);
+    expect(find.text('最近浏览'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

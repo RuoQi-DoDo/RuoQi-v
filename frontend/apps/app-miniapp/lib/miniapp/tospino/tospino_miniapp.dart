@@ -533,76 +533,128 @@ class _TospinoBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: TospinoColors.resolve(context, TospinoColors.surface),
-        border: Border(
-          top: BorderSide(
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+      child: Container(
+        height: 62,
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+        decoration: BoxDecoration(
+          color: TospinoColors.resolve(context, TospinoColors.surface),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
             color: TospinoColors.resolve(context, TospinoColors.line),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.07),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 48,
-          child: Row(
-            children: [
-              for (final item in _items)
-                Expanded(
+        child: Row(
+          children: [
+            for (final item in _items)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
                   child: Tooltip(
                     message: localizeMiniProgramLabel(context, item.$2),
                     child: InkWell(
                       key: Key('tospino-tab-${item.$2}'),
                       onTap: () => onChanged(item.$1),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(
-                            item.$1 == index ? item.$4 : item.$3,
-                            size: 24,
-                            color: item.$1 == index
-                                ? TospinoColors.solidBrand(context)
-                                : TospinoColors.resolve(
-                                    context,
-                                    TospinoColors.hint,
-                                  ),
-                          ),
-                          if (item.$1 == 2 && cartCount > 0)
-                            Positioned(
-                              top: 3,
-                              right: 28,
-                              child: Container(
-                                constraints: const BoxConstraints(
-                                  minWidth: 16,
-                                  minHeight: 16,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: TospinoColors.price,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
+                      borderRadius: BorderRadius.circular(14),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutCubic,
+                        decoration: BoxDecoration(
+                          color: item.$1 == index
+                              ? TospinoColors.resolve(
+                                  context,
+                                  TospinoColors.brandPale,
+                                )
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 28,
+                              height: 26,
+                              child: Stack(
+                                clipBehavior: Clip.none,
                                 alignment: Alignment.center,
-                                child: Text(
-                                  cartCount > 99 ? '99+' : '$cartCount',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: TospinoText.strong,
+                                children: [
+                                  Icon(
+                                    item.$1 == index ? item.$4 : item.$3,
+                                    size: 22,
+                                    color: item.$1 == index
+                                        ? TospinoColors.solidBrand(context)
+                                        : TospinoColors.resolve(
+                                            context,
+                                            TospinoColors.hint,
+                                          ),
                                   ),
-                                ),
+                                  if (item.$1 == 2 && cartCount > 0)
+                                    Positioned(
+                                      top: -3,
+                                      right: -7,
+                                      child: Container(
+                                        constraints: const BoxConstraints(
+                                          minWidth: 16,
+                                          minHeight: 16,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: TospinoColors.price,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          cartCount > 99 ? '99+' : '$cartCount',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: TospinoText.strong,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
-                        ],
+                            const SizedBox(height: 2),
+                            Text(
+                              localizeMiniProgramLabel(context, item.$2),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TospinoText.meta(context).copyWith(
+                                fontSize: 10,
+                                fontWeight: item.$1 == index
+                                    ? TospinoText.emphasis
+                                    : TospinoText.regular,
+                                color: item.$1 == index
+                                    ? TospinoColors.solidBrand(context)
+                                    : TospinoColors.resolve(
+                                        context,
+                                        TospinoColors.muted,
+                                      ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
