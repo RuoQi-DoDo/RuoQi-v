@@ -303,7 +303,7 @@ class _AddressCard extends StatelessWidget {
                     localizeMiniProgramLabel(context, '默认地址'),
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 9,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

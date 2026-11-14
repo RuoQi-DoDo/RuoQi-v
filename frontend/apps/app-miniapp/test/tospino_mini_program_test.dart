@@ -38,7 +38,7 @@ void main() {
   test('Tospino 字体按 Android 宽度和字形比例修正', () {
     final scaler = tospinoAndroidTextScaler(const TextScaler.linear(0.85), 360);
 
-    expect(scaler.scale(100), closeTo(77.55, 0.02));
+    expect(scaler.scale(100), closeTo(85.32, 0.02));
   });
 
   test('Tospino 首页装修 JSON 按 Android 字段解析', () {
@@ -104,7 +104,7 @@ void main() {
     expect(page.recommendationComponent!.showRating, isTrue);
   });
 
-  testWidgets('Tospino 首页数据来自数据源并展示四个主入口', (tester) async {
+  testWidgets('Tospino 首页不请求装修并展示商城化信息架构', (tester) async {
     _usePhoneSize(tester);
     final api = _FakeTospinoApi();
     final controller = _controller(api);
@@ -114,23 +114,35 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('tospino-home-page')), findsOneWidget);
-    expect(find.byKey(const Key('tospino-home-logo')), findsOneWidget);
-    expect(find.text(api.products.first.title), findsOneWidget);
-    expect(tester.widget<Text>(find.text('搜索感兴趣商品')).style?.fontSize, 12);
+    expect(find.byKey(const Key('tospino-home-logo')), findsNothing);
+    expect(find.byKey(const Key('tospino-home-delivery')), findsOneWidget);
+    expect(find.text(api.products.first.title), findsWidgets);
+    expect(tester.widget<Text>(find.text('搜索商品、品牌或关键词')).style?.fontSize, 12.5);
+    expect(find.byKey(const Key('tospino-home-hero')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-home-category-1')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-home-deal-rail')), findsOneWidget);
     expect(find.byKey(const Key('tospino-tab-首页')), findsOneWidget);
-    expect(find.byKey(const Key('tospino-tab-分类')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-tab-消息')), findsOneWidget);
     expect(find.byKey(const Key('tospino-tab-购物车')), findsOneWidget);
     expect(find.byKey(const Key('tospino-tab-我的')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-tab-分类')), findsNothing);
     expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
     expect(find.byType(MiniProgramNavigationBar), findsNothing);
     expect(api.searchCalls, greaterThan(0));
     expect(api.categoryCalls, 1);
+    expect(api.decorationCalls, 0);
     await tester.drag(
       find.byKey(const Key('tospino-home-scroll')),
       const Offset(0, -900),
     );
     await tester.pumpAndSettle();
-    expect(find.byType(SliverCrossAxisGroup), findsOneWidget);
+    expect(
+      find.byKey(const Key('tospino-home-campaign-groupBuy')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('tospino-home-trending-rail')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-home-sort-forYou')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-home-product-grid')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -149,10 +161,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('tospino-home-loading')), findsNothing);
-    expect(find.text(api.products.first.title), findsOneWidget);
+    expect(find.text(api.products.first.title), findsWidgets);
   });
 
-  testWidgets('Tospino 首页按装修接口组件顺序渲染', (tester) async {
+  testWidgets('Tospino 首页始终使用本地信息架构而非装修组件', (tester) async {
     _usePhoneSize(tester);
     final api = _DecoratedTospinoApi();
     final controller = _controller(api);
@@ -161,21 +173,18 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(controller.homePages, hasLength(2));
-    expect(find.text('Recommend'), findsOneWidget);
-    expect(find.text('Beauty'), findsOneWidget);
+    expect(api.decorationCalls, 0);
+    expect(find.text('Recommend'), findsNothing);
+    expect(find.text('Beauty'), findsNothing);
+    expect(find.text('Coupon Center'), findsNothing);
     expect(find.text('Phone'), findsOneWidget);
-    expect(find.text('Coupon Center'), findsOneWidget);
-    expect(find.text('优惠券中心'), findsNothing);
-
-    await controller.selectHomePage(1);
-    await tester.pumpAndSettle();
-    expect(api.lazyDecorationCalls, 1);
-    expect(controller.currentHomePage?.components, isNotEmpty);
+    expect(find.text('Bag'), findsOneWidget);
+    expect(find.byKey(const Key('tospino-home-hero')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-home-deal-rail')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  test('Tospino 首页瀑布流按页加载并去重', () async {
+  test('Tospino 首页推荐流按页加载并去重', () async {
     final api = _PagedTospinoApi();
     final controller = _controller(api);
     await controller.initialize();
@@ -199,19 +208,24 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final api = _FakeTospinoApi();
+    final controller = _controller(api);
     await tester.pumpWidget(
-      MaterialApp(home: TospinoMiniProgram(controller: _controller(api))),
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
     );
     await tester.pumpAndSettle();
     expect(find.byType(TospinoHomePage), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    await tester.tap(find.byKey(const Key('tospino-tab-分类')));
+    final categoryEntry = find.byKey(const Key('tospino-home-category-1'));
+    await tester.ensureVisible(categoryEntry);
+    await tester.tap(categoryEntry);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('tospino-category-page')), findsOneWidget);
     expect(api.categoryProductCalls, greaterThan(0));
     expect(tester.takeException(), isNull);
 
+    controller.back();
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('tospino-tab-我的')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('tospino-profile-page')), findsOneWidget);
@@ -243,6 +257,30 @@ void main() {
 
     await controller.toggleFavorite(api.products.first);
     expect(api.favoriteCalls, 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('消息页使用订单数据展示动态并进入订单详情', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+    controller.switchTab(1);
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('tospino-messages-page')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-messages-list')), findsOneWidget);
+    expect(
+      find.byKey(const Key('tospino-message-order-order-1')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const Key('tospino-message-order-order-1')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('tospino-order-detail-page')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -473,7 +511,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Home'), findsOneWidget);
-    expect(find.byTooltip('Categories'), findsOneWidget);
+    expect(find.byTooltip('Categories'), findsNothing);
+    expect(find.byTooltip('Messages'), findsOneWidget);
     expect(find.byTooltip('Cart'), findsOneWidget);
     expect(find.byTooltip('Me'), findsOneWidget);
     expect(find.byTooltip('Close mini-program'), findsOneWidget);
@@ -712,6 +751,7 @@ class _FakeTospinoApi implements TospinoDataSource {
   ];
   int categoryCalls = 0;
   int categoryProductCalls = 0;
+  int decorationCalls = 0;
   int searchCalls = 0;
   int detailCalls = 0;
   int favoriteCalls = 0;
@@ -754,7 +794,10 @@ class _FakeTospinoApi implements TospinoDataSource {
   Future<List<TospinoHomePageDecoration>> fetchHomeDecoration({
     String? templateId,
     String? styleId,
-  }) async => const [];
+  }) async {
+    decorationCalls++;
+    return const [];
+  }
 
   @override
   Future<List<String>> fetchHomeRecommendWords() async => const [];
@@ -1019,6 +1062,7 @@ class _DecoratedTospinoApi extends _FakeTospinoApi {
     String? templateId,
     String? styleId,
   }) async {
+    decorationCalls++;
     if (styleId != null) {
       lazyDecorationCalls++;
       return const [

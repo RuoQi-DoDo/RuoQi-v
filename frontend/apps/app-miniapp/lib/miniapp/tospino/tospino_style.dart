@@ -6,21 +6,21 @@ import 'tospino_models.dart';
 class TospinoColors {
   const TospinoColors._();
 
-  static const brand = Color(0xFF42B7AE);
-  static const brandLight = Color(0xFF70CEB6);
-  static const brandDeep = Color(0xFF3EB7AE);
-  static const brandPale = Color(0xFFD9F1EF);
-  static const background = Color(0xFFFAFAFA);
+  static const brand = Color(0xFF18C4D2);
+  static const brandLight = Color(0xFF43D4DF);
+  static const brandDeep = Color(0xFF0CA8B6);
+  static const brandPale = Color(0xFFDFF8FB);
+  static const background = Color(0xFFF6F8F9);
   static const surface = Colors.white;
-  static const surfaceMuted = Color(0xFFF8F8F8);
+  static const surfaceMuted = Color(0xFFF4F7F8);
   static const tint = Color(0xFFF2F2F2);
   static const ink = Color(0xFF383838);
   static const secondary = Color(0xFF666666);
   static const muted = Color(0xFF999999);
   static const hint = Color(0xFFBFBFBF);
-  static const line = Color(0xFFF5F5F5);
-  static const lineStrong = Color(0xFFDDDDDD);
-  static const imagePlaceholder = Color(0xFFF0F1F2);
+  static const line = Color(0xFFEEF2F3);
+  static const lineStrong = Color(0xFFD9E0E2);
+  static const imagePlaceholder = Color(0xFFF1F4F5);
   static const disabled = Color(0xFFEEEEEE);
   static const price = Color(0xFFFF6666);
   static const orange = Color(0xFFF7B500);
@@ -45,7 +45,7 @@ class TospinoColors {
       lineStrong => const Color(0xFF353840),
       imagePlaceholder => const Color(0xFF1C1E23),
       disabled => const Color(0xFF2A2D34),
-      brandPale => const Color(0xFF153B37),
+      brandPale => const Color(0xFF113A40),
       price => const Color(0xFFFF7A8A),
       _ => color,
     };
@@ -53,11 +53,11 @@ class TospinoColors {
 
   static Color solidBrand(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
-      ? const Color(0xFF64D5CC)
+      ? const Color(0xFF64E0E8)
       : brand;
 
   static Color solidBrandFrom(Brightness brightness) =>
-      brightness == Brightness.dark ? const Color(0xFF64D5CC) : brand;
+      brightness == Brightness.dark ? const Color(0xFF64E0E8) : brand;
 
   static LinearGradient brandGradient(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
@@ -65,7 +65,7 @@ class TospinoColors {
       begin: Alignment.centerLeft,
       end: Alignment.centerRight,
       colors: dark
-          ? const [Color(0xFF64D5CC), Color(0xFF3EB7AE)]
+          ? const [Color(0xFF64E0E8), Color(0xFF18ADBC)]
           : const [brandLight, brand],
     );
   }
@@ -85,11 +85,11 @@ class TospinoMetrics {
 
   static const pagePadding = 12.0;
   static const sectionGap = 12.0;
-  static const cardRadius = 8.0;
-  static const imageRadius = 6.0;
-  static const controlRadius = 5.0;
-  static const tagRadius = 4.0;
-  static const rowHeight = 53.0;
+  static const cardRadius = 14.0;
+  static const imageRadius = 10.0;
+  static const controlRadius = 10.0;
+  static const tagRadius = 6.0;
+  static const rowHeight = 56.0;
   static const buttonHeight = 48.0;
   static const compactButtonHeight = 40.0;
 }
@@ -219,7 +219,7 @@ class TospinoTheme {
     final scheme = ColorScheme.fromSeed(
       seedColor: TospinoColors.brand,
       brightness: brightness,
-      primary: isDark ? const Color(0xFF64D5CC) : TospinoColors.brand,
+      primary: isDark ? const Color(0xFF64E0E8) : TospinoColors.brand,
       surface: isDark ? const Color(0xFF141518) : TospinoColors.surface,
       onSurface: isDark ? const Color(0xFFF0F2F5) : TospinoColors.ink,
       outline: isDark ? const Color(0xFF353840) : TospinoColors.lineStrong,
@@ -384,6 +384,20 @@ class TospinoSurface extends StatelessWidget {
     final content = Padding(padding: padding, child: child);
     return Container(
       margin: margin,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(
+              alpha: Theme.of(context).brightness == Brightness.dark
+                  ? 0.18
+                  : 0.035,
+            ),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Material(
         color: TospinoColors.resolve(context, TospinoColors.surface),
         shape: shape,
@@ -482,7 +496,7 @@ class TospinoTag extends StatelessWidget {
         localizeMiniProgramLabel(context, label),
         style: TextStyle(
           color: solid ? Colors.white : TospinoColors.solidBrand(context),
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: FontWeight.w600,
           height: 1.2,
         ),
@@ -646,7 +660,7 @@ class TospinoProductArtwork extends StatelessWidget {
                   '-${product.discountPercent}%',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: TospinoText.emphasis,
                     height: 1,
                   ),

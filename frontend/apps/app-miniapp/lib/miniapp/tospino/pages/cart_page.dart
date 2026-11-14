@@ -39,7 +39,7 @@ class TospinoCartPage extends StatelessWidget {
                     onRefresh: controller.refreshCart,
                     child: ListView(
                       key: const Key('tospino-cart-list'),
-                      padding: EdgeInsets.zero,
+                      padding: const EdgeInsets.only(top: 10, bottom: 4),
                       children: [
                         for (final line in lines)
                           _CartLineCard(controller: controller, line: line),
@@ -99,22 +99,6 @@ class _CartHeader extends StatelessWidget {
                 context,
               ).copyWith(fontWeight: FontWeight.w700),
             ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: InkWell(
-                  onTap: () => showTospinoToast(context, '编辑购物车'),
-                  child: Text(
-                    localizeMiniProgramLabel(context, '编辑'),
-                    style: TextStyle(
-                      color: TospinoColors.solidBrand(context),
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -139,31 +123,52 @@ class _CartTabs extends StatelessWidget {
     return ColoredBox(
       color: TospinoColors.resolve(context, TospinoColors.surface),
       child: SizedBox(
-        height: 42,
-        child: Row(
-          children: [
-            for (var index = 0; index < filters.length; index++)
-              Expanded(
-                child: InkWell(
-                  key: Key('tospino-cart-filter-${filters[index].queryType}'),
-                  onTap: () => controller.selectCartFilter(filters[index]),
-                  child: Center(
-                    child: Text(
-                      _filterLabel(context, filters[index], totals[index]),
-                      style: TextStyle(
-                        color: controller.cartFilter == filters[index]
-                            ? TospinoColors.solidBrand(context)
-                            : TospinoColors.resolve(context, TospinoColors.ink),
-                        fontSize: 16,
-                        fontWeight: controller.cartFilter == filters[index]
-                            ? FontWeight.w500
-                            : FontWeight.w400,
+        height: 52,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 5, 12, 7),
+          child: Row(
+            children: [
+              for (var index = 0; index < filters.length; index++) ...[
+                if (index > 0) const SizedBox(width: 7),
+                Expanded(
+                  child: Material(
+                    color: controller.cartFilter == filters[index]
+                        ? TospinoColors.solidBrand(context)
+                        : TospinoColors.resolve(
+                            context,
+                            TospinoColors.surfaceMuted,
+                          ),
+                    borderRadius: BorderRadius.circular(10),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      key: Key(
+                        'tospino-cart-filter-${filters[index].queryType}',
+                      ),
+                      onTap: () => controller.selectCartFilter(filters[index]),
+                      child: Center(
+                        child: Text(
+                          _filterLabel(context, filters[index], totals[index]),
+                          maxLines: 1,
+                          style: TextStyle(
+                            color: controller.cartFilter == filters[index]
+                                ? Colors.white
+                                : TospinoColors.resolve(
+                                    context,
+                                    TospinoColors.secondary,
+                                  ),
+                            fontSize: 12,
+                            fontWeight: controller.cartFilter == filters[index]
+                                ? TospinoText.emphasis
+                                : TospinoText.regular,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -192,8 +197,19 @@ class _CartLineCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: TospinoColors.resolve(context, TospinoColors.surface),
-      padding: const EdgeInsets.fromLTRB(10, 12, 12, 12),
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 9),
+      padding: const EdgeInsets.fromLTRB(8, 11, 12, 8),
+      decoration: BoxDecoration(
+        color: TospinoColors.resolve(context, TospinoColors.surface),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -321,11 +337,6 @@ class _CartLineCard extends StatelessWidget {
               ),
             ],
           ),
-          Divider(
-            height: 1,
-            indent: 30,
-            color: TospinoColors.resolve(context, TospinoColors.line),
-          ),
         ],
       ),
     );
@@ -433,7 +444,7 @@ class _QuantityStepper extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: TospinoColors.resolve(context, TospinoColors.ink),
-                fontSize: 11.5,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
             ),

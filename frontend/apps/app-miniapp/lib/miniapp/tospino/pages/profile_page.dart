@@ -22,12 +22,14 @@ class TospinoProfilePage extends StatelessWidget {
         children: [
           _ProfileHeader(controller: controller),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 18),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
             child: Column(
               children: [
                 _OrderShortcuts(controller: controller),
                 const SizedBox(height: 12),
-                _ServiceMenu(controller: controller),
+                _QuickServices(controller: controller),
+                const SizedBox(height: 12),
+                _SupportMenu(controller: controller),
               ],
             ),
           ),
@@ -46,109 +48,258 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = controller.user;
     final loggedIn = controller.isLoggedIn;
-    final displayName = user?.displayName ?? '';
-    final initial = displayName.isEmpty ? 'T' : displayName.substring(0, 1);
+    final displayName = user?.displayName.trim() ?? '';
+    final initial = displayName.isEmpty ? 'T' : displayName.characters.first;
     return Container(
-      color: TospinoColors.resolve(context, TospinoColors.surface),
-      padding: EdgeInsets.fromLTRB(
-        16,
-        MediaQuery.paddingOf(context).top + 16,
-        16,
-        18,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [TospinoColors.brandDeep, TospinoColors.solidBrand(context)],
+        ),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
-      child: Column(
+      child: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(
-              right: MiniProgramCapsuleOverlay.reservedRight - 16,
+          Positioned(
+            right: -60,
+            top: -86,
+            child: Container(
+              width: 230,
+              height: 230,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
             ),
-            child: Row(
+          ),
+          Positioned(
+            left: -58,
+            bottom: -100,
+            child: Container(
+              width: 190,
+              height: 190,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              MediaQuery.paddingOf(context).top + 14,
+              16,
+              18,
+            ),
+            child: Column(
               children: [
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: TospinoColors.resolve(
-                      context,
-                      TospinoColors.brandPale,
-                    ),
-                    shape: BoxShape.circle,
+                Padding(
+                  padding: const EdgeInsets.only(
+                    right: MiniProgramCapsuleOverlay.reservedRight - 16,
                   ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    initial,
-                    style: TextStyle(
-                      color: TospinoColors.solidBrand(context),
-                      fontSize: 23,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 13),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              onTap: loggedIn
-                                  ? null
-                                  : () => controller.openLogin(
-                                      returnTo: TospinoRoute.profile,
-                                    ),
-                              child: Text(
-                                loggedIn
-                                    ? displayName
-                                    : localizeMiniProgramLabel(
-                                        context,
-                                        '登录 / 注册',
-                                      ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: TospinoColors.solidBrand(context),
-                                  fontSize: 18,
-                                  fontWeight: TospinoText.regular,
+                      Container(
+                        width: 58,
+                        height: 58,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.12),
+                              blurRadius: 14,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          initial,
+                          style: TextStyle(
+                            color: TospinoColors.brandDeep,
+                            fontSize: 24,
+                            fontWeight: TospinoText.strong,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 13),
+                      Expanded(
+                        child: InkWell(
+                          onTap: loggedIn
+                              ? null
+                              : () => controller.openLogin(
+                                  returnTo: TospinoRoute.profile,
                                 ),
-                              ),
+                          borderRadius: BorderRadius.circular(10),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  loggedIn
+                                      ? displayName.isEmpty
+                                            ? 'Tospino'
+                                            : displayName
+                                      : localizeMiniProgramLabel(
+                                          context,
+                                          '登录 / 注册',
+                                        ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 21,
+                                    fontWeight: TospinoText.strong,
+                                    height: 1.1,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  loggedIn
+                                      ? 'ID:${user?.id ?? ''}'
+                                      : localizeMiniProgramLabel(
+                                          context,
+                                          'Tospino 会员',
+                                        ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.72),
+                                    fontSize: 11.5,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                      const SizedBox(height: 5),
-                      Text(
+                      Icon(
                         loggedIn
-                            ? 'ID:${user?.id ?? ''}'
-                            : localizeMiniProgramLabel(context, 'Tospino 会员'),
-                        style: TospinoText.hint(context),
+                            ? Icons.verified_rounded
+                            : Icons.chevron_right_rounded,
+                        color: Colors.white.withValues(alpha: 0.86),
+                        size: 20,
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 18),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 11),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.16),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      _ProfileStat(
+                        value:
+                            '${user?.favoriteCount ?? controller.favorites.length}',
+                        label: '关注',
+                        onTap: controller.openFavorites,
+                      ),
+                      const _HeaderDivider(),
+                      _ProfileStat(
+                        value: _formatProfileAmount(user?.balance ?? 0),
+                        label: '钱包',
+                        onTap: () => controller.open(TospinoRoute.wallet),
+                      ),
+                      const _HeaderDivider(),
+                      _ProfileStat(
+                        value: '${user?.couponCount ?? 0}',
+                        label: '优惠券',
+                        onTap: () => controller.open(TospinoRoute.coupons),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Material(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(13),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () => showTospinoToast(context, '会员中心即将开放'),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(11, 9, 9, 9),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: TospinoColors.orange.withValues(
+                                alpha: 0.95,
+                              ),
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            child: const Icon(
+                              Icons.workspace_premium_rounded,
+                              color: Color(0xFF4A2C00),
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 9),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  localizeMiniProgramLabel(
+                                    context,
+                                    'Tospino Plus',
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: TospinoText.emphasis,
+                                  ),
+                                ),
+                                Text(
+                                  localizeMiniProgramLabel(
+                                    context,
+                                    '专属折扣与免运费权益',
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            localizeMiniProgramLabel(context, '了解会员'),
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.88),
+                              fontSize: 11,
+                              fontWeight: TospinoText.emphasis,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              _ProfileStat(
-                value: '${user?.favoriteCount ?? controller.favorites.length}',
-                label: '关注',
-                onTap: () => controller.open(TospinoRoute.favorites),
-              ),
-              _ProfileStat(
-                value: '${user?.balance ?? 0}',
-                label: '钱包',
-                onTap: () => controller.open(TospinoRoute.wallet),
-              ),
-              _ProfileStat(
-                value: '${user?.couponCount ?? 0}',
-                label: '优惠券',
-                onTap: () => controller.open(TospinoRoute.coupons),
-              ),
-            ],
           ),
         ],
       ),
@@ -174,22 +325,19 @@ class _ProfileStat extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(10),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: 2),
           child: Column(
             children: [
-              SizedBox(
-                width: double.infinity,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    value,
-                    maxLines: 1,
-                    style: TextStyle(
-                      color: TospinoColors.resolve(context, TospinoColors.ink),
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      height: 1.1,
-                    ),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: TospinoText.strong,
+                    height: 1.1,
                   ),
                 ),
               ),
@@ -198,12 +346,28 @@ class _ProfileStat extends StatelessWidget {
                 localizeMiniProgramLabel(context, label),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TospinoText.hint(context),
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.72),
+                  fontSize: 11,
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _HeaderDivider extends StatelessWidget {
+  const _HeaderDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 0.5,
+      height: 28,
+      color: Colors.white.withValues(alpha: 0.2),
     );
   }
 }
@@ -216,129 +380,71 @@ class _OrderShortcuts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TospinoSurface(
-      padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
+      radius: 16,
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 13),
       child: Column(
         children: [
           Row(
             children: [
-              Text(
-                localizeMiniProgramLabel(context, '我的订单'),
-                style: TospinoText.section(context),
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: TospinoColors.resolve(
+                    context,
+                    TospinoColors.brandPale,
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  Icons.receipt_long_rounded,
+                  color: TospinoColors.solidBrand(context),
+                  size: 17,
+                ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  localizeMiniProgramLabel(context, '我的订单'),
+                  style: TospinoText.section(context),
+                ),
+              ),
               TextButton(
                 onPressed: () => controller.openOrders(),
                 style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
                   foregroundColor: TospinoColors.resolve(
                     context,
-                    TospinoColors.muted,
+                    TospinoColors.secondary,
                   ),
-                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       localizeMiniProgramLabel(context, '全部订单'),
-                      style: const TextStyle(fontSize: 11),
+                      style: const TextStyle(fontSize: 11.5),
                     ),
-                    const Icon(Icons.chevron_right_rounded, size: 16),
+                    const Icon(Icons.chevron_right_rounded, size: 15),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
           Row(
             children: [
-              for (final status in const [
-                TospinoOrderStatus.toPay,
-                TospinoOrderStatus.toReceive,
-                TospinoOrderStatus.toReview,
-              ])
+              for (final status in TospinoOrderStatus.values)
                 Expanded(
-                  child: InkWell(
-                    key: Key('tospino-profile-order-${status.name}'),
+                  child: _OrderShortcut(
+                    status: status,
+                    count: controller.orders
+                        .where((order) => order.status == status)
+                        .length,
                     onTap: () => controller.openOrders(status),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 7),
-                      child: Column(
-                        children: [
-                          Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Icon(
-                                status.icon,
-                                color: TospinoColors.resolve(
-                                  context,
-                                  TospinoColors.ink,
-                                ),
-                                size: 24,
-                              ),
-                              if (status == TospinoOrderStatus.toReceive &&
-                                  controller.orders.any(
-                                    (order) => order.status == status,
-                                  ))
-                                Positioned(
-                                  right: -6,
-                                  top: -4,
-                                  child: Container(
-                                    width: 15,
-                                    height: 15,
-                                    decoration: const BoxDecoration(
-                                      color: TospinoColors.price,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      '${controller.orders.where((order) => order.status == status).length}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 8,
-                                        fontWeight: TospinoText.strong,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 7),
-                          Text(
-                            localizeMiniProgramLabel(context, status.label),
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                 ),
-              Expanded(
-                child: InkWell(
-                  onTap: () => showTospinoToast(context, '退款/售后'),
-                  borderRadius: BorderRadius.circular(6),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 7),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.assignment_return_outlined,
-                          color: TospinoColors.resolve(
-                            context,
-                            TospinoColors.ink,
-                          ),
-                          size: 24,
-                        ),
-                        const SizedBox(height: 7),
-                        Text(
-                          localizeMiniProgramLabel(context, '退款/售后'),
-                          style: TospinoText.meta(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ],
@@ -347,91 +453,283 @@ class _OrderShortcuts extends StatelessWidget {
   }
 }
 
-class _ServiceMenu extends StatelessWidget {
-  const _ServiceMenu({required this.controller});
+class _OrderShortcut extends StatelessWidget {
+  const _OrderShortcut({
+    required this.status,
+    required this.count,
+    required this.onTap,
+  });
+
+  final TospinoOrderStatus status;
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      key: Key('tospino-profile-order-${status.name}'),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: TospinoColors.resolve(
+                      context,
+                      TospinoColors.surfaceMuted,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    status.icon,
+                    color: TospinoColors.solidBrand(context),
+                    size: 21,
+                  ),
+                ),
+                if (count > 0)
+                  Positioned(
+                    right: -5,
+                    top: -4,
+                    child: Container(
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: TospinoColors.price,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        count > 99 ? '99+' : '$count',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: TospinoText.strong,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 7),
+            Text(
+              localizeMiniProgramLabel(context, status.label),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TospinoText.meta(context).copyWith(fontSize: 11),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickServices extends StatelessWidget {
+  const _QuickServices({required this.controller});
+
+  final TospinoAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final services = <_QuickServiceData>[
+      _QuickServiceData(
+        key: const Key('tospino-profile-favorites'),
+        icon: Icons.favorite_rounded,
+        color: TospinoColors.price,
+        label: '我的关注',
+        onTap: controller.openFavorites,
+      ),
+      _QuickServiceData(
+        key: const Key('tospino-profile-free-gift'),
+        icon: Icons.card_giftcard_rounded,
+        color: const Color(0xFFFF8248),
+        label: '免费拿',
+        onTap: () => controller.open(TospinoRoute.freeGift),
+      ),
+      _QuickServiceData(
+        key: const Key('tospino-profile-recent'),
+        icon: Icons.history_rounded,
+        color: const Color(0xFF6C83D9),
+        label: '最近浏览',
+        onTap: controller.openFavorites,
+      ),
+      _QuickServiceData(
+        key: const Key('tospino-profile-shops'),
+        icon: Icons.storefront_rounded,
+        color: const Color(0xFF5D7DD8),
+        label: '店铺关注',
+        onTap: () => controller.open(TospinoRoute.shopFollow),
+      ),
+      _QuickServiceData(
+        key: const Key('tospino-profile-wallet'),
+        icon: Icons.account_balance_wallet_rounded,
+        color: TospinoColors.orange,
+        label: '我的钱包',
+        onTap: () => controller.open(TospinoRoute.wallet),
+      ),
+      _QuickServiceData(
+        key: const Key('tospino-profile-coupons'),
+        icon: Icons.confirmation_number_rounded,
+        color: TospinoColors.price,
+        label: '我的优惠券',
+        onTap: () => controller.open(TospinoRoute.coupons),
+      ),
+      _QuickServiceData(
+        key: const Key('tospino-profile-address'),
+        icon: Icons.location_on_rounded,
+        color: TospinoColors.solidBrand(context),
+        label: '地址管理',
+        onTap: () => controller.open(TospinoRoute.address),
+      ),
+      _QuickServiceData(
+        key: const Key('tospino-profile-settings'),
+        icon: Icons.settings_rounded,
+        color: const Color(0xFF7B8794),
+        label: '设置',
+        onTap: () => controller.open(TospinoRoute.settings),
+      ),
+    ];
+    return TospinoSurface(
+      radius: 16,
+      padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              localizeMiniProgramLabel(context, '常用功能'),
+              style: TospinoText.section(context),
+            ),
+          ),
+          const SizedBox(height: 8),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: services.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisExtent: 83,
+            ),
+            itemBuilder: (context, index) {
+              return _QuickService(data: services[index]);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickServiceData {
+  const _QuickServiceData({
+    required this.key,
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.onTap,
+  });
+
+  final Key key;
+  final IconData icon;
+  final Color color;
+  final String label;
+  final VoidCallback onTap;
+}
+
+class _QuickService extends StatelessWidget {
+  const _QuickService({required this.data});
+
+  final _QuickServiceData data;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: data.key,
+        onTap: data.onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
+          child: Column(
+            children: [
+              Container(
+                width: 43,
+                height: 43,
+                decoration: BoxDecoration(
+                  color: data.color.withValues(alpha: 0.11),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(data.icon, color: data.color, size: 22),
+              ),
+              const SizedBox(height: 7),
+              Expanded(
+                child: Text(
+                  localizeMiniProgramLabel(context, data.label),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TospinoText.meta(context).copyWith(
+                    color: TospinoColors.resolve(context, TospinoColors.ink),
+                    fontSize: 11,
+                    fontWeight: TospinoText.emphasis,
+                    height: 1.15,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SupportMenu extends StatelessWidget {
+  const _SupportMenu({required this.controller});
 
   final TospinoAppController controller;
 
   @override
   Widget build(BuildContext context) {
     return TospinoSurface(
+      radius: 16,
       padding: EdgeInsets.zero,
       child: Column(
         children: [
-          _ServiceItem(
-            icon: Icons.group_add_outlined,
-            color: TospinoColors.solidBrand(context),
+          _SupportRow(
+            icon: Icons.group_add_rounded,
+            color: TospinoColors.price,
             label: '邀请好友',
             onTap: () => showTospinoToast(context, '邀请好友'),
             trailing: const TospinoTag(label: '领取奖励', solid: true),
           ),
-          _ServiceItem(
-            icon: Icons.favorite_border_rounded,
-            color: TospinoColors.price,
-            label: '我的关注',
-            onTap: () => controller.open(TospinoRoute.favorites),
+          _SupportRow(
+            icon: Icons.chat_bubble_outline_rounded,
+            color: TospinoColors.solidBrand(context),
+            label: '联系客服',
+            onTap: () => showTospinoToast(context, '客服功能即将开放'),
           ),
-          _ServiceItem(
-            key: const Key('tospino-profile-free-gift'),
-            icon: Icons.card_giftcard_outlined,
-            color: const Color(0xFFFF8248),
-            label: '免费拿',
-            onTap: () => controller.open(TospinoRoute.freeGift),
-          ),
-          _ServiceItem(
-            icon: Icons.history_rounded,
-            color: const Color(0xFF6C83D9),
-            label: '最近浏览',
-            onTap: () => controller.open(TospinoRoute.favorites),
-          ),
-          _ServiceItem(
-            key: const Key('tospino-profile-wallet'),
-            icon: Icons.account_balance_wallet_outlined,
-            color: TospinoColors.orange,
-            label: '我的钱包',
-            onTap: () => controller.open(TospinoRoute.wallet),
-          ),
-          _ServiceItem(
-            key: const Key('tospino-profile-coupons'),
-            icon: Icons.confirmation_number_outlined,
-            color: TospinoColors.price,
-            label: '我的优惠券',
-            onTap: () => controller.open(TospinoRoute.coupons),
-          ),
-          _ServiceItem(
-            key: const Key('tospino-profile-address'),
-            icon: Icons.location_on_outlined,
-            color: TospinoColors.brand,
-            label: '地址管理',
-            onTap: () => controller.open(TospinoRoute.address),
-          ),
-          _ServiceItem(
-            key: const Key('tospino-profile-shops'),
-            icon: Icons.storefront_outlined,
-            color: const Color(0xFF6C83D9),
-            label: '店铺关注',
-            onTap: () => controller.open(TospinoRoute.shopFollow),
-          ),
-          _ServiceItem(
-            key: const Key('tospino-profile-settings'),
-            icon: Icons.settings_outlined,
-            color: const Color(0xFF7B8794),
-            label: '设置',
-            onTap: () => controller.open(TospinoRoute.settings),
-          ),
-          _ServiceItem(
+          _SupportRow(
             icon: Icons.feedback_outlined,
             color: const Color(0xFF7B8794),
             label: '意见反馈',
             onTap: () => showTospinoToast(context, '意见反馈'),
           ),
-          _ServiceItem(
-            icon: Icons.support_agent_rounded,
-            color: TospinoColors.solidBrand(context),
-            label: '联系客服',
-            onTap: () => showTospinoToast(context, '客服功能即将开放'),
-          ),
-          _ServiceItem(
+          _SupportRow(
             icon: Icons.info_outline_rounded,
             color: const Color(0xFFB2863D),
             label: '关于 Tospino',
@@ -444,30 +742,29 @@ class _ServiceMenu extends StatelessWidget {
   }
 }
 
-class _ServiceItem extends StatelessWidget {
-  const _ServiceItem({
-    super.key,
+class _SupportRow extends StatelessWidget {
+  const _SupportRow({
     required this.icon,
     required this.color,
     required this.label,
     required this.onTap,
-    this.showDivider = true,
     this.trailing,
+    this.showDivider = true,
   });
 
   final IconData icon;
   final Color color;
   final String label;
   final VoidCallback onTap;
-  final bool showDivider;
   final Widget? trailing;
+  final bool showDivider;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        height: TospinoMetrics.rowHeight,
+        height: 56,
         margin: const EdgeInsets.only(left: 14),
         padding: const EdgeInsets.only(right: 14),
         decoration: BoxDecoration(
@@ -482,15 +779,15 @@ class _ServiceItem extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 30,
-              height: 30,
+              width: 31,
+              height: 31,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
+                color: color.withValues(alpha: 0.11),
+                borderRadius: BorderRadius.circular(9),
               ),
-              child: Icon(icon, color: color, size: 18),
+              child: Icon(icon, color: color, size: 17),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 11),
             Expanded(
               child: Text(
                 localizeMiniProgramLabel(context, label),
@@ -500,7 +797,7 @@ class _ServiceItem extends StatelessWidget {
             if (trailing != null) ...[trailing!, const SizedBox(width: 8)],
             Icon(
               Icons.chevron_right_rounded,
-              size: 19,
+              size: 18,
               color: TospinoColors.resolve(context, TospinoColors.hint),
             ),
           ],
@@ -508,4 +805,18 @@ class _ServiceItem extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatProfileAmount(double value) {
+  final fixed = value == value.roundToDouble()
+      ? value.toStringAsFixed(0)
+      : value.toStringAsFixed(2);
+  final parts = fixed.split('.');
+  final digits = parts.first;
+  final buffer = StringBuffer();
+  for (var index = 0; index < digits.length; index++) {
+    if (index > 0 && (digits.length - index) % 3 == 0) buffer.write(',');
+    buffer.write(digits[index]);
+  }
+  return parts.length == 1 ? buffer.toString() : '$buffer.${parts.last}';
 }

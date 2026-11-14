@@ -24,105 +24,105 @@ class TospinoAddressPage extends StatelessWidget {
                 : ListView(
                     padding: EdgeInsets.zero,
                     children: [
-                      Container(
-                        color: TospinoColors.resolve(
-                          context,
-                          TospinoColors.surface,
-                        ),
-                        padding: const EdgeInsets.fromLTRB(20, 16, 16, 18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const TospinoTag(
-                                  label: '默认',
-                                  solid: true,
-                                  color: TospinoColors.saleStart,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    address.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TospinoText.body(
-                                      context,
-                                    ).copyWith(fontSize: 16),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+                        child: TospinoSurface(
+                          radius: 16,
+                          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const TospinoTag(
+                                    label: '默认',
+                                    solid: true,
+                                    color: TospinoColors.saleStart,
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(
-                                    address.phone,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TospinoText.secondary(
-                                      context,
-                                    ).copyWith(fontSize: 14),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                IconButton(
-                                  key: const Key('tospino-address-edit'),
-                                  tooltip: localizeMiniProgramLabel(
-                                    context,
-                                    '编辑地址',
-                                  ),
-                                  onPressed: () => _showAddressEditor(
-                                    context,
-                                    controller,
-                                    address: address,
-                                  ),
-                                  visualDensity: VisualDensity.compact,
-                                  icon: Icon(
-                                    Icons.edit_outlined,
-                                    size: 20,
-                                    color: TospinoColors.resolve(
-                                      context,
-                                      TospinoColors.secondary,
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      address.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TospinoText.body(
+                                        context,
+                                      ).copyWith(fontSize: 16),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              address.completeAddress,
-                              style: TospinoText.body(
-                                context,
-                              ).copyWith(fontSize: 16, height: 1.45),
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                Container(
-                                  width: 18,
-                                  height: 18,
-                                  decoration: BoxDecoration(
-                                    color: TospinoColors.solidBrand(context),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.check_rounded,
-                                    color: Colors.white,
-                                    size: 13,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  localizeMiniProgramLabel(context, '默认'),
-                                  style: TextStyle(
-                                    color: TospinoColors.resolve(
-                                      context,
-                                      TospinoColors.price,
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      address.phone,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TospinoText.secondary(
+                                        context,
+                                      ).copyWith(fontSize: 14),
                                     ),
-                                    fontSize: 14,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                  const SizedBox(width: 6),
+                                  IconButton(
+                                    key: const Key('tospino-address-edit'),
+                                    tooltip: localizeMiniProgramLabel(
+                                      context,
+                                      '编辑地址',
+                                    ),
+                                    onPressed: () => _showAddressEditor(
+                                      context,
+                                      controller,
+                                      address: address,
+                                    ),
+                                    visualDensity: VisualDensity.compact,
+                                    icon: Icon(
+                                      Icons.edit_outlined,
+                                      size: 20,
+                                      color: TospinoColors.resolve(
+                                        context,
+                                        TospinoColors.secondary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                address.completeAddress,
+                                style: TospinoText.body(
+                                  context,
+                                ).copyWith(fontSize: 16, height: 1.45),
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 18,
+                                    height: 18,
+                                    decoration: BoxDecoration(
+                                      color: TospinoColors.solidBrand(context),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.check_rounded,
+                                      color: Colors.white,
+                                      size: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    localizeMiniProgramLabel(context, '默认'),
+                                    style: TextStyle(
+                                      color: TospinoColors.resolve(
+                                        context,
+                                        TospinoColors.price,
+                                      ),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],

@@ -60,22 +60,25 @@ class _CategorySearchBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
       child: Container(
-        height: 34,
+        height: 42,
         decoration: BoxDecoration(
-          color: TospinoColors.resolve(context, TospinoColors.surfaceMuted),
-          borderRadius: BorderRadius.circular(17),
+          color: TospinoColors.resolve(context, TospinoColors.surface),
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(
+            color: TospinoColors.solidBrand(context).withValues(alpha: 0.38),
+          ),
         ),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(17),
+          borderRadius: BorderRadius.circular(13),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: [
                 Icon(
                   Icons.search_rounded,
-                  color: TospinoColors.resolve(context, TospinoColors.muted),
-                  size: 18,
+                  color: TospinoColors.solidBrand(context),
+                  size: 20,
                 ),
                 const SizedBox(width: 7),
                 Expanded(
@@ -226,6 +229,7 @@ class _CategoryContent extends StatelessWidget {
     final sections = _sectionsFor(selected);
     if (sections.isNotEmpty) {
       return _CategorySectionsView(
+        selected: selected,
         sections: sections,
         onSelected: (category) {
           controller.openSearch();
@@ -233,7 +237,7 @@ class _CategoryContent extends StatelessWidget {
         },
       );
     }
-    return _CategoryProductFallback(controller: controller);
+    return _CategoryProductFallback(controller: controller, selected: selected);
   }
 
   List<_CategorySectionData> _sectionsFor(TospinoCategory category) {
@@ -267,10 +271,12 @@ class _CategorySectionData {
 
 class _CategorySectionsView extends StatelessWidget {
   const _CategorySectionsView({
+    required this.selected,
     required this.sections,
     required this.onSelected,
   });
 
+  final TospinoCategory selected;
   final List<_CategorySectionData> sections;
   final ValueChanged<TospinoCategory> onSelected;
 
@@ -279,6 +285,7 @@ class _CategorySectionsView extends StatelessWidget {
     return CustomScrollView(
       key: const Key('tospino-category-products'),
       slivers: [
+        SliverToBoxAdapter(child: _CategorySummary(category: selected)),
         for (final section in sections) ...[
           SliverToBoxAdapter(
             child: Padding(
@@ -392,9 +399,13 @@ class _CategoryArtwork extends StatelessWidget {
 }
 
 class _CategoryProductFallback extends StatelessWidget {
-  const _CategoryProductFallback({required this.controller});
+  const _CategoryProductFallback({
+    required this.controller,
+    required this.selected,
+  });
 
   final TospinoAppController controller;
+  final TospinoCategory selected;
 
   @override
   Widget build(BuildContext context) {
@@ -419,7 +430,12 @@ class _CategoryProductFallback extends StatelessWidget {
     return CustomScrollView(
       key: const Key('tospino-category-products'),
       slivers: [
-        const SliverToBoxAdapter(child: SizedBox(height: 12)),
+        SliverToBoxAdapter(
+          child: _CategorySummary(
+            category: selected,
+            productCount: products.length,
+          ),
+        ),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverGrid(
@@ -441,6 +457,84 @@ class _CategoryProductFallback extends StatelessWidget {
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 20)),
       ],
+    );
+  }
+}
+
+class _CategorySummary extends StatelessWidget {
+  const _CategorySummary({required this.category, this.productCount});
+
+  final TospinoCategory category;
+  final int? productCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      padding: const EdgeInsets.fromLTRB(13, 12, 12, 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            TospinoColors.resolve(context, TospinoColors.surface),
+            TospinoColors.resolve(context, TospinoColors.brandPale),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: TospinoColors.solidBrand(context).withValues(alpha: 0.16),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              gradient: TospinoColors.brandGradient(context),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              category.label.isEmpty
+                  ? '#'
+                  : category.label.characters.first.toUpperCase(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: TospinoText.strong,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  category.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TospinoText.section(context),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  productCount == null
+                      ? localizeMiniProgramLabel(context, '发现更多分类好物')
+                      : '$productCount ${localizeMiniProgramLabel(context, '件精选商品')}',
+                  style: TospinoText.meta(context),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.auto_awesome_rounded,
+            color: TospinoColors.solidBrand(context),
+            size: 20,
+          ),
+        ],
+      ),
     );
   }
 }

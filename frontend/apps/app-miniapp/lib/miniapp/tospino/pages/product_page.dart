@@ -74,197 +74,260 @@ class TospinoProductPage extends StatelessWidget {
                   radius: 0,
                   hero: false,
                 ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-                  color: TospinoColors.resolve(context, TospinoColors.surface),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: TospinoPriceText(
-                              price: product.price,
-                              oldPrice: product.oldPrice > product.price
-                                  ? product.oldPrice
-                                  : null,
-                              size: 16,
-                            ),
-                          ),
-                          if (product.discountPercent > 0)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: TospinoColors.price.withValues(
-                                  alpha: 0.1,
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                  TospinoMetrics.tagRadius,
-                                ),
-                              ),
-                              child: Text(
-                                '-${product.discountPercent}%',
-                                style: const TextStyle(
-                                  color: TospinoColors.price,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        product.title,
-                        style: TospinoText.body(context).copyWith(
-                          fontWeight: TospinoText.emphasis,
-                          height: 1.35,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          if (product.brand.isNotEmpty)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                  child: TospinoSurface(
+                    radius: 16,
+                    padding: const EdgeInsets.fromLTRB(15, 14, 15, 15),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: TospinoPriceText(
+                                price: product.price,
+                                oldPrice: product.oldPrice > product.price
+                                    ? product.oldPrice
+                                    : null,
+                                size: 25,
                                 color: TospinoColors.resolve(
                                   context,
-                                  TospinoColors.brandPale,
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                  TospinoMetrics.tagRadius,
-                                ),
-                              ),
-                              child: Text(
-                                product.brand,
-                                style: TextStyle(
-                                  color: TospinoColors.solidBrand(context),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
+                                  TospinoColors.price,
                                 ),
                               ),
                             ),
-                          const SizedBox(width: 9),
-                          const Icon(
-                            Icons.star_rounded,
-                            color: TospinoColors.orange,
-                            size: 16,
-                          ),
-                          Text(
-                            '${product.rating}',
-                            style: TextStyle(
-                              color: TospinoColors.resolve(
-                                context,
-                                TospinoColors.secondary,
+                            if (product.discountPercent > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: TospinoColors.price.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    TospinoMetrics.tagRadius,
+                                  ),
+                                ),
+                                child: Text(
+                                  '-${product.discountPercent}%',
+                                  style: const TextStyle(
+                                    color: TospinoColors.price,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          product.title,
+                          style: TospinoText.body(context).copyWith(
+                            fontSize: 15,
+                            fontWeight: TospinoText.emphasis,
+                            height: 1.35,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            if (product.brand.isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: TospinoColors.resolve(
+                                    context,
+                                    TospinoColors.brandPale,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    TospinoMetrics.tagRadius,
+                                  ),
+                                ),
+                                child: Text(
+                                  product.brand,
+                                  style: TextStyle(
+                                    color: TospinoColors.solidBrand(context),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            const Icon(
+                              Icons.star_rounded,
+                              color: TospinoColors.orange,
+                              size: 16,
                             ),
+                            Text(
+                              '${product.rating}',
+                              style: TextStyle(
+                                color: TospinoColors.resolve(
+                                  context,
+                                  TospinoColors.secondary,
+                                ),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              '${product.sales} ${localizeMiniProgramLabel(context, '已售')}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 11),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
                           ),
-                          const SizedBox(width: 9),
-                          Text(
-                            '${product.sales} ${localizeMiniProgramLabel(context, '已售')}',
-                            style: Theme.of(context).textTheme.bodySmall,
+                          decoration: BoxDecoration(
+                            color: TospinoColors.resolve(
+                              context,
+                              TospinoColors.surfaceMuted,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
-                  ),
-                  color: TospinoColors.resolve(context, TospinoColors.surface),
-                  child: Row(
-                    children: [
-                      _ProtectionItem(
-                        icon: Icons.local_shipping_outlined,
-                        label: detail.storeName.isNotEmpty
-                            ? detail.storeName
-                            : '安心配送',
-                      ),
-                      _ProtectionItem(
-                        icon: Icons.verified_user_outlined,
-                        label: '正品保障',
-                      ),
-                      _ProtectionItem(
-                        icon: Icons.assignment_return_outlined,
-                        label: '7 天无忧退换',
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  color: TospinoColors.resolve(context, TospinoColors.surface),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        localizeMiniProgramLabel(context, '商品介绍'),
-                        style: TospinoText.section(context),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        detail.description.isEmpty
-                            ? product.title
-                            : detail.description,
-                        style: TospinoText.body(context),
-                      ),
-                      if (detail.galleryUrls.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                            TospinoMetrics.imageRadius,
-                          ),
-                          child: Image.network(
-                            detail.galleryUrls.first,
-                            height: 240,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.local_shipping_rounded,
+                                size: 17,
+                                color: TospinoColors.solidBrand(context),
+                              ),
+                              const SizedBox(width: 7),
+                              Expanded(
+                                child: Text(
+                                  localizeMiniProgramLabel(
+                                    context,
+                                    '预计 2-5 个工作日送达',
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TospinoText.meta(context).copyWith(
+                                    fontWeight: TospinoText.emphasis,
+                                    color: TospinoColors.resolve(
+                                      context,
+                                      TospinoColors.secondary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                localizeMiniProgramLabel(context, '官方配送'),
+                                style: TospinoText.meta(
+                                  context,
+                                ).copyWith(fontSize: 11),
+                              ),
+                            ],
                           ),
                         ),
                       ],
-                      if (detail.servicePromises.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        for (final promise in detail.servicePromises.take(4))
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Icon(
-                                  Icons.check_circle_outline_rounded,
-                                  color: TospinoColors.brand,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 7),
-                                Expanded(
-                                  child: Text(
-                                    promise,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall,
-                                  ),
-                                ),
-                              ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: TospinoSurface(
+                    radius: 16,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        _ProtectionItem(
+                          icon: Icons.storefront_outlined,
+                          label: detail.storeName.isNotEmpty
+                              ? detail.storeName
+                              : '安心配送',
+                        ),
+                        _ProtectionItem(
+                          icon: Icons.verified_user_outlined,
+                          label: '正品保障',
+                        ),
+                        _ProtectionItem(
+                          icon: Icons.assignment_return_outlined,
+                          label: '7 天无忧退换',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: TospinoSurface(
+                    radius: 16,
+                    padding: const EdgeInsets.all(15),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          localizeMiniProgramLabel(context, '商品介绍'),
+                          style: TospinoText.section(context),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          detail.description.isEmpty
+                              ? product.title
+                              : detail.description,
+                          style: TospinoText.body(context),
+                        ),
+                        if (detail.galleryUrls.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              TospinoMetrics.imageRadius,
+                            ),
+                            child: Image.network(
+                              detail.galleryUrls.first,
+                              height: 240,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) =>
+                                  const SizedBox.shrink(),
                             ),
                           ),
+                        ],
+                        if (detail.servicePromises.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          for (final promise in detail.servicePromises.take(4))
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(
+                                    Icons.check_circle_outline_rounded,
+                                    color: TospinoColors.brand,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 7),
+                                  Expanded(
+                                    child: Text(
+                                      promise,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -381,6 +444,7 @@ class _ProductActionBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 9),
       decoration: BoxDecoration(
         color: TospinoColors.resolve(context, TospinoColors.surface),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
         border: Border(
           top: BorderSide(
             color: TospinoColors.resolve(context, TospinoColors.line),
@@ -459,7 +523,7 @@ class _ProductActionBar extends StatelessWidget {
                             '${controller.cartCount}',
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 9,
+                              fontSize: 11.5,
                               fontWeight: TospinoText.strong,
                             ),
                           ),
@@ -478,7 +542,13 @@ class _ProductActionBar extends StatelessWidget {
                   clipBehavior: Clip.antiAlias,
                   child: Ink(
                     height: 50,
-                    color: TospinoColors.lightOrange,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFFFFB43F), Color(0xFFFF8A32)],
+                      ),
+                    ),
                     child: InkWell(
                       key: const Key('tospino-product-add-cart'),
                       onTap: controller.busy
@@ -501,7 +571,7 @@ class _ProductActionBar extends StatelessWidget {
                         child: Text(
                           localizeMiniProgramLabel(context, '加入购物车'),
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: Color(0xFF3B2400),
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),

@@ -75,7 +75,7 @@ class TospinoOrderDetailPage extends StatelessWidget {
                                 : 'Track your Tospino delivery here.',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.76),
-                              fontSize: 11.5,
+                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -115,7 +115,7 @@ class TospinoOrderDetailPage extends StatelessWidget {
                         localizeMiniProgramLabel(context, '默认地址'),
                         style: TextStyle(
                           color: TospinoColors.solidBrand(context),
-                          fontSize: 9,
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -309,7 +309,7 @@ class _TrackingStep extends StatelessWidget {
                   color: Colors.white.withValues(
                     alpha: index <= current ? 0.92 : 0.46,
                   ),
-                  fontSize: 9.5,
+                  fontSize: 11,
                 ),
               ),
             ],

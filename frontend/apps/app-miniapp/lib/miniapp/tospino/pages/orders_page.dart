@@ -264,7 +264,7 @@ class _OrderCard extends StatelessWidget {
                     child: Text(
                       localizeMiniProgramLabel(context, '订单详情'),
                       style: const TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

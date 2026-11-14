@@ -15,6 +15,7 @@ import 'pages/favorites_page.dart';
 import 'pages/free_gift_page.dart';
 import 'pages/home_page.dart';
 import 'pages/login_page.dart';
+import 'pages/messages_page.dart';
 import 'pages/order_detail_page.dart';
 import 'pages/orders_page.dart';
 import 'pages/product_page.dart';
@@ -28,13 +29,14 @@ import 'tospino_style.dart';
 
 const double tospinoAndroidDesignWidth = 375;
 const double tospinoAndroidGlyphCompensation = 0.519 / 0.546;
+const double tospinoReadableTextScale = 1.10;
 
 double tospinoAndroidWidthScale(double logicalWidth) =>
     logicalWidth.clamp(0, tospinoAndroidDesignWidth) /
     tospinoAndroidDesignWidth;
 
-/// Matches Tospino Android's `BaseApplication` text scaling:
-/// system font scale * width scale * Inter x-height correction.
+/// Keeps Tospino's width-aware scaling while avoiding unreadably small labels
+/// on compact phones. System accessibility scaling remains applied first.
 ///
 /// Font weight only selects Regular or Medium in `font/inter.xml`; it does not
 /// change the Android `sp` value.
@@ -43,7 +45,9 @@ TextScaler tospinoAndroidTextScaler(
   double logicalWidth,
 ) => _TospinoAndroidTextScaler(
   hostScaler,
-  tospinoAndroidWidthScale(logicalWidth) * tospinoAndroidGlyphCompensation,
+  tospinoAndroidWidthScale(logicalWidth) *
+      tospinoAndroidGlyphCompensation *
+      tospinoReadableTextScale,
 );
 
 /// Tospino shopping mini-program.
@@ -185,7 +189,7 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
                     backgroundColor: background,
                     foregroundColor: foreground,
                     fallbackHeight: 26,
-                    fontSize: 11,
+                    fontSize: 11.5,
                     iconSize: 13,
                     iconGap: 4,
                   ),
@@ -332,6 +336,7 @@ class TospinoPageRouter {
     return switch (route) {
       TospinoRoute.home => TospinoHomePage(controller: controller),
       TospinoRoute.category => TospinoCategoryPage(controller: controller),
+      TospinoRoute.messages => TospinoMessagesPage(controller: controller),
       TospinoRoute.cart => TospinoCartPage(controller: controller),
       TospinoRoute.profile => TospinoProfilePage(controller: controller),
       TospinoRoute.search => TospinoSearchPage(controller: controller),
@@ -367,14 +372,9 @@ class _TospinoBottomNavigation extends StatelessWidget {
 
   static const _items = <(int, String, IconData, IconData)>[
     (0, '首页', Icons.home_outlined, Icons.home_rounded),
-    (
-      3,
-      '我的',
-      Icons.sentiment_satisfied_alt_outlined,
-      Icons.sentiment_satisfied_alt_rounded,
-    ),
+    (1, '消息', Icons.notifications_none_rounded, Icons.notifications_rounded),
     (2, '购物车', Icons.shopping_cart_outlined, Icons.shopping_cart_rounded),
-    (1, '分类', Icons.grid_view_outlined, Icons.grid_view_rounded),
+    (3, '我的', Icons.person_outline_rounded, Icons.person_rounded),
   ];
 
   @override
@@ -436,7 +436,7 @@ class _TospinoBottomNavigation extends StatelessWidget {
                                   cartCount > 99 ? '99+' : '$cartCount',
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 8,
+                                    fontSize: 11,
                                     fontWeight: TospinoText.strong,
                                   ),
                                 ),
