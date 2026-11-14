@@ -109,9 +109,9 @@ class AccountPageHeader extends StatelessWidget {
                   localizeAccountLabel(context, title),
                   style: theme.textTheme.headlineSmall?.copyWith(
                     color: scheme.onSurface,
-                    fontSize: 25,
+                    fontSize: HostTypography.pageTitle,
                     height: 1.2,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: HostTypography.emphasis,
                     letterSpacing: -0.5,
                   ),
                 ),
@@ -158,8 +158,8 @@ class AccountSectionTitle extends StatelessWidget {
           Text(
             localizeAccountLabel(context, title),
             style: theme.textTheme.titleSmall?.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
+              fontSize: HostTypography.sectionTitle,
+              fontWeight: HostTypography.emphasis,
             ),
           ),
           const Spacer(),
@@ -271,7 +271,7 @@ class AccountListRow extends StatelessWidget {
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: foreground,
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: HostTypography.medium,
                       ),
                     ),
                     if (subtitle != null) ...[
@@ -458,7 +458,10 @@ class AccountPrimaryButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AccountStyle.controlRadius),
           ),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+          textStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: HostTypography.emphasis,
+          ),
         ),
       ),
     );
@@ -498,7 +501,7 @@ class AccountTextField extends StatelessWidget {
           localizeAccountLabel(context, label),
           style: theme.textTheme.titleSmall?.copyWith(
             fontSize: 12,
-            fontWeight: FontWeight.w700,
+            fontWeight: HostTypography.emphasis,
           ),
         ),
         const SizedBox(height: 8),

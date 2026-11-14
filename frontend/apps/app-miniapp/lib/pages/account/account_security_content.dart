@@ -82,7 +82,7 @@ class AccountSecurityContent extends StatelessWidget {
                             style: TextStyle(
                               color: scheme.primary,
                               fontSize: 21,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: HostTypography.strong,
                             ),
                           ),
                         ),
@@ -103,7 +103,7 @@ class AccountSecurityContent extends StatelessWidget {
                                 ),
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontSize: 15,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: HostTypography.emphasis,
                           ),
                         ),
                         const SizedBox(height: 5),

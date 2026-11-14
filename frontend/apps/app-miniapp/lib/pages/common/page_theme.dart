@@ -28,6 +28,17 @@ abstract final class HostChromeStyle {
       BorderSide(color: dividerColor(context), width: hairline(context));
 }
 
+abstract final class HostTypography {
+  static const FontWeight regular = FontWeight.w400;
+  static const FontWeight medium = FontWeight.w500;
+  static const FontWeight emphasis = FontWeight.w600;
+  static const FontWeight strong = FontWeight.w700;
+
+  static const double listTitle = 15;
+  static const double sectionTitle = 13;
+  static const double pageTitle = 20;
+}
+
 ThemeData sharedPageTheme(BuildContext context) {
   final accent = Theme.of(context).colorScheme.primary;
   final brightness = Theme.of(context).brightness;

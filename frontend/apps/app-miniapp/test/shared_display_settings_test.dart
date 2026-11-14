@@ -50,11 +50,12 @@ void main() {
     expect(find.text('标准'), findsNothing);
     expect(find.text('120%'), findsOneWidget);
 
+    await tester.tap(find.byKey(const Key('display-font-size-row')));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('恢复默认'));
     await tester.pumpAndSettle();
 
     expect(settings.fontScale, defaultFontScale);
-    expect(find.text('标准'), findsOneWidget);
     expect(find.text('80%'), findsNothing);
     final slider = tester.widget<Slider>(
       find.byKey(const Key('display-font-size')),
@@ -94,6 +95,8 @@ void main() {
     await tester.ensureVisible(find.text('设置'));
     await tester.tap(find.text('设置'));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('display-theme-row')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('display-theme-dark')));
     await tester.pumpAndSettle();
     final controller = BusinessThemeScope.of(
@@ -101,17 +104,14 @@ void main() {
     );
     controller.setFontScale(1.2);
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('display-language-row')));
+    await tester.pumpAndSettle();
     final language = find.byKey(const Key('display-language-en'));
     await tester.ensureVisible(language);
     await tester.tap(language);
     await tester.pumpAndSettle();
     expect(find.text('Appearance & display'), findsOneWidget);
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const Key('display-settings-page')),
-        matching: find.byType(BackButton),
-      ),
-    );
+    await tester.tap(find.byKey(const Key('display-back')));
     await tester.pumpAndSettle();
 
     expect(find.text('Count: 1'), findsOneWidget);

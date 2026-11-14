@@ -24,7 +24,7 @@ class ImChatPage extends StatelessWidget {
           style: zh(
             theme.textTheme.titleLarge!.copyWith(
               color: scheme.onSurface,
-              fontWeight: FontWeight.w600,
+              fontWeight: HostTypography.emphasis,
             ),
           ),
         ),
@@ -324,7 +324,7 @@ class _ChatRow extends StatelessWidget {
                                 title,
                                 style: theme.textTheme.bodyLarge?.copyWith(
                                   color: scheme.onSurface,
-                                fontSize: 15,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                   height: 1.05,
                                 ),

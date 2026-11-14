@@ -7,6 +7,7 @@ import 'account_style.dart';
 import 'account_widgets.dart';
 import 'account_localizations.dart';
 import '../../localization.dart';
+import '../common/page_theme.dart';
 
 class AccountPhoneBindingPage extends StatefulWidget {
   const AccountPhoneBindingPage({
@@ -263,7 +264,7 @@ class _AccountPhoneBindingPageState extends State<AccountPhoneBindingPage> {
               localizeAccountLabel(context, _isChange ? '手机号修改成功' : '手机号绑定成功'),
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: HostTypography.emphasis,
               ),
             ),
             const SizedBox(height: 7),

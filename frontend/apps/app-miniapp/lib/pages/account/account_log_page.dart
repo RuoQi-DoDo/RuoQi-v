@@ -107,7 +107,7 @@ class AccountLogPage extends StatelessWidget {
                         entry.action,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: HostTypography.emphasis,
                         ),
                       ),
                     ),

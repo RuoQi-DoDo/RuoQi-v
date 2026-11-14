@@ -274,7 +274,11 @@ class _SettingsSectionHeader extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Text(
         pageLabel(context, title),
-        style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13),
+        style: TextStyle(
+          color: scheme.onSurfaceVariant,
+          fontSize: HostTypography.sectionTitle,
+          fontWeight: HostTypography.regular,
+        ),
       ),
     );
   }
@@ -438,7 +442,7 @@ class _SettingsActionRow extends StatelessWidget {
               style: TextStyle(
                 color: color,
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
+                fontWeight: HostTypography.medium,
               ),
             ),
           ),

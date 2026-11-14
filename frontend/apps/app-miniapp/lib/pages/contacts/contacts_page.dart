@@ -250,8 +250,8 @@ class _ContactsPersonRow extends StatelessWidget {
                 name,
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: theme.colorScheme.onSurface,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
+                  fontSize: HostTypography.listTitle,
+                  fontWeight: HostTypography.regular,
                 ),
               ),
             ],

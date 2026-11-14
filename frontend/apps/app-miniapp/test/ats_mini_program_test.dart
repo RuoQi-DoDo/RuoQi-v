@@ -425,6 +425,8 @@ void main() {
 
     await tester.tap(find.text('界面与显示'));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('display-theme-row')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('display-theme-dark')));
     await tester.pumpAndSettle();
 
@@ -439,7 +441,7 @@ void main() {
       Brightness.dark,
     );
 
-    await tester.tap(find.byType(BackButton));
+    await tester.tap(find.byKey(const Key('display-back')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('settings-back')));
     await tester.pumpAndSettle();
