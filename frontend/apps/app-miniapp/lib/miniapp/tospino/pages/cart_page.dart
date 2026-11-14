@@ -12,6 +12,24 @@ class TospinoCartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!controller.isLoggedIn) {
+      return ColoredBox(
+        key: const Key('tospino-cart-page'),
+        color: TospinoColors.resolve(context, TospinoColors.background),
+        child: Column(
+          children: [
+            const _CartHeader(),
+            Expanded(
+              child: _GuestCartState(
+                onLogin: () =>
+                    controller.openLogin(returnTo: TospinoRoute.cart),
+                onBrowse: () => controller.switchTab(0),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     final lines = controller.cartLines;
     return ColoredBox(
       key: const Key('tospino-cart-page'),
@@ -102,6 +120,116 @@ class _CartHeader extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _GuestCartState extends StatelessWidget {
+  const _GuestCartState({required this.onLogin, required this.onBrowse});
+
+  final VoidCallback onLogin;
+  final VoidCallback onBrowse;
+
+  @override
+  Widget build(BuildContext context) {
+    const benefits = <(IconData, String)>[
+      (Icons.sync_rounded, '跨设备同步购物车'),
+      (Icons.discount_outlined, '登录后查看专属优惠'),
+      (Icons.local_shipping_outlined, '快速结算与配送追踪'),
+    ];
+    return ListView(
+      key: const Key('tospino-cart-login-state'),
+      padding: const EdgeInsets.fromLTRB(20, 34, 20, 30),
+      children: [
+        Center(
+          child: Container(
+            width: 92,
+            height: 92,
+            decoration: BoxDecoration(
+              color: TospinoColors.resolve(context, TospinoColors.brandPale),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.shopping_cart_outlined,
+              size: 44,
+              color: TospinoColors.solidBrand(context),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          localizeMiniProgramLabel(context, '登录后查看购物车'),
+          textAlign: TextAlign.center,
+          style: TospinoText.pageTitle(context).copyWith(fontSize: 21),
+        ),
+        const SizedBox(height: 7),
+        Text(
+          localizeMiniProgramLabel(context, '登录后可同步已加入的商品、优惠和配送信息。'),
+          textAlign: TextAlign.center,
+          style: TospinoText.secondary(context).copyWith(height: 1.45),
+        ),
+        const SizedBox(height: 24),
+        TospinoSurface(
+          radius: 16,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Column(
+            children: [
+              for (var index = 0; index < benefits.length; index++) ...[
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: TospinoColors.solidBrand(
+                          context,
+                        ).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(11),
+                      ),
+                      child: Icon(
+                        benefits[index].$1,
+                        color: TospinoColors.solidBrand(context),
+                        size: 19,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        localizeMiniProgramLabel(context, benefits[index].$2),
+                        style: TospinoText.body(context),
+                      ),
+                    ),
+                    Icon(
+                      Icons.check_circle_rounded,
+                      color: TospinoColors.solidBrand(context),
+                      size: 18,
+                    ),
+                  ],
+                ),
+                if (index != benefits.length - 1)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 46),
+                    child: Divider(
+                      height: 19,
+                      color: TospinoColors.resolve(context, TospinoColors.line),
+                    ),
+                  ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 22),
+        TospinoGradientButton(
+          key: const Key('tospino-cart-login'),
+          label: '登录 Tospino',
+          onPressed: onLogin,
+        ),
+        const SizedBox(height: 10),
+        TextButton(
+          onPressed: onBrowse,
+          child: Text(localizeMiniProgramLabel(context, '先去逛逛')),
+        ),
+      ],
     );
   }
 }

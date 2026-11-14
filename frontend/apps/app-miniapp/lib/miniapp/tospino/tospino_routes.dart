@@ -12,6 +12,7 @@ enum TospinoRoute {
   cart(path: '/pages/cart/cart', title: '购物车', tabIndex: 2),
   profile(path: '/pages/user/user', title: '我的', tabIndex: 3),
   search(path: '/pages/search/search', title: '搜索'),
+  register(path: '/pages/register/register', title: '注册'),
   product(path: '/pages/product/detail', title: '商品详情'),
   checkout(path: '/pages/order/checkout', title: '确认订单'),
   orders(path: '/pages/order/list', title: '我的订单'),
@@ -64,6 +65,8 @@ class TospinoAppController extends ChangeNotifier {
   bool _initialized = false;
   bool _homeLoaded = false;
   bool _loginOpen = false;
+  bool _loginPasswordOnly = false;
+  bool _registrationUseEmail = false;
   bool _busy = false;
   bool _loadingHome = false;
   bool _loadingMoreHome = false;
@@ -86,6 +89,7 @@ class TospinoAppController extends ChangeNotifier {
   String? _checkoutError;
   String? _freeGiftError;
   String? _loginError;
+  String? _registrationError;
   int _nextHomePage = 1;
   List<TospinoCategory> _categories = const [];
   List<String> _homeRecommendWords = const [];
@@ -117,6 +121,8 @@ class TospinoAppController extends ChangeNotifier {
   bool get canGoBack => _history.length > 1;
   bool get initialized => _initialized;
   bool get loginOpen => _loginOpen;
+  bool get loginPasswordOnly => _loginPasswordOnly;
+  bool get registrationUseEmail => _registrationUseEmail;
   bool get homeLoaded => _homeLoaded;
   bool get busy => _busy;
   bool get isLoggedIn => _api.isLoggedIn;
@@ -140,6 +146,7 @@ class TospinoAppController extends ChangeNotifier {
   String? get checkoutError => _checkoutError;
   String? get freeGiftError => _freeGiftError;
   String? get loginError => _loginError;
+  String? get registrationError => _registrationError;
   List<TospinoCategory> get categories => List.unmodifiable(_categories);
   List<String> get homeRecommendWords => List.unmodifiable(_homeRecommendWords);
   List<TospinoProduct> get homeProducts => List.unmodifiable(_homeProducts);
@@ -408,10 +415,6 @@ class TospinoAppController extends ChangeNotifier {
       2 => TospinoRoute.cart,
       _ => TospinoRoute.profile,
     };
-    if (route == TospinoRoute.cart && !_api.isLoggedIn) {
-      openLogin(returnTo: TospinoRoute.cart);
-      return;
-    }
     _forward = index >= _tabIndex;
     _tabIndex = index;
     _history
@@ -421,7 +424,7 @@ class TospinoAppController extends ChangeNotifier {
     notifyListeners();
     if (route == TospinoRoute.messages) {
       unawaited(loadMessages());
-    } else if (route == TospinoRoute.cart) {
+    } else if (route == TospinoRoute.cart && _api.isLoggedIn) {
       unawaited(refreshCart());
     } else if (route == TospinoRoute.profile && _api.isLoggedIn) {
       unawaited(refreshAccount());
@@ -430,6 +433,7 @@ class TospinoAppController extends ChangeNotifier {
 
   void resetToHome() {
     _loginOpen = false;
+    _loginPasswordOnly = false;
     _history
       ..clear()
       ..add(TospinoRoute.home);
@@ -886,15 +890,118 @@ class TospinoAppController extends ChangeNotifier {
   void openLogin({TospinoRoute returnTo = TospinoRoute.profile}) {
     _loginReturnRoute = returnTo;
     _loginError = null;
+    _registrationError = null;
+    _loginPasswordOnly = false;
     _loginOpen = true;
     notifyListeners();
+  }
+
+  void openPasswordLogin() {
+    _loginError = null;
+    _loginPasswordOnly = true;
+    _loginOpen = false;
+    open(TospinoRoute.login);
+  }
+
+  void openRegistration({required bool useEmail}) {
+    _registrationError = null;
+    _registrationUseEmail = useEmail;
+    _loginOpen = false;
+    open(TospinoRoute.register);
   }
 
   void closeLogin() {
     if (!_loginOpen) return;
     _loginOpen = false;
     _loginError = null;
+    _registrationError = null;
     notifyListeners();
+  }
+
+  Future<bool> requestRegistrationCode({
+    required String account,
+    required bool useEmail,
+    String phonePrefix = '+233',
+  }) async {
+    _busy = true;
+    _registrationError = null;
+    notifyListeners();
+    try {
+      await _api.requestRegistrationCode(
+        account: account,
+        useEmail: useEmail,
+        phonePrefix: phonePrefix,
+      );
+      return true;
+    } catch (error) {
+      _registrationError = error.toString();
+      return false;
+    } finally {
+      _busy = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> verifyRegistrationCode({
+    required String account,
+    required String code,
+    required bool useEmail,
+    String phonePrefix = '+233',
+  }) async {
+    _busy = true;
+    _registrationError = null;
+    notifyListeners();
+    try {
+      await _api.verifyRegistrationCode(
+        account: account,
+        code: code,
+        useEmail: useEmail,
+        phonePrefix: phonePrefix,
+      );
+      return true;
+    } catch (error) {
+      _registrationError = error.toString();
+      return false;
+    } finally {
+      _busy = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> registerAccount({
+    required String account,
+    required String code,
+    required String password,
+    required bool useEmail,
+    String phonePrefix = '+233',
+    String promoteCode = '',
+  }) async {
+    _busy = true;
+    _registrationError = null;
+    notifyListeners();
+    try {
+      await _api.registerBuyer(
+        account: account,
+        code: code,
+        password: password,
+        useEmail: useEmail,
+        phonePrefix: phonePrefix,
+        promoteCode: promoteCode,
+      );
+      final loggedIn = await login(
+        account: account,
+        password: password,
+        phonePrefix: phonePrefix,
+      );
+      if (!loggedIn) _registrationError = _loginError;
+      return loggedIn;
+    } catch (error) {
+      _registrationError = error.toString();
+      return false;
+    } finally {
+      _busy = false;
+      notifyListeners();
+    }
   }
 
   Future<bool> login({
@@ -914,6 +1021,7 @@ class TospinoAppController extends ChangeNotifier {
       await Future.wait([refreshCart(), loadOrders()]);
       unawaited(_loadFavoritesSilently());
       _loginOpen = false;
+      _loginPasswordOnly = false;
       _history
         ..clear()
         ..add(_loginReturnRoute);

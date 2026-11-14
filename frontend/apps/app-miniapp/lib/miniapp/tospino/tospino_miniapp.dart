@@ -15,11 +15,13 @@ import 'pages/favorites_page.dart';
 import 'pages/free_gift_page.dart';
 import 'pages/home_page.dart';
 import 'pages/login_page.dart';
+import 'pages/login_method_picker.dart';
 import 'pages/messages_page.dart';
 import 'pages/order_detail_page.dart';
 import 'pages/orders_page.dart';
 import 'pages/product_page.dart';
 import 'pages/profile_page.dart';
+import 'pages/registration_page.dart';
 import 'pages/search_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/shop_follow_page.dart';
@@ -240,6 +242,7 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
                                       title: route.title,
                                       showTitle:
                                           route != TospinoRoute.login &&
+                                          route != TospinoRoute.register &&
                                           (!route.isTabRoot ||
                                               route == TospinoRoute.category),
                                       onBack:
@@ -435,7 +438,9 @@ class _TospinoLoginBottomSheetState extends State<_TospinoLoginBottomSheet> {
                     ),
                   ),
                   Expanded(
-                    child: TospinoLoginPage(controller: widget.controller),
+                    child: TospinoLoginMethodPicker(
+                      controller: widget.controller,
+                    ),
                   ),
                 ],
               ),
@@ -493,7 +498,15 @@ class TospinoPageRouter {
       TospinoRoute.coupons => TospinoCouponsPage(controller: controller),
       TospinoRoute.shopFollow => TospinoShopFollowPage(controller: controller),
       TospinoRoute.address => TospinoAddressPage(controller: controller),
-      TospinoRoute.login => TospinoLoginPage(controller: controller),
+      TospinoRoute.login => TospinoLoginPage(
+        controller: controller,
+        passwordOnly: controller.loginPasswordOnly,
+      ),
+      TospinoRoute.register => TospinoRegistrationPage(
+        controller: controller,
+        useEmail: controller.registrationUseEmail,
+        onBack: controller.back,
+      ),
       TospinoRoute.settings => TospinoSettingsPage(controller: controller),
       TospinoRoute.about => TospinoAboutPage(controller: controller),
     };

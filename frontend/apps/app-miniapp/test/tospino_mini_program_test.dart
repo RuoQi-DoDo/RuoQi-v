@@ -530,7 +530,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('登录 Tospino'), findsOneWidget);
+    expect(find.byKey(const Key('tospino-auth-method-picker')), findsOneWidget);
     expect(find.byKey(const Key('tospino-login-close')), findsOneWidget);
     expect(
       find.byKey(const Key('tospino-login-password-method')),
@@ -541,14 +541,13 @@ void main() {
     await tester.tap(find.byKey(const Key('tospino-login-password-method')));
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const Key('tospino-login-page')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-login-close')), findsNothing);
     expect(find.byKey(const Key('tospino-login-account')), findsOneWidget);
     expect(find.byKey(const Key('tospino-login-password')), findsOneWidget);
     expect(find.text('忘记密码'), findsOneWidget);
     expect(find.text('其他登录方式'), findsOneWidget);
     expect(find.byKey(const Key('tospino-login-agreement')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('tospino-login-close')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('tospino-login-page')), findsNothing);
     expect(controller.loginOpen, isFalse);
     expect(tester.takeException(), isNull);
   });
@@ -566,17 +565,21 @@ void main() {
 
     await tester.tap(find.byKey(const Key('tospino-tab-购物车')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('tospino-login-page')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-cart-login-state')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-auth-method-picker')), findsNothing);
+    await tester.tap(find.byKey(const Key('tospino-cart-login')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('tospino-auth-method-picker')), findsOneWidget);
     expect(find.byKey(const Key('tospino-login-close')), findsOneWidget);
     await tester.tap(find.byKey(const Key('tospino-login-close')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('tospino-home-page')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-cart-page')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('tospino-tab-我的')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('tospino-profile-login')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('tospino-login-page')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-auth-method-picker')), findsOneWidget);
     expect(find.byKey(const Key('tospino-login-close')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -597,8 +600,62 @@ void main() {
     await tester.tap(find.byKey(const Key('tospino-messages-login')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('tospino-login-page')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-auth-method-picker')), findsOneWidget);
     expect(find.byKey(const Key('tospino-login-close')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('手机号注册按验证码和设置密码完整流程执行', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await api.logout();
+    await controller.initialize();
+    controller.openLogin();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('tospino-auth-mode-switch')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tospino-register-phone-method')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('tospino-registration-page')), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('tospino-register-account')),
+      '0241234567',
+    );
+    await tester.tap(find.byKey(const Key('tospino-register-agreement')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('tospino-register-send-code')));
+    await tester.pumpAndSettle();
+    expect(api.registrationCodeCalls, 1);
+
+    await tester.enterText(
+      find.byKey(const Key('tospino-register-code')),
+      '123456',
+    );
+    await tester.tap(find.byKey(const Key('tospino-register-verify-code')));
+    await tester.pumpAndSettle();
+    expect(api.registrationVerifyCalls, 1);
+
+    await tester.enterText(
+      find.byKey(const Key('tospino-register-password')),
+      'abc12345',
+    );
+    await tester.enterText(
+      find.byKey(const Key('tospino-register-password-repeat')),
+      'abc12345',
+    );
+    await tester.tap(find.byKey(const Key('tospino-register-submit')));
+    await tester.pumpAndSettle();
+
+    expect(api.registerCalls, 1);
+    expect(api.lastRegistrationPassword, 'abc12345');
+    expect(controller.isLoggedIn, isTrue);
+    expect(find.byKey(const Key('tospino-login-page')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -806,6 +863,12 @@ class _FakeTospinoApi implements TospinoDataSource {
   int categoryCalls = 0;
   int categoryProductCalls = 0;
   int decorationCalls = 0;
+  int registrationCodeCalls = 0;
+  int registrationVerifyCalls = 0;
+  int registerCalls = 0;
+  String? lastRegistrationAccount;
+  String? lastRegistrationCode;
+  String? lastRegistrationPassword;
   int searchCalls = 0;
   int detailCalls = 0;
   int favoriteCalls = 0;
@@ -867,6 +930,43 @@ class _FakeTospinoApi implements TospinoDataSource {
   Future<List<TospinoCategory>> fetchCategories() async {
     categoryCalls++;
     return categories;
+  }
+
+  @override
+  Future<void> requestRegistrationCode({
+    required String account,
+    required bool useEmail,
+    String phonePrefix = '+233',
+  }) async {
+    registrationCodeCalls++;
+    lastRegistrationAccount = account;
+  }
+
+  @override
+  Future<void> verifyRegistrationCode({
+    required String account,
+    required String code,
+    required bool useEmail,
+    String phonePrefix = '+233',
+  }) async {
+    registrationVerifyCalls++;
+    lastRegistrationAccount = account;
+    lastRegistrationCode = code;
+  }
+
+  @override
+  Future<void> registerBuyer({
+    required String account,
+    required String code,
+    required String password,
+    required bool useEmail,
+    String phonePrefix = '+233',
+    String promoteCode = '',
+  }) async {
+    registerCalls++;
+    lastRegistrationAccount = account;
+    lastRegistrationCode = code;
+    lastRegistrationPassword = password;
   }
 
   @override

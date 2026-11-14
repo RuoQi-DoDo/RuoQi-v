@@ -10,9 +10,14 @@ import '../tospino_style.dart';
 enum _LoginMode { selection, password }
 
 class TospinoLoginPage extends StatefulWidget {
-  const TospinoLoginPage({super.key, required this.controller});
+  const TospinoLoginPage({
+    super.key,
+    required this.controller,
+    this.passwordOnly = false,
+  });
 
   final TospinoAppController controller;
+  final bool passwordOnly;
 
   @override
   State<TospinoLoginPage> createState() => _TospinoLoginPageState();
@@ -21,13 +26,14 @@ class TospinoLoginPage extends StatefulWidget {
 class _TospinoLoginPageState extends State<TospinoLoginPage> {
   final _accountController = TextEditingController();
   final _passwordController = TextEditingController();
-  _LoginMode _mode = _LoginMode.selection;
+  late _LoginMode _mode;
   bool _obscurePassword = true;
   bool _agreed = false;
 
   @override
   void initState() {
     super.initState();
+    _mode = widget.passwordOnly ? _LoginMode.password : _LoginMode.selection;
     _accountController.addListener(_refreshForm);
     _passwordController.addListener(_refreshForm);
   }
@@ -82,6 +88,10 @@ class _TospinoLoginPageState extends State<TospinoLoginPage> {
 
   void _showSelection() {
     FocusManager.instance.primaryFocus?.unfocus();
+    if (widget.passwordOnly) {
+      widget.controller.back();
+      return;
+    }
     setState(() => _mode = _LoginMode.selection);
   }
 
@@ -98,6 +108,7 @@ class _TospinoLoginPageState extends State<TospinoLoginPage> {
       child: switch (_mode) {
         _LoginMode.selection => _LoginSelection(
           onPasswordLogin: _showPasswordLogin,
+          onRegister: () => widget.controller.openRegistration(useEmail: false),
           onUnavailable: (label) => showTospinoToast(context, '$label暂未开放'),
         ),
         _LoginMode.password => _buildPasswordLogin(context),
@@ -330,10 +341,12 @@ class _TospinoLoginPageState extends State<TospinoLoginPage> {
 class _LoginSelection extends StatelessWidget {
   const _LoginSelection({
     required this.onPasswordLogin,
+    required this.onRegister,
     required this.onUnavailable,
   });
 
   final VoidCallback onPasswordLogin;
+  final VoidCallback onRegister;
   final ValueChanged<String> onUnavailable;
 
   @override
@@ -433,7 +446,7 @@ class _LoginSelection extends StatelessWidget {
                         const SizedBox(width: 8),
                         InkWell(
                           key: const Key('tospino-login-register'),
-                          onTap: () => _showRegistrationNotice(context),
+                          onTap: onRegister,
                           child: Text(
                             localizeMiniProgramLabel(context, '注册'),
                             style: TextStyle(
@@ -454,55 +467,6 @@ class _LoginSelection extends StatelessWidget {
       ),
     );
   }
-}
-
-Future<void> _showRegistrationNotice(BuildContext context) {
-  return showDialog<void>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      key: const Key('tospino-register-notice'),
-      backgroundColor: TospinoColors.resolve(
-        dialogContext,
-        TospinoColors.surface,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      icon: Container(
-        width: 58,
-        height: 58,
-        decoration: BoxDecoration(
-          color: TospinoColors.resolve(
-            dialogContext,
-            TospinoColors.brandPale,
-          ),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          Icons.person_add_alt_1_rounded,
-          color: TospinoColors.solidBrand(dialogContext),
-          size: 28,
-        ),
-      ),
-      title: Text(
-        localizeMiniProgramLabel(dialogContext, '注册功能即将开放'),
-        textAlign: TextAlign.center,
-      ),
-      content: Text(
-        localizeMiniProgramLabel(
-          dialogContext,
-          '注册功能正在接入，暂时请使用已有账号登录。',
-        ),
-        textAlign: TextAlign.center,
-        style: TospinoText.secondary(dialogContext),
-      ),
-      actionsAlignment: MainAxisAlignment.center,
-      actions: [
-        FilledButton(
-          onPressed: () => Navigator.of(dialogContext).pop(),
-          child: Text(localizeMiniProgramLabel(dialogContext, '知道了')),
-        ),
-      ],
-    ),
-  );
 }
 
 class _LoginOption {

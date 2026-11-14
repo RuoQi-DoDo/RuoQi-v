@@ -89,6 +89,25 @@ abstract interface class TospinoDataSource {
   Future<List<String>> fetchHomeRecommendWords();
   Future<List<TospinoFreeGift>> fetchFreeGifts();
   Future<List<TospinoCategory>> fetchCategories();
+  Future<void> requestRegistrationCode({
+    required String account,
+    required bool useEmail,
+    String phonePrefix = '+233',
+  });
+  Future<void> verifyRegistrationCode({
+    required String account,
+    required String code,
+    required bool useEmail,
+    String phonePrefix = '+233',
+  });
+  Future<void> registerBuyer({
+    required String account,
+    required String code,
+    required String password,
+    required bool useEmail,
+    String phonePrefix = '+233',
+    String promoteCode = '',
+  });
   Future<List<TospinoProduct>> fetchProductsByIds(List<String> ids);
   Future<List<TospinoProduct>> searchProducts({
     String keyword = '',
@@ -187,11 +206,13 @@ class TospinoApi implements TospinoDataSource {
     return value;
   }
 
-  Options _options({bool authenticated = true}) => Options(
-    contentType: Headers.jsonContentType,
-    headers: authenticated
-        ? session.headers
-        : {
+  Options _options({
+    bool authenticated = true,
+    Map<String, String>? extraHeaders,
+  }) {
+    final headers = authenticated
+        ? Map<String, String>.from(session.headers)
+        : <String, String>{
             'Authorization': TospinoConfig.basicAuthorization,
             'Accept': 'application/json',
             'clientType': 'android',
@@ -200,9 +221,14 @@ class TospinoApi implements TospinoDataSource {
             'versionCode': TospinoConfig.appVersionCode,
             'site': TospinoConfig.site,
             'termId': session.termId,
-          },
-    responseType: ResponseType.json,
-  );
+          };
+    if (extraHeaders != null) headers.addAll(extraHeaders);
+    return Options(
+      contentType: Headers.jsonContentType,
+      headers: headers,
+      responseType: ResponseType.json,
+    );
+  }
 
   Future<dynamic> _get(String path, {Map<String, dynamic>? query}) async {
     try {
@@ -222,13 +248,14 @@ class TospinoApi implements TospinoDataSource {
     String path, {
     Object? data,
     Map<String, dynamic>? query,
+    Map<String, String>? headers,
   }) async {
     try {
       final response = await _dio.post<dynamic>(
         path,
         data: data,
         queryParameters: query,
-        options: _options(),
+        options: _options(extraHeaders: headers),
       );
       return _unwrap(response.data);
     } on DioException catch (error) {
@@ -355,6 +382,90 @@ class TospinoApi implements TospinoDataSource {
   Future<List<TospinoCategory>> fetchCategories() async {
     final data = await _get('/product/nav/category/list/tree/1');
     return _asList(data).map(_categoryFromJson).toList(growable: false);
+  }
+
+  @override
+  Future<void> requestRegistrationCode({
+    required String account,
+    required bool useEmail,
+    String phonePrefix = '+233',
+  }) async {
+    final trimmed = account.trim();
+    if (useEmail) {
+      await _get(
+        '/admin/ums/checkcode/getEmailCode',
+        query: {'email': trimmed, 'userType': 'buyer', 'type': '1'},
+      );
+      return;
+    }
+    await _get(
+      '/admin/ums/checkcode/getPhoneCode',
+      query: {
+        'phone': _tospinoRegistrationPhone(trimmed),
+        'phonePrefix': phonePrefix,
+        'userType': 'buyer',
+        'type': '1',
+      },
+    );
+  }
+
+  @override
+  Future<void> verifyRegistrationCode({
+    required String account,
+    required String code,
+    required bool useEmail,
+    String phonePrefix = '+233',
+  }) async {
+    final query = <String, dynamic>{
+      'code': code.trim(),
+      'userType': 'buyer',
+      'isDelCode': '0',
+    };
+    if (useEmail) {
+      query['email'] = account.trim();
+    } else {
+      query
+        ..['phone'] = _tospinoRegistrationPhone(account.trim())
+        ..['phonePrefix'] = phonePrefix;
+    }
+    await _post(
+      useEmail
+          ? '/admin/ums/checkcode/checkEmailCode'
+          : '/admin/ums/checkcode/checkPhone',
+      query: query,
+    );
+  }
+
+  @override
+  Future<void> registerBuyer({
+    required String account,
+    required String code,
+    required String password,
+    required bool useEmail,
+    String phonePrefix = '+233',
+    String promoteCode = '',
+  }) async {
+    final encryptedPassword = tospinoEncryptPassword(password);
+    final query = <String, dynamic>{
+      'code': code.trim(),
+      'password': encryptedPassword,
+      'repeatPassword': encryptedPassword,
+    };
+    if (useEmail) {
+      query['email'] = account.trim();
+    } else {
+      query
+        ..['phone'] = _tospinoRegistrationPhone(account.trim())
+        ..['phonePrefix'] = phonePrefix;
+    }
+    await _post(
+      '/admin/ums/buyer/register',
+      query: query,
+      headers: {
+        'termId': session.termId,
+        if (promoteCode.trim().isNotEmpty) 'promoteCode': promoteCode.trim(),
+      },
+    );
   }
 
   @override
@@ -686,7 +797,7 @@ class TospinoApi implements TospinoDataSource {
     final trimmed = account.trim();
     final username = trimmed.contains('@') || trimmed.startsWith('+')
         ? trimmed
-        : '$phonePrefix$trimmed';
+        : '$phonePrefix${_tospinoRegistrationPhone(trimmed)}';
     final form = Uri(
       queryParameters: {
         'grant_type': 'password',
@@ -791,6 +902,11 @@ String tospinoEncryptPassword(String password) {
     ),
   );
   return encrypter.encryptBytes(padded, iv: crypt.IV.fromUtf8(keyText)).base64;
+}
+
+String _tospinoRegistrationPhone(String value) {
+  final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+  return digits.replaceFirst(RegExp(r'^0+'), '');
 }
 
 TospinoFreeGift _freeGiftFromJson(dynamic value) {
