@@ -39,6 +39,7 @@ class _TospinoMessagesPageState extends State<TospinoMessagesPage> {
           Expanded(
             child: !controller.isLoggedIn
                 ? _MessagesState(
+                    actionKey: const Key('tospino-messages-login'),
                     icon: Icons.mark_email_unread_outlined,
                     title: '登录后查看订单消息',
                     subtitle: '订单状态与配送动态会集中显示在这里',
@@ -300,6 +301,7 @@ class _OrderMessageCard extends StatelessWidget {
 
 class _MessagesState extends StatelessWidget {
   const _MessagesState({
+    this.actionKey,
     required this.icon,
     required this.title,
     required this.subtitle,
@@ -308,6 +310,7 @@ class _MessagesState extends StatelessWidget {
   });
 
   final IconData icon;
+  final Key? actionKey;
   final String title;
   final String subtitle;
   final String action;
@@ -350,6 +353,7 @@ class _MessagesState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             FilledButton(
+              key: actionKey,
               onPressed: onAction,
               child: Text(localizeMiniProgramLabel(context, action)),
             ),

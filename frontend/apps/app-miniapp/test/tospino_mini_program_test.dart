@@ -519,7 +519,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Tospino 登录页使用安卓账号密码布局', (tester) async {
+  testWidgets('Tospino 登录从底部弹出并保留关闭入口', (tester) async {
     _usePhoneSize(tester);
     final api = _FakeTospinoApi();
     final controller = _controller(api);
@@ -531,6 +531,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('登录 Tospino'), findsOneWidget);
+    expect(find.byKey(const Key('tospino-login-close')), findsOneWidget);
     expect(
       find.byKey(const Key('tospino-login-password-method')),
       findsOneWidget,
@@ -545,6 +546,59 @@ void main() {
     expect(find.text('忘记密码'), findsOneWidget);
     expect(find.text('其他登录方式'), findsOneWidget);
     expect(find.byKey(const Key('tospino-login-agreement')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tospino-login-close')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('tospino-login-page')), findsNothing);
+    expect(controller.loginOpen, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('购物车和登录注册入口复用登录底部弹层', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await api.logout();
+    await controller.initialize();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('tospino-tab-购物车')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('tospino-login-page')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-login-close')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tospino-login-close')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('tospino-home-page')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('tospino-tab-我的')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tospino-profile-login')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('tospino-login-page')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-login-close')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('消息页登录入口复用登录底部弹层', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await api.logout();
+    await controller.initialize();
+    controller.switchTab(1);
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('tospino-messages-page')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tospino-messages-login')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('tospino-login-page')), findsOneWidget);
+    expect(find.byKey(const Key('tospino-login-close')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

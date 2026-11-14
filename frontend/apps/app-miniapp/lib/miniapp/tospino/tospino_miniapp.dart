@@ -85,6 +85,7 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
   late final bool _ownsController;
   TospinoRoute? _statusRoute;
   bool _statusScrolled = false;
+  bool _loginSheetShowing = false;
 
   @override
   void initState() {
@@ -143,6 +144,7 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
   }
 
   Widget _buildContent(BuildContext context, Widget? _) {
+    _scheduleLoginSheet();
     final route = _controller.route;
     if (_statusRoute != route) {
       _statusRoute = route;
@@ -285,6 +287,35 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
       ),
     );
   }
+
+  void _scheduleLoginSheet() {
+    if (!_controller.loginOpen || _loginSheetShowing) return;
+    _loginSheetShowing = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_presentLoginSheet());
+    });
+  }
+
+  Future<void> _presentLoginSheet() async {
+    if (!mounted || !_controller.loginOpen) {
+      _loginSheetShowing = false;
+      return;
+    }
+    await showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.46),
+      builder: (context) => _TospinoLoginBottomSheet(controller: _controller),
+    );
+    if (!mounted) return;
+    _loginSheetShowing = false;
+    _controller.closeLogin();
+  }
 }
 
 class _TospinoTextScaleScope extends StatelessWidget {
@@ -327,6 +358,116 @@ class _TospinoAndroidTextScaler extends TextScaler {
 
   @override
   int get hashCode => Object.hash(hostScaler, correction);
+}
+
+class _TospinoLoginBottomSheet extends StatefulWidget {
+  const _TospinoLoginBottomSheet({required this.controller});
+
+  final TospinoAppController controller;
+
+  @override
+  State<_TospinoLoginBottomSheet> createState() =>
+      _TospinoLoginBottomSheetState();
+}
+
+class _TospinoLoginBottomSheetState extends State<_TospinoLoginBottomSheet> {
+  bool _closing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_handleControllerChange);
+  }
+
+  @override
+  void didUpdateWidget(covariant _TospinoLoginBottomSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller == widget.controller) return;
+    oldWidget.controller.removeListener(_handleControllerChange);
+    widget.controller.addListener(_handleControllerChange);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_handleControllerChange);
+    super.dispose();
+  }
+
+  void _handleControllerChange() {
+    if (widget.controller.loginOpen || _closing || !mounted) return;
+    _closing = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      padding: EdgeInsets.only(bottom: keyboardInset),
+      child: FractionallySizedBox(
+        heightFactor: keyboardInset > 0 ? 1 : 0.9,
+        child: Material(
+          color: TospinoColors.resolve(context, TospinoColors.background),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  SizedBox(
+                    height: 26,
+                    child: Center(
+                      child: Container(
+                        width: 38,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: TospinoColors.resolve(
+                            context,
+                            TospinoColors.lineStrong,
+                          ),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: TospinoLoginPage(controller: widget.controller),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: 6,
+                right: 8,
+                child: Material(
+                  color: TospinoColors.resolve(
+                    context,
+                    TospinoColors.surfaceMuted,
+                  ),
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: IconButton(
+                    key: const Key('tospino-login-close'),
+                    tooltip: localizeMiniProgramLabel(context, '关闭登录'),
+                    onPressed: widget.controller.closeLogin,
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 20,
+                      color: TospinoColors.resolve(context, TospinoColors.ink),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class TospinoPageRouter {

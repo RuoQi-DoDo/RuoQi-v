@@ -183,6 +183,7 @@ const tospinoMiniProgramLabels = <String, String>{
   '版本': 'Version',
   '登录 / 注册': 'Log in / Sign up',
   '登录 Tospino': 'Log in to Tospino',
+  '关闭登录': 'Close login',
   '使用账号密码继续': 'Continue with username',
   '使用手机号码继续': 'Continue with phone',
   '使用电子邮件继续': 'Continue with email',

@@ -131,6 +131,7 @@ class _ProfileHeader extends StatelessWidget {
                       const SizedBox(width: 13),
                       Expanded(
                         child: InkWell(
+                          key: const Key('tospino-profile-login'),
                           onTap: loggedIn
                               ? null
                               : () => controller.openLogin(

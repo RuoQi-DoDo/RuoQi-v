@@ -303,7 +303,7 @@ class _TospinoLoginPageState extends State<TospinoLoginPage> {
                   _AgreementRow(
                     agreed: _agreed,
                     onChanged: () => setState(() => _agreed = !_agreed),
-                    linkColor: TospinoColors.link,
+                    linkColor: TospinoColors.solidBrand(context),
                   ),
                 ],
               ),
@@ -413,7 +413,7 @@ class _LoginSelection extends StatelessWidget {
                       context,
                       TospinoColors.hint,
                     ),
-                    linkColor: TospinoColors.link,
+                    linkColor: TospinoColors.solidBrand(context),
                   ),
                   const SizedBox(height: 20),
                   Container(
@@ -433,7 +433,7 @@ class _LoginSelection extends StatelessWidget {
                         const SizedBox(width: 8),
                         InkWell(
                           key: const Key('tospino-login-register'),
-                          onTap: () => showTospinoToast(context, '注册功能即将开放'),
+                          onTap: () => _showRegistrationNotice(context),
                           child: Text(
                             localizeMiniProgramLabel(context, '注册'),
                             style: TextStyle(
@@ -454,6 +454,55 @@ class _LoginSelection extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _showRegistrationNotice(BuildContext context) {
+  return showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      key: const Key('tospino-register-notice'),
+      backgroundColor: TospinoColors.resolve(
+        dialogContext,
+        TospinoColors.surface,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      icon: Container(
+        width: 58,
+        height: 58,
+        decoration: BoxDecoration(
+          color: TospinoColors.resolve(
+            dialogContext,
+            TospinoColors.brandPale,
+          ),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          Icons.person_add_alt_1_rounded,
+          color: TospinoColors.solidBrand(dialogContext),
+          size: 28,
+        ),
+      ),
+      title: Text(
+        localizeMiniProgramLabel(dialogContext, '注册功能即将开放'),
+        textAlign: TextAlign.center,
+      ),
+      content: Text(
+        localizeMiniProgramLabel(
+          dialogContext,
+          '注册功能正在接入，暂时请使用已有账号登录。',
+        ),
+        textAlign: TextAlign.center,
+        style: TospinoText.secondary(dialogContext),
+      ),
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: Text(localizeMiniProgramLabel(dialogContext, '知道了')),
+        ),
+      ],
+    ),
+  );
 }
 
 class _LoginOption {

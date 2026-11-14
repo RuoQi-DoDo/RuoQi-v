@@ -63,6 +63,7 @@ class TospinoAppController extends ChangeNotifier {
   bool _forward = true;
   bool _initialized = false;
   bool _homeLoaded = false;
+  bool _loginOpen = false;
   bool _busy = false;
   bool _loadingHome = false;
   bool _loadingMoreHome = false;
@@ -115,6 +116,7 @@ class TospinoAppController extends ChangeNotifier {
   bool get forward => _forward;
   bool get canGoBack => _history.length > 1;
   bool get initialized => _initialized;
+  bool get loginOpen => _loginOpen;
   bool get homeLoaded => _homeLoaded;
   bool get busy => _busy;
   bool get isLoggedIn => _api.isLoggedIn;
@@ -427,6 +429,7 @@ class TospinoAppController extends ChangeNotifier {
   }
 
   void resetToHome() {
+    _loginOpen = false;
     _history
       ..clear()
       ..add(TospinoRoute.home);
@@ -883,7 +886,15 @@ class TospinoAppController extends ChangeNotifier {
   void openLogin({TospinoRoute returnTo = TospinoRoute.profile}) {
     _loginReturnRoute = returnTo;
     _loginError = null;
-    open(TospinoRoute.login);
+    _loginOpen = true;
+    notifyListeners();
+  }
+
+  void closeLogin() {
+    if (!_loginOpen) return;
+    _loginOpen = false;
+    _loginError = null;
+    notifyListeners();
   }
 
   Future<bool> login({
@@ -902,6 +913,7 @@ class TospinoAppController extends ChangeNotifier {
       );
       await Future.wait([refreshCart(), loadOrders()]);
       unawaited(_loadFavoritesSilently());
+      _loginOpen = false;
       _history
         ..clear()
         ..add(_loginReturnRoute);
