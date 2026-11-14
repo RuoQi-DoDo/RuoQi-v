@@ -83,8 +83,9 @@ run-business target="web" port="51002":
     cd frontend/apps/business-pc && flutter run -d {{ if target == "web" { "web-server" } else { target } }}{{ if target == "web" { " --web-port " + port } else { "" } }}
 
 # 不传 target 时交给 Flutter 选择设备；传 web 仍启动 Web。
+# 构建模式可直接传：just run-app --release / --profile / --debug
 run-app target="" port="51003":
-    cd frontend/apps/app-miniapp && flutter run{{ if target == "web" { " -d web-server --web-port " + port } else { if target != "" { " -d " + target } else { "" } } }}
+    cd frontend/apps/app-miniapp && flutter run{{ if target == "--release" { " --release" } else if target == "--profile" { " --profile" } else if target == "--debug" { " --debug" } else if target == "web" { " -d web-server --web-port " + port } else { if target != "" { " -d " + target } else { "" } } }}
 
 # 一条命令并行拉起全部 3 个原型 + 静态入口页（51090）。
 # 打开 http://localhost:51090 一页点进所有端；Ctrl-C 全部停止。
