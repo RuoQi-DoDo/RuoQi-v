@@ -1723,88 +1723,271 @@ class _ZeroYuanCampaignSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            itemCount: shown.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisExtent: 142,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-            ),
-            itemBuilder: (context, index) {
-              final product = shown[index];
-              return Material(
-                borderRadius: BorderRadius.circular(13),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: () => controller.open(TospinoRoute.freeGift),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      _CampaignProductImage(
-                        product: product,
-                        width: double.infinity,
-                        height: 142,
-                        radius: 0,
-                      ),
-                      const DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Colors.transparent, Colors.black87],
-                          ),
+          if (shown.length == 1)
+            _ZeroYuanSingleProduct(
+              product: shown.first,
+              accent: campaign.accent,
+              onTap: () => controller.open(TospinoRoute.freeGift),
+            )
+          else
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: shown.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisExtent: 142,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              itemBuilder: (context, index) {
+                final product = shown[index];
+                return Material(
+                  borderRadius: BorderRadius.circular(13),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () => controller.open(TospinoRoute.freeGift),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        _CampaignProductImage(
+                          product: product,
+                          width: double.infinity,
+                          height: 142,
+                          radius: 0,
                         ),
-                      ),
-                      Positioned(
-                        left: 8,
-                        top: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 3,
-                          ),
+                        const DecoratedBox(
                           decoration: BoxDecoration(
-                            color: campaign.accent,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            '0元',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: TospinoText.strong,
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Colors.black87],
                             ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        left: 9,
-                        right: 9,
-                        bottom: 9,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              localizeMiniProgramLabel(context, '邀请好友领取'),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                        Positioned(
+                          left: 8,
+                          top: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: campaign.accent,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              '0元',
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.82),
-                                fontSize: 9.5,
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: TospinoText.strong,
                               ),
                             ),
-                            const SizedBox(height: 3),
-                            Row(
+                          ),
+                        ),
+                        Positioned(
+                          left: 9,
+                          right: 9,
+                          bottom: 9,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                localizeMiniProgramLabel(context, '邀请好友领取'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.82),
+                                  fontSize: 9.5,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Row(
+                                children: [
+                                  Text(
+                                    localizeMiniProgramLabel(context, '立即领取'),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11.5,
+                                      fontWeight: TospinoText.strong,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  const Icon(
+                                    Icons.arrow_forward_rounded,
+                                    color: Colors.white,
+                                    size: 13,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ZeroYuanSingleProduct extends StatelessWidget {
+  const _ZeroYuanSingleProduct({
+    required this.product,
+    required this.accent,
+    required this.onTap,
+  });
+
+  final TospinoProduct product;
+  final Color accent;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      key: const Key('tospino-home-zero-yuan-single'),
+      color: TospinoColors.resolve(context, TospinoColors.surface),
+      borderRadius: BorderRadius.circular(15),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: 158,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 5,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _CampaignProductImage(
+                      product: product,
+                      width: double.infinity,
+                      height: 158,
+                      radius: 0,
+                    ),
+                    Positioned(
+                      left: 10,
+                      top: 10,
+                      child: Container(
+                        width: 38,
+                        height: 38,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: accent,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.12),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          '0',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: TospinoText.strong,
+                            height: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                flex: 6,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(13, 12, 12, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: accent.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(7),
+                            ),
+                            child: Text(
+                              localizeMiniProgramLabel(context, '0元购'),
+                              style: TextStyle(
+                                color: accent,
+                                fontSize: 10,
+                                fontWeight: TospinoText.strong,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          Icon(
+                            Icons.arrow_outward_rounded,
+                            color: accent,
+                            size: 18,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 9),
+                      Text(
+                        product.title,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: TospinoText.bodyStrong(
+                          context,
+                        ).copyWith(fontSize: 13.5, height: 1.3),
+                      ),
+                      const Spacer(),
+                      Text(
+                        localizeMiniProgramLabel(context, '邀请好友领取'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TospinoText.hint(
+                          context,
+                        ).copyWith(fontSize: 9.5),
+                      ),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 11,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  accent,
+                                  Color.lerp(accent, Colors.black, 0.12)!,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
                                   localizeMiniProgramLabel(context, '立即领取'),
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 11.5,
+                                    fontSize: 10.5,
                                     fontWeight: TospinoText.strong,
                                   ),
                                 ),
@@ -1816,16 +1999,16 @@ class _ZeroYuanCampaignSection extends StatelessWidget {
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-              );
-            },
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

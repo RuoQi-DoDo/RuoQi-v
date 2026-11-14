@@ -181,6 +181,38 @@ void main() {
     expect(find.text(api.products.first.title), findsWidgets);
   });
 
+  testWidgets('首页 0 元购单商品使用全宽独立样式', (tester) async {
+    _usePhoneSize(tester);
+    tester.view.physicalSize = const Size(360, 800);
+    final api = _SingleFreeGiftTospinoApi();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: _controller(api))),
+    );
+    await tester.pumpAndSettle();
+
+    final verticalScrollable = find
+        .byWidgetPredicate(
+          (widget) =>
+              widget is Scrollable &&
+              widget.axisDirection == AxisDirection.down,
+        )
+        .first;
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('tospino-home-campaign-zeroYuan')),
+      360,
+      scrollable: verticalScrollable,
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('tospino-home-zero-yuan-single')),
+      findsOneWidget,
+    );
+    expect(find.text('0元购'), findsWidgets);
+    expect(find.text('Single zero-yuan product'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Tospino 首页始终使用本地信息架构而非装修组件', (tester) async {
     _usePhoneSize(tester);
     final api = _DecoratedTospinoApi();
@@ -1455,6 +1487,25 @@ class _DelayedInitializeTospinoApi extends _FakeTospinoApi {
 
   @override
   Future<void> initialize() => initializeCompleter.future;
+}
+
+class _SingleFreeGiftTospinoApi extends _FakeTospinoApi {
+  @override
+  Future<List<TospinoFreeGift>> fetchFreeGifts() async => const [
+    TospinoFreeGift(
+      id: 'free-1',
+      activityCode: 'FREE-1',
+      productId: 'free-product-1',
+      productName: 'Single zero-yuan product',
+      productImage: 'https://example.com/free-product.jpg',
+      storeName: 'Tospino Store',
+      minPrice: 0,
+      maxPrice: 0,
+      receiveNum: 12,
+      requiredHelpers: 3,
+      durationHours: 24,
+    ),
+  ];
 }
 
 class _PagedTospinoApi extends _FakeTospinoApi {
