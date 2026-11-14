@@ -23,7 +23,7 @@ class nJ1cwHfpPage extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(0),
               child: Image.asset(
-                'assets/images/3a0f5850-39b6-11ef-8049-69d89b4e38f0.png',
+                'lib/miniapp/merchant/assets/images/3a0f5850-39b6-11ef-8049-69d89b4e38f0.png',
                 fit: BoxFit.contain,
                 width: 367,
                 height: 785,

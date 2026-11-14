@@ -94,6 +94,9 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
+          final route = _controller.route;
+          final page = HrPageRouter.build(route, _controller);
+          final transparentStatusBar = route == HrRoute.me;
           return PopScope(
             canPop: false,
             onPopInvokedWithResult: (didPop, result) {
@@ -108,7 +111,9 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
             },
             child: AnnotatedRegion<SystemUiOverlayStyle>(
               value: SystemUiOverlayStyle(
-                statusBarColor: HrColors.resolve(context, HrColors.surface),
+                statusBarColor: transparentStatusBar
+                    ? Colors.transparent
+                    : HrColors.resolve(context, HrColors.surface),
                 statusBarIconBrightness:
                     Theme.of(context).brightness == Brightness.dark
                     ? Brightness.light
@@ -124,85 +129,93 @@ class _HrMiniProgramState extends State<HrMiniProgram> {
                   color: HrColors.resolve(context, HrColors.bg),
                   child: Column(
                     children: [
-                      MiniProgramStatusBar(
-                        backgroundColor: HrColors.resolve(
-                          context,
-                          HrColors.surface,
+                      if (!transparentStatusBar)
+                        MiniProgramStatusBar(
+                          backgroundColor: HrColors.resolve(
+                            context,
+                            HrColors.surface,
+                          ),
+                          foregroundColor: HrColors.resolve(
+                            context,
+                            HrColors.ink,
+                          ),
+                          fallbackHeight: 26,
+                          fontSize: 11,
+                          iconSize: 13,
+                          iconGap: 4,
                         ),
-                        foregroundColor: HrColors.resolve(
-                          context,
-                          HrColors.ink,
-                        ),
-                        fallbackHeight: 26,
-                        fontSize: 11,
-                        iconSize: 13,
-                        iconGap: 4,
-                      ),
-                      MiniProgramNavigationBar(
-                        title: _controller.route.title,
-                        miniProgramId: MiniProgramLauncherIds.hr,
-                        canGoBack: _controller.canGoBack,
-                        onBack: _controller.back,
-                        onMore: _showMore,
-                        onClose: _exit,
-                        leading: _controller.canGoBack
-                            ? null
-                            : const Padding(
-                                padding: EdgeInsets.only(left: 5),
-                                child: HrLogoMark(size: 30),
-                              ),
-                        backgroundColor: HrColors.resolve(
-                          context,
-                          HrColors.surface,
-                        ),
-                        foregroundColor: HrColors.resolve(
-                          context,
-                          HrColors.ink,
-                        ),
-                        borderColor: HrColors.resolve(context, HrColors.line2),
-                        backIconSize: 18,
-                        titleStyle: HrText.resolve(
-                          context,
-                          HrText.cardTitle,
-                        ).copyWith(fontSize: 14),
-                      ),
                       Expanded(
-                        child: ColoredBox(
-                          color: HrColors.resolve(context, HrColors.bg),
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 210),
-                            switchInCurve: Curves.easeOutCubic,
-                            switchOutCurve: Curves.easeInCubic,
-                            layoutBuilder: (currentChild, previousChildren) {
-                              return Stack(
-                                fit: StackFit.expand,
-                                children: [...previousChildren, ?currentChild],
-                              );
-                            },
-                            transitionBuilder: (child, animation) {
-                              final begin = Offset(
-                                _controller.forward ? 0.07 : -0.07,
-                                0,
-                              );
-                              return SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: begin,
-                                  end: Offset.zero,
-                                ).animate(animation),
-                                child: FadeTransition(
-                                  opacity: animation,
-                                  child: child,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            ColoredBox(
+                              color: HrColors.resolve(context, HrColors.bg),
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 210),
+                                switchInCurve: Curves.easeOutCubic,
+                                switchOutCurve: Curves.easeInCubic,
+                                layoutBuilder:
+                                    (currentChild, previousChildren) {
+                                      return Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          ...previousChildren,
+                                          ?currentChild,
+                                        ],
+                                      );
+                                    },
+                                transitionBuilder: (child, animation) {
+                                  final begin = Offset(
+                                    _controller.forward ? 0.07 : -0.07,
+                                    0,
+                                  );
+                                  return SlideTransition(
+                                    position: Tween<Offset>(
+                                      begin: begin,
+                                      end: Offset.zero,
+                                    ).animate(animation),
+                                    child: FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                                child: KeyedSubtree(
+                                  key: ValueKey(_controller.route),
+                                  child: _controller.route == HrRoute.home
+                                      ? page
+                                      : MiniProgramPageCanvas(
+                                          title: _controller.route.title,
+                                          showTitle:
+                                              !_controller.route.isTabRoot,
+                                          onBack:
+                                              !_controller.route.isTabRoot &&
+                                                  _controller.canGoBack
+                                              ? _controller.back
+                                              : null,
+                                          foregroundColor: HrColors.resolve(
+                                            context,
+                                            HrColors.ink,
+                                          ),
+                                          child: page,
+                                        ),
                                 ),
-                              );
-                            },
-                            child: KeyedSubtree(
-                              key: ValueKey(_controller.route),
-                              child: HrPageRouter.build(
-                                _controller.route,
-                                _controller,
                               ),
                             ),
-                          ),
+                            Positioned(
+                              top:
+                                  (transparentStatusBar
+                                      ? MediaQuery.paddingOf(context).top
+                                      : 0) +
+                                  5,
+                              right: 10,
+                              child: MiniProgramCapsuleOverlay(
+                                miniProgramId: MiniProgramLauncherIds.hr,
+                                onMore: _showMore,
+                                onClose: _exit,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       if (_controller.route.showsBottomNavigation)

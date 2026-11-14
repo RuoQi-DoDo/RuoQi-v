@@ -5,7 +5,7 @@ import 'package:ruoqi_app_miniapp/main.dart';
 
 void main() {
   testWidgets('移动端应用字体设置且不启用全局文案选择', (tester) async {
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
 
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(app.builder, isNotNull);

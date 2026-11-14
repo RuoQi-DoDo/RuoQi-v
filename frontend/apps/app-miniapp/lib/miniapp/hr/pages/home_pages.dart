@@ -1,4 +1,4 @@
-import '../../common/miniapp_localizations.dart';
+import '../../common/common.dart';
 
 import 'dart:math' as math;
 

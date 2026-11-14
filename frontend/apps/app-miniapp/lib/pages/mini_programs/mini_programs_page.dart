@@ -122,14 +122,9 @@ class _MiniProgramsPageState extends State<MiniProgramsPage> {
                             key: Key('mini-program-entry-${item.id}'),
                             enabled: _openingId == null,
                             contentPadding: const EdgeInsets.all(12),
-                            leading: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: item.color.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(item.icon, color: item.color),
+                            leading: MiniProgramLauncherIcon(
+                              item: item,
+                              size: 44,
                             ),
                             title: Text(
                               localizeMiniProgramLabel(context, item.label),

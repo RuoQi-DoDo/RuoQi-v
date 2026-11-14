@@ -129,7 +129,7 @@ void main() {
 
   testWidgets('关闭并重新打开宿主小程序面板后保留删除结果', (tester) async {
     _phone(tester);
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     await _openPicker(tester);
     final controller = MiniProgramLibraryScope.maybeOf(
@@ -178,7 +178,7 @@ void main() {
     final controller = MiniProgramLibraryScope.maybeOf(context)!;
     settings.setMode(ThemeMode.dark);
     settings.setLocale(const Locale('en'));
-    settings.setFontScale(1.3);
+    settings.setFontScale(1.2);
     await tester.pumpAndSettle();
 
     final gesture = await _startDrag(tester, 'recent', 'file-assistant');

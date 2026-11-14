@@ -35,7 +35,7 @@ class q9bt3PbzK8Page extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: Image.asset(
-                'assets/images/f00a82a0-2a6b-11eb-9d07-2f4793ff081d.jpg',
+                'lib/miniapp/merchant/assets/images/f00a82a0-2a6b-11eb-9d07-2f4793ff081d.jpg',
                 fit: BoxFit.contain,
                 width: 30,
                 height: 30,

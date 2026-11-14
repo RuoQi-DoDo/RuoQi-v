@@ -4,10 +4,7 @@ part 'partner_profile.g.dart';
 
 @JsonSerializable()
 class PartnerProfile {
-  const PartnerProfile({
-    required this.name,
-    required this.status,
-  });
+  const PartnerProfile({required this.name, required this.status});
 
   final String name;
   final String status;

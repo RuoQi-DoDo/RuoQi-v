@@ -31,6 +31,8 @@ class AtsMiniProgram extends StatefulWidget {
 
 class _AtsMiniProgramState extends State<AtsMiniProgram> {
   late final AtsAppController _controller;
+  AtsRoute? _statusRoute;
+  bool _statusScrolled = false;
 
   @override
   void initState() {
@@ -61,6 +63,17 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
     );
   }
 
+  bool _handleScroll(ScrollNotification notification) {
+    _setStatusScrolled(notification.metrics.pixels > 8);
+    return false;
+  }
+
+  void _setStatusScrolled(bool scrolled) {
+    if (scrolled != _statusScrolled) {
+      setState(() => _statusScrolled = scrolled);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Theme(
@@ -69,18 +82,29 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
         animation: _controller,
         builder: (context, _) {
           final route = _controller.route;
+          if (_statusRoute != route) {
+            _statusRoute = route;
+            _statusScrolled = false;
+          }
           final greenNav = route.usesGreenNavigation;
+          final transparentStatusBar = route == AtsRoute.profile;
+          final useGreenStatus = greenNav && !_statusScrolled;
+          final page = AtsPageRouter.build(route, _controller);
           final content = AnnotatedRegion<SystemUiOverlayStyle>(
             value: SystemUiOverlayStyle(
-              statusBarColor: greenNav
+              statusBarColor: transparentStatusBar
+                  ? Colors.transparent
+                  : useGreenStatus
                   ? AtsColors.solidPrimary(context)
                   : AtsColors.resolve(context, AtsColors.surface),
               statusBarIconBrightness:
-                  greenNav || Theme.of(context).brightness == Brightness.dark
+                  useGreenStatus ||
+                      Theme.of(context).brightness == Brightness.dark
                   ? Brightness.light
                   : Brightness.dark,
               statusBarBrightness:
-                  greenNav || Theme.of(context).brightness == Brightness.dark
+                  useGreenStatus ||
+                      Theme.of(context).brightness == Brightness.dark
                   ? Brightness.dark
                   : Brightness.light,
             ),
@@ -91,72 +115,97 @@ class _AtsMiniProgramState extends State<AtsMiniProgram> {
                 child: ClipRect(
                   child: Column(
                     children: [
-                      MiniProgramStatusBar(
-                        backgroundColor: greenNav
-                            ? AtsColors.solidPrimary(context)
-                            : AtsColors.resolve(context, AtsColors.surface),
-                        foregroundColor: greenNav
-                            ? Colors.white
-                            : AtsColors.resolve(context, AtsColors.text),
-                      ),
-                      MiniProgramNavigationBar(
-                        title: route.title,
-                        miniProgramId: MiniProgramLauncherIds.ats,
-                        canGoBack: _controller.canGoBack,
-                        onBack: _controller.back,
-                        onMore: _showMore,
-                        onClose: _exit,
-                        backgroundColor: greenNav
-                            ? AtsColors.solidPrimary(context)
-                            : AtsColors.resolve(context, AtsColors.surface),
-                        foregroundColor: greenNav
-                            ? Colors.white
-                            : AtsColors.resolve(context, AtsColors.text),
-                        borderColor: Colors.transparent,
-                        titleStyle: TextStyle(
-                          color: greenNav
+                      if (!transparentStatusBar)
+                        MiniProgramStatusBar(
+                          backgroundColor: useGreenStatus
+                              ? AtsColors.solidPrimary(context)
+                              : AtsColors.resolve(context, AtsColors.surface),
+                          foregroundColor: useGreenStatus
                               ? Colors.white
                               : AtsColors.resolve(context, AtsColors.text),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
                         ),
-                      ),
                       Expanded(
-                        child: ColoredBox(
-                          color: AtsColors.resolve(
-                            context,
-                            AtsColors.background,
-                          ),
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 230),
-                            switchInCurve: Curves.easeOutCubic,
-                            switchOutCurve: Curves.easeInCubic,
-                            layoutBuilder: (currentChild, previousChildren) {
-                              return Stack(
-                                fit: StackFit.expand,
-                                children: [...previousChildren, ?currentChild],
-                              );
-                            },
-                            transitionBuilder: (child, animation) {
-                              final begin = Offset(
-                                _controller.forward ? 0.08 : -0.08,
-                                0,
-                              );
-                              return SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: begin,
-                                  end: Offset.zero,
-                                ).animate(animation),
-                                child: FadeTransition(
-                                  opacity: animation,
-                                  child: child,
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: _handleScroll,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ColoredBox(
+                                color: AtsColors.resolve(
+                                  context,
+                                  AtsColors.background,
                                 ),
-                              );
-                            },
-                            child: KeyedSubtree(
-                              key: ValueKey(route),
-                              child: AtsPageRouter.build(route, _controller),
-                            ),
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 230),
+                                  switchInCurve: Curves.easeOutCubic,
+                                  switchOutCurve: Curves.easeInCubic,
+                                  layoutBuilder:
+                                      (currentChild, previousChildren) {
+                                        return Stack(
+                                          fit: StackFit.expand,
+                                          children: [
+                                            ...previousChildren,
+                                            ?currentChild,
+                                          ],
+                                        );
+                                      },
+                                  transitionBuilder: (child, animation) {
+                                    final begin = Offset(
+                                      _controller.forward ? 0.08 : -0.08,
+                                      0,
+                                    );
+                                    return SlideTransition(
+                                      position: Tween<Offset>(
+                                        begin: begin,
+                                        end: Offset.zero,
+                                      ).animate(animation),
+                                      child: FadeTransition(
+                                        opacity: animation,
+                                        child: child,
+                                      ),
+                                    );
+                                  },
+                                  child: KeyedSubtree(
+                                    key: ValueKey(route),
+                                    child: route == AtsRoute.home
+                                        ? page
+                                        : MiniProgramPageCanvas(
+                                            title: route.title,
+                                            showTitle:
+                                                !route.isTabRoot ||
+                                                route == AtsRoute.category ||
+                                                route == AtsRoute.messages,
+                                            onBack:
+                                                !route.isTabRoot &&
+                                                    _controller.canGoBack
+                                                ? _controller.back
+                                                : null,
+                                            foregroundColor: greenNav
+                                                ? Colors.white
+                                                : AtsColors.resolve(
+                                                    context,
+                                                    AtsColors.text,
+                                                  ),
+                                            onScrollChanged: _setStatusScrolled,
+                                            child: page,
+                                          ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top:
+                                    (transparentStatusBar
+                                        ? MediaQuery.paddingOf(context).top
+                                        : 0) +
+                                    5,
+                                right: 10,
+                                child: MiniProgramCapsuleOverlay(
+                                  miniProgramId: MiniProgramLauncherIds.ats,
+                                  onMore: _showMore,
+                                  onClose: _exit,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

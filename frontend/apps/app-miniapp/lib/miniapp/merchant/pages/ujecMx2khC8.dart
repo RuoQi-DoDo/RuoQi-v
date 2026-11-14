@@ -23,7 +23,7 @@ class ujecMx2khC8Page extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(0),
               child: Image.asset(
-                'assets/images/77ee62a0-a3e2-11eb-984e-43cbdde09581.png',
+                'lib/miniapp/merchant/assets/images/77ee62a0-a3e2-11eb-984e-43cbdde09581.png',
                 fit: BoxFit.contain,
                 width: 375,
                 height: 813,
@@ -299,7 +299,7 @@ class ujecMx2khC8Page extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(100),
               child: Image.asset(
-                'assets/images/73392d10-a3e4-11eb-9ddf-11ba32e64370.jpg',
+                'lib/miniapp/merchant/assets/images/73392d10-a3e4-11eb-9ddf-11ba32e64370.jpg',
                 fit: BoxFit.contain,
                 width: 80,
                 height: 80,

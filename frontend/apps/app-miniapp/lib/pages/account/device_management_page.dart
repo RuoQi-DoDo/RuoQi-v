@@ -6,6 +6,7 @@ import 'account_style.dart';
 import 'account_widgets.dart';
 import 'account_localizations.dart';
 import '../../localization.dart';
+import '../common/page_theme.dart';
 
 class AccountDeviceManagementPage extends StatelessWidget {
   const AccountDeviceManagementPage({super.key, required this.controller});
@@ -81,7 +82,7 @@ class AccountDeviceManagementPage extends StatelessWidget {
                   device.name,
                   style: Theme.of(sheetContext).textTheme.titleLarge?.copyWith(
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: HostTypography.emphasis,
                   ),
                 ),
                 const SizedBox(height: 18),

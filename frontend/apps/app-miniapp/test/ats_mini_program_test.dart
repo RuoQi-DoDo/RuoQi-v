@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/miniapp/ats/ats_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/ats/ats_routes.dart';
+import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_capsule_overlay.dart';
+import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_navigation_bar.dart';
+import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_status_bar.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 
 void main() {
@@ -23,6 +26,27 @@ void main() {
     expect(find.text('9:41'), findsNothing);
     expect(find.byTooltip('小程序菜单'), findsOneWidget);
     expect(find.byTooltip('退出小程序'), findsOneWidget);
+    expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
+    expect(find.byType(MiniProgramNavigationBar), findsNothing);
+  });
+
+  testWidgets('企业直聘上滑后状态栏取消绿色底色', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(const MaterialApp(home: AtsMiniProgram()));
+    await tester.pumpAndSettle();
+
+    final before = tester
+        .widget<MiniProgramStatusBar>(find.byType(MiniProgramStatusBar))
+        .backgroundColor;
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -500));
+    await tester.pumpAndSettle();
+    final after = tester
+        .widget<MiniProgramStatusBar>(find.byType(MiniProgramStatusBar))
+        .backgroundColor;
+    expect(after, isNot(before));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('应用默认打开客户首页，再进入小程序并可退出', (tester) async {
@@ -30,10 +54,10 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
-    expect(find.text('客户模拟'), findsOneWidget);
+    expect(find.text('客户模拟'), findsNothing);
     expect(find.text('最近使用的小程序'), findsNothing);
     expect(find.text('下拉打开最近使用的小程序'), findsNothing);
     expect(find.text('搜索'), findsNothing);
@@ -79,7 +103,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
-    expect(find.text('客户模拟'), findsOneWidget);
+    expect(find.text('企业直聘'), findsOneWidget);
   });
 
   testWidgets('小程序底部导航与招聘者身份可用', (tester) async {
@@ -87,7 +111,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     await _openAts(tester);
 
@@ -111,7 +135,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     await _openAts(tester);
 
@@ -130,7 +154,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     await _openAts(tester);
 
@@ -158,7 +182,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     await _openAts(tester);
 
@@ -174,7 +198,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
     double panelScale() {
@@ -236,7 +260,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     await tester.drag(
       find.byKey(const Key('customer-home-scroll')),
@@ -255,7 +279,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
 
-    expect(find.text('客户模拟'), findsOneWidget);
+    expect(find.text('企业直聘'), findsOneWidget);
     expect(find.byKey(const Key('customer-mini-program-picker')), findsNothing);
   });
 
@@ -264,7 +288,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     await tester.drag(
       find.byKey(const Key('customer-home-scroll')),
@@ -299,19 +323,19 @@ void main() {
     expect(find.text('最近'), findsOneWidget);
   });
 
-  testWidgets('通讯录、发现、我三个底栏页面可切换', (tester) async {
+  testWidgets('通话、发现、我三个底栏页面可切换', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('通讯录'));
+    await tester.tap(find.text('通话'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('contacts-page')), findsOneWidget);
-    expect(find.text('新的朋友'), findsOneWidget);
-    expect(find.text('群聊'), findsOneWidget);
+    expect(find.byKey(const Key('calls-page')), findsOneWidget);
+    expect(find.byKey(const Key('new-call-button')), findsOneWidget);
+    expect(find.text('佳佳'), findsOneWidget);
 
     await tester.tap(find.text('发现').last);
     await tester.pumpAndSettle();
@@ -328,12 +352,38 @@ void main() {
     expect(find.text('设置'), findsOneWidget);
   });
 
+  testWidgets('只有发起通话时才打开通讯录选择联系人', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('通话'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('calls-page')), findsOneWidget);
+    expect(find.byKey(const Key('contact-picker-page')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('new-call-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('contact-picker-page')), findsOneWidget);
+    expect(find.text('选择一位联系人发起通话'), findsOneWidget);
+    expect(find.text('新通话链接'), findsOneWidget);
+    expect(find.text('拨打电话号码'), findsOneWidget);
+    expect(find.text('RuoQi 联系人'), findsOneWidget);
+
+    await tester.tap(find.text('Annie'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('calls-page')), findsOneWidget);
+    expect(find.text('正在呼叫 Annie（模拟）'), findsOneWidget);
+  });
+
   testWidgets('我可以进入设置页，通知开关与退出入口可用', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('我').last);
@@ -343,7 +393,7 @@ void main() {
 
     expect(find.byKey(const Key('settings-page')), findsOneWidget);
     expect(find.text('账号安全'), findsOneWidget);
-    expect(find.text('消息通知'), findsOneWidget);
+    expect(find.text('通知'), findsOneWidget);
     expect(find.text('个人信息与权限'), findsOneWidget);
 
     final notificationSwitch = find.descendant(
@@ -373,24 +423,22 @@ void main() {
     expect(find.byKey(const Key('me-page')), findsOneWidget);
   });
 
-  testWidgets('正常模式与黑色模式可切换并覆盖通讯录', (tester) async {
+  testWidgets('正常模式与黑色模式可切换并覆盖通话页', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
     expect(
       tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
       ThemeMode.light,
     );
-    await tester.tap(find.text('通讯录'));
+    await tester.tap(find.text('通话'));
     await tester.pumpAndSettle();
     expect(
-      Theme.of(
-        tester.element(find.byKey(const Key('contacts-page'))),
-      ).brightness,
+      Theme.of(tester.element(find.byKey(const Key('calls-page')))).brightness,
       Brightness.light,
     );
 
@@ -400,6 +448,8 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('界面与显示'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('display-theme-row')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('display-theme-dark')));
     await tester.pumpAndSettle();
@@ -415,29 +465,27 @@ void main() {
       Brightness.dark,
     );
 
-    await tester.tap(find.byType(BackButton));
+    await tester.tap(find.byKey(const Key('display-back')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('settings-back')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('通讯录'));
+    await tester.tap(find.text('通话'));
     await tester.pumpAndSettle();
     expect(
-      Theme.of(
-        tester.element(find.byKey(const Key('contacts-page'))),
-      ).brightness,
+      Theme.of(tester.element(find.byKey(const Key('calls-page')))).brightness,
       Brightness.dark,
     );
   });
 
-  testWidgets('通讯录、发现、我和设置页在小屏下无布局异常', (tester) async {
+  testWidgets('通话、发现、我和设置页在小屏下无布局异常', (tester) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('通讯录'));
+    await tester.tap(find.text('通话'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
 

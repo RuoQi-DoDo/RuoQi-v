@@ -6,6 +6,7 @@ import 'account_controller.dart';
 import 'account_style.dart';
 import 'account_widgets.dart';
 import 'account_localizations.dart';
+import '../common/page_theme.dart';
 
 class AccountPasswordChangePage extends StatefulWidget {
   const AccountPasswordChangePage({super.key, required this.controller});
@@ -56,7 +57,7 @@ class _AccountPasswordChangePageState extends State<AccountPasswordChangePage> {
               localizeAccountLabel(context, '选择验证方式'),
               style: theme.textTheme.titleSmall?.copyWith(
                 fontSize: 12,
-                fontWeight: FontWeight.w700,
+                fontWeight: HostTypography.emphasis,
               ),
             ),
             const SizedBox(height: 10),
@@ -132,7 +133,7 @@ class _AccountPasswordChangePageState extends State<AccountPasswordChangePage> {
               localizeAccountLabel(context, '设置新密码'),
               style: theme.textTheme.titleSmall?.copyWith(
                 fontSize: 12,
-                fontWeight: FontWeight.w700,
+                fontWeight: HostTypography.emphasis,
               ),
             ),
             const SizedBox(height: 10),

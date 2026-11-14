@@ -7,6 +7,7 @@ import 'account_style.dart';
 import 'account_widgets.dart';
 import 'account_localizations.dart';
 import '../../localization.dart';
+import '../common/page_theme.dart';
 
 class AccountEmailBindingPage extends StatefulWidget {
   const AccountEmailBindingPage({
@@ -250,7 +251,7 @@ class _AccountEmailBindingPageState extends State<AccountEmailBindingPage> {
               localizeAccountLabel(context, _isChange ? '邮箱修改成功' : '邮箱绑定成功'),
               style: theme.textTheme.titleLarge?.copyWith(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: HostTypography.emphasis,
               ),
             ),
             const SizedBox(height: 7),

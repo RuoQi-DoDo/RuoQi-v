@@ -18,8 +18,8 @@ void main() {
     addTearDown(controller.dispose);
 
     expect(controller.fontScale, defaultFontScale);
-    expect(defaultFontScale, 0.85);
-    expect(minFontScale, 0.8);
+    expect(defaultFontScale, 0.8);
+    expect(minFontScale, 0.75);
     expect(defaultFontScale - minFontScale, closeTo(0.05, 0.0001));
   });
 
@@ -31,7 +31,7 @@ void main() {
     expect(controller.fontScale, minFontScale);
 
     controller.setFontScale(defaultFontScale);
-    expect(controller.fontScale, 0.85);
+    expect(controller.fontScale, 0.8);
   });
 
   testWidgets('显示设置恢复默认时回到微信标准字号档', (tester) async {
@@ -48,20 +48,21 @@ void main() {
     await tester.pumpAndSettle();
     expect(settings.fontScale, maxFontScale);
     expect(find.text('标准'), findsNothing);
-    expect(find.text('130%'), findsOneWidget);
+    expect(find.text('120%'), findsOneWidget);
 
+    await tester.tap(find.byKey(const Key('display-font-size-row')));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('恢复默认'));
     await tester.pumpAndSettle();
 
     expect(settings.fontScale, defaultFontScale);
-    expect(find.text('标准'), findsOneWidget);
-    expect(find.text('85%'), findsNothing);
+    expect(find.text('80%'), findsNothing);
     final slider = tester.widget<Slider>(
       find.byKey(const Key('display-font-size')),
     );
     expect(slider.value, defaultFontScale);
-    expect(slider.min, 0.8);
-    expect(slider.divisions, 10);
+    expect(slider.min, 0.75);
+    expect(slider.divisions, 9);
   });
 
   testWidgets('公共显示页更新已打开的小程序并保留内部路由和状态', (tester) async {
@@ -94,6 +95,8 @@ void main() {
     await tester.ensureVisible(find.text('设置'));
     await tester.tap(find.text('设置'));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('display-theme-row')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('display-theme-dark')));
     await tester.pumpAndSettle();
     final controller = BusinessThemeScope.of(
@@ -101,17 +104,17 @@ void main() {
     );
     controller.setFontScale(1.2);
     await tester.pumpAndSettle();
-    final language = find.byKey(const Key('display-language-en'));
+    await tester.tap(find.byKey(const Key('display-language-row')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('app-language-page')), findsOneWidget);
+    expect(find.text('可用语言'), findsOneWidget);
+    expect(find.text('其他语言'), findsOneWidget);
+    final language = find.byKey(const Key('app-language-en'));
     await tester.ensureVisible(language);
     await tester.tap(language);
     await tester.pumpAndSettle();
     expect(find.text('Appearance & display'), findsOneWidget);
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const Key('display-settings-page')),
-        matching: find.byType(BackButton),
-      ),
-    );
+    await tester.tap(find.byKey(const Key('display-back')));
     await tester.pumpAndSettle();
 
     expect(find.text('Count: 1'), findsOneWidget);
@@ -175,13 +178,13 @@ void main() {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     final settings = BusinessThemeScope.of(
       tester.element(find.byType(Scaffold).first),
     );
     settings.setLocale(const Locale('en'));
-    settings.setFontScale(1.3);
+    settings.setFontScale(1.2);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Me'));
     await tester.pumpAndSettle();

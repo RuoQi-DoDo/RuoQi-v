@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
+import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_capsule_overlay.dart';
+import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_navigation_bar.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/hr_controller.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/hr_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/hr_models.dart';
@@ -46,6 +48,8 @@ void main() {
     expect(find.text('首页'), findsOneWidget);
     expect(find.byKey(const Key('hr-tab-团队')), findsOneWidget);
     expect(find.byTooltip('退出小程序'), findsOneWidget);
+    expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
+    expect(find.byType(MiniProgramNavigationBar), findsNothing);
     expect(tester.takeException(), isNull);
     expect(HrConfig.useMockData, isTrue);
   });
@@ -55,7 +59,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     await tester.drag(
       find.byKey(const Key('customer-home-scroll')),

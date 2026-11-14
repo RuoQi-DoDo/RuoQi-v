@@ -27,50 +27,53 @@ class _HrAttendancePageState extends State<HrAttendancePage> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
         children: [
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  '我的考勤',
-                  style: HrText.resolve(
-                    context,
-                    HrText.appBarTitle,
-                  ).copyWith(fontSize: 25),
-                ),
+              Text(
+                '我的考勤',
+                style: HrText.resolve(
+                  context,
+                  HrText.appBarTitle,
+                ).copyWith(fontSize: 25),
               ),
-              InkWell(
-                onTap: () => _showMonthPicker(selectedMonth),
-                borderRadius: BorderRadius.circular(99),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: HrColors.resolve(context, HrColors.surface),
-                    borderRadius: BorderRadius.circular(99),
-                    border: Border.all(
-                      color: HrColors.resolve(context, HrColors.line),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: InkWell(
+                  onTap: () => _showMonthPicker(selectedMonth),
+                  borderRadius: BorderRadius.circular(99),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
                     ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${selectedMonth.month}月',
-                        style: TextStyle(
-                          color: HrColors.resolve(context, HrColors.brand),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                    decoration: BoxDecoration(
+                      color: HrColors.resolve(context, HrColors.surface),
+                      borderRadius: BorderRadius.circular(99),
+                      border: Border.all(
+                        color: HrColors.resolve(context, HrColors.line),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${selectedMonth.month}月',
+                          style: TextStyle(
+                            color: HrColors.resolve(context, HrColors.brand),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 2),
-                      Icon(
-                        Icons.arrow_drop_down_rounded,
-                        color: HrColors.resolve(context, HrColors.brand),
-                        size: 18,
-                      ),
-                    ],
+                        const SizedBox(width: 2),
+                        Icon(
+                          Icons.arrow_drop_down_rounded,
+                          color: HrColors.resolve(context, HrColors.brand),
+                          size: 18,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

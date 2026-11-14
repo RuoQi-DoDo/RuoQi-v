@@ -23,7 +23,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(0),
               child: Image.asset(
-                'assets/images/69aec480-cc1a-11ec-8980-db9ad207c083.jpg',
+                'lib/miniapp/merchant/assets/images/69aec480-cc1a-11ec-8980-db9ad207c083.jpg',
                 fit: BoxFit.contain,
                 width: 375,
                 height: 813,
@@ -283,7 +283,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(0),
                     child: Image.asset(
-                      'assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
+                      'lib/miniapp/merchant/assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
                       fit: BoxFit.contain,
                       width: 24,
                       height: 24,
@@ -325,7 +325,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(0),
                     child: Image.asset(
-                      'assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
+                      'lib/miniapp/merchant/assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
                       fit: BoxFit.contain,
                       width: 24,
                       height: 24,
@@ -367,7 +367,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(0),
                     child: Image.asset(
-                      'assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
+                      'lib/miniapp/merchant/assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
                       fit: BoxFit.contain,
                       width: 24,
                       height: 24,
@@ -409,7 +409,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(0),
                     child: Image.asset(
-                      'assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
+                      'lib/miniapp/merchant/assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
                       fit: BoxFit.contain,
                       width: 24,
                       height: 24,
@@ -451,7 +451,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(0),
                     child: Image.asset(
-                      'assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
+                      'lib/miniapp/merchant/assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
                       fit: BoxFit.contain,
                       width: 24,
                       height: 24,
@@ -493,7 +493,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(0),
                     child: Image.asset(
-                      'assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
+                      'lib/miniapp/merchant/assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
                       fit: BoxFit.contain,
                       width: 24,
                       height: 24,
@@ -535,7 +535,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(0),
                     child: Image.asset(
-                      'assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
+                      'lib/miniapp/merchant/assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
                       fit: BoxFit.contain,
                       width: 24,
                       height: 24,
@@ -577,7 +577,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(0),
                     child: Image.asset(
-                      'assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
+                      'lib/miniapp/merchant/assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
                       fit: BoxFit.contain,
                       width: 24,
                       height: 24,
@@ -657,7 +657,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(0),
                     child: Image.asset(
-                      'assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
+                      'lib/miniapp/merchant/assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
                       fit: BoxFit.contain,
                       width: 24,
                       height: 24,
@@ -699,7 +699,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(0),
                     child: Image.asset(
-                      'assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
+                      'lib/miniapp/merchant/assets/images/29433460-cc21-11ec-9fcb-ede013bc170a.png',
                       fit: BoxFit.contain,
                       width: 24,
                       height: 24,
@@ -724,7 +724,7 @@ class TUst4HcH0iLPage extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(0),
               child: Image.asset(
-                'assets/images/7d872e70-cc1a-11ec-8980-db9ad207c083.jpg',
+                'lib/miniapp/merchant/assets/images/7d872e70-cc1a-11ec-8980-db9ad207c083.jpg',
                 fit: BoxFit.contain,
                 width: 375,
                 height: 813,

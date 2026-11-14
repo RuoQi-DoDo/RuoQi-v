@@ -14,6 +14,8 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
+  dio: ^5.11.0
+  encrypt: ^5.0.3
   json_annotation: ^4.12.0
   shared_preferences: ^2.5.3
   common:
@@ -32,12 +34,23 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
+    - lib/miniapp/merchant/assets/images/
+    - lib/miniapp/tospino/assets/
 
   fonts:
+    - family: Inter
+      fonts:
+        - asset: lib/miniapp/tospino/assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: lib/miniapp/tospino/assets/fonts/Inter-Regular.ttf
+          weight: 500
+        - asset: lib/miniapp/tospino/assets/fonts/Inter-Medium.ttf
+          weight: 600
+        - asset: lib/miniapp/tospino/assets/fonts/Inter-Medium.ttf
+          weight: 700
     - family: lightIconFont
       fonts:
-        - asset: assets/fonts/lightIconFont.ttf
+        - asset: lib/miniapp/merchant/assets/fonts/lightIconFont.ttf
     - family: boldIconFont
       fonts:
-        - asset: assets/fonts/boldIconFont.ttf
+        - asset: lib/miniapp/merchant/assets/fonts/boldIconFont.ttf

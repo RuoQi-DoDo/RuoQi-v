@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ruoqi_app_miniapp/api/ats/models/ats_job_summary.dart';
+import 'package:ruoqi_app_miniapp/miniapp/ats/api/models/ats_job_summary.dart';
 
 void main() {
   test('AtsJobSummary roundtrip', () {

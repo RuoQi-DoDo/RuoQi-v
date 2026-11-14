@@ -4,21 +4,150 @@ import 'package:ruoqi_app_miniapp/appearance.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 
 void main() {
-  testWidgets('业务端默认进入客户宿主首页', (tester) async {
+  testWidgets('未登录启动先进入欢迎页，完成欢迎后进入登录页', (tester) async {
     await tester.pumpWidget(const BusinessApp());
+    await tester.pumpAndSettle();
 
-    expect(find.text('客户模拟'), findsOneWidget);
-    expect(find.text('企业直聘'), findsOneWidget);
-    expect(find.text('佳佳'), findsOneWidget);
+    expect(find.text('客户模拟'), findsNothing);
+    expect(find.text('欢迎使用 RuoQi'), findsOneWidget);
+    expect(find.text('同意并继续'), findsOneWidget);
+    expect(find.text('企业直聘'), findsNothing);
+
+    final continueButton = find.byKey(const Key('im-welcome-continue'));
+    await tester.drag(
+      find.byKey(const Key('customer-home-scroll')),
+      const Offset(0, -180),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(continueButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('输入电话号码'), findsOneWidget);
+    expect(find.byKey(const Key('phone-number-input')), findsOneWidget);
+    expect(find.text('企业直聘'), findsNothing);
+
+    await tester.enterText(
+      find.byKey(const Key('phone-number-input')),
+      '13800138000',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('phone-next')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('phone-verification-page')), findsOneWidget);
+    expect(find.text('验证你的电话号码'), findsOneWidget);
+    expect(find.text('企业直聘'), findsNothing);
+
+    await tester.enterText(find.byKey(const Key('phone-code-input')), '000000');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('phone-code-verify')));
+    await tester.pumpAndSettle();
+    expect(find.text('验证码不正确，请重新输入'), findsOneWidget);
+    expect(find.text('企业直聘'), findsNothing);
+
+    await tester.enterText(find.byKey(const Key('phone-code-input')), '123456');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('phone-code-verify')));
+    await tester.pumpAndSettle();
+
+    for (final chat in ['企业直聘', '佳佳', '文件传输助手', '招聘交流群', '腾讯新闻']) {
+      expect(find.text(chat), findsOneWidget);
+    }
+    expect(find.byKey(const Key('im-icon-unread')), findsWidgets);
+    expect(find.byKey(const Key('im-new-chat-fab')), findsNothing);
     expect(find.text('业务工作台'), findsNothing);
     expect(find.text('RuoQi 业务端 App'), findsNothing);
+  });
+
+  testWidgets('IM 首页首屏展示聊天并可滚动查看全部 20 条', (tester) async {
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+
+    expect(find.text('聊天'), findsOneWidget);
+    for (final chat in [
+      '企业直聘',
+      '佳佳',
+      '文件传输助手',
+      '招聘交流群',
+      '腾讯新闻',
+      '张老师',
+      '林小满',
+      '项目协作群',
+      '服务通知',
+      'RuoQi 助手',
+    ]) {
+      expect(find.text(chat), findsOneWidget);
+    }
+    final scrollable = tester.state<ScrollableState>(
+      find.descendant(
+        of: find.byKey(const Key('customer-home-scroll')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    expect(scrollable.position.maxScrollExtent, greaterThan(0));
+
+    for (final chat in [
+      '王工',
+      '产品设计群',
+      '系统提醒',
+      '陈一鸣',
+      '运营协作群',
+      '刘洋',
+      '订阅号消息',
+      '何川',
+      '客户服务',
+      '招聘助手',
+    ]) {
+      await tester.scrollUntilVisible(
+        find.text(chat),
+        240,
+        scrollable: find.descendant(
+          of: find.byKey(const Key('customer-home-scroll')),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      expect(find.text(chat), findsOneWidget);
+    }
+  });
+
+  testWidgets('登录后退出会返回登录页而不是欢迎页', (tester) async {
+    tester.view.physicalSize = const Size(414, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('我').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.descendant(
+        of: find.byKey(const Key('settings-page')),
+        matching: find.byType(ListView),
+      ),
+      const Offset(0, -1000),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-logout')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('退出'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('phone-login-page')), findsOneWidget);
+    expect(find.text('欢迎使用 RuoQi'), findsNothing);
+    expect(find.text('企业直聘'), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('商户和伙伴从客户小程序选择页打开', (tester) async {
     tester.view.physicalSize = const Size(414, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
     await tester.drag(
@@ -49,7 +178,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
@@ -62,7 +191,7 @@ void main() {
     tester.view.physicalSize = const Size(414, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
     await tester.drag(

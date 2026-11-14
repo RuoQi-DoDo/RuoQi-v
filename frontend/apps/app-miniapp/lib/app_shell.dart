@@ -98,6 +98,7 @@ class _BusinessAppFrameState extends State<BusinessAppFrame> {
                       return content;
                     },
                     locale: _themeController.locale,
+                    localeResolutionCallback: resolveAppLocale,
                     supportedLocales: AppLocalizations.supportedLocales,
                     localizationsDelegates: const [
                       AppLocalizations.delegate,

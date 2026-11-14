@@ -8,7 +8,7 @@ import 'package:ruoqi_app_miniapp/pages/mini_programs/mini_programs_page.dart';
 void main() {
   testWidgets('发现入口打开小程序并返回列表和原发现位置', (tester) async {
     _usePhoneSize(tester);
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('host-tab-discover')));
     await tester.pumpAndSettle();

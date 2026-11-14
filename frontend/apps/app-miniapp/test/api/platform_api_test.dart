@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ruoqi_app_miniapp/api/platform/models/system_info.dart';
+import 'package:ruoqi_app_miniapp/miniapp/platform/api/models/system_info.dart';
 
 void main() {
   test('SystemInfo roundtrip', () {

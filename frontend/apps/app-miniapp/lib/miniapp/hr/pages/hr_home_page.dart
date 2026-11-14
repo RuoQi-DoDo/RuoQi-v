@@ -20,6 +20,10 @@ class HrHomePage extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         children: [
+          MiniProgramPageHeader(
+            title: controller.route.title,
+            foregroundColor: HrColors.resolve(context, HrColors.ink),
+          ),
           _HomeHeader(controller: controller),
           const SizedBox(height: 18),
           _PunchCard(controller: controller),

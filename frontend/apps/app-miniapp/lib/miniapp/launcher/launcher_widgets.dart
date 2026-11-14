@@ -214,15 +214,7 @@ class _MiniProgramDragFeedback extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: item.color,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(item.icon, color: Colors.white, size: 29),
-          ),
+          MiniProgramLauncherIcon(item: item, size: 56),
           const SizedBox(height: 8),
           Text(
             localizeMiniProgramLabel(context, item.label),
@@ -269,15 +261,7 @@ class MiniProgramLauncherTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Column(
           children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: item.color,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(item.icon, color: Colors.white, size: 20),
-            ),
+            MiniProgramLauncherIcon(item: item, size: 38),
             const SizedBox(height: 18),
             Text(
               localizeMiniProgramLabel(context, item.label),

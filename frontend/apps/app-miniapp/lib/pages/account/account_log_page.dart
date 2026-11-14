@@ -5,6 +5,7 @@ import 'account_style.dart';
 import 'account_widgets.dart';
 import 'account_localizations.dart';
 import '../../localization.dart';
+import '../common/page_theme.dart';
 import 'password_change_page.dart';
 
 class AccountLogPage extends StatelessWidget {
@@ -106,7 +107,7 @@ class AccountLogPage extends StatelessWidget {
                         entry.action,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: HostTypography.emphasis,
                         ),
                       ),
                     ),
@@ -152,7 +153,20 @@ class AccountLogPage extends StatelessWidget {
                         MaterialPageRoute<void>(
                           builder: (_) => showAppBar
                               ? Scaffold(
-                                  appBar: AppBar(),
+                                  backgroundColor:
+                                      HostChromeStyle.appBarBackground(context),
+                                  appBar: AppBar(
+                                    backgroundColor:
+                                        HostChromeStyle.appBarBackground(
+                                          context,
+                                        ),
+                                    surfaceTintColor: Colors.transparent,
+                                    shape: Border(
+                                      bottom: HostChromeStyle.appBarDivider(
+                                        context,
+                                      ),
+                                    ),
+                                  ),
                                   body: AccountPasswordChangePage(
                                     controller: controller,
                                   ),

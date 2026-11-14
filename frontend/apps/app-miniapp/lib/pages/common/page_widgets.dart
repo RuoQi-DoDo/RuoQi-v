@@ -10,11 +10,13 @@ class SharedPageFrame extends StatelessWidget {
     required this.builder,
     this.title,
     this.embedded = false,
+    this.actions,
   });
 
   final WidgetBuilder builder;
   final String? title;
   final bool embedded;
+  final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +31,14 @@ class SharedPageFrame extends StatelessWidget {
             appBar: title == null
                 ? null
                 : AppBar(
+                    toolbarHeight: 50,
                     centerTitle: true,
-                    backgroundColor: scheme.surfaceContainerLowest,
+                    backgroundColor: HostChromeStyle.appBarBackground(context),
                     surfaceTintColor: Colors.transparent,
                     title: Text(pageLabel(context, title!)),
+                    actions: actions,
                     shape: Border(
-                      bottom: BorderSide(color: scheme.outlineVariant),
+                      bottom: HostChromeStyle.appBarDivider(context),
                     ),
                   ),
             body: SafeArea(top: title == null, child: builder(context)),
@@ -60,6 +64,7 @@ class PageListGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final hairline = HostChromeStyle.hairline(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
@@ -71,9 +76,9 @@ class PageListGroup extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 58),
                   child: Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: scheme.outlineVariant,
+                    height: hairline,
+                    thickness: hairline,
+                    color: HostChromeStyle.dividerColor(context),
                   ),
                 ),
               children[index],
@@ -114,7 +119,7 @@ class PageListRow extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: SizedBox(
-        height: 58,
+        height: 50,
         child: Row(
           children: [
             const SizedBox(width: 18),
@@ -127,8 +132,8 @@ class PageListRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: scheme.onSurface,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontSize: HostTypography.listTitle,
+                  fontWeight: HostTypography.regular,
                 ),
               ),
             ),
