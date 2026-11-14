@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../appearance.dart';
 import '../../localization.dart';
+import '../common/app_language_page.dart';
 import '../common/page_theme.dart';
 
 String _fontSizeLabel(AppLocalizations l10n, double scale) {
@@ -27,11 +28,13 @@ class DisplaySettingsPage extends StatelessWidget {
       ThemeMode.light => l10n.text('普通模式', 'Normal mode'),
       ThemeMode.dark => l10n.text('深色模式', 'Dark mode'),
     };
-    final languageLabel = switch (settings.locale?.languageCode) {
-      'zh' => '简体中文',
-      'en' => 'English',
-      _ => l10n.text('跟随系统', 'Follow system'),
-    };
+    final languageLabel = settings.locale == null
+        ? l10n.text('设备语言', 'Device language')
+        : switch (settings.locale?.languageCode) {
+            'zh' => '简体中文',
+            'en' => 'English',
+            _ => l10n.text('简体中文', 'Simplified Chinese'),
+          };
     return Scaffold(
       key: const Key('display-settings-page'),
       backgroundColor: HostChromeStyle.appBarBackground(context),
@@ -84,7 +87,7 @@ class DisplaySettingsPage extends StatelessWidget {
                 key: const Key('display-language-row'),
                 title: l10n.text('多语言', 'Language'),
                 value: languageLabel,
-                onTap: () => _openLanguagePage(context, settings, l10n),
+                onTap: () => _openLanguagePage(context),
               ),
               _DisplayValueRow(
                 title: l10n.text('翻译', 'Translation'),
@@ -229,48 +232,8 @@ class DisplaySettingsPage extends StatelessWidget {
     );
   }
 
-  Future<void> _openLanguagePage(
-    BuildContext context,
-    BusinessThemeController settings,
-    AppLocalizations l10n,
-  ) {
-    return Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (pageContext) {
-          final scheme = Theme.of(pageContext).colorScheme;
-          return _DisplaySubpage(
-            title: l10n.text('多语言', 'Language'),
-            body: ListView(
-              padding: const EdgeInsets.only(top: 8),
-              children: [
-                _DisplayGroup(
-                  children: [
-                    for (final choice in <(Locale?, String)>[
-                      (null, l10n.text('跟随系统', 'Follow system')),
-                      (const Locale('zh'), '简体中文'),
-                      (const Locale('en'), 'English'),
-                    ])
-                      ListTile(
-                        key: Key(
-                          'display-language-${choice.$1?.languageCode ?? 'system'}',
-                        ),
-                        title: Text(choice.$2),
-                        trailing: settings.locale == choice.$1
-                            ? Icon(Icons.check_rounded, color: scheme.primary)
-                            : null,
-                        onTap: () {
-                          settings.setLocale(choice.$1);
-                          Navigator.of(pageContext).pop();
-                        },
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+  Future<void> _openLanguagePage(BuildContext context) {
+    return AppLanguagePage.show(context);
   }
 
   void _showMessage(BuildContext context, String message) {

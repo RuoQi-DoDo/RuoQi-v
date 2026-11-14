@@ -20,4 +20,18 @@ void main() {
     expect(find.text('请输入用户名'), findsOneWidget);
     expect(find.text('请输入密码'), findsOneWidget);
   });
+
+  testWidgets('登录成功后通知宿主切换业务首页', (tester) async {
+    var loggedIn = false;
+    await tester.pumpWidget(
+      MaterialApp(home: LoginPage(onLoginSuccess: () => loggedIn = true)),
+    );
+
+    await tester.enterText(find.byKey(const Key('login-username')), 'demo');
+    await tester.enterText(find.byKey(const Key('login-password')), 'secret');
+    await tester.tap(find.byKey(const Key('login-submit')));
+    await tester.pump();
+
+    expect(loggedIn, isTrue);
+  });
 }

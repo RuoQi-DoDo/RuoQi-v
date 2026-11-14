@@ -50,7 +50,7 @@ const backgroundChoices = <BackgroundChoice>[
 /// App-wide theme selection shared by the host and pushed settings pages.
 class BusinessThemeController extends ChangeNotifier {
   ThemeMode _mode = ThemeMode.light;
-  Locale? _locale = const Locale('zh');
+  Locale? _locale;
   double _fontScale = defaultFontScale;
   AppOrientation _orientation = AppOrientation.system;
 

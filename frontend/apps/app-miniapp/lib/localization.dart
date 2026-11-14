@@ -19,6 +19,23 @@ class AppLocalizations {
       locale.languageCode == 'en' ? english : chinese;
 }
 
+/// Device languages use their supported locale directly; any unsupported
+/// language falls back to Simplified Chinese.
+Locale resolveAppLocale(
+  Locale? deviceLocale,
+  Iterable<Locale> supportedLocales,
+) {
+  if (deviceLocale == null) {
+    return const Locale('zh');
+  }
+  for (final supported in supportedLocales) {
+    if (supported.languageCode == deviceLocale.languageCode) {
+      return supported;
+    }
+  }
+  return const Locale('zh');
+}
+
 class _AppLocalizationsDelegate
     extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();

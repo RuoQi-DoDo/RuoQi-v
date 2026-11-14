@@ -33,7 +33,10 @@ void main() {
     final firstController = MiniProgramPinController(store: store);
     await firstController.initialize();
     await tester.pumpWidget(
-      BusinessApp(miniProgramPinController: firstController),
+      BusinessApp(
+        initiallyAuthenticated: true,
+        miniProgramPinController: firstController,
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -60,7 +63,10 @@ void main() {
     await secondController.initialize();
     addTearDown(secondController.dispose);
     await tester.pumpWidget(
-      BusinessApp(miniProgramPinController: secondController),
+      BusinessApp(
+        initiallyAuthenticated: true,
+        miniProgramPinController: secondController,
+      ),
     );
     await tester.pumpAndSettle();
 

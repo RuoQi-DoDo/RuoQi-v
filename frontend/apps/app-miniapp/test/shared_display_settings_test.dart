@@ -106,7 +106,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('display-language-row')));
     await tester.pumpAndSettle();
-    final language = find.byKey(const Key('display-language-en'));
+    expect(find.byKey(const Key('app-language-page')), findsOneWidget);
+    expect(find.text('可用语言'), findsOneWidget);
+    expect(find.text('其他语言'), findsOneWidget);
+    final language = find.byKey(const Key('app-language-en'));
     await tester.ensureVisible(language);
     await tester.tap(language);
     await tester.pumpAndSettle();
@@ -175,7 +178,7 @@ void main() {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     final settings = BusinessThemeScope.of(
       tester.element(find.byType(Scaffold).first),

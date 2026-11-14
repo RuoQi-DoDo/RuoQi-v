@@ -59,7 +59,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const BusinessApp());
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     await tester.drag(
       find.byKey(const Key('customer-home-scroll')),
