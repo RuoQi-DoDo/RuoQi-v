@@ -152,6 +152,10 @@ abstract interface class TospinoDataSource {
   Future<void> deleteAddress(String addressId);
   Future<void> setDefaultAddress(String addressId);
   Future<List<TospinoRegion>> fetchRegions({String parentId = '0'});
+  Future<List<TospinoRegion>> resolveRegionsByCoordinates({
+    required double longitude,
+    required double latitude,
+  });
   Future<List<TospinoPhonePrefix>> fetchPhonePrefixes();
   Future<TospinoSaleInfo> fetchSaleInfo({
     required List<TospinoCartLine> lines,
@@ -870,6 +874,18 @@ class TospinoApi implements TospinoDataSource {
         .toList(growable: false);
   }
 
+  @override
+  Future<List<TospinoRegion>> resolveRegionsByCoordinates({
+    required double longitude,
+    required double latitude,
+  }) async {
+    final data = await _get(
+      '/basics/area/position/location',
+      query: {'longitude': '$longitude', 'latitude': '$latitude'},
+    );
+    return parseTospinoCoordinateRegionPath(data);
+  }
+
   Map<String, dynamic> _orderPayload({
     required List<TospinoCartLine> lines,
     required TospinoAddress address,
@@ -1490,6 +1506,27 @@ List<String> parseTospinoDetailImageUrls(dynamic value) {
     }
   }
   return urls.toList(growable: false);
+}
+
+@visibleForTesting
+List<TospinoRegion> parseTospinoCoordinateRegionPath(dynamic value) {
+  for (final rootValue in _asList(value)) {
+    final path = <TospinoRegion>[];
+    dynamic currentValue = rootValue;
+    while (currentValue is Map) {
+      final current = _asMap(currentValue);
+      final region = _regionFromJson(current);
+      if (region.id.isEmpty || region.name.isEmpty) break;
+      path.add(region);
+      final children = _asList(current['aresChilds']).isNotEmpty
+          ? _asList(current['aresChilds'])
+          : _asList(current['children']);
+      if (children.isEmpty) break;
+      currentValue = children.first;
+    }
+    if (path.isNotEmpty) return path;
+  }
+  return const [];
 }
 
 Map<String, dynamic> _asMap(dynamic value) {

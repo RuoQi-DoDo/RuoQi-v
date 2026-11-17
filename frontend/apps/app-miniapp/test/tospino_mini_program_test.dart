@@ -11,6 +11,7 @@ import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_navigation_bar.
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_status_bar.dart';
 import 'package:ruoqi_app_miniapp/miniapp/launcher/miniapp_launcher_item.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/pages/home_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/tospino/pages/address_qr_scanner_page.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_models.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_routes.dart';
@@ -45,6 +46,45 @@ void main() {
     expect(images, [
       'https://img.example.com/detail-1.jpg',
       'https://img.example.com/detail-2.jpg',
+    ]);
+  });
+
+  test('Tospino 地址二维码按 Android 协议解析门牌和经纬度', () {
+    final address = parseTospinoAddressQrCode(
+      'address:12 Independence Avenue, Accra,'
+      'map:https://maps.google.com/?query=5.6037,-0.1870',
+    );
+    expect(address, isNotNull);
+    expect(address!.detailAddress, '12 Independence Avenue, Accra');
+    expect(address.latitude, 5.6037);
+    expect(address.longitude, -0.187);
+    expect(parseTospinoAddressQrCode('https://example.com'), isNull);
+  });
+
+  test('Tospino 扫码定位结果按嵌套地区返回路径', () {
+    final path = parseTospinoCoordinateRegionPath([
+      {
+        'id': 'gh',
+        'name': 'Ghana',
+        'code': 'GH',
+        'level': '0',
+        'aresChilds': [
+          {
+            'id': 'ga',
+            'name': 'Greater Accra',
+            'code': 'GA',
+            'level': '1',
+            'aresChilds': [
+              {'id': 'acc', 'name': 'Accra', 'code': 'ACC', 'level': '2'},
+            ],
+          },
+        ],
+      },
+    ]);
+    expect(path.map((region) => region.name), [
+      'Ghana',
+      'Greater Accra',
+      'Accra',
     ]);
   });
 
@@ -1021,6 +1061,12 @@ void main() {
 
     await tester.tap(find.byKey(const Key('tospino-address-edit-address-1')));
     await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('tospino-address-editor-page')),
+      findsOneWidget,
+    );
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byKey(const Key('tospino-address-scan-tip')), findsNothing);
     await tester.enterText(
       find.byKey(const Key('tospino-address-detail-field')),
       '24 Oxford Street',
@@ -1054,6 +1100,9 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('tospino-address-add')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('tospino-address-scan-tip')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tospino-address-scan-tip-close')));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const Key('tospino-address-name-field')),
@@ -1106,6 +1155,10 @@ void main() {
       find.byKey(const Key('tospino-address-editor-page')),
       findsOneWidget,
     );
+    expect(find.byKey(const Key('tospino-address-scan-tip')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tospino-address-scan-tip-close')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
 
     await tester.tap(find.byKey(const Key('tospino-address-phone-prefix')));
     await tester.pumpAndSettle();
@@ -1737,6 +1790,7 @@ class _FakeTospinoApi implements TospinoDataSource {
   int deleteAddressCalls = 0;
   int setDefaultAddressCalls = 0;
   int phonePrefixCalls = 0;
+  int coordinateRegionCalls = 0;
   int inviteInfoCalls = 0;
   int inviteFriendCalls = 0;
   int inviteRewardCalls = 0;
@@ -2187,6 +2241,38 @@ class _FakeTospinoApi implements TospinoDataSource {
       TospinoPhonePrefix(country: 'Ghana', prefix: '+233'),
       TospinoPhonePrefix(country: 'Nigeria', prefix: '+234'),
       TospinoPhonePrefix(country: 'China', prefix: '+86'),
+    ];
+  }
+
+  @override
+  Future<List<TospinoRegion>> resolveRegionsByCoordinates({
+    required double longitude,
+    required double latitude,
+  }) async {
+    coordinateRegionCalls++;
+    return const [
+      TospinoRegion(
+        id: 'country-gh',
+        name: 'Ghana',
+        code: 'GH',
+        level: 0,
+        hasChildren: true,
+      ),
+      TospinoRegion(
+        id: 'province-ga',
+        name: 'Greater Accra',
+        code: 'GA',
+        parentId: 'country-gh',
+        level: 1,
+        hasChildren: true,
+      ),
+      TospinoRegion(
+        id: 'city-acc',
+        name: 'Accra',
+        code: 'ACC',
+        parentId: 'province-ga',
+        level: 2,
+      ),
     ];
   }
 

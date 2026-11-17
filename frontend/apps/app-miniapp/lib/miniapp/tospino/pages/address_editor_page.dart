@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -5,6 +7,7 @@ import '../../common/miniapp_localizations.dart';
 import '../tospino_models.dart';
 import '../tospino_routes.dart';
 import '../tospino_style.dart';
+import 'address_qr_scanner_page.dart';
 
 class TospinoAddressEditorPage extends StatefulWidget {
   const TospinoAddressEditorPage({super.key, required this.controller});
@@ -28,6 +31,7 @@ class _TospinoAddressEditorPageState extends State<TospinoAddressEditorPage> {
   late String _tag;
   late String _customTag;
   bool _saving = false;
+  bool _resolvingScannedRegion = false;
 
   TospinoAddress? get _editing => widget.controller.editingAddress;
 
@@ -54,7 +58,9 @@ class _TospinoAddressEditorPageState extends State<TospinoAddressEditorPage> {
     _backupPhone.addListener(_refresh);
     _details.addListener(_refresh);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
+      if (!mounted) return;
+      ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
+      if (_editing == null) unawaited(_showScanTip());
     });
   }
 
@@ -146,6 +152,44 @@ class _TospinoAddressEditorPageState extends State<TospinoAddressEditorPage> {
     );
     if (path == null || path.isEmpty || !mounted) return;
     setState(() => _regionPath = path);
+  }
+
+  Future<void> _showScanTip() async {
+    final startScan = await showDialog<bool>(
+      context: context,
+      builder: (context) => const _ScanAddressTipDialog(),
+    );
+    if (startScan == true && mounted) await _scanAddress();
+  }
+
+  Future<void> _scanAddress() async {
+    final result = await Navigator.of(context).push<TospinoAddressQrData>(
+      MaterialPageRoute(builder: (_) => const TospinoAddressScannerPage()),
+    );
+    if (result == null || !mounted) return;
+    _details.text = result.detailAddress;
+    if (!result.hasCoordinates) {
+      showTospinoToast(context, '地址已回填，请手动选择地区');
+      return;
+    }
+    setState(() => _resolvingScannedRegion = true);
+    try {
+      final regionPath = await widget.controller.resolveRegionsByCoordinates(
+        longitude: result.longitude!,
+        latitude: result.latitude!,
+      );
+      if (!mounted) return;
+      if (regionPath.isNotEmpty) {
+        setState(() => _regionPath = regionPath);
+        showTospinoToast(context, '地址和地区已自动填写');
+      } else {
+        showTospinoToast(context, '地址已回填，请手动确认地区');
+      }
+    } catch (error) {
+      if (mounted) showTospinoToast(context, error.toString());
+    } finally {
+      if (mounted) setState(() => _resolvingScannedRegion = false);
+    }
   }
 
   Future<void> _chooseCustomTag() async {
@@ -346,7 +390,41 @@ class _TospinoAddressEditorPageState extends State<TospinoAddressEditorPage> {
                 const SizedBox(height: 10),
                 _EditorCard(
                   children: [
-                    _FieldLabel(label: '详细地址'),
+                    Row(
+                      children: [
+                        const Expanded(child: _FieldLabel(label: '详细地址')),
+                        IconButton(
+                          key: const Key('tospino-address-scan-help'),
+                          tooltip: localizeMiniProgramLabel(context, '查看扫码说明'),
+                          onPressed: _showScanTip,
+                          visualDensity: VisualDensity.compact,
+                          icon: const Icon(
+                            Icons.help_outline_rounded,
+                            size: 18,
+                          ),
+                        ),
+                        IconButton(
+                          key: const Key('tospino-address-scan'),
+                          tooltip: localizeMiniProgramLabel(context, '扫描地址二维码'),
+                          onPressed: _resolvingScannedRegion
+                              ? null
+                              : _scanAddress,
+                          visualDensity: VisualDensity.compact,
+                          icon: _resolvingScannedRegion
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.qr_code_scanner_rounded,
+                                  size: 20,
+                                ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 7),
                     TextField(
                       key: const Key('tospino-address-detail-field'),
@@ -608,6 +686,132 @@ class _TagChoice extends StatelessWidget {
             : TospinoColors.resolve(context, TospinoColors.secondary),
         fontSize: 13,
         fontWeight: selected ? TospinoText.emphasis : TospinoText.regular,
+      ),
+    );
+  }
+}
+
+class _ScanAddressTipDialog extends StatelessWidget {
+  const _ScanAddressTipDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      key: const Key('tospino-address-scan-tip'),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: Material(
+          color: TospinoColors.resolve(context, TospinoColors.surface),
+          borderRadius: BorderRadius.circular(18),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    key: const Key('tospino-address-scan-tip-close'),
+                    tooltip: localizeMiniProgramLabel(context, '关闭'),
+                    onPressed: () => Navigator.of(context).pop(false),
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.close_rounded, size: 20),
+                  ),
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 88,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: TospinoColors.resolve(
+                          context,
+                          TospinoColors.surfaceMuted,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: TospinoColors.resolve(
+                            context,
+                            TospinoColors.line,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: TospinoColors.resolve(
+                                    context,
+                                    TospinoColors.ink,
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Icon(
+                                  Icons.qr_code_2_rounded,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                localizeMiniProgramLabel(context, '快速填充'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TospinoText.hint(
+                                  context,
+                                ).copyWith(fontSize: 9),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            localizeMiniProgramLabel(context, '扫描二维码快速填充收货地址'),
+                            style: TospinoText.bodyStrong(context),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            localizeMiniProgramLabel(
+                              context,
+                              '支持门牌二维码，也可以手动填写。',
+                            ),
+                            style: TospinoText.secondary(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    key: const Key('tospino-address-scan-tip-start'),
+                    onPressed: () => Navigator.of(context).pop(true),
+                    icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
+                    label: Text(localizeMiniProgramLabel(context, '开始扫描')),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

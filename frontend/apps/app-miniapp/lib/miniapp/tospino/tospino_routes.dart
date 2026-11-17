@@ -438,6 +438,14 @@ class TospinoAppController extends ChangeNotifier {
   Future<List<TospinoPhonePrefix>> fetchPhonePrefixes() =>
       _api.fetchPhonePrefixes();
 
+  Future<List<TospinoRegion>> resolveRegionsByCoordinates({
+    required double longitude,
+    required double latitude,
+  }) => _api.resolveRegionsByCoordinates(
+    longitude: longitude,
+    latitude: latitude,
+  );
+
   Future<void> openInvite() async {
     if (!_api.isLoggedIn) {
       openLogin(returnTo: TospinoRoute.invite);
