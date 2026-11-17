@@ -105,9 +105,10 @@ class _CartHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: TospinoColors.resolve(context, TospinoColors.surface),
+      key: const Key('tospino-cart-title-header'),
+      color: TospinoColors.resolve(context, TospinoColors.background),
       child: SizedBox(
-        height: 50,
+        height: 46,
         child: Stack(
           alignment: Alignment.center,
           children: [

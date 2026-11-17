@@ -712,10 +712,11 @@ class _SupportMenu extends StatelessWidget {
       child: Column(
         children: [
           _SupportRow(
+            key: const Key('tospino-profile-invite'),
             icon: Icons.group_add_rounded,
             color: TospinoColors.price,
             label: '邀请好友',
-            onTap: () => showTospinoToast(context, '邀请好友'),
+            onTap: controller.openInvite,
             trailing: const TospinoTag(label: '领取奖励', solid: true),
           ),
           _SupportRow(
@@ -745,6 +746,7 @@ class _SupportMenu extends StatelessWidget {
 
 class _SupportRow extends StatelessWidget {
   const _SupportRow({
+    super.key,
     required this.icon,
     required this.color,
     required this.label,

@@ -124,11 +124,35 @@ abstract interface class TospinoDataSource {
   Future<void> removeFromCart(String skuId);
   Future<List<TospinoOrder>> fetchOrders({TospinoOrderStatus? status});
   Future<TospinoOrder> fetchOrderDetail(String orderId);
+  Future<List<TospinoCancelReason>> fetchCancelOrderReasons();
+  Future<void> cancelOrder(String orderId, String reason);
   Future<TospinoUser> fetchCurrentUser();
+  Future<TospinoInviteInfo> fetchInviteInfo();
+  Future<TospinoInviteFriendsPage> fetchInviteFriends({
+    required String promoteCode,
+    int page = 1,
+    int pageSize = 20,
+  });
+  Future<TospinoInviteShareInfo> fetchInviteShareInfo(String promoteCode);
+  Future<double> fetchInviteRewardAmount(String inviterId);
+  Future<TospinoInviteRewardPage> fetchInviteRewardPage({
+    required String inviterId,
+    int page = 1,
+    int pageSize = 20,
+  });
   Future<List<TospinoProduct>> fetchFavorites();
   Future<void> followProduct(String productId);
   Future<void> unfollowProduct(String productId);
+  Future<List<TospinoAddress>> fetchAddresses();
   Future<TospinoAddress?> fetchDefaultAddress();
+  Future<TospinoAddress> saveAddress(
+    TospinoAddress address, {
+    required bool isDefault,
+  });
+  Future<void> deleteAddress(String addressId);
+  Future<void> setDefaultAddress(String addressId);
+  Future<List<TospinoRegion>> fetchRegions({String parentId = '0'});
+  Future<List<TospinoPhonePrefix>> fetchPhonePrefixes();
   Future<TospinoSaleInfo> fetchSaleInfo({
     required List<TospinoCartLine> lines,
     required TospinoAddress address,
@@ -534,10 +558,12 @@ class TospinoApi implements TospinoDataSource {
     final spu = _asMap(map['goodSpuVo']);
     final storeInfo = _asMap(map['storeInfo']);
     final gallery = _asList(map['carouselMapUrls'])
+        .where((item) => _asString(_asMap(item)['fileType']) != '2')
         .map((item) => _normalizeUrl(_asString(_asMap(item)['imgUrl'])))
-        .where((url) => url.isNotEmpty)
+        .where((url) => url.isNotEmpty && !_isVideoUrl(url))
         .toList(growable: false);
     final mainPicture = _normalizeUrl(_asString(spu['mainPictureUrl']));
+    final detailImageUrls = parseTospinoDetailImageUrls(map['detailsPics']);
     final product = TospinoProduct(
       id: _asString(spu['id'], fallback: productId),
       title: _asString(spu['goodTitle']),
@@ -585,6 +611,7 @@ class TospinoApi implements TospinoDataSource {
       galleryUrls: gallery.isEmpty && mainPicture.isNotEmpty
           ? [mainPicture]
           : gallery,
+      detailImageUrls: detailImageUrls,
       description: _asString(spu['description']),
       servicePromises: _asList(
         map['servicePromises'],
@@ -695,6 +722,26 @@ class TospinoApi implements TospinoDataSource {
   }
 
   @override
+  Future<List<TospinoCancelReason>> fetchCancelOrderReasons() async {
+    final data = await _get(
+      '/basics/base/trade/orderReason/findReasonByApplyTypeAndGoodsStatus',
+      query: {'orderType': '1', 'applyType': '0', 'goodsStatus': '0'},
+    );
+    return _asList(data)
+        .map(_cancelReasonFromJson)
+        .where((reason) => reason.reason.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  @override
+  Future<void> cancelOrder(String orderId, String reason) async {
+    await _post(
+      '/order/omsorder/buyer/cancel',
+      query: {'orderId': orderId, 'reason': reason},
+    );
+  }
+
+  @override
   Future<List<TospinoProduct>> fetchFavorites() async {
     final data = await _get(
       '/admin/buyerAttention/query/page',
@@ -727,12 +774,100 @@ class TospinoApi implements TospinoDataSource {
   }
 
   @override
+  Future<List<TospinoAddress>> fetchAddresses() async {
+    final data = await _post('/admin/ums/buyer/deliveryAddress/findCurrent');
+    return _asList(data)
+        .map((value) => _addressFromJson(_asMap(value)))
+        .where((address) => address.id.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  @override
   Future<TospinoAddress?> fetchDefaultAddress() async {
     final data = await _post(
       '/admin/ums/buyer/deliveryAddress/findCurrentDefault',
     );
     if (data == null) return null;
     return _addressFromJson(_asMap(data));
+  }
+
+  @override
+  Future<TospinoAddress> saveAddress(
+    TospinoAddress address, {
+    required bool isDefault,
+  }) async {
+    final payload = <String, dynamic>{
+      'name': address.name,
+      'phone': address.phone,
+      'phonePrefix': address.phonePrefix,
+      'address': address.streetAddress,
+      'isDefault': isDefault ? '1' : '0',
+      'countryCode': address.countryCode,
+      'provinceCode': address.provinceCode,
+      'cityCode': address.cityCode,
+      if (address.districtCode.isNotEmpty) 'districtCode': address.districtCode,
+      if (address.tag.isNotEmpty) 'tag': address.tag,
+      if (address.tagEditor.isNotEmpty) 'tagEditor': address.tagEditor,
+      if (address.sparePhone.isNotEmpty) 'sparePhone': address.sparePhone,
+      if (address.sparePhonePrefix.isNotEmpty)
+        'sparePhonePrefix': address.sparePhonePrefix,
+      if (address.doorplateInfo.isNotEmpty)
+        'doorplateInfo': address.doorplateInfo,
+    };
+    final editing = address.id.isNotEmpty;
+    if (editing) payload['id'] = address.id;
+    final data = editing
+        ? await _put(
+            '/admin/ums/buyer/deliveryAddress/updateById',
+            query: payload,
+          )
+        : await _post('/admin/ums/buyer/deliveryAddress/save', query: payload);
+    final saved = _asMap(data);
+    if (saved.isNotEmpty) {
+      return _addressFromJson(saved);
+    }
+    return address.copyWith(isDefault: isDefault);
+  }
+
+  @override
+  Future<void> deleteAddress(String addressId) async {
+    await _delete('/admin/ums/buyer/deliveryAddress/deleteById/$addressId');
+  }
+
+  @override
+  Future<void> setDefaultAddress(String addressId) async {
+    await _put('/admin/ums/buyer/deliveryAddress/updateIsDefault/$addressId');
+  }
+
+  @override
+  Future<List<TospinoRegion>> fetchRegions({String parentId = '0'}) async {
+    final data = await _get(
+      '/basics/base/area/findByParentId',
+      query: {'parentId': parentId},
+    );
+    return _asList(data)
+        .map(_regionFromJson)
+        .where((region) => region.id.isNotEmpty && region.name.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  @override
+  Future<List<TospinoPhonePrefix>> fetchPhonePrefixes() async {
+    final data = await _get('/basics/base/phonePrefix/find/0');
+    return _asList(data)
+        .map((value) {
+          final map = _asMap(value);
+          return TospinoPhonePrefix(
+            country: _asString(map['country']),
+            prefix: _asString(map['phonePrefix']),
+          );
+        })
+        .where(
+          (item) =>
+              item.prefix.isNotEmpty &&
+              (item.country.isNotEmpty || item.prefix == '+233'),
+        )
+        .toList(growable: false);
   }
 
   Map<String, dynamic> _orderPayload({
@@ -874,6 +1009,134 @@ class TospinoApi implements TospinoDataSource {
     );
     _currentUser = user;
     return user;
+  }
+
+  @override
+  Future<TospinoInviteInfo> fetchInviteInfo() async {
+    final data = await _get(
+      '${TospinoConfig.ssoBaseUrl}/admin/ums/buyer/promote/relation/findOrAdd',
+    );
+    final map = _asMap(data);
+    return TospinoInviteInfo(
+      promoteCode: _asString(map['promoteCode']),
+      userId: _asString(map['userId'], fallback: session.userId),
+    );
+  }
+
+  @override
+  Future<TospinoInviteFriendsPage> fetchInviteFriends({
+    required String promoteCode,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final data = await _get(
+      '${TospinoConfig.ssoBaseUrl}/admin/ums/buyer/promote/selectCustomizePage',
+      query: {
+        'promoteCode': promoteCode,
+        'pageNum': '$page',
+        'pageSize': '$pageSize',
+      },
+    );
+    final map = _asMap(data);
+    final records = _asList(map['records'])
+        .map((value) {
+          final friend = _asMap(value);
+          final phonePrefix = _asString(friend['phonePrefix']);
+          final phone = _asString(friend['phone']);
+          return TospinoInviteFriend(
+            userId: _asString(friend['userId']),
+            account: _asString(
+              friend['account'],
+              fallback: phonePrefix.isEmpty
+                  ? phone
+                  : '$phonePrefix $phone'.trim(),
+            ),
+            nickname: _asString(friend['nickname']),
+            registrationTime: _asString(friend['registrationTime']),
+          );
+        })
+        .where(
+          (friend) => friend.account.isNotEmpty || friend.nickname.isNotEmpty,
+        )
+        .toList(growable: false);
+    return TospinoInviteFriendsPage(
+      records: records,
+      total: _asInt(map['total']) ?? records.length,
+      page: page,
+      pages: _asInt(map['pages']) ?? page,
+    );
+  }
+
+  @override
+  Future<TospinoInviteShareInfo> fetchInviteShareInfo(
+    String promoteCode,
+  ) async {
+    final data = await _get(
+      '/basics/mmsoperateenjoy/findByPromoteCode/'
+      '${Uri.encodeComponent(promoteCode)}',
+    );
+    final map = _asMap(data);
+    return TospinoInviteShareInfo(
+      textContent: _asString(map['textContent']),
+      urlContent: _asString(map['urlContent']),
+      url: _asString(map['url']),
+    );
+  }
+
+  @override
+  Future<double> fetchInviteRewardAmount(String inviterId) async {
+    final data = await _get(
+      '/discount/buyer/invite/rewards/detail/getRewardAmount',
+      query: {'inviterId': inviterId},
+    );
+    return _asDouble(_asMap(data)['amount']);
+  }
+
+  @override
+  Future<TospinoInviteRewardPage> fetchInviteRewardPage({
+    required String inviterId,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final data = await _get(
+      '/discount/buyer/invite/rewards/detail/page',
+      query: {
+        'inviterId': inviterId,
+        'pageNum': '$page',
+        'pageSize': '$pageSize',
+      },
+    );
+    final map = _asMap(data);
+    final records = _asList(map['records'])
+        .map((value) {
+          final record = _asMap(value);
+          final invitee = _asMap(record['inviteeInfo']);
+          final phonePrefix = _asString(invitee['phonePrefix']);
+          final phone = _asString(invitee['phone']);
+          final account = _asString(
+            invitee['account'],
+            fallback: _asString(
+              invitee['nickname'],
+              fallback: phonePrefix.isEmpty
+                  ? phone
+                  : '$phonePrefix $phone'.trim(),
+            ),
+          );
+          return TospinoInviteRewardRecord(
+            id: _asString(record['id']),
+            account: account,
+            amount: _asDouble(record['amount']),
+            registerTime: _asString(record['registerTime']),
+          );
+        })
+        .toList(growable: false);
+    return TospinoInviteRewardPage(
+      records: records,
+      amount: _asDouble(_asMap(map['customMap'])['amount']),
+      total: _asInt(map['total']) ?? records.length,
+      page: page,
+      pages: _asInt(map['pages']) ?? page,
+    );
   }
 
   Future<void> _persistSession() async {
@@ -1116,6 +1379,8 @@ TospinoOrder _orderFromJson(dynamic value) {
     receiverName: _asString(map['receiverName']),
     receiverPhone: _asString(map['receiverPhone']),
     receiverAddress: receiver,
+    paymentType: _asInt(map['paymentType']) ?? 0,
+    payState: _asInt(map['payState']) ?? 0,
   );
 }
 
@@ -1123,18 +1388,21 @@ TospinoAddress _addressFromJson(Map<String, dynamic> map) {
   final areas = _asList(map['areaList'])
       .map(_asMap)
       .where((area) => _asString(area['name']).isNotEmpty)
+      .map(_regionFromJson)
       .toList(growable: false);
   String areaName(String level) {
     for (final area in areas) {
-      if (_asString(area['level']) == level) return _asString(area['name']);
+      if (area.level.toString() == level) return area.name;
     }
     return '';
   }
 
+  final phonePrefix = _asString(map['phonePrefix']);
+  final phone = _asString(map['phone']);
   return TospinoAddress(
     id: _asString(map['id']),
     name: _asString(map['name']),
-    phone: '${_asString(map['phonePrefix'])} ${_asString(map['phone'])}'.trim(),
+    phone: phone,
     completeAddress: _asString(
       map['completeAddressDetail'],
       fallback: _asString(
@@ -1147,6 +1415,46 @@ TospinoAddress _addressFromJson(Map<String, dynamic> map) {
     countryName: _asString(map['countryName'], fallback: areaName('0')),
     province: _asString(map['provinceName'], fallback: areaName('1')),
     city: _asString(map['cityName'], fallback: areaName('2')),
+    detailAddress: _asString(map['address']),
+    phonePrefix: phonePrefix,
+    provinceCode: _asString(map['provinceCode']),
+    cityCode: _asString(map['cityCode']),
+    districtCode: _asString(map['districtCode']),
+    tag: _asString(map['tag']),
+    tagEditor: _asString(map['tagEditor']),
+    sparePhone: _asString(map['sparePhone']),
+    sparePhonePrefix: _asString(map['sparePhonePrefix']),
+    doorplateInfo: _asString(map['doorplateInfo']),
+    regionPath: areas,
+  );
+}
+
+TospinoRegion _regionFromJson(dynamic value) {
+  final map = _asMap(value);
+  final parentId = _asString(map['parentId']);
+  final hasChild = _asString(map['hasChild']);
+  return TospinoRegion(
+    id: _asString(map['id']),
+    name: _asString(map['name'], fallback: _asString(map['remark'])),
+    code: _asString(map['code']),
+    parentId: parentId,
+    level: _asInt(map['level']) ?? 0,
+    hasChildren:
+        hasChild == '1' ||
+        hasChild.toLowerCase() == 'true' ||
+        _asList(map['aresChilds']).isNotEmpty ||
+        _asList(map['children']).isNotEmpty,
+  );
+}
+
+TospinoCancelReason _cancelReasonFromJson(dynamic value) {
+  final map = _asMap(value);
+  return TospinoCancelReason(
+    id: _asString(map['id']),
+    reason: _asString(map['applyReason'], fallback: _asString(map['reason'])),
+    orderType: _asString(map['orderType'], fallback: '1'),
+    applyType: _asString(map['applyType'], fallback: '0'),
+    goodsStatus: _asString(map['goodsStatus'], fallback: '0'),
   );
 }
 
@@ -1168,6 +1476,20 @@ List<String> _asTransportModes(dynamic value, {dynamic fallback}) {
       .where((item) => item.isNotEmpty)
       .toSet()
       .toList(growable: false);
+}
+
+@visibleForTesting
+List<String> parseTospinoDetailImageUrls(dynamic value) {
+  final urls = <String>{};
+  for (final itemValue in _asList(value)) {
+    final item = _asMap(itemValue);
+    final fileType = _asString(item['fileType']);
+    final imageUrl = _normalizeUrl(_asString(item['imgUrl']));
+    if (imageUrl.isNotEmpty && fileType != '2') {
+      urls.add(imageUrl);
+    }
+  }
+  return urls.toList(growable: false);
 }
 
 Map<String, dynamic> _asMap(dynamic value) {
@@ -1200,3 +1522,8 @@ String _normalizeUrl(String value) {
   if (value.startsWith('//')) return 'https:$value';
   return value.replaceAll('&amp;', '&');
 }
+
+bool _isVideoUrl(String value) => RegExp(
+  r'\.(mp4|mov|m3u8|webm)(\?|$)',
+  caseSensitive: false,
+).hasMatch(value);

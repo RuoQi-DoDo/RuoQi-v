@@ -229,7 +229,7 @@ class _AddressCard extends StatelessWidget {
       color: TospinoColors.resolve(context, TospinoColors.surface),
       borderRadius: BorderRadius.circular(TospinoMetrics.cardRadius),
       child: InkWell(
-        onTap: controller.openAddress,
+        onTap: () => controller.openAddress(forCheckout: true),
         borderRadius: BorderRadius.circular(TospinoMetrics.cardRadius),
         child: Padding(
           padding: const EdgeInsets.all(15),
@@ -271,7 +271,7 @@ class _AddressCard extends StatelessWidget {
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            address.phone,
+                            address.fullPhone,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TospinoText.meta(context),

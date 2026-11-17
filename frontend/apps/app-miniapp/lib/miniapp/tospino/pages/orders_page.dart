@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../common/miniapp_localizations.dart';
 import '../tospino_models.dart';
 import '../tospino_routes.dart';
 import '../tospino_style.dart';
+import '../widgets/order_cancel_sheet.dart';
 
 class TospinoOrdersPage extends StatelessWidget {
   const TospinoOrdersPage({super.key, required this.controller});
@@ -84,6 +87,20 @@ class TospinoOrdersPage extends StatelessWidget {
                       itemBuilder: (context, index) => _OrderCard(
                         order: orders[index],
                         onTap: () => controller.openOrder(orders[index]),
+                        cancelling: controller.isCancellingOrder(
+                          orders[index].id,
+                        ),
+                        onCancel: orders[index].canCancel
+                            ? () {
+                                unawaited(
+                                  showTospinoCancelOrderFlow(
+                                    context,
+                                    controller,
+                                    orders[index],
+                                  ),
+                                );
+                              }
+                            : null,
                       ),
                     ),
                   ),
@@ -133,10 +150,17 @@ class _StatusChip extends StatelessWidget {
 }
 
 class _OrderCard extends StatelessWidget {
-  const _OrderCard({required this.order, required this.onTap});
+  const _OrderCard({
+    required this.order,
+    required this.onTap,
+    required this.cancelling,
+    this.onCancel,
+  });
 
   final TospinoOrder order;
   final VoidCallback onTap;
+  final VoidCallback? onCancel;
+  final bool cancelling;
 
   @override
   Widget build(BuildContext context) {
@@ -255,6 +279,31 @@ class _OrderCard extends StatelessWidget {
                       style: TospinoText.meta(context),
                     ),
                   ),
+                  if (onCancel != null)
+                    TextButton(
+                      key: Key('tospino-order-cancel-${order.id}'),
+                      onPressed: cancelling ? null : onCancel,
+                      style: TextButton.styleFrom(
+                        foregroundColor: TospinoColors.resolve(
+                          context,
+                          TospinoColors.secondary,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      child: cancelling
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Text(
+                              localizeMiniProgramLabel(context, '取消订单'),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                    ),
                   TextButton(
                     onPressed: onTap,
                     style: TextButton.styleFrom(

@@ -65,144 +65,185 @@ class TospinoProductPage extends StatelessWidget {
     return ColoredBox(
       key: const Key('tospino-product-page'),
       color: TospinoColors.resolve(context, TospinoColors.background),
-      child: Column(
+      child: Stack(
         children: [
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                TospinoProductGallery(
-                  key: const Key('tospino-product-gallery'),
-                  product: product,
-                  imageUrls: detail.galleryUrls,
-                  height: MediaQuery.sizeOf(context).width,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: TospinoSurface(
-                    radius: 22,
-                    padding: const EdgeInsets.fromLTRB(18, 17, 18, 18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+          Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    TospinoProductGallery(
+                      key: const Key('tospino-product-gallery'),
+                      product: product,
+                      imageUrls: detail.galleryUrls,
+                      height: MediaQuery.sizeOf(context).width,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: TospinoSurface(
+                        radius: 22,
+                        padding: const EdgeInsets.fromLTRB(18, 17, 18, 18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _PremiumEyebrow(
-                              icon: Icons.auto_awesome_rounded,
-                              label: product.isFbt ? 'Tospino 精选' : '品质好物',
+                            Row(
+                              children: [
+                                _PremiumEyebrow(
+                                  icon: Icons.auto_awesome_rounded,
+                                  label: product.isFbt ? 'Tospino 精选' : '品质好物',
+                                ),
+                                const Spacer(),
+                                if (product.rating > 0)
+                                  _ProductRating(
+                                    rating: product.rating,
+                                    sales: product.sales,
+                                  ),
+                              ],
                             ),
-                            const Spacer(),
-                            if (product.rating > 0)
-                              _ProductRating(
-                                rating: product.rating,
-                                sales: product.sales,
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Expanded(
-                              child: TospinoPriceText(
-                                price: product.price,
-                                oldPrice: product.oldPrice > product.price
-                                    ? product.oldPrice
-                                    : null,
-                                size: 30,
-                                color: TospinoColors.resolve(
-                                  context,
-                                  TospinoColors.price,
-                                ),
-                              ),
-                            ),
-                            if (product.discountPercent > 0)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 5,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: TospinoColors.saleGradient(context),
-                                  borderRadius: BorderRadius.circular(9),
-                                ),
-                                child: Text(
-                                  'SAVE ${product.discountPercent}%',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10.5,
-                                    fontWeight: TospinoText.strong,
-                                    letterSpacing: 0.2,
+                            const SizedBox(height: 12),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Expanded(
+                                  child: TospinoPriceText(
+                                    price: product.price,
+                                    oldPrice: product.oldPrice > product.price
+                                        ? product.oldPrice
+                                        : null,
+                                    size: 30,
+                                    color: TospinoColors.resolve(
+                                      context,
+                                      TospinoColors.price,
+                                    ),
                                   ),
                                 ),
+                                if (product.discountPercent > 0)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: TospinoColors.saleGradient(
+                                        context,
+                                      ),
+                                      borderRadius: BorderRadius.circular(9),
+                                    ),
+                                    child: Text(
+                                      'SAVE ${product.discountPercent}%',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10.5,
+                                        fontWeight: TospinoText.strong,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              product.title,
+                              style: TospinoText.body(context).copyWith(
+                                fontSize: 16.5,
+                                fontWeight: TospinoText.emphasis,
+                                height: 1.42,
+                                letterSpacing: -0.1,
                               ),
+                            ),
+                            const SizedBox(height: 11),
+                            Wrap(
+                              spacing: 7,
+                              runSpacing: 7,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                if (product.brand.isNotEmpty)
+                                  _ProductMetaPill(
+                                    icon: Icons.sell_outlined,
+                                    label: product.brand,
+                                    emphasized: true,
+                                  ),
+                                _ProductMetaPill(
+                                  icon: Icons.verified_user_outlined,
+                                  label: '正品保障',
+                                ),
+                                _ProductMetaPill(
+                                  icon: Icons.local_shipping_outlined,
+                                  label: product.isFbt ? 'FBT 发货' : 'FBM 发货',
+                                ),
+                              ],
+                            ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          product.title,
-                          style: TospinoText.body(context).copyWith(
-                            fontSize: 16.5,
-                            fontWeight: TospinoText.emphasis,
-                            height: 1.42,
-                            letterSpacing: -0.1,
-                          ),
-                        ),
-                        const SizedBox(height: 11),
-                        Wrap(
-                          spacing: 7,
-                          runSpacing: 7,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            if (product.brand.isNotEmpty)
-                              _ProductMetaPill(
-                                icon: Icons.sell_outlined,
-                                label: product.brand,
-                                emphasized: true,
-                              ),
-                            _ProductMetaPill(
-                              icon: Icons.verified_user_outlined,
-                              label: '正品保障',
-                            ),
-                            _ProductMetaPill(
-                              icon: Icons.local_shipping_outlined,
-                              label: product.isFbt ? 'FBT 发货' : 'FBM 发货',
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    TospinoFulfillmentCard(
+                      key: const Key('tospino-product-fulfillment'),
+                      detail: detail,
+                      destination: controller.defaultAddress,
+                    ),
+                    const SizedBox(height: 10),
+                    _StoreServiceCard(
+                      storeName: detail.storeName.isNotEmpty
+                          ? detail.storeName
+                          : 'Tospino',
+                    ),
+                    const SizedBox(height: 10),
+                    _ProductDescriptionCard(product: product, detail: detail),
+                    const SizedBox(height: 10),
+                    _ProductRecommendations(
+                      controller: controller,
+                      currentProductId: product.id,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                TospinoFulfillmentCard(
-                  key: const Key('tospino-product-fulfillment'),
-                  detail: detail,
-                  destination: controller.defaultAddress,
-                ),
-                const SizedBox(height: 10),
-                _StoreServiceCard(
-                  storeName: detail.storeName.isNotEmpty
-                      ? detail.storeName
-                      : 'Tospino',
-                ),
-                const SizedBox(height: 10),
-                _ProductDescriptionCard(product: product, detail: detail),
-                const SizedBox(height: 10),
-                _ProductRecommendations(
-                  controller: controller,
-                  currentProductId: product.id,
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
+              ),
+              _ProductActionBar(
+                controller: controller,
+                product: product,
+                favorite: favorite,
+              ),
+            ],
           ),
-          _ProductActionBar(
-            controller: controller,
-            product: product,
-            favorite: favorite,
+          Positioned(
+            top: MediaQuery.paddingOf(context).top + 8,
+            left: 10,
+            child: _ProductBackButton(onTap: controller.back),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProductBackButton extends StatelessWidget {
+  const _ProductBackButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      key: const Key('tospino-product-back'),
+      color: const Color(0x8A111719),
+      shape: CircleBorder(
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: const SizedBox(
+          width: 40,
+          height: 40,
+          child: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 19,
+          ),
+        ),
       ),
     );
   }
@@ -505,6 +546,10 @@ class _ProductDescriptionCard extends StatelessWidget {
             description: detail.description,
             fallback: product.title,
           ),
+          if (detail.detailImageUrls.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            _ProductDetailImages(imageUrls: detail.detailImageUrls),
+          ],
           if (detail.servicePromises.isNotEmpty) ...[
             const SizedBox(height: 12),
             Divider(
@@ -529,6 +574,92 @@ class _ProductDescriptionCard extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+class _ProductDetailImages extends StatelessWidget {
+  const _ProductDetailImages({required this.imageUrls});
+
+  final List<String> imageUrls;
+
+  @override
+  Widget build(BuildContext context) {
+    final cacheWidth =
+        (MediaQuery.sizeOf(context).width *
+                MediaQuery.devicePixelRatioOf(context))
+            .round();
+    return Column(
+      key: const Key('tospino-product-detail-images'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var index = 0; index < imageUrls.length; index++)
+          Padding(
+            padding: EdgeInsets.only(top: index == 0 ? 0 : 2),
+            child: ClipRRect(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(index == 0 ? 12 : 4),
+                bottom: Radius.circular(index == imageUrls.length - 1 ? 12 : 4),
+              ),
+              child: Image.network(
+                imageUrls[index],
+                key: Key('tospino-product-detail-image-$index'),
+                width: double.infinity,
+                cacheWidth: cacheWidth,
+                fit: BoxFit.fitWidth,
+                alignment: Alignment.topCenter,
+                filterQuality: FilterQuality.medium,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return AspectRatio(
+                    aspectRatio: 0.78,
+                    child: ColoredBox(
+                      color: TospinoColors.resolve(
+                        context,
+                        TospinoColors.imagePlaceholder,
+                      ),
+                      child: const Center(
+                        child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                errorBuilder: (_, _, _) => AspectRatio(
+                  aspectRatio: 0.78,
+                  child: ColoredBox(
+                    color: TospinoColors.resolve(
+                      context,
+                      TospinoColors.imagePlaceholder,
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.broken_image_outlined,
+                            color: TospinoColors.resolve(
+                              context,
+                              TospinoColors.hint,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            localizeMiniProgramLabel(context, '详情图加载失败'),
+                            style: TospinoText.meta(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

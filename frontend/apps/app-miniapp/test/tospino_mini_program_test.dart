@@ -14,6 +14,7 @@ import 'package:ruoqi_app_miniapp/miniapp/tospino/pages/home_page.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_models.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_routes.dart';
+import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_sharing.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_style.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/widgets/product_html_view.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/widgets/product_gallery.dart';
@@ -33,6 +34,18 @@ void main() {
       'productIds': ['product-1', 'product-2'],
     });
     expect(payload.containsKey('goodsIdList'), isFalse);
+  });
+
+  test('Tospino 详情图按 Android detailsPics 字段解析并过滤视频', () {
+    final images = parseTospinoDetailImageUrls([
+      {'fileType': '1', 'imgUrl': '//img.example.com/detail-1.jpg'},
+      {'fileType': '1', 'imgUrl': 'https://img.example.com/detail-2.jpg'},
+      {'fileType': '2', 'imgUrl': 'https://video.example.com/detail.mp4'},
+    ]);
+    expect(images, [
+      'https://img.example.com/detail-1.jpg',
+      'https://img.example.com/detail-2.jpg',
+    ]);
   });
 
   test('Tospino 登录密码使用安卓同款 AES-CBC 零填充', () {
@@ -439,6 +452,43 @@ void main() {
     expect(blankTexts, isEmpty);
   });
 
+  testWidgets('商品详情展示接口返回的详情长图', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(
+      api,
+      initialProductId: api.products.first.id,
+    );
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    final verticalScrollable = find
+        .byWidgetPredicate(
+          (widget) =>
+              widget is Scrollable &&
+              widget.axisDirection == AxisDirection.down,
+        )
+        .last;
+    final detailImages = find.byKey(const Key('tospino-product-detail-images'));
+    await tester.scrollUntilVisible(
+      detailImages,
+      500,
+      scrollable: verticalScrollable,
+    );
+    expect(detailImages, findsOneWidget);
+    expect(
+      find.descendant(of: detailImages, matching: find.byType(Image)),
+      findsNWidgets(2),
+    );
+    expect(
+      find.byKey(const Key('tospino-product-detail-image-0')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('商品详情主图支持左右滑动并显示页码', (tester) async {
     const product = TospinoProduct(
       id: 'gallery-product',
@@ -477,11 +527,96 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('商品主图支持按图片比例动态调整高度', (tester) async {
+    _usePhoneSize(tester);
+    const product = TospinoProduct(
+      id: 'dynamic-gallery',
+      title: 'Dynamic gallery',
+      price: 10,
+      imageUrl: 'https://example.com/gallery-1.jpg',
+    );
+
+    Widget gallery(double ratio) => MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: SizedBox(
+            width: 390,
+            child: TospinoProductGallery(
+              product: product,
+              imageUrls: const [
+                'https://example.com/gallery-1.jpg',
+                'https://example.com/gallery-2.jpg',
+              ],
+              height: 390,
+              imageAspectRatio: ratio,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(gallery(4 / 3));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getSize(find.byKey(const Key('tospino-product-gallery-frame')))
+          .height,
+      closeTo(520, 0.5),
+    );
+
+    await tester.pumpWidget(gallery(0.79));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getSize(find.byKey(const Key('tospino-product-gallery-frame')))
+          .height,
+      closeTo(390 * 0.79, 0.5),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   test('Tospino 物流运输方式与 Android 映射一致', () {
     expect(tospinoTransportModeFromCode('1'), TospinoTransportMode.air);
     expect(tospinoTransportModeFromCode('2'), TospinoTransportMode.sea);
     expect(tospinoTransportModeFromCode('3'), TospinoTransportMode.land);
     expect(tospinoTransportModeFromCode(''), isNull);
+  });
+
+  test('Tospino 订单状态码与 Android 一致并限制取消范围', () {
+    expect(TospinoOrderStatus.fromCode('0'), TospinoOrderStatus.toPay);
+    expect(TospinoOrderStatus.fromCode('1'), TospinoOrderStatus.toShip);
+    expect(TospinoOrderStatus.fromCode('2'), TospinoOrderStatus.toReceive);
+    expect(TospinoOrderStatus.fromCode('3'), TospinoOrderStatus.toReview);
+    const unpaid = TospinoOrder(
+      id: 'unpaid',
+      orderSn: 'unpaid',
+      statusCode: '0',
+      statusLabel: '待付款',
+      total: 10,
+      createdAt: '',
+    );
+    const cashToShip = TospinoOrder(
+      id: 'cash',
+      orderSn: 'cash',
+      statusCode: '1',
+      statusLabel: '待发货',
+      total: 10,
+      createdAt: '',
+      paymentType: 2,
+    );
+    const onlineToShip = TospinoOrder(
+      id: 'online',
+      orderSn: 'online',
+      statusCode: '1',
+      statusLabel: '待发货',
+      total: 10,
+      createdAt: '',
+      paymentType: 1,
+      payState: 1,
+    );
+    expect(unpaid.canCancel, isTrue);
+    expect(cashToShip.canCancel, isTrue);
+    expect(onlineToShip.canCancel, isFalse);
   });
 
   testWidgets('Tospino 商品详情区分 FBT、FBM 本土和 FBM 跨境', (tester) async {
@@ -575,7 +710,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('页面标题和返回属于可滚动内容，胶囊保持固定', (tester) async {
+  testWidgets('商品主图延伸到状态栏，返回和胶囊保持固定', (tester) async {
     _usePhoneSize(tester);
     final api = _FakeTospinoApi();
     final controller = _controller(
@@ -587,13 +722,15 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('商品详情'), findsOneWidget);
+    expect(find.text('商品详情'), findsNothing);
+    expect(find.byKey(const Key('tospino-product-back')), findsOneWidget);
     expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
-    expect(
-      find.byKey(const Key('miniapp-extended-page-header')),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('miniapp-extended-page-header')), findsNothing);
     expect(find.byType(MiniProgramStatusBar), findsNothing);
+    expect(
+      tester.getTopLeft(find.byKey(const Key('tospino-product-gallery'))).dy,
+      0,
+    );
     final overlay = tester.widget<AnnotatedRegion<SystemUiOverlayStyle>>(
       find
           .ancestor(
@@ -605,6 +742,7 @@ void main() {
           .first,
     );
     expect(overlay.value.statusBarColor, Colors.transparent);
+    expect(overlay.value.statusBarIconBrightness, Brightness.light);
     final verticalScrollable = find
         .byWidgetPredicate(
           (widget) =>
@@ -614,7 +752,10 @@ void main() {
         .last;
     await tester.drag(verticalScrollable, const Offset(0, -500));
     await tester.pumpAndSettle();
-    expect(find.text('商品详情').hitTestable(), findsNothing);
+    expect(
+      find.byKey(const Key('tospino-product-back')).hitTestable(),
+      findsOneWidget,
+    );
     expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
     expect(find.byType(MiniProgramNavigationBar), findsNothing);
     expect(tester.takeException(), isNull);
@@ -651,6 +792,30 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(MiniProgramStatusBar), findsNothing);
     expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('购物车标题与状态栏使用连续浅灰背景', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+    controller.switchTab(2);
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byKey(const Key('tospino-cart-page')));
+    final expected = TospinoColors.resolve(context, TospinoColors.background);
+    final header = tester.widget<ColoredBox>(
+      find.byKey(const Key('tospino-cart-title-header')),
+    );
+    final statusBar = tester.widget<MiniProgramStatusBar>(
+      find.byType(MiniProgramStatusBar),
+    );
+    expect(header.color, expected);
+    expect(statusBar.backgroundColor, expected);
     expect(tester.takeException(), isNull);
   });
 
@@ -755,6 +920,212 @@ void main() {
     expect(controller.orderFilter, TospinoOrderStatus.toPay);
     expect(api.lastOrderStatus, TospinoOrderStatus.toPay);
     expect(controller.orders, hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('待付款订单展示取消入口并按原因提交取消', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+    await controller.openOrders();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    final cancel = find.byKey(const Key('tospino-order-cancel-order-1'));
+    expect(cancel, findsOneWidget);
+    expect(find.byKey(const Key('tospino-order-cancel-order-2')), findsNothing);
+
+    await tester.tap(cancel);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('tospino-cancel-reason-list')), findsOneWidget);
+    await tester.tap(
+      find.byKey(const Key('tospino-cancel-reason-changed-mind')),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('tospino-cancel-order-confirm')));
+    await tester.pumpAndSettle();
+
+    expect(api.cancelOrderCalls, 1);
+    expect(api.lastCancelReason, '不想要了');
+    expect(controller.orders.first.statusCode, '5');
+    expect(find.text('已取消'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('订单详情保留取消入口并同步取消状态', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+    await controller.openOrders();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('订单详情').first);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('tospino-order-detail-cancel')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('tospino-order-detail-cancel')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tospino-cancel-reason-other')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('tospino-cancel-order-confirm')));
+    await tester.pumpAndSettle();
+
+    expect(api.cancelOrderCalls, 1);
+    expect(controller.selectedOrder?.statusCode, '5');
+    expect(find.byKey(const Key('tospino-order-detail-cancel')), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('收货地址支持切换默认、编辑和删除', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    api.addressList.add(
+      api.addressList.first.copyWith(
+        id: 'address-2',
+        name: 'Kojo Mensah',
+        isDefault: false,
+      ),
+    );
+    final controller = _controller(api);
+    await controller.initialize();
+    await controller.openAddress();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('tospino-address-list')), findsOneWidget);
+    expect(controller.addresses, hasLength(2));
+    await tester.tap(
+      find.byKey(const Key('tospino-address-default-address-2')),
+    );
+    await tester.pumpAndSettle();
+    expect(api.setDefaultAddressCalls, 1);
+    expect(
+      controller.addresses.firstWhere((address) => address.id == 'address-2'),
+      isA<TospinoAddress>().having(
+        (address) => address.isDefault,
+        'default',
+        true,
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('tospino-address-edit-address-1')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('tospino-address-detail-field')),
+      '24 Oxford Street',
+    );
+    tester.testTextInput.hide();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tospino-address-save')));
+    await tester.pumpAndSettle();
+    expect(api.saveAddressCalls, 1);
+
+    await tester.tap(find.byKey(const Key('tospino-address-edit-address-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tospino-address-delete')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tospino-address-delete-confirm')));
+    await tester.pumpAndSettle();
+    expect(api.deleteAddressCalls, 1);
+    expect(controller.addresses, hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('新增收货地址通过地区级联生成完整地区编码', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+    await controller.openAddress();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('tospino-address-add')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('tospino-address-name-field')),
+      'Kojo Mensah',
+    );
+    await tester.enterText(
+      find.byKey(const Key('tospino-address-phone-field')),
+      '+233 20 123 4567',
+    );
+    await tester.enterText(
+      find.byKey(const Key('tospino-address-detail-field')),
+      '8 Garden Road',
+    );
+    await tester.tap(find.byKey(const Key('tospino-address-region-field')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tospino-region-country-gh')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tospino-region-province-ga')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tospino-region-city-acc')));
+    await tester.pumpAndSettle();
+    expect(find.text('Ghana / Greater Accra / Accra'), findsOneWidget);
+    tester.testTextInput.hide();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('tospino-address-save')));
+    await tester.pumpAndSettle();
+
+    expect(api.saveAddressCalls, 1);
+    expect(controller.addresses, hasLength(2));
+    expect(controller.addresses.last.countryCode, 'GH');
+    expect(controller.addresses.last.provinceCode, 'GA');
+    expect(controller.addresses.last.cityCode, 'ACC');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('地址编辑页支持区号选择和自定义标签', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+    await controller.openAddress();
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('tospino-address-add')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('tospino-address-editor-page')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const Key('tospino-address-phone-prefix')));
+    await tester.pumpAndSettle();
+    expect(api.phonePrefixCalls, 1);
+    expect(find.byKey(const Key('tospino-phone-prefix-list')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tospino-phone-prefix-+234')));
+    await tester.pumpAndSettle();
+    expect(find.text('+234'), findsOneWidget);
+
+    final customTag = find.byKey(const Key('tospino-address-tag-custom'));
+    await tester.ensureVisible(customTag);
+    await tester.tap(customTag);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('tospino-address-custom-tag-field')),
+      'Warehouse',
+    );
+    await tester.tap(find.byKey(const Key('tospino-address-custom-tag-save')));
+    await tester.pumpAndSettle();
+    expect(find.text('Warehouse'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -1117,6 +1488,52 @@ void main() {
     }
   });
 
+  testWidgets('邀请好友页展示邀请码、奖励和邀请记录并支持分享', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final share = _FakeTospinoShareGateway();
+    final controller = TospinoAppController(api: api, shareGateway: share);
+    await controller.initialize();
+    controller.switchTab(3);
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    final inviteEntry = find.byKey(const Key('tospino-profile-invite'));
+    await tester.ensureVisible(inviteEntry);
+    await tester.tap(inviteEntry);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('tospino-invite-page')), findsOneWidget);
+    expect(find.text('INV-233'), findsOneWidget);
+    expect(find.text('累计邀请 2'), findsOneWidget);
+    expect(find.text('Kojo Mensah'), findsOneWidget);
+    expect(api.inviteInfoCalls, 1);
+    expect(api.inviteFriendCalls, 1);
+
+    await tester.tap(find.byKey(const Key('tospino-invite-share')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('tospino-invite-share-system')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('tospino-invite-share-system')));
+    await tester.pumpAndSettle();
+    expect(share.calls, 1);
+    expect(share.lastText, contains('INV-233'));
+
+    await tester.tap(find.byKey(const Key('tospino-invite-rewards')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('tospino-invite-rewards-page')),
+      findsOneWidget,
+    );
+    expect(find.text('GH₵25.50'), findsOneWidget);
+    expect(api.inviteRewardCalls, 1);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Tospino 深色模式沿用主体表面层级', (tester) async {
     _usePhoneSize(tester);
     final api = _FakeTospinoApi();
@@ -1192,6 +1609,17 @@ TospinoAppController _controller(
   _FakeTospinoApi api, {
   String? initialProductId,
 }) => TospinoAppController(api: api, initialProductId: initialProductId);
+
+class _FakeTospinoShareGateway implements TospinoShareGateway {
+  int calls = 0;
+  String? lastText;
+
+  @override
+  Future<void> shareText(String text, {String? subject}) async {
+    calls++;
+    lastText = text;
+  }
+}
 
 void _usePhoneSize(WidgetTester tester) {
   tester.view.physicalSize = const Size(414, 896);
@@ -1304,8 +1732,45 @@ class _FakeTospinoApi implements TospinoDataSource {
   final cartQueryTypes = <int>[];
   int saleInfoCalls = 0;
   int submitOrderCalls = 0;
+  int cancelOrderCalls = 0;
+  int saveAddressCalls = 0;
+  int deleteAddressCalls = 0;
+  int setDefaultAddressCalls = 0;
+  int phonePrefixCalls = 0;
+  int inviteInfoCalls = 0;
+  int inviteFriendCalls = 0;
+  int inviteRewardCalls = 0;
+  String? lastCancelReason;
   TospinoOrderStatus? lastOrderStatus;
   final favorites = <TospinoProduct>[];
+  final inviteFriends = <TospinoInviteFriend>[
+    const TospinoInviteFriend(
+      userId: 'friend-1',
+      account: '+233 20 111 2233',
+      nickname: 'Kojo Mensah',
+      registrationTime: '2026-11-15',
+    ),
+    const TospinoInviteFriend(
+      userId: 'friend-2',
+      account: '+233 24 555 8899',
+      nickname: 'Adwoa Boateng',
+      registrationTime: '2026-11-16',
+    ),
+  ];
+  final inviteRewards = <TospinoInviteRewardRecord>[
+    const TospinoInviteRewardRecord(
+      id: 'reward-1',
+      account: 'Kojo Mensah',
+      amount: 15,
+      registerTime: '2026-11-15',
+    ),
+    const TospinoInviteRewardRecord(
+      id: 'reward-2',
+      account: 'Adwoa Boateng',
+      amount: 10.5,
+      registerTime: '2026-11-16',
+    ),
+  ];
   bool _loggedIn = true;
   final _user = const TospinoUser(
     id: 'buyer-1',
@@ -1314,17 +1779,54 @@ class _FakeTospinoApi implements TospinoDataSource {
     favoriteCount: 2,
     couponCount: 6,
   );
-  final _address = const TospinoAddress(
-    id: 'address-1',
-    name: 'Ama Mensah',
-    phone: '+233 55 123 4567',
-    completeAddress: '12 Independence Avenue, Accra, Ghana',
-    isDefault: true,
-    countryCode: 'GH',
-    countryName: 'Ghana',
-    city: 'Accra',
-    province: 'Greater Accra',
-  );
+  final addressList = <TospinoAddress>[
+    const TospinoAddress(
+      id: 'address-1',
+      name: 'Ama Mensah',
+      phone: '551234567',
+      phonePrefix: '+233',
+      completeAddress: 'Ghana, Greater Accra, Accra, 12 Independence Avenue',
+      detailAddress: '12 Independence Avenue',
+      isDefault: true,
+      countryCode: 'GH',
+      countryName: 'Ghana',
+      provinceCode: 'GA',
+      province: 'Greater Accra',
+      cityCode: 'ACC',
+      city: 'Accra',
+      regionPath: [
+        TospinoRegion(
+          id: 'country-gh',
+          name: 'Ghana',
+          code: 'GH',
+          level: 0,
+          hasChildren: true,
+        ),
+        TospinoRegion(
+          id: 'province-ga',
+          name: 'Greater Accra',
+          code: 'GA',
+          parentId: 'country-gh',
+          level: 1,
+          hasChildren: true,
+        ),
+        TospinoRegion(
+          id: 'city-acc',
+          name: 'Accra',
+          code: 'ACC',
+          parentId: 'province-ga',
+          level: 2,
+        ),
+      ],
+    ),
+  ];
+
+  TospinoAddress? get _address {
+    for (final address in addressList) {
+      if (address.isDefault) return address;
+    }
+    return addressList.isEmpty ? null : addressList.first;
+  }
 
   @override
   bool get isLoggedIn => _loggedIn;
@@ -1429,6 +1931,10 @@ class _FakeTospinoApi implements TospinoDataSource {
       product: product,
       skuId: 'sku-${product.id}',
       galleryUrls: [product.imageUrl],
+      detailImageUrls: const [
+        'https://example.com/detail-1.jpg',
+        'https://example.com/detail-2.jpg',
+      ],
       description: 'Live API product description',
       storeName: 'Tospino Store',
       servicePromises: const [
@@ -1511,7 +2017,74 @@ class _FakeTospinoApi implements TospinoDataSource {
       orders.firstWhere((order) => order.id == orderId);
 
   @override
+  Future<List<TospinoCancelReason>> fetchCancelOrderReasons() async => const [
+    TospinoCancelReason(id: 'changed-mind', reason: '不想要了'),
+    TospinoCancelReason(id: 'other', reason: '其他原因'),
+  ];
+
+  @override
+  Future<void> cancelOrder(String orderId, String reason) async {
+    cancelOrderCalls++;
+    lastCancelReason = reason;
+    final index = orders.indexWhere((order) => order.id == orderId);
+    if (index >= 0) {
+      orders[index] = orders[index].copyWith(
+        statusCode: '5',
+        statusLabel: '已取消',
+      );
+    }
+  }
+
+  @override
   Future<TospinoUser> fetchCurrentUser() async => _user;
+
+  @override
+  Future<TospinoInviteInfo> fetchInviteInfo() async {
+    inviteInfoCalls++;
+    return const TospinoInviteInfo(promoteCode: 'INV-233', userId: 'buyer-1');
+  }
+
+  @override
+  Future<TospinoInviteFriendsPage> fetchInviteFriends({
+    required String promoteCode,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    inviteFriendCalls++;
+    return TospinoInviteFriendsPage(
+      records: List.of(inviteFriends),
+      total: inviteFriends.length,
+      page: page,
+      pages: page,
+    );
+  }
+
+  @override
+  Future<TospinoInviteShareInfo> fetchInviteShareInfo(
+    String promoteCode,
+  ) async => TospinoInviteShareInfo(
+    textContent: 'Join me on Tospino Mall with invitation code $promoteCode',
+    url: 'https://m.tospino.com.gh/me/invite?promoteCode=$promoteCode',
+  );
+
+  @override
+  Future<double> fetchInviteRewardAmount(String inviterId) async => 25.5;
+
+  @override
+  Future<TospinoInviteRewardPage> fetchInviteRewardPage({
+    required String inviterId,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    inviteRewardCalls++;
+    return TospinoInviteRewardPage(
+      records: List.of(inviteRewards),
+      amount: 25.5,
+      total: inviteRewards.length,
+      page: page,
+      pages: page,
+    );
+  }
 
   @override
   Future<List<TospinoProduct>> fetchFavorites() async => List.of(favorites);
@@ -1530,7 +2103,92 @@ class _FakeTospinoApi implements TospinoDataSource {
   }
 
   @override
+  Future<List<TospinoAddress>> fetchAddresses() async => List.of(addressList);
+
+  @override
   Future<TospinoAddress?> fetchDefaultAddress() async => _address;
+
+  @override
+  Future<TospinoAddress> saveAddress(
+    TospinoAddress address, {
+    required bool isDefault,
+  }) async {
+    saveAddressCalls++;
+    if (isDefault) {
+      for (var index = 0; index < addressList.length; index++) {
+        addressList[index] = addressList[index].copyWith(isDefault: false);
+      }
+    }
+    final saved = address.copyWith(
+      id: address.id.isEmpty ? 'address-${addressList.length + 1}' : address.id,
+      isDefault: isDefault,
+    );
+    final index = addressList.indexWhere((item) => item.id == saved.id);
+    if (index >= 0) {
+      addressList[index] = saved;
+    } else {
+      addressList.add(saved);
+    }
+    return saved;
+  }
+
+  @override
+  Future<void> deleteAddress(String addressId) async {
+    deleteAddressCalls++;
+    addressList.removeWhere((address) => address.id == addressId);
+  }
+
+  @override
+  Future<void> setDefaultAddress(String addressId) async {
+    setDefaultAddressCalls++;
+    for (var index = 0; index < addressList.length; index++) {
+      addressList[index] = addressList[index].copyWith(
+        isDefault: addressList[index].id == addressId,
+      );
+    }
+  }
+
+  @override
+  Future<List<TospinoRegion>> fetchRegions({String parentId = '0'}) async {
+    const regions = [
+      TospinoRegion(
+        id: 'country-gh',
+        name: 'Ghana',
+        code: 'GH',
+        level: 0,
+        hasChildren: true,
+      ),
+      TospinoRegion(
+        id: 'province-ga',
+        name: 'Greater Accra',
+        code: 'GA',
+        parentId: 'country-gh',
+        level: 1,
+        hasChildren: true,
+      ),
+      TospinoRegion(
+        id: 'city-acc',
+        name: 'Accra',
+        code: 'ACC',
+        parentId: 'province-ga',
+        level: 2,
+      ),
+    ];
+    return regions.where((region) {
+      if (parentId == '0') return region.level == 0;
+      return region.parentId == parentId;
+    }).toList();
+  }
+
+  @override
+  Future<List<TospinoPhonePrefix>> fetchPhonePrefixes() async {
+    phonePrefixCalls++;
+    return const [
+      TospinoPhonePrefix(country: 'Ghana', prefix: '+233'),
+      TospinoPhonePrefix(country: 'Nigeria', prefix: '+234'),
+      TospinoPhonePrefix(country: 'China', prefix: '+86'),
+    ];
+  }
 
   @override
   Future<TospinoSaleInfo> fetchSaleInfo({

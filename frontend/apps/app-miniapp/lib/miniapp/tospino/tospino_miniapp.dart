@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../common/common.dart';
 import '../launcher/miniapp_launcher_item.dart';
 import 'pages/about_page.dart';
+import 'pages/address_editor_page.dart';
 import 'pages/address_page.dart';
 import 'pages/cart_page.dart';
 import 'pages/category_page.dart';
@@ -14,6 +15,8 @@ import 'pages/coupons_page.dart';
 import 'pages/favorites_page.dart';
 import 'pages/free_gift_page.dart';
 import 'pages/home_page.dart';
+import 'pages/invite_page.dart';
+import 'pages/invite_rewards_page.dart';
 import 'pages/login_page.dart';
 import 'pages/login_method_picker.dart';
 import 'pages/messages_page.dart';
@@ -167,7 +170,8 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
             ),
           )
         : null;
-    final background = route.isTabRoot && _statusScrolled
+    final background =
+        route == TospinoRoute.cart || (route.isTabRoot && _statusScrolled)
         ? TospinoColors.resolve(context, TospinoColors.background)
         : TospinoColors.resolve(context, TospinoColors.surface);
     final foreground = TospinoColors.resolve(context, TospinoColors.ink);
@@ -186,11 +190,14 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
           statusBarColor: transparentStatusBar
               ? Colors.transparent
               : background,
-          statusBarIconBrightness:
-              Theme.of(context).brightness == Brightness.dark
+          statusBarIconBrightness: route == TospinoRoute.product
+              ? Brightness.light
+              : Theme.of(context).brightness == Brightness.dark
               ? Brightness.light
               : Brightness.dark,
-          statusBarBrightness: Theme.of(context).brightness,
+          statusBarBrightness: route == TospinoRoute.product
+              ? Brightness.dark
+              : Theme.of(context).brightness,
         ),
         child: Scaffold(
           backgroundColor: TospinoColors.resolve(
@@ -256,6 +263,7 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
                                       showTitle:
                                           route != TospinoRoute.login &&
                                           route != TospinoRoute.register &&
+                                          route != TospinoRoute.product &&
                                           (!route.isTabRoot ||
                                               route == TospinoRoute.category),
                                       onBack:
@@ -516,7 +524,17 @@ class TospinoPageRouter {
       TospinoRoute.wallet => TospinoWalletPage(controller: controller),
       TospinoRoute.coupons => TospinoCouponsPage(controller: controller),
       TospinoRoute.shopFollow => TospinoShopFollowPage(controller: controller),
+      TospinoRoute.invite => TospinoInvitePage(controller: controller),
+      TospinoRoute.inviteRewards => TospinoInviteRewardsPage(
+        controller: controller,
+      ),
       TospinoRoute.address => TospinoAddressPage(controller: controller),
+      TospinoRoute.addressAdd => TospinoAddressEditorPage(
+        controller: controller,
+      ),
+      TospinoRoute.addressEdit => TospinoAddressEditorPage(
+        controller: controller,
+      ),
       TospinoRoute.login => TospinoLoginPage(
         controller: controller,
         passwordOnly: controller.loginPasswordOnly,
