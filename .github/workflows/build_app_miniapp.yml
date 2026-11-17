@@ -1,0 +1,330 @@
+name: Build app-miniapp
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - frontend/apps/app-miniapp/pubspec.yaml
+      - .github/workflows/build_app_miniapp.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: app-miniapp-build
+  cancel-in-progress: false
+
+env:
+  VERSION_FILE: frontend/apps/app-miniapp/pubspec.yaml
+
+jobs:
+  detect_version:
+    name: Detect pubspec version change
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.version.outputs.changed }}
+      version: ${{ steps.version.outputs.version }}
+      build_number: ${{ steps.version.outputs.build_number }}
+      full_version: ${{ steps.version.outputs.full_version }}
+      release_tag: ${{ steps.version.outputs.release_tag }}
+      flutter_version: ${{ steps.version.outputs.flutter_version }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Compare current and previous version
+        id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_BEFORE: ${{ github.event.before }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          current=$(awk '$1 == "version:" { print $2; exit }' "$VERSION_FILE")
+          current=${current%\"}
+          current=${current#\"}
+          current=${current%\'}
+          current=${current#\'}
+
+          if [[ -z "$current" ]]; then
+            echo "No version field found in $VERSION_FILE" >&2
+            exit 1
+          fi
+
+          version=${current%%+*}
+          if [[ "$current" == *+* ]]; then
+            build_number=${current#*+}
+          else
+            build_number=1
+          fi
+
+          flutter_version=$(python3 -c \
+            'import tomllib; print(tomllib.load(open("mise.toml", "rb"))["tools"]["flutter"])')
+          if [[ -z "$flutter_version" ]]; then
+            echo "No tools.flutter version found in mise.toml" >&2
+            exit 1
+          fi
+
+          # Manual runs always build the version currently on the selected branch.
+          changed=true
+          if [[ "$EVENT_NAME" == "push" && ! "$EVENT_BEFORE" =~ ^0+$ ]]; then
+            if git fetch --no-tags --depth=1 origin "$EVENT_BEFORE"; then
+              previous=$(git show "${EVENT_BEFORE}:${VERSION_FILE}" 2>/dev/null \
+                | awk '$1 == "version:" { print $2; exit }')
+              previous=${previous%\"}
+              previous=${previous#\"}
+              previous=${previous%\'}
+              previous=${previous#\'}
+
+              if [[ -n "$previous" && "$current" == "$previous" ]]; then
+                changed=false
+              fi
+              echo "Previous version: ${previous:-<file did not exist>}"
+            else
+              echo "::warning::Could not fetch the previous commit; rebuilding to be safe."
+            fi
+          fi
+
+          echo "Current version: $current"
+          echo "Version changed: $changed"
+
+          {
+            echo "changed=$changed"
+            echo "version=$version"
+            echo "build_number=$build_number"
+            echo "full_version=$current"
+            echo "release_tag=v$current"
+            echo "flutter_version=$flutter_version"
+          } >> "$GITHUB_OUTPUT"
+
+  android:
+    name: Build Android APK
+    needs: detect_version
+    if: needs.detect_version.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.detect_version.outputs.flutter_version }}
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        working-directory: frontend
+        run: flutter pub get
+
+      - name: Build release APK
+        working-directory: frontend/apps/app-miniapp
+        env:
+          APP_VERSION: ${{ needs.detect_version.outputs.version }}
+          APP_BUILD_NUMBER: ${{ needs.detect_version.outputs.build_number }}
+        run: |
+          flutter build apk --release \
+            --build-name="$APP_VERSION" \
+            --build-number="$APP_BUILD_NUMBER"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-miniapp-android-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
+          path: frontend/apps/app-miniapp/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  ios:
+    name: Build iOS app
+    needs: detect_version
+    if: needs.detect_version.outputs.changed == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.detect_version.outputs.flutter_version }}
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        working-directory: frontend
+        run: flutter pub get
+
+      - name: Check iOS signing secrets
+        id: signing
+        env:
+          IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        shell: bash
+        run: |
+          if [[ -n "$IOS_CERTIFICATE_P12_BASE64" \
+            && -n "$IOS_CERTIFICATE_PASSWORD" \
+            && -n "$IOS_PROVISIONING_PROFILE_BASE64" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "iOS signing secrets found."
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::iOS signing secrets are missing; building an unsigned Runner.app archive."
+          fi
+
+      - name: Install Apple certificate and provisioning profile
+        if: steps.signing.outputs.available == 'true'
+        env:
+          IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          certificate_path="$RUNNER_TEMP/build_certificate.p12"
+          profile_path="$RUNNER_TEMP/build_profile.mobileprovision"
+          keychain_path="$RUNNER_TEMP/app-signing.keychain-db"
+          keychain_password=$(openssl rand -hex 16)
+
+          echo -n "$IOS_CERTIFICATE_P12_BASE64" | base64 --decode -o "$certificate_path"
+          echo -n "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode -o "$profile_path"
+
+          security create-keychain -p "$keychain_password" "$keychain_path"
+          security set-keychain-settings -lut 21600 "$keychain_path"
+          security unlock-keychain -p "$keychain_password" "$keychain_path"
+          security import "$certificate_path" \
+            -P "$IOS_CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 -k "$keychain_path"
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -k "$keychain_password" "$keychain_path"
+          security list-keychains -d user -s "$keychain_path"
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$profile_path" "$HOME/Library/MobileDevice/Provisioning Profiles/"
+
+      - name: Build signed IPA
+        if: steps.signing.outputs.available == 'true'
+        working-directory: frontend/apps/app-miniapp
+        env:
+          APP_VERSION: ${{ needs.detect_version.outputs.version }}
+          APP_BUILD_NUMBER: ${{ needs.detect_version.outputs.build_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          profile_path="$RUNNER_TEMP/build_profile.mobileprovision"
+          team_id=$(security cms -D -i "$profile_path" \
+            | plutil -extract TeamIdentifier.0 raw -o - -)
+          profile_name=$(security cms -D -i "$profile_path" \
+            | plutil -extract Name raw -o - -)
+
+          export_options="$RUNNER_TEMP/ExportOptions.plist"
+          cat > "$export_options" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>teamID</key>
+            <string>${team_id}</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.BMMY.TospinoMall</key>
+              <string>${profile_name}</string>
+            </dict>
+            <key>stripSwiftSymbols</key>
+            <true/>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+          flutter build ipa --release \
+            --build-name="$APP_VERSION" \
+            --build-number="$APP_BUILD_NUMBER" \
+            --export-options-plist="$export_options"
+
+      - name: Upload signed IPA
+        if: steps.signing.outputs.available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-miniapp-ios-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
+          path: frontend/apps/app-miniapp/build/ios/ipa/*.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Build unsigned iOS app
+        if: steps.signing.outputs.available != 'true'
+        working-directory: frontend/apps/app-miniapp
+        env:
+          APP_VERSION: ${{ needs.detect_version.outputs.version }}
+          APP_BUILD_NUMBER: ${{ needs.detect_version.outputs.build_number }}
+        run: |
+          flutter build ios --release --no-codesign \
+            --build-name="$APP_VERSION" \
+            --build-number="$APP_BUILD_NUMBER"
+
+          ditto -c -k --sequesterRsrc --keepParent \
+            build/ios/iphoneos/Runner.app \
+            "$RUNNER_TEMP/app-miniapp-${APP_VERSION}-${APP_BUILD_NUMBER}-ios-unsigned.zip"
+
+      - name: Upload unsigned iOS app
+        if: steps.signing.outputs.available != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-miniapp-ios-unsigned-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
+          path: ${{ runner.temp }}/app-miniapp-*-ios-unsigned.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: Publish GitHub Release
+    needs:
+      - detect_version
+      - android
+      - ios
+    if: >-
+      github.event_name == 'push'
+      && needs.detect_version.outputs.changed == 'true'
+      && needs.android.result == 'success'
+      && needs.ios.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: app-miniapp-*
+          path: release-files
+          merge-multiple: true
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.detect_version.outputs.release_tag }}
+          FULL_VERSION: ${{ needs.detect_version.outputs.full_version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          find release-files -maxdepth 1 -type f -print
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release-files/* --clobber
+          else
+            gh release create "$RELEASE_TAG" release-files/* \
+              --target "$GITHUB_SHA" \
+              --title "app-miniapp $FULL_VERSION" \
+              --notes "Automated mobile build for app-miniapp $FULL_VERSION."
+          fi
