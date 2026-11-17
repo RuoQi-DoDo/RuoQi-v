@@ -80,20 +80,26 @@ class TospinoProductPage extends StatelessWidget {
                       height: MediaQuery.sizeOf(context).width,
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.only(top: 12),
                       child: TospinoSurface(
-                        radius: 22,
-                        padding: const EdgeInsets.fromLTRB(18, 17, 18, 18),
+                        radius: 18,
+                        padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+                        border: true,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: [
-                                _PremiumEyebrow(
-                                  icon: Icons.auto_awesome_rounded,
-                                  label: product.isFbt ? 'Tospino 精选' : '品质好物',
+                                Expanded(
+                                  child: _PremiumEyebrow(
+                                    icon: Icons.auto_awesome_rounded,
+                                    label: product.isFbt
+                                        ? 'TOSPINO SELECT'
+                                        : 'CURATED QUALITY',
+                                  ),
                                 ),
-                                const Spacer(),
+                                if (product.rating > 0)
+                                  const SizedBox(width: 8),
                                 if (product.rating > 0)
                                   _ProductRating(
                                     rating: product.rating,
@@ -101,58 +107,70 @@ class TospinoProductPage extends StatelessWidget {
                                   ),
                               ],
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 15),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Expanded(
                                   child: TospinoPriceText(
+                                    key: const Key('tospino-product-price'),
                                     price: product.price,
                                     oldPrice: product.oldPrice > product.price
                                         ? product.oldPrice
                                         : null,
-                                    size: 30,
+                                    size: 32,
                                     color: TospinoColors.resolve(
                                       context,
-                                      TospinoColors.price,
+                                      TospinoColors.ink,
                                     ),
                                   ),
                                 ),
                                 if (product.discountPercent > 0)
                                   Container(
+                                    key: const Key('tospino-product-discount'),
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 5,
+                                      horizontal: 9,
+                                      vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
-                                      gradient: TospinoColors.saleGradient(
+                                      color: TospinoColors.resolve(
                                         context,
+                                        TospinoColors.surfaceMuted,
                                       ),
-                                      borderRadius: BorderRadius.circular(9),
+                                      borderRadius: BorderRadius.circular(7),
+                                      border: Border.all(
+                                        color: TospinoColors.resolve(
+                                          context,
+                                          TospinoColors.lineStrong,
+                                        ),
+                                      ),
                                     ),
                                     child: Text(
-                                      'SAVE ${product.discountPercent}%',
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      '${product.discountPercent}% OFF',
+                                      style: TextStyle(
+                                        color: TospinoColors.resolve(
+                                          context,
+                                          TospinoColors.ink,
+                                        ),
                                         fontSize: 10.5,
                                         fontWeight: TospinoText.strong,
-                                        letterSpacing: 0.2,
+                                        letterSpacing: 0.55,
                                       ),
                                     ),
                                   ),
                               ],
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 14),
                             Text(
                               product.title,
                               style: TospinoText.body(context).copyWith(
-                                fontSize: 16.5,
+                                fontSize: 17,
                                 fontWeight: TospinoText.emphasis,
-                                height: 1.42,
-                                letterSpacing: -0.1,
+                                height: 1.5,
+                                letterSpacing: -0.15,
                               ),
                             ),
-                            const SizedBox(height: 11),
+                            const SizedBox(height: 13),
                             Wrap(
                               spacing: 7,
                               runSpacing: 7,
@@ -257,35 +275,29 @@ class _PremiumEyebrow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brand = TospinoColors.solidBrand(context);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 5, 10, 5),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            TospinoColors.resolve(context, TospinoColors.brandPale),
-            TospinoColors.resolve(context, TospinoColors.surface),
-          ],
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 13,
+          color: TospinoColors.resolve(context, TospinoColors.secondary),
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: brand.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: brand),
-          const SizedBox(width: 5),
-          Text(
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
             localizeMiniProgramLabel(context, label),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: brand,
-              fontSize: 10.5,
-              fontWeight: TospinoText.strong,
-              letterSpacing: 0.35,
+              color: TospinoColors.resolve(context, TospinoColors.ink),
+              fontSize: 10,
+              fontWeight: TospinoText.emphasis,
+              letterSpacing: 1.25,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -307,7 +319,7 @@ class _ProductRating extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.star_rounded, size: 15, color: TospinoColors.orange),
+          const Icon(Icons.star_rounded, size: 14, color: Color(0xFF9B7A43)),
           const SizedBox(width: 3),
           Text(
             rating.toStringAsFixed(1),
@@ -345,34 +357,35 @@ class _ProductMetaPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brand = TospinoColors.solidBrand(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: emphasized
-            ? TospinoColors.resolve(context, TospinoColors.brandPale)
-            : TospinoColors.resolve(context, TospinoColors.surfaceMuted),
-        borderRadius: BorderRadius.circular(9),
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(
+          color: TospinoColors.resolve(
+            context,
+            emphasized ? TospinoColors.lineStrong : TospinoColors.line,
+          ),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             icon,
-            size: 13,
-            color: emphasized
-                ? brand
-                : TospinoColors.resolve(context, TospinoColors.muted),
+            size: 12,
+            color: TospinoColors.resolve(context, TospinoColors.muted),
           ),
           const SizedBox(width: 5),
           Text(
             localizeMiniProgramLabel(context, label),
             style: TospinoText.meta(context).copyWith(
-              color: emphasized
-                  ? brand
-                  : TospinoColors.resolve(context, TospinoColors.secondary),
-              fontSize: 10.5,
-              fontWeight: TospinoText.emphasis,
+              color: TospinoColors.resolve(context, TospinoColors.secondary),
+              fontSize: 10,
+              fontWeight: emphasized
+                  ? TospinoText.emphasis
+                  : TospinoText.regular,
             ),
           ),
         ],
@@ -390,7 +403,7 @@ class _StoreServiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final brand = TospinoColors.solidBrand(context);
     return TospinoSurface(
-      radius: 22,
+      radius: 18,
       padding: const EdgeInsets.fromLTRB(17, 16, 17, 15),
       border: true,
       child: Column(
@@ -401,15 +414,8 @@ class _StoreServiceCard extends StatelessWidget {
                 width: 45,
                 height: 45,
                 decoration: BoxDecoration(
-                  gradient: TospinoColors.brandGradient(context),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: brand.withValues(alpha: 0.2),
-                      blurRadius: 12,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
+                  color: const Color(0xFF202528),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
                   Icons.storefront_rounded,
@@ -456,13 +462,16 @@ class _StoreServiceCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: TospinoColors.resolve(
                     context,
-                    TospinoColors.brandPale,
+                    TospinoColors.surfaceMuted,
                   ),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.workspace_premium_rounded,
-                  color: brand,
+                  color: TospinoColors.resolve(
+                    context,
+                    TospinoColors.secondary,
+                  ),
                   size: 18,
                 ),
               ),
@@ -531,8 +540,9 @@ class _ProductDescriptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TospinoSurface(
-      radius: 22,
+      radius: 18,
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      border: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -677,17 +687,23 @@ class _ProductSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brand = TospinoColors.solidBrand(context);
     return Row(
       children: [
         Container(
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: TospinoColors.resolve(context, TospinoColors.brandPale),
-            borderRadius: BorderRadius.circular(11),
+            color: TospinoColors.resolve(context, TospinoColors.surface),
+            borderRadius: BorderRadius.circular(9),
+            border: Border.all(
+              color: TospinoColors.resolve(context, TospinoColors.lineStrong),
+            ),
           ),
-          child: Icon(icon, color: brand, size: 19),
+          child: Icon(
+            icon,
+            color: TospinoColors.resolve(context, TospinoColors.secondary),
+            size: 18,
+          ),
         ),
         const SizedBox(width: 11),
         Expanded(
@@ -724,10 +740,14 @@ class _PromiseItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(11, 9, 11, 9),
+      padding: const EdgeInsets.fromLTRB(10, 4, 0, 4),
       decoration: BoxDecoration(
-        color: TospinoColors.resolve(context, TospinoColors.surfaceMuted),
-        borderRadius: BorderRadius.circular(10),
+        border: Border(
+          left: BorderSide(
+            color: TospinoColors.resolve(context, TospinoColors.lineStrong),
+            width: 2,
+          ),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -823,23 +843,18 @@ class _ProductActionBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              TospinoColors.resolve(context, TospinoColors.surface),
-              TospinoColors.resolve(context, TospinoColors.surfaceMuted),
-            ],
+          color: TospinoColors.resolve(context, TospinoColors.surface),
+          border: Border(
+            top: BorderSide(
+              color: TospinoColors.resolve(context, TospinoColors.line),
+            ),
           ),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border.all(
-            color: TospinoColors.resolve(context, TospinoColors.line),
-          ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 24,
-              offset: const Offset(0, -3),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 18,
+              offset: const Offset(0, -2),
             ),
           ],
         ),
@@ -852,9 +867,12 @@ class _ProductActionBar extends StatelessWidget {
                 height: 46,
                 decoration: BoxDecoration(
                   color: TospinoColors.resolve(context, TospinoColors.surface),
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: TospinoColors.resolve(context, TospinoColors.line),
+                    color: TospinoColors.resolve(
+                      context,
+                      TospinoColors.lineStrong,
+                    ),
                   ),
                 ),
                 child: Row(
@@ -880,14 +898,17 @@ class _ProductActionBar extends StatelessWidget {
                                 }
                               },
                         borderRadius: const BorderRadius.horizontal(
-                          left: Radius.circular(15),
+                          left: Radius.circular(12),
                         ),
                         child: Icon(
                           favorite
                               ? Icons.favorite_rounded
                               : Icons.favorite_border_rounded,
                           color: favorite
-                              ? TospinoColors.price
+                              ? TospinoColors.resolve(
+                                  context,
+                                  TospinoColors.ink,
+                                )
                               : TospinoColors.resolve(
                                   context,
                                   TospinoColors.secondary,
@@ -905,7 +926,7 @@ class _ProductActionBar extends StatelessWidget {
                       child: InkWell(
                         onTap: () => controller.switchTab(2),
                         borderRadius: const BorderRadius.horizontal(
-                          right: Radius.circular(15),
+                          right: Radius.circular(12),
                         ),
                         child: Stack(
                           alignment: Alignment.center,
@@ -931,7 +952,7 @@ class _ProductActionBar extends StatelessWidget {
                                     horizontal: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: TospinoColors.price,
+                                    color: const Color(0xFF202528),
                                     borderRadius: BorderRadius.circular(9),
                                   ),
                                   alignment: Alignment.center,
@@ -978,7 +999,7 @@ class _ProductActionBar extends StatelessWidget {
                 child: _ProductActionButton(
                   actionKey: const Key('tospino-product-buy-now'),
                   label: localizeMiniProgramLabel(context, '立即购买'),
-                  icon: Icons.bolt_rounded,
+                  icon: Icons.arrow_forward_rounded,
                   primary: true,
                   enabled: !controller.busy,
                   onTap: () async {
@@ -1019,33 +1040,36 @@ class _ProductActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brand = TospinoColors.solidBrand(context);
+    final darkMode = Theme.of(context).brightness == Brightness.dark;
+    final primaryBackground = darkMode
+        ? const Color(0xFFF1F3F3)
+        : const Color(0xFF1D2225);
     final foreground = primary
-        ? Colors.white
+        ? darkMode
+              ? const Color(0xFF111416)
+              : Colors.white
         : TospinoColors.resolve(context, TospinoColors.ink);
     return Opacity(
       opacity: enabled ? 1 : 0.5,
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(12),
         clipBehavior: Clip.antiAlias,
         child: Ink(
           height: 46,
           decoration: BoxDecoration(
-            gradient: primary
-                ? TospinoColors.brandGradient(context)
-                : LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      TospinoColors.resolve(context, TospinoColors.brandPale),
-                      TospinoColors.resolve(context, TospinoColors.surface),
-                    ],
-                  ),
-            borderRadius: BorderRadius.circular(15),
+            color: primary
+                ? primaryBackground
+                : TospinoColors.resolve(context, TospinoColors.surface),
+            borderRadius: BorderRadius.circular(12),
             border: primary
                 ? null
-                : Border.all(color: brand.withValues(alpha: 0.28)),
+                : Border.all(
+                    color: TospinoColors.resolve(
+                      context,
+                      TospinoColors.lineStrong,
+                    ),
+                  ),
           ),
           child: InkWell(
             key: actionKey,

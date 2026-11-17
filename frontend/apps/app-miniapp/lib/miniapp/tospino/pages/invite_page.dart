@@ -21,35 +21,14 @@ class TospinoInvitePage extends StatelessWidget {
   }
 
   Future<void> _share(BuildContext context) async {
-    final action = await showModalBottomSheet<_InviteShareAction>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _InviteShareSheet(controller: controller),
-    );
-    if (action == null || !context.mounted) return;
-    switch (action) {
-      case _InviteShareAction.system:
-        try {
-          await controller.shareInviteContent();
-        } catch (error) {
-          if (context.mounted) showTospinoToast(context, error.toString());
-        }
-        return;
-      case _InviteShareAction.copyContent:
-        await Clipboard.setData(
-          ClipboardData(text: controller.inviteShareContent),
-        );
-        if (context.mounted) showTospinoToast(context, '邀请文案已复制');
-        return;
-      case _InviteShareAction.copyLink:
-        final link = controller.inviteShare?.url ?? '';
-        if (link.isEmpty) {
-          if (context.mounted) showTospinoToast(context, '暂无邀请链接');
-          return;
-        }
-        await Clipboard.setData(ClipboardData(text: link));
-        if (context.mounted) showTospinoToast(context, '邀请链接已复制');
-        return;
+    final renderBox = context.findRenderObject();
+    final origin = renderBox is RenderBox && renderBox.hasSize
+        ? renderBox.localToGlobal(Offset.zero) & renderBox.size
+        : null;
+    try {
+      await controller.shareInviteContent(sharePositionOrigin: origin);
+    } catch (error) {
+      if (context.mounted) showTospinoToast(context, error.toString());
     }
   }
 
@@ -525,141 +504,6 @@ class _InviteFriendRow extends StatelessWidget {
           color: TospinoColors.solidBrand(context),
         ),
       ],
-    );
-  }
-}
-
-enum _InviteShareAction { system, copyContent, copyLink }
-
-class _InviteShareSheet extends StatelessWidget {
-  const _InviteShareSheet({required this.controller});
-
-  final TospinoAppController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasLink = controller.inviteShare?.url.isNotEmpty == true;
-    return Material(
-      color: TospinoColors.resolve(context, TospinoColors.surface),
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                localizeMiniProgramLabel(context, '分享邀请'),
-                style: TospinoText.pageTitle(context).copyWith(fontSize: 18),
-              ),
-              const SizedBox(height: 12),
-              _InviteShareOption(
-                key: const Key('tospino-invite-share-system'),
-                icon: Icons.ios_share_rounded,
-                label: '系统分享',
-                description: '分享到 WhatsApp、短信、邮件等',
-                onTap: () =>
-                    Navigator.of(context).pop(_InviteShareAction.system),
-              ),
-              _InviteShareOption(
-                key: const Key('tospino-invite-copy-content'),
-                icon: Icons.copy_all_rounded,
-                label: '复制邀请文案',
-                description: controller.inviteShareContent,
-                onTap: () =>
-                    Navigator.of(context).pop(_InviteShareAction.copyContent),
-              ),
-              _InviteShareOption(
-                key: const Key('tospino-invite-copy-link'),
-                icon: Icons.link_rounded,
-                label: '复制邀请链接',
-                description: hasLink
-                    ? controller.inviteShare!.url
-                    : '当前活动未配置邀请链接',
-                enabled: hasLink,
-                onTap: () =>
-                    Navigator.of(context).pop(_InviteShareAction.copyLink),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _InviteShareOption extends StatelessWidget {
-  const _InviteShareOption({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.description,
-    required this.onTap,
-    this.enabled = true,
-  });
-
-  final IconData icon;
-  final String label;
-  final String description;
-  final VoidCallback onTap;
-  final bool enabled;
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: enabled ? 1 : 0.45,
-      child: Material(
-        color: TospinoColors.resolve(context, TospinoColors.surfaceMuted),
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          onTap: enabled ? onTap : null,
-          borderRadius: BorderRadius.circular(14),
-          child: Padding(
-            padding: const EdgeInsets.all(13),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: TospinoColors.resolve(
-                      context,
-                      TospinoColors.brandPale,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: TospinoColors.solidBrand(context),
-                    size: 21,
-                  ),
-                ),
-                const SizedBox(width: 11),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        localizeMiniProgramLabel(context, label),
-                        style: TospinoText.bodyStrong(context),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        localizeMiniProgramLabel(context, description),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TospinoText.meta(context),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right_rounded, size: 19),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

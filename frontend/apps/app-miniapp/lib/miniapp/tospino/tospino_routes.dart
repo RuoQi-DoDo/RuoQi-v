@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show Rect;
 
 import 'package:flutter/foundation.dart';
 
@@ -614,8 +615,12 @@ class TospinoAppController extends ChangeNotifier {
         : 'Join me on Tospino Mall. My invitation code: $code';
   }
 
-  Future<void> shareInviteContent() =>
-      _shareGateway.shareText(inviteShareContent, subject: 'Tospino Mall');
+  Future<void> shareInviteContent({Rect? sharePositionOrigin}) =>
+      _shareGateway.shareText(
+        inviteShareContent,
+        subject: 'Tospino Mall',
+        sharePositionOrigin: sharePositionOrigin,
+      );
 
   Future<void> loadMoreHome() async {
     if (_loadingHome || _loadingMoreHome || !_homeHasMore) return;

@@ -612,7 +612,7 @@ class _CartCheckoutBar extends StatelessWidget {
         lines.isNotEmpty && lines.every((line) => line.selected);
     final selectedCount = controller.selectedCartLines.length;
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
       decoration: BoxDecoration(
         color: TospinoColors.resolve(context, TospinoColors.surface),
         border: Border(
@@ -620,50 +620,164 @@ class _CartCheckoutBar extends StatelessWidget {
             color: TospinoColors.resolve(context, TospinoColors.line),
           ),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 18,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: SafeArea(
         top: false,
         child: Row(
           children: [
-            Checkbox(
-              value: allSelected,
-              onChanged: (selected) =>
-                  controller.selectAllCart(selected ?? false),
-              activeColor: TospinoColors.solidBrand(context),
-              shape: const CircleBorder(),
-              visualDensity: VisualDensity.compact,
-            ),
-            Text(
-              localizeMiniProgramLabel(context, '全选'),
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const Spacer(),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  localizeMiniProgramLabel(context, '合计'),
-                  style: TospinoText.body(context),
+            InkWell(
+              onTap: () => controller.selectAllCart(!allSelected),
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 5),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Checkbox(
+                      value: allSelected,
+                      onChanged: (selected) =>
+                          controller.selectAllCart(selected ?? false),
+                      activeColor: TospinoColors.resolve(
+                        context,
+                        TospinoColors.ink,
+                      ),
+                      checkColor: TospinoColors.resolve(
+                        context,
+                        TospinoColors.surface,
+                      ),
+                      shape: const CircleBorder(),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    Text(
+                      localizeMiniProgramLabel(context, '全选'),
+                      style: TospinoText.secondary(context),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 5),
-                TospinoPriceText(
-                  price: controller.cartTotal,
-                  size: 18,
-                  color: TospinoColors.resolve(context, TospinoColors.price),
-                ),
-              ],
+              ),
             ),
-            const SizedBox(width: 10),
-            TospinoGradientButton(
-              key: const Key('tospino-cart-checkout'),
-              label: '结算($selectedCount)',
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    localizeMiniProgramLabel(context, '合计'),
+                    style: TospinoText.hint(context).copyWith(fontSize: 10),
+                  ),
+                  const SizedBox(height: 2),
+                  TospinoPriceText(
+                    key: const Key('tospino-cart-total'),
+                    price: controller.cartTotal,
+                    size: 19,
+                    color: TospinoColors.resolve(context, TospinoColors.ink),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            _CartCheckoutButton(
+              selectedCount: selectedCount,
+              loading: controller.loadingCheckout,
               onPressed: selectedCount == 0 || controller.loadingCheckout
                   ? null
-                  : () => controller.startCheckout(),
-              height: 48,
-              expand: false,
+                  : controller.startCheckout,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CartCheckoutButton extends StatelessWidget {
+  const _CartCheckoutButton({
+    required this.selectedCount,
+    required this.loading,
+    required this.onPressed,
+  });
+
+  final int selectedCount;
+  final bool loading;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final darkMode = Theme.of(context).brightness == Brightness.dark;
+    final enabled = onPressed != null;
+    final background = !enabled
+        ? TospinoColors.resolve(context, TospinoColors.disabled)
+        : darkMode
+        ? const Color(0xFFF1F3F3)
+        : const Color(0xFF1D2225);
+    final foreground = !enabled
+        ? TospinoColors.resolve(context, TospinoColors.hint)
+        : darkMode
+        ? const Color(0xFF111416)
+        : Colors.white;
+    return SizedBox(
+      width: 116,
+      height: 48,
+      child: Material(
+        color: background,
+        borderRadius: BorderRadius.circular(12),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: const Key('tospino-cart-checkout'),
+          onTap: onPressed,
+          child: Center(
+            child: loading
+                ? SizedBox(
+                    width: 19,
+                    height: 19,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: foreground,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        localizeMiniProgramLabel(context, '结算'),
+                        style: TextStyle(
+                          color: foreground,
+                          fontSize: 14.5,
+                          fontWeight: TospinoText.emphasis,
+                        ),
+                      ),
+                      if (selectedCount > 0) ...[
+                        const SizedBox(width: 5),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: foreground.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '$selectedCount',
+                            style: TextStyle(
+                              color: foreground,
+                              fontSize: 10.5,
+                              fontWeight: TospinoText.strong,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+          ),
         ),
       ),
     );

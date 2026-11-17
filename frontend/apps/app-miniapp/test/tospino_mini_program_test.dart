@@ -360,6 +360,33 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('商品详情价格使用克制的深色层级', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(
+      api,
+      initialProductId: api.products.first.id,
+    );
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    final context = tester.element(
+      find.byKey(const Key('tospino-product-page')),
+    );
+    final price = tester.widget<TospinoPriceText>(
+      find.byKey(const Key('tospino-product-price')),
+    );
+    expect(price.color, TospinoColors.resolve(context, TospinoColors.ink));
+    expect(find.textContaining('OFF'), findsOneWidget);
+    final discount = tester.widget<Container>(
+      find.byKey(const Key('tospino-product-discount')),
+    );
+    expect((discount.decoration! as BoxDecoration).gradient, isNull);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('商品详情长服务承诺自动换行且不横向溢出', (tester) async {
     _usePhoneSize(tester);
     tester.view.physicalSize = const Size(360, 800);
@@ -372,6 +399,7 @@ void main() {
       MaterialApp(home: TospinoMiniProgram(controller: controller)),
     );
     await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: '商品详情首屏横向溢出');
 
     final verticalScrollable = find
         .byWidgetPredicate(
@@ -383,12 +411,16 @@ void main() {
     for (var index = 0; index < 4; index++) {
       await tester.drag(verticalScrollable, const Offset(0, -420));
       await tester.pumpAndSettle();
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: '商品详情第 ${index + 1} 次滚动后横向溢出',
+      );
     }
     expect(
       find.textContaining('FBT products: 7 days without reason'),
       findsOneWidget,
     );
-    expect(tester.takeException(), isNull);
   });
 
   testWidgets('消息页使用订单数据展示动态并进入订单详情', (tester) async {
@@ -856,6 +888,34 @@ void main() {
     );
     expect(header.color, expected);
     expect(statusBar.backgroundColor, expected);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('购物车结算栏使用克制的深色总价和按钮', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final controller = _controller(api);
+    await controller.initialize();
+    controller.switchTab(2);
+    await tester.pumpWidget(
+      MaterialApp(home: TospinoMiniProgram(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byKey(const Key('tospino-cart-page')));
+    final total = tester.widget<TospinoPriceText>(
+      find.byKey(const Key('tospino-cart-total')),
+    );
+    expect(total.color, TospinoColors.resolve(context, TospinoColors.ink));
+
+    final checkout = find.byKey(const Key('tospino-cart-checkout'));
+    expect(tester.getSize(checkout).height, 48);
+    final materialColors = find
+        .ancestor(of: checkout, matching: find.byType(Material))
+        .evaluate()
+        .map((element) => (element.widget as Material).color)
+        .toList();
+    expect(materialColors, contains(const Color(0xFF1D2225)));
     expect(tester.takeException(), isNull);
   });
 
@@ -1567,14 +1627,9 @@ void main() {
 
     await tester.tap(find.byKey(const Key('tospino-invite-share')));
     await tester.pumpAndSettle();
-    expect(
-      find.byKey(const Key('tospino-invite-share-system')),
-      findsOneWidget,
-    );
-    await tester.tap(find.byKey(const Key('tospino-invite-share-system')));
-    await tester.pumpAndSettle();
     expect(share.calls, 1);
     expect(share.lastText, contains('INV-233'));
+    expect(find.byKey(const Key('tospino-invite-share-system')), findsNothing);
 
     await tester.tap(find.byKey(const Key('tospino-invite-rewards')));
     await tester.pumpAndSettle();
@@ -1668,7 +1723,11 @@ class _FakeTospinoShareGateway implements TospinoShareGateway {
   String? lastText;
 
   @override
-  Future<void> shareText(String text, {String? subject}) async {
+  Future<void> shareText(
+    String text, {
+    String? subject,
+    Rect? sharePositionOrigin,
+  }) async {
     calls++;
     lastText = text;
   }
