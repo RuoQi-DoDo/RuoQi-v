@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../common/common.dart';
 import '../launcher/miniapp_launcher_item.dart';
 import 'pages/about_page.dart';
+import 'pages/address_editor_page.dart';
 import 'pages/address_page.dart';
 import 'pages/cart_page.dart';
 import 'pages/category_page.dart';
@@ -14,11 +15,16 @@ import 'pages/coupons_page.dart';
 import 'pages/favorites_page.dart';
 import 'pages/free_gift_page.dart';
 import 'pages/home_page.dart';
+import 'pages/invite_page.dart';
+import 'pages/invite_rewards_page.dart';
 import 'pages/login_page.dart';
+import 'pages/login_method_picker.dart';
+import 'pages/messages_page.dart';
 import 'pages/order_detail_page.dart';
 import 'pages/orders_page.dart';
 import 'pages/product_page.dart';
 import 'pages/profile_page.dart';
+import 'pages/registration_page.dart';
 import 'pages/search_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/shop_follow_page.dart';
@@ -28,13 +34,14 @@ import 'tospino_style.dart';
 
 const double tospinoAndroidDesignWidth = 375;
 const double tospinoAndroidGlyphCompensation = 0.519 / 0.546;
+const double tospinoReadableTextScale = 1.10;
 
 double tospinoAndroidWidthScale(double logicalWidth) =>
     logicalWidth.clamp(0, tospinoAndroidDesignWidth) /
     tospinoAndroidDesignWidth;
 
-/// Matches Tospino Android's `BaseApplication` text scaling:
-/// system font scale * width scale * Inter x-height correction.
+/// Keeps Tospino's width-aware scaling while avoiding unreadably small labels
+/// on compact phones. System accessibility scaling remains applied first.
 ///
 /// Font weight only selects Regular or Medium in `font/inter.xml`; it does not
 /// change the Android `sp` value.
@@ -43,7 +50,9 @@ TextScaler tospinoAndroidTextScaler(
   double logicalWidth,
 ) => _TospinoAndroidTextScaler(
   hostScaler,
-  tospinoAndroidWidthScale(logicalWidth) * tospinoAndroidGlyphCompensation,
+  tospinoAndroidWidthScale(logicalWidth) *
+      tospinoAndroidGlyphCompensation *
+      tospinoReadableTextScale,
 );
 
 /// Tospino shopping mini-program.
@@ -81,6 +90,7 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
   late final bool _ownsController;
   TospinoRoute? _statusRoute;
   bool _statusScrolled = false;
+  bool _loginSheetShowing = false;
 
   @override
   void initState() {
@@ -139,14 +149,29 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
   }
 
   Widget _buildContent(BuildContext context, Widget? _) {
+    _scheduleLoginSheet();
     final route = _controller.route;
     if (_statusRoute != route) {
       _statusRoute = route;
       _statusScrolled = false;
     }
     final page = TospinoPageRouter.build(route, _controller);
-    final transparentStatusBar = route == TospinoRoute.profile;
-    final background = route.isTabRoot && _statusScrolled
+    final transparentStatusBar =
+        route == TospinoRoute.profile || route == TospinoRoute.product;
+    final productHeaderDecoration = route == TospinoRoute.product
+        ? BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                TospinoColors.resolve(context, TospinoColors.brandPale),
+                TospinoColors.resolve(context, TospinoColors.surface),
+              ],
+            ),
+          )
+        : null;
+    final background =
+        route == TospinoRoute.cart || (route.isTabRoot && _statusScrolled)
         ? TospinoColors.resolve(context, TospinoColors.background)
         : TospinoColors.resolve(context, TospinoColors.surface);
     final foreground = TospinoColors.resolve(context, TospinoColors.ink);
@@ -165,11 +190,14 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
           statusBarColor: transparentStatusBar
               ? Colors.transparent
               : background,
-          statusBarIconBrightness:
-              Theme.of(context).brightness == Brightness.dark
+          statusBarIconBrightness: route == TospinoRoute.product
+              ? Brightness.light
+              : Theme.of(context).brightness == Brightness.dark
               ? Brightness.light
               : Brightness.dark,
-          statusBarBrightness: Theme.of(context).brightness,
+          statusBarBrightness: route == TospinoRoute.product
+              ? Brightness.dark
+              : Theme.of(context).brightness,
         ),
         child: Scaffold(
           backgroundColor: TospinoColors.resolve(
@@ -185,7 +213,7 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
                     backgroundColor: background,
                     foregroundColor: foreground,
                     fallbackHeight: 26,
-                    fontSize: 11,
+                    fontSize: 11.5,
                     iconSize: 13,
                     iconGap: 4,
                   ),
@@ -234,6 +262,8 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
                                       title: route.title,
                                       showTitle:
                                           route != TospinoRoute.login &&
+                                          route != TospinoRoute.register &&
+                                          route != TospinoRoute.product &&
                                           (!route.isTabRoot ||
                                               route == TospinoRoute.category),
                                       onBack:
@@ -246,6 +276,9 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
                                         TospinoColors.ink,
                                       ),
                                       onScrollChanged: _setStatusScrolled,
+                                      headerDecoration: productHeaderDecoration,
+                                      extendHeaderBehindStatusBar:
+                                          route == TospinoRoute.product,
                                       child: page,
                                     ),
                             ),
@@ -280,6 +313,37 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
         ),
       ),
     );
+  }
+
+  void _scheduleLoginSheet() {
+    if (!_controller.loginOpen || _loginSheetShowing) return;
+    _loginSheetShowing = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_presentLoginSheet());
+    });
+  }
+
+  Future<void> _presentLoginSheet() async {
+    if (!mounted || !_controller.loginOpen) {
+      _loginSheetShowing = false;
+      return;
+    }
+    await showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.46),
+      builder: (context) => _TospinoLoginBottomSheet(controller: _controller),
+    );
+    if (!mounted) return;
+    _loginSheetShowing = false;
+    // The route has already closed (barrier, drag, X, or navigation). Syncing
+    // controller state must not notify the still-mounted sheet and pop again.
+    _controller.closeLogin(notify: false);
   }
 }
 
@@ -325,6 +389,119 @@ class _TospinoAndroidTextScaler extends TextScaler {
   int get hashCode => Object.hash(hostScaler, correction);
 }
 
+class _TospinoLoginBottomSheet extends StatefulWidget {
+  const _TospinoLoginBottomSheet({required this.controller});
+
+  final TospinoAppController controller;
+
+  @override
+  State<_TospinoLoginBottomSheet> createState() =>
+      _TospinoLoginBottomSheetState();
+}
+
+class _TospinoLoginBottomSheetState extends State<_TospinoLoginBottomSheet> {
+  bool _closing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_handleControllerChange);
+  }
+
+  @override
+  void didUpdateWidget(covariant _TospinoLoginBottomSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller == widget.controller) return;
+    oldWidget.controller.removeListener(_handleControllerChange);
+    widget.controller.addListener(_handleControllerChange);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_handleControllerChange);
+    super.dispose();
+  }
+
+  void _handleControllerChange() {
+    if (widget.controller.loginOpen || _closing || !mounted) return;
+    _closing = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      padding: EdgeInsets.only(bottom: keyboardInset),
+      child: FractionallySizedBox(
+        heightFactor: keyboardInset > 0 ? 1 : 0.9,
+        child: Material(
+          color: TospinoColors.resolve(context, TospinoColors.background),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  SizedBox(
+                    height: 26,
+                    child: Center(
+                      child: Container(
+                        key: const Key('tospino-login-drag-handle'),
+                        width: 38,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: TospinoColors.resolve(
+                            context,
+                            TospinoColors.lineStrong,
+                          ),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: TospinoLoginMethodPicker(
+                      controller: widget.controller,
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: 6,
+                right: 8,
+                child: Material(
+                  color: TospinoColors.resolve(
+                    context,
+                    TospinoColors.surfaceMuted,
+                  ),
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: IconButton(
+                    key: const Key('tospino-login-close'),
+                    tooltip: localizeMiniProgramLabel(context, '关闭登录'),
+                    onPressed: widget.controller.closeLogin,
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 20,
+                      color: TospinoColors.resolve(context, TospinoColors.ink),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class TospinoPageRouter {
   const TospinoPageRouter._();
 
@@ -332,6 +509,7 @@ class TospinoPageRouter {
     return switch (route) {
       TospinoRoute.home => TospinoHomePage(controller: controller),
       TospinoRoute.category => TospinoCategoryPage(controller: controller),
+      TospinoRoute.messages => TospinoMessagesPage(controller: controller),
       TospinoRoute.cart => TospinoCartPage(controller: controller),
       TospinoRoute.profile => TospinoProfilePage(controller: controller),
       TospinoRoute.search => TospinoSearchPage(controller: controller),
@@ -346,8 +524,26 @@ class TospinoPageRouter {
       TospinoRoute.wallet => TospinoWalletPage(controller: controller),
       TospinoRoute.coupons => TospinoCouponsPage(controller: controller),
       TospinoRoute.shopFollow => TospinoShopFollowPage(controller: controller),
+      TospinoRoute.invite => TospinoInvitePage(controller: controller),
+      TospinoRoute.inviteRewards => TospinoInviteRewardsPage(
+        controller: controller,
+      ),
       TospinoRoute.address => TospinoAddressPage(controller: controller),
-      TospinoRoute.login => TospinoLoginPage(controller: controller),
+      TospinoRoute.addressAdd => TospinoAddressEditorPage(
+        controller: controller,
+      ),
+      TospinoRoute.addressEdit => TospinoAddressEditorPage(
+        controller: controller,
+      ),
+      TospinoRoute.login => TospinoLoginPage(
+        controller: controller,
+        passwordOnly: controller.loginPasswordOnly,
+      ),
+      TospinoRoute.register => TospinoRegistrationPage(
+        controller: controller,
+        useEmail: controller.registrationUseEmail,
+        onBack: controller.back,
+      ),
       TospinoRoute.settings => TospinoSettingsPage(controller: controller),
       TospinoRoute.about => TospinoAboutPage(controller: controller),
     };
@@ -367,88 +563,135 @@ class _TospinoBottomNavigation extends StatelessWidget {
 
   static const _items = <(int, String, IconData, IconData)>[
     (0, '首页', Icons.home_outlined, Icons.home_rounded),
-    (
-      3,
-      '我的',
-      Icons.sentiment_satisfied_alt_outlined,
-      Icons.sentiment_satisfied_alt_rounded,
-    ),
+    (1, '消息', Icons.notifications_none_rounded, Icons.notifications_rounded),
     (2, '购物车', Icons.shopping_cart_outlined, Icons.shopping_cart_rounded),
-    (1, '分类', Icons.grid_view_outlined, Icons.grid_view_rounded),
+    (3, '我的', Icons.person_outline_rounded, Icons.person_rounded),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: TospinoColors.resolve(context, TospinoColors.surface),
-        border: Border(
-          top: BorderSide(
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+      child: Container(
+        height: 62,
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+        decoration: BoxDecoration(
+          color: TospinoColors.resolve(context, TospinoColors.surface),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
             color: TospinoColors.resolve(context, TospinoColors.line),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.07),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 48,
-          child: Row(
-            children: [
-              for (final item in _items)
-                Expanded(
+        child: Row(
+          children: [
+            for (final item in _items)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
                   child: Tooltip(
                     message: localizeMiniProgramLabel(context, item.$2),
                     child: InkWell(
                       key: Key('tospino-tab-${item.$2}'),
                       onTap: () => onChanged(item.$1),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(
-                            item.$1 == index ? item.$4 : item.$3,
-                            size: 24,
-                            color: item.$1 == index
-                                ? TospinoColors.solidBrand(context)
-                                : TospinoColors.resolve(
-                                    context,
-                                    TospinoColors.hint,
-                                  ),
-                          ),
-                          if (item.$1 == 2 && cartCount > 0)
-                            Positioned(
-                              top: 3,
-                              right: 28,
-                              child: Container(
-                                constraints: const BoxConstraints(
-                                  minWidth: 16,
-                                  minHeight: 16,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: TospinoColors.price,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
+                      borderRadius: BorderRadius.circular(14),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutCubic,
+                        decoration: BoxDecoration(
+                          color: item.$1 == index
+                              ? TospinoColors.resolve(
+                                  context,
+                                  TospinoColors.brandPale,
+                                )
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 28,
+                              height: 26,
+                              child: Stack(
+                                clipBehavior: Clip.none,
                                 alignment: Alignment.center,
-                                child: Text(
-                                  cartCount > 99 ? '99+' : '$cartCount',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 8,
-                                    fontWeight: TospinoText.strong,
+                                children: [
+                                  Icon(
+                                    item.$1 == index ? item.$4 : item.$3,
+                                    size: 22,
+                                    color: item.$1 == index
+                                        ? TospinoColors.solidBrand(context)
+                                        : TospinoColors.resolve(
+                                            context,
+                                            TospinoColors.hint,
+                                          ),
                                   ),
-                                ),
+                                  if (item.$1 == 2 && cartCount > 0)
+                                    Positioned(
+                                      top: -3,
+                                      right: -7,
+                                      child: Container(
+                                        constraints: const BoxConstraints(
+                                          minWidth: 16,
+                                          minHeight: 16,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: TospinoColors.price,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          cartCount > 99 ? '99+' : '$cartCount',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: TospinoText.strong,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
-                        ],
+                            const SizedBox(height: 2),
+                            Text(
+                              localizeMiniProgramLabel(context, item.$2),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TospinoText.meta(context).copyWith(
+                                fontSize: 10,
+                                fontWeight: item.$1 == index
+                                    ? TospinoText.emphasis
+                                    : TospinoText.regular,
+                                color: item.$1 == index
+                                    ? TospinoColors.solidBrand(context)
+                                    : TospinoColors.resolve(
+                                        context,
+                                        TospinoColors.muted,
+                                      ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );

@@ -54,13 +54,7 @@ class MiniProgramLauncherIcon extends StatelessWidget {
       width: size,
       height: size,
       clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: item.color,
-        shape: assetPath == null ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: assetPath == null
-            ? null
-            : BorderRadius.circular(size * 0.24),
-      ),
+      decoration: BoxDecoration(color: item.color, shape: BoxShape.circle),
       child: assetPath == null
           ? Icon(item.icon, color: Colors.white, size: size * 0.53)
           : Image.asset(

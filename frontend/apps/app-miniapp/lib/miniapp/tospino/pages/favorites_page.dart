@@ -17,25 +17,45 @@ class TospinoFavoritesPage extends StatelessWidget {
       color: TospinoColors.resolve(context, TospinoColors.background),
       child: products.isEmpty
           ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.favorite_border_rounded,
-                    size: 62,
-                    color: TospinoColors.resolve(context, TospinoColors.hint),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    localizeMiniProgramLabel(context, '收藏商品'),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
-                    onPressed: () => controller.switchTab(0),
-                    child: Text(localizeMiniProgramLabel(context, '去逛逛')),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 82,
+                      height: 82,
+                      decoration: BoxDecoration(
+                        color: TospinoColors.resolve(
+                          context,
+                          TospinoColors.brandPale,
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.favorite_border_rounded,
+                        size: 38,
+                        color: TospinoColors.solidBrand(context),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      localizeMiniProgramLabel(context, '收藏商品'),
+                      style: TospinoText.section(context),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      localizeMiniProgramLabel(context, '喜欢的商品会集中显示在这里'),
+                      textAlign: TextAlign.center,
+                      style: TospinoText.secondary(context),
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton(
+                      onPressed: () => controller.switchTab(0),
+                      child: Text(localizeMiniProgramLabel(context, '去逛逛')),
+                    ),
+                  ],
+                ),
               ),
             )
           : RefreshIndicator(

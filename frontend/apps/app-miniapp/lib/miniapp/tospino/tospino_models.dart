@@ -44,6 +44,9 @@ class TospinoProduct {
     this.shopName = '',
     this.stock = 0,
     this.deliveryType = 0,
+    this.supplyCountryName = '',
+    this.supplyCountryCode = '',
+    this.transportModes = const [],
   });
 
   final String id;
@@ -60,6 +63,12 @@ class TospinoProduct {
   final String shopName;
   final int stock;
   final int deliveryType;
+  final String supplyCountryName;
+  final String supplyCountryCode;
+  final List<String> transportModes;
+
+  bool get isFbt => deliveryType == 2;
+  bool get isFbm => deliveryType == 1;
 
   int get discountPercent {
     if (oldPrice <= price || oldPrice <= 0) return 0;
@@ -74,19 +83,27 @@ class TospinoProductDetail {
     required this.product,
     required this.skuId,
     this.galleryUrls = const [],
+    this.detailImageUrls = const [],
     this.description = '',
     this.servicePromises = const [],
     this.storeName = '',
     this.isFavorite = false,
+    this.storeDeliveryCountryName = '',
+    this.storeDeliveryCountryCode = '',
+    this.storeDeliveryAddress = '',
   });
 
   final TospinoProduct product;
   final String skuId;
   final List<String> galleryUrls;
+  final List<String> detailImageUrls;
   final String description;
   final List<String> servicePromises;
   final String storeName;
   final bool isFavorite;
+  final String storeDeliveryCountryName;
+  final String storeDeliveryCountryCode;
+  final String storeDeliveryAddress;
 }
 
 class TospinoCartLine {
@@ -151,9 +168,9 @@ class TospinoCartCounts {
 
 enum TospinoOrderStatus {
   toPay('待付款', 'To pay', 0, Icons.account_balance_wallet_outlined),
-  toShip('待发货', 'To ship', 2, Icons.inventory_2_outlined),
-  toReceive('待收货', 'To receive', 4, Icons.local_shipping_outlined),
-  toReview('待评价', 'To review', 5, Icons.rate_review_outlined);
+  toShip('待发货', 'To ship', 1, Icons.inventory_2_outlined),
+  toReceive('待收货', 'To receive', 2, Icons.local_shipping_outlined),
+  toReview('待评价', 'To review', 3, Icons.rate_review_outlined);
 
   const TospinoOrderStatus(this.label, this.english, this.code, this.icon);
 
@@ -203,6 +220,8 @@ class TospinoOrder {
     this.receiverName = '',
     this.receiverPhone = '',
     this.receiverAddress = '',
+    this.paymentType = 0,
+    this.payState = 0,
   });
 
   final String id;
@@ -217,8 +236,40 @@ class TospinoOrder {
   final String receiverName;
   final String receiverPhone;
   final String receiverAddress;
+  final int paymentType;
+  final int payState;
 
   TospinoOrderStatus? get status => TospinoOrderStatus.fromCode(statusCode);
+
+  bool get isClosed => const {'5', '6', '7', '8'}.contains(statusCode);
+
+  /// Android permits cancellation before payment, and for unpaid cash-on-
+  /// delivery orders while they are waiting to ship.
+  bool get canCancel =>
+      statusCode == '0' ||
+      (statusCode == '1' && paymentType == 2 && payState == 0);
+
+  String get displayStatusLabel => statusLabel.isNotEmpty
+      ? statusLabel
+      : status?.label ?? (isClosed ? '订单已关闭' : '订单');
+
+  TospinoOrder copyWith({String? statusCode, String? statusLabel}) =>
+      TospinoOrder(
+        id: id,
+        orderSn: orderSn,
+        statusCode: statusCode ?? this.statusCode,
+        statusLabel: statusLabel ?? this.statusLabel,
+        total: total,
+        createdAt: createdAt,
+        productAmount: productAmount,
+        freight: freight,
+        items: items,
+        receiverName: receiverName,
+        receiverPhone: receiverPhone,
+        receiverAddress: receiverAddress,
+        paymentType: paymentType,
+        payState: payState,
+      );
 }
 
 class TospinoUser {
@@ -245,6 +296,95 @@ class TospinoUser {
   String get account => phone.isNotEmpty ? phone : email;
 }
 
+class TospinoInviteInfo {
+  const TospinoInviteInfo({required this.promoteCode, this.userId = ''});
+
+  final String promoteCode;
+  final String userId;
+}
+
+class TospinoInviteFriend {
+  const TospinoInviteFriend({
+    required this.userId,
+    required this.account,
+    this.nickname = '',
+    this.registrationTime = '',
+  });
+
+  final String userId;
+  final String account;
+  final String nickname;
+  final String registrationTime;
+
+  String get displayName => nickname.isNotEmpty ? nickname : account;
+}
+
+class TospinoInviteFriendsPage {
+  const TospinoInviteFriendsPage({
+    required this.records,
+    required this.total,
+    required this.page,
+    required this.pages,
+  });
+
+  final List<TospinoInviteFriend> records;
+  final int total;
+  final int page;
+  final int pages;
+
+  bool get hasMore => page < pages;
+}
+
+class TospinoInviteShareInfo {
+  const TospinoInviteShareInfo({
+    this.textContent = '',
+    this.urlContent = '',
+    this.url = '',
+  });
+
+  final String textContent;
+  final String urlContent;
+  final String url;
+
+  String get shareContent => textContent.isNotEmpty
+      ? textContent
+      : urlContent.isNotEmpty
+      ? urlContent
+      : url;
+}
+
+class TospinoInviteRewardRecord {
+  const TospinoInviteRewardRecord({
+    required this.id,
+    required this.account,
+    required this.amount,
+    this.registerTime = '',
+  });
+
+  final String id;
+  final String account;
+  final double amount;
+  final String registerTime;
+}
+
+class TospinoInviteRewardPage {
+  const TospinoInviteRewardPage({
+    required this.records,
+    required this.amount,
+    required this.total,
+    required this.page,
+    required this.pages,
+  });
+
+  final List<TospinoInviteRewardRecord> records;
+  final double amount;
+  final int total;
+  final int page;
+  final int pages;
+
+  bool get hasMore => page < pages;
+}
+
 class TospinoAddress {
   const TospinoAddress({
     required this.id,
@@ -252,6 +392,21 @@ class TospinoAddress {
     required this.phone,
     required this.completeAddress,
     this.isDefault = false,
+    this.countryCode = '',
+    this.countryName = '',
+    this.city = '',
+    this.province = '',
+    this.detailAddress = '',
+    this.phonePrefix = '',
+    this.provinceCode = '',
+    this.cityCode = '',
+    this.districtCode = '',
+    this.tag = '',
+    this.tagEditor = '',
+    this.sparePhone = '',
+    this.sparePhonePrefix = '',
+    this.doorplateInfo = '',
+    this.regionPath = const [],
   });
 
   final String id;
@@ -259,6 +414,113 @@ class TospinoAddress {
   final String phone;
   final String completeAddress;
   final bool isDefault;
+  final String countryCode;
+  final String countryName;
+  final String city;
+  final String province;
+  final String detailAddress;
+  final String phonePrefix;
+  final String provinceCode;
+  final String cityCode;
+  final String districtCode;
+  final String tag;
+  final String tagEditor;
+  final String sparePhone;
+  final String sparePhonePrefix;
+  final String doorplateInfo;
+  final List<TospinoRegion> regionPath;
+
+  String get fullPhone => phonePrefix.isEmpty || phone.startsWith(phonePrefix)
+      ? phone
+      : '$phonePrefix $phone'.trim();
+
+  String get streetAddress =>
+      detailAddress.isNotEmpty ? detailAddress : completeAddress;
+
+  TospinoAddress copyWith({
+    String? id,
+    String? name,
+    String? phone,
+    String? completeAddress,
+    bool? isDefault,
+    String? countryCode,
+    String? countryName,
+    String? city,
+    String? province,
+    String? detailAddress,
+    String? phonePrefix,
+    String? provinceCode,
+    String? cityCode,
+    String? districtCode,
+    String? tag,
+    String? tagEditor,
+    String? sparePhone,
+    String? sparePhonePrefix,
+    String? doorplateInfo,
+    List<TospinoRegion>? regionPath,
+  }) => TospinoAddress(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    phone: phone ?? this.phone,
+    completeAddress: completeAddress ?? this.completeAddress,
+    isDefault: isDefault ?? this.isDefault,
+    countryCode: countryCode ?? this.countryCode,
+    countryName: countryName ?? this.countryName,
+    city: city ?? this.city,
+    province: province ?? this.province,
+    detailAddress: detailAddress ?? this.detailAddress,
+    phonePrefix: phonePrefix ?? this.phonePrefix,
+    provinceCode: provinceCode ?? this.provinceCode,
+    cityCode: cityCode ?? this.cityCode,
+    districtCode: districtCode ?? this.districtCode,
+    tag: tag ?? this.tag,
+    tagEditor: tagEditor ?? this.tagEditor,
+    sparePhone: sparePhone ?? this.sparePhone,
+    sparePhonePrefix: sparePhonePrefix ?? this.sparePhonePrefix,
+    doorplateInfo: doorplateInfo ?? this.doorplateInfo,
+    regionPath: regionPath ?? this.regionPath,
+  );
+}
+
+class TospinoRegion {
+  const TospinoRegion({
+    required this.id,
+    required this.name,
+    this.code = '',
+    this.parentId = '',
+    this.level = 0,
+    this.hasChildren = false,
+  });
+
+  final String id;
+  final String name;
+  final String code;
+  final String parentId;
+  final int level;
+  final bool hasChildren;
+}
+
+class TospinoPhonePrefix {
+  const TospinoPhonePrefix({required this.country, required this.prefix});
+
+  final String country;
+  final String prefix;
+}
+
+class TospinoCancelReason {
+  const TospinoCancelReason({
+    required this.id,
+    required this.reason,
+    this.orderType = '1',
+    this.applyType = '0',
+    this.goodsStatus = '0',
+  });
+
+  final String id;
+  final String reason;
+  final String orderType;
+  final String applyType;
+  final String goodsStatus;
 }
 
 class TospinoHomeDecoration {

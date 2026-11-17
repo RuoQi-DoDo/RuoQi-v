@@ -44,7 +44,7 @@ class _TospinoWalletPageState extends State<TospinoWalletPage> {
                   TospinoColors.brandDeep,
                 ],
               ),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(18),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +136,7 @@ class _TospinoWalletPageState extends State<TospinoWalletPage> {
                               '查看收入、支出与账户余额变化',
                               style: TextStyle(
                                 color: Color(0xFFD8F4F0),
-                                fontSize: 11,
+                                fontSize: 11.5,
                               ),
                             ),
                           ],

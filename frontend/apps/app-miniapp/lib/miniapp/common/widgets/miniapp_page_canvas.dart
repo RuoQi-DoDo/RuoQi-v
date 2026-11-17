@@ -16,6 +16,8 @@ class MiniProgramPageCanvas extends StatelessWidget {
     this.foregroundColor,
     this.showTitle = true,
     this.onScrollChanged,
+    this.headerDecoration,
+    this.extendHeaderBehindStatusBar = false,
   });
 
   final Widget child;
@@ -25,6 +27,8 @@ class MiniProgramPageCanvas extends StatelessWidget {
   final Color? foregroundColor;
   final bool showTitle;
   final ValueChanged<bool>? onScrollChanged;
+  final Decoration? headerDecoration;
+  final bool extendHeaderBehindStatusBar;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +42,28 @@ class MiniProgramPageCanvas extends StatelessWidget {
         child: child,
       );
     }
+    Widget header = MiniProgramPageHeader(
+      title: title,
+      onBack: onBack,
+      leading: leading,
+      foregroundColor: foregroundColor,
+    );
+    if (extendHeaderBehindStatusBar) {
+      header = DecoratedBox(
+        key: const Key('miniapp-extended-page-header'),
+        decoration:
+            headerDecoration ??
+            BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
+        child: Column(
+          children: [
+            SizedBox(height: MediaQuery.paddingOf(context).top),
+            header,
+          ],
+        ),
+      );
+    } else if (headerDecoration != null) {
+      header = DecoratedBox(decoration: headerDecoration!, child: header);
+    }
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
         onScrollChanged?.call(notification.metrics.pixels > 8);
@@ -45,14 +71,7 @@ class MiniProgramPageCanvas extends StatelessWidget {
       },
       child: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverToBoxAdapter(
-            child: MiniProgramPageHeader(
-              title: title,
-              onBack: onBack,
-              leading: leading,
-              foregroundColor: foregroundColor,
-            ),
-          ),
+          SliverToBoxAdapter(child: header),
         ],
         body: child,
       ),

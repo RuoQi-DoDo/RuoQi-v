@@ -10,9 +10,14 @@ import '../tospino_style.dart';
 enum _LoginMode { selection, password }
 
 class TospinoLoginPage extends StatefulWidget {
-  const TospinoLoginPage({super.key, required this.controller});
+  const TospinoLoginPage({
+    super.key,
+    required this.controller,
+    this.passwordOnly = false,
+  });
 
   final TospinoAppController controller;
+  final bool passwordOnly;
 
   @override
   State<TospinoLoginPage> createState() => _TospinoLoginPageState();
@@ -21,13 +26,14 @@ class TospinoLoginPage extends StatefulWidget {
 class _TospinoLoginPageState extends State<TospinoLoginPage> {
   final _accountController = TextEditingController();
   final _passwordController = TextEditingController();
-  _LoginMode _mode = _LoginMode.selection;
+  late _LoginMode _mode;
   bool _obscurePassword = true;
   bool _agreed = false;
 
   @override
   void initState() {
     super.initState();
+    _mode = widget.passwordOnly ? _LoginMode.password : _LoginMode.selection;
     _accountController.addListener(_refreshForm);
     _passwordController.addListener(_refreshForm);
   }
@@ -82,6 +88,10 @@ class _TospinoLoginPageState extends State<TospinoLoginPage> {
 
   void _showSelection() {
     FocusManager.instance.primaryFocus?.unfocus();
+    if (widget.passwordOnly) {
+      widget.controller.back();
+      return;
+    }
     setState(() => _mode = _LoginMode.selection);
   }
 
@@ -98,6 +108,7 @@ class _TospinoLoginPageState extends State<TospinoLoginPage> {
       child: switch (_mode) {
         _LoginMode.selection => _LoginSelection(
           onPasswordLogin: _showPasswordLogin,
+          onRegister: () => widget.controller.openRegistration(useEmail: false),
           onUnavailable: (label) => showTospinoToast(context, '$label暂未开放'),
         ),
         _LoginMode.password => _buildPasswordLogin(context),
@@ -303,7 +314,7 @@ class _TospinoLoginPageState extends State<TospinoLoginPage> {
                   _AgreementRow(
                     agreed: _agreed,
                     onChanged: () => setState(() => _agreed = !_agreed),
-                    linkColor: TospinoColors.link,
+                    linkColor: TospinoColors.solidBrand(context),
                   ),
                 ],
               ),
@@ -330,10 +341,12 @@ class _TospinoLoginPageState extends State<TospinoLoginPage> {
 class _LoginSelection extends StatelessWidget {
   const _LoginSelection({
     required this.onPasswordLogin,
+    required this.onRegister,
     required this.onUnavailable,
   });
 
   final VoidCallback onPasswordLogin;
+  final VoidCallback onRegister;
   final ValueChanged<String> onUnavailable;
 
   @override
@@ -413,7 +426,7 @@ class _LoginSelection extends StatelessWidget {
                       context,
                       TospinoColors.hint,
                     ),
-                    linkColor: TospinoColors.link,
+                    linkColor: TospinoColors.solidBrand(context),
                   ),
                   const SizedBox(height: 20),
                   Container(
@@ -433,7 +446,7 @@ class _LoginSelection extends StatelessWidget {
                         const SizedBox(width: 8),
                         InkWell(
                           key: const Key('tospino-login-register'),
-                          onTap: () => showTospinoToast(context, '注册功能即将开放'),
+                          onTap: onRegister,
                           child: Text(
                             localizeMiniProgramLabel(context, '注册'),
                             style: TextStyle(

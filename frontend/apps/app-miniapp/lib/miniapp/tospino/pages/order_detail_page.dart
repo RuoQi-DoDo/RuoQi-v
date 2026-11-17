@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../common/miniapp_localizations.dart';
 import '../tospino_models.dart';
 import '../tospino_routes.dart';
 import '../tospino_style.dart';
+import '../widgets/order_cancel_sheet.dart';
 
 class TospinoOrderDetailPage extends StatelessWidget {
   const TospinoOrderDetailPage({super.key, required this.controller});
@@ -19,7 +22,7 @@ class TospinoOrderDetailPage extends StatelessWidget {
         child: CircularProgressIndicator(),
       );
     }
-    final status = order.status ?? TospinoOrderStatus.toPay;
+    final status = order.status;
     return ColoredBox(
       key: const Key('tospino-order-detail-page'),
       color: TospinoColors.resolve(context, TospinoColors.background),
@@ -53,7 +56,14 @@ class TospinoOrderDetailPage extends StatelessWidget {
                           TospinoMetrics.imageRadius,
                         ),
                       ),
-                      child: Icon(status.icon, color: Colors.white, size: 22),
+                      child: Icon(
+                        status?.icon ??
+                            (order.isClosed
+                                ? Icons.cancel_outlined
+                                : Icons.receipt_long_outlined),
+                        color: Colors.white,
+                        size: 22,
+                      ),
                     ),
                     const SizedBox(width: 11),
                     Expanded(
@@ -61,7 +71,10 @@ class TospinoOrderDetailPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            localizeMiniProgramLabel(context, status.label),
+                            localizeMiniProgramLabel(
+                              context,
+                              order.displayStatusLabel,
+                            ),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 19,
@@ -70,12 +83,20 @@ class TospinoOrderDetailPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            status == TospinoOrderStatus.toShip
+                            status == TospinoOrderStatus.toPay
+                                ? 'Complete payment to start fulfilment.'
+                                : status == TospinoOrderStatus.toShip
                                 ? 'Your order is being prepared.'
-                                : 'Track your Tospino delivery here.',
+                                : status == TospinoOrderStatus.toReceive
+                                ? 'Track your Tospino delivery here.'
+                                : status == TospinoOrderStatus.toReview
+                                ? 'Your order has been delivered.'
+                                : order.isClosed
+                                ? 'This order is no longer active.'
+                                : 'Order details are shown below.',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.76),
-                              fontSize: 11.5,
+                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -83,8 +104,10 @@ class TospinoOrderDetailPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
-                _TrackingStep(status: status),
+                if (status != null && !order.isClosed) ...[
+                  const SizedBox(height: 18),
+                  _TrackingStep(status: status),
+                ],
               ],
             ),
           ),
@@ -115,7 +138,7 @@ class TospinoOrderDetailPage extends StatelessWidget {
                         localizeMiniProgramLabel(context, '默认地址'),
                         style: TextStyle(
                           color: TospinoColors.solidBrand(context),
-                          fontSize: 9,
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -236,6 +259,45 @@ class TospinoOrderDetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
+          if (order.canCancel) ...[
+            OutlinedButton.icon(
+              key: const Key('tospino-order-detail-cancel'),
+              onPressed: controller.isCancellingOrder(order.id)
+                  ? null
+                  : () {
+                      unawaited(
+                        showTospinoCancelOrderFlow(context, controller, order),
+                      );
+                    },
+              icon: controller.isCancellingOrder(order.id)
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.close_rounded, size: 19),
+              label: Text(localizeMiniProgramLabel(context, '取消订单')),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: TospinoColors.resolve(
+                  context,
+                  TospinoColors.secondary,
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                side: BorderSide(
+                  color: TospinoColors.resolve(
+                    context,
+                    TospinoColors.lineStrong,
+                  ),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    TospinoMetrics.controlRadius,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
           OutlinedButton.icon(
             onPressed: () => showTospinoToast(context, '客服功能即将开放'),
             icon: const Icon(Icons.support_agent_rounded, size: 19),
@@ -309,7 +371,7 @@ class _TrackingStep extends StatelessWidget {
                   color: Colors.white.withValues(
                     alpha: index <= current ? 0.92 : 0.46,
                   ),
-                  fontSize: 9.5,
+                  fontSize: 11,
                 ),
               ),
             ],

@@ -23,31 +23,30 @@ class TospinoShopFollowPage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             child: Container(
-              height: 38,
+              height: 42,
               decoration: BoxDecoration(
-                color: TospinoColors.resolve(
-                  context,
-                  TospinoColors.surfaceMuted,
+                color: TospinoColors.resolve(context, TospinoColors.surface),
+                borderRadius: BorderRadius.circular(13),
+                border: Border.all(
+                  color: TospinoColors.solidBrand(
+                    context,
+                  ).withValues(alpha: 0.36),
                 ),
-                borderRadius: BorderRadius.circular(19),
               ),
               child: InkWell(
                 onTap: () {
                   controller.openSearch();
                   controller.search(localizeMiniProgramLabel(context, '店铺'));
                 },
-                borderRadius: BorderRadius.circular(19),
+                borderRadius: BorderRadius.circular(13),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Row(
                     children: [
                       Icon(
                         Icons.search_rounded,
-                        color: TospinoColors.resolve(
-                          context,
-                          TospinoColors.hint,
-                        ),
-                        size: 19,
+                        color: TospinoColors.solidBrand(context),
+                        size: 20,
                       ),
                       const SizedBox(width: 7),
                       Text(

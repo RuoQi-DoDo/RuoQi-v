@@ -98,7 +98,7 @@ class _FreeGiftHero extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 17),
       decoration: BoxDecoration(
         gradient: TospinoColors.saleGradient(context),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Stack(
         children: [
@@ -118,7 +118,7 @@ class _FreeGiftHero extends StatelessWidget {
                 'FREE GET',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 11,
+                  fontSize: 11.5,
                   fontWeight: TospinoText.strong,
                   letterSpacing: 1,
                 ),

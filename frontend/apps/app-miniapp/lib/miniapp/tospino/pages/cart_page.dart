@@ -12,6 +12,24 @@ class TospinoCartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!controller.isLoggedIn) {
+      return ColoredBox(
+        key: const Key('tospino-cart-page'),
+        color: TospinoColors.resolve(context, TospinoColors.background),
+        child: Column(
+          children: [
+            const _CartHeader(),
+            Expanded(
+              child: _GuestCartState(
+                onLogin: () =>
+                    controller.openLogin(returnTo: TospinoRoute.cart),
+                onBrowse: () => controller.switchTab(0),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     final lines = controller.cartLines;
     return ColoredBox(
       key: const Key('tospino-cart-page'),
@@ -39,7 +57,7 @@ class TospinoCartPage extends StatelessWidget {
                     onRefresh: controller.refreshCart,
                     child: ListView(
                       key: const Key('tospino-cart-list'),
-                      padding: EdgeInsets.zero,
+                      padding: const EdgeInsets.only(top: 10, bottom: 4),
                       children: [
                         for (final line in lines)
                           _CartLineCard(controller: controller, line: line),
@@ -87,9 +105,10 @@ class _CartHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: TospinoColors.resolve(context, TospinoColors.surface),
+      key: const Key('tospino-cart-title-header'),
+      color: TospinoColors.resolve(context, TospinoColors.background),
       child: SizedBox(
-        height: 50,
+        height: 46,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -99,25 +118,119 @@ class _CartHeader extends StatelessWidget {
                 context,
               ).copyWith(fontWeight: FontWeight.w700),
             ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: InkWell(
-                  onTap: () => showTospinoToast(context, '编辑购物车'),
-                  child: Text(
-                    localizeMiniProgramLabel(context, '编辑'),
-                    style: TextStyle(
-                      color: TospinoColors.solidBrand(context),
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _GuestCartState extends StatelessWidget {
+  const _GuestCartState({required this.onLogin, required this.onBrowse});
+
+  final VoidCallback onLogin;
+  final VoidCallback onBrowse;
+
+  @override
+  Widget build(BuildContext context) {
+    const benefits = <(IconData, String)>[
+      (Icons.sync_rounded, '跨设备同步购物车'),
+      (Icons.discount_outlined, '登录后查看专属优惠'),
+      (Icons.local_shipping_outlined, '快速结算与配送追踪'),
+    ];
+    return ListView(
+      key: const Key('tospino-cart-login-state'),
+      padding: const EdgeInsets.fromLTRB(20, 34, 20, 30),
+      children: [
+        Center(
+          child: Container(
+            width: 92,
+            height: 92,
+            decoration: BoxDecoration(
+              color: TospinoColors.resolve(context, TospinoColors.brandPale),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.shopping_cart_outlined,
+              size: 44,
+              color: TospinoColors.solidBrand(context),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          localizeMiniProgramLabel(context, '登录后查看购物车'),
+          textAlign: TextAlign.center,
+          style: TospinoText.pageTitle(context).copyWith(fontSize: 21),
+        ),
+        const SizedBox(height: 7),
+        Text(
+          localizeMiniProgramLabel(context, '登录后可同步已加入的商品、优惠和配送信息。'),
+          textAlign: TextAlign.center,
+          style: TospinoText.secondary(context).copyWith(height: 1.45),
+        ),
+        const SizedBox(height: 24),
+        TospinoSurface(
+          radius: 16,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Column(
+            children: [
+              for (var index = 0; index < benefits.length; index++) ...[
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: TospinoColors.solidBrand(
+                          context,
+                        ).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(11),
+                      ),
+                      child: Icon(
+                        benefits[index].$1,
+                        color: TospinoColors.solidBrand(context),
+                        size: 19,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        localizeMiniProgramLabel(context, benefits[index].$2),
+                        style: TospinoText.body(context),
+                      ),
+                    ),
+                    Icon(
+                      Icons.check_circle_rounded,
+                      color: TospinoColors.solidBrand(context),
+                      size: 18,
+                    ),
+                  ],
+                ),
+                if (index != benefits.length - 1)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 46),
+                    child: Divider(
+                      height: 19,
+                      color: TospinoColors.resolve(context, TospinoColors.line),
+                    ),
+                  ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 22),
+        TospinoGradientButton(
+          key: const Key('tospino-cart-login'),
+          label: '登录 Tospino',
+          onPressed: onLogin,
+        ),
+        const SizedBox(height: 10),
+        TextButton(
+          onPressed: onBrowse,
+          child: Text(localizeMiniProgramLabel(context, '先去逛逛')),
+        ),
+      ],
     );
   }
 }
@@ -139,31 +252,52 @@ class _CartTabs extends StatelessWidget {
     return ColoredBox(
       color: TospinoColors.resolve(context, TospinoColors.surface),
       child: SizedBox(
-        height: 42,
-        child: Row(
-          children: [
-            for (var index = 0; index < filters.length; index++)
-              Expanded(
-                child: InkWell(
-                  key: Key('tospino-cart-filter-${filters[index].queryType}'),
-                  onTap: () => controller.selectCartFilter(filters[index]),
-                  child: Center(
-                    child: Text(
-                      _filterLabel(context, filters[index], totals[index]),
-                      style: TextStyle(
-                        color: controller.cartFilter == filters[index]
-                            ? TospinoColors.solidBrand(context)
-                            : TospinoColors.resolve(context, TospinoColors.ink),
-                        fontSize: 16,
-                        fontWeight: controller.cartFilter == filters[index]
-                            ? FontWeight.w500
-                            : FontWeight.w400,
+        height: 52,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 5, 12, 7),
+          child: Row(
+            children: [
+              for (var index = 0; index < filters.length; index++) ...[
+                if (index > 0) const SizedBox(width: 7),
+                Expanded(
+                  child: Material(
+                    color: controller.cartFilter == filters[index]
+                        ? TospinoColors.solidBrand(context)
+                        : TospinoColors.resolve(
+                            context,
+                            TospinoColors.surfaceMuted,
+                          ),
+                    borderRadius: BorderRadius.circular(10),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      key: Key(
+                        'tospino-cart-filter-${filters[index].queryType}',
+                      ),
+                      onTap: () => controller.selectCartFilter(filters[index]),
+                      child: Center(
+                        child: Text(
+                          _filterLabel(context, filters[index], totals[index]),
+                          maxLines: 1,
+                          style: TextStyle(
+                            color: controller.cartFilter == filters[index]
+                                ? Colors.white
+                                : TospinoColors.resolve(
+                                    context,
+                                    TospinoColors.secondary,
+                                  ),
+                            fontSize: 12,
+                            fontWeight: controller.cartFilter == filters[index]
+                                ? TospinoText.emphasis
+                                : TospinoText.regular,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -192,8 +326,19 @@ class _CartLineCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: TospinoColors.resolve(context, TospinoColors.surface),
-      padding: const EdgeInsets.fromLTRB(10, 12, 12, 12),
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 9),
+      padding: const EdgeInsets.fromLTRB(8, 11, 12, 8),
+      decoration: BoxDecoration(
+        color: TospinoColors.resolve(context, TospinoColors.surface),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -321,11 +466,6 @@ class _CartLineCard extends StatelessWidget {
               ),
             ],
           ),
-          Divider(
-            height: 1,
-            indent: 30,
-            color: TospinoColors.resolve(context, TospinoColors.line),
-          ),
         ],
       ),
     );
@@ -433,7 +573,7 @@ class _QuantityStepper extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: TospinoColors.resolve(context, TospinoColors.ink),
-                fontSize: 11.5,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -472,7 +612,7 @@ class _CartCheckoutBar extends StatelessWidget {
         lines.isNotEmpty && lines.every((line) => line.selected);
     final selectedCount = controller.selectedCartLines.length;
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
       decoration: BoxDecoration(
         color: TospinoColors.resolve(context, TospinoColors.surface),
         border: Border(
@@ -480,50 +620,164 @@ class _CartCheckoutBar extends StatelessWidget {
             color: TospinoColors.resolve(context, TospinoColors.line),
           ),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 18,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: SafeArea(
         top: false,
         child: Row(
           children: [
-            Checkbox(
-              value: allSelected,
-              onChanged: (selected) =>
-                  controller.selectAllCart(selected ?? false),
-              activeColor: TospinoColors.solidBrand(context),
-              shape: const CircleBorder(),
-              visualDensity: VisualDensity.compact,
-            ),
-            Text(
-              localizeMiniProgramLabel(context, '全选'),
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const Spacer(),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  localizeMiniProgramLabel(context, '合计'),
-                  style: TospinoText.body(context),
+            InkWell(
+              onTap: () => controller.selectAllCart(!allSelected),
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 5),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Checkbox(
+                      value: allSelected,
+                      onChanged: (selected) =>
+                          controller.selectAllCart(selected ?? false),
+                      activeColor: TospinoColors.resolve(
+                        context,
+                        TospinoColors.ink,
+                      ),
+                      checkColor: TospinoColors.resolve(
+                        context,
+                        TospinoColors.surface,
+                      ),
+                      shape: const CircleBorder(),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    Text(
+                      localizeMiniProgramLabel(context, '全选'),
+                      style: TospinoText.secondary(context),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 5),
-                TospinoPriceText(
-                  price: controller.cartTotal,
-                  size: 18,
-                  color: TospinoColors.resolve(context, TospinoColors.price),
-                ),
-              ],
+              ),
             ),
-            const SizedBox(width: 10),
-            TospinoGradientButton(
-              key: const Key('tospino-cart-checkout'),
-              label: '结算($selectedCount)',
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    localizeMiniProgramLabel(context, '合计'),
+                    style: TospinoText.hint(context).copyWith(fontSize: 10),
+                  ),
+                  const SizedBox(height: 2),
+                  TospinoPriceText(
+                    key: const Key('tospino-cart-total'),
+                    price: controller.cartTotal,
+                    size: 19,
+                    color: TospinoColors.resolve(context, TospinoColors.ink),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            _CartCheckoutButton(
+              selectedCount: selectedCount,
+              loading: controller.loadingCheckout,
               onPressed: selectedCount == 0 || controller.loadingCheckout
                   ? null
-                  : () => controller.startCheckout(),
-              height: 48,
-              expand: false,
+                  : controller.startCheckout,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CartCheckoutButton extends StatelessWidget {
+  const _CartCheckoutButton({
+    required this.selectedCount,
+    required this.loading,
+    required this.onPressed,
+  });
+
+  final int selectedCount;
+  final bool loading;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final darkMode = Theme.of(context).brightness == Brightness.dark;
+    final enabled = onPressed != null;
+    final background = !enabled
+        ? TospinoColors.resolve(context, TospinoColors.disabled)
+        : darkMode
+        ? const Color(0xFFF1F3F3)
+        : const Color(0xFF1D2225);
+    final foreground = !enabled
+        ? TospinoColors.resolve(context, TospinoColors.hint)
+        : darkMode
+        ? const Color(0xFF111416)
+        : Colors.white;
+    return SizedBox(
+      width: 116,
+      height: 48,
+      child: Material(
+        color: background,
+        borderRadius: BorderRadius.circular(12),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: const Key('tospino-cart-checkout'),
+          onTap: onPressed,
+          child: Center(
+            child: loading
+                ? SizedBox(
+                    width: 19,
+                    height: 19,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: foreground,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        localizeMiniProgramLabel(context, '结算'),
+                        style: TextStyle(
+                          color: foreground,
+                          fontSize: 14.5,
+                          fontWeight: TospinoText.emphasis,
+                        ),
+                      ),
+                      if (selectedCount > 0) ...[
+                        const SizedBox(width: 5),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: foreground.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '$selectedCount',
+                            style: TextStyle(
+                              color: foreground,
+                              fontSize: 10.5,
+                              fontWeight: TospinoText.strong,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+          ),
         ),
       ),
     );
