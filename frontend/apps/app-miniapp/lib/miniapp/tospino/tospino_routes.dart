@@ -926,12 +926,12 @@ class TospinoAppController extends ChangeNotifier {
     open(TospinoRoute.register);
   }
 
-  void closeLogin() {
+  void closeLogin({bool notify = true}) {
     if (!_loginOpen) return;
     _loginOpen = false;
     _loginError = null;
     _registrationError = null;
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 
   Future<bool> requestRegistrationCode({

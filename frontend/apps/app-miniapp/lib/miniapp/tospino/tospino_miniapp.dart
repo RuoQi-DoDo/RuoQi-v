@@ -333,7 +333,9 @@ class _TospinoMiniProgramState extends State<TospinoMiniProgram> {
     );
     if (!mounted) return;
     _loginSheetShowing = false;
-    _controller.closeLogin();
+    // The route has already closed (barrier, drag, X, or navigation). Syncing
+    // controller state must not notify the still-mounted sheet and pop again.
+    _controller.closeLogin(notify: false);
   }
 }
 
@@ -441,6 +443,7 @@ class _TospinoLoginBottomSheetState extends State<_TospinoLoginBottomSheet> {
                     height: 26,
                     child: Center(
                       child: Container(
+                        key: const Key('tospino-login-drag-handle'),
                         width: 38,
                         height: 4,
                         decoration: BoxDecoration(

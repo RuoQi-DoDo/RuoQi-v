@@ -900,6 +900,117 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('从 Tospino 各页面点击登录弹层遮罩都不会退出', (tester) async {
+    _usePhoneSize(tester);
+    final pages = [
+      (
+        label: '首页',
+        pageKey: 'tospino-home-page',
+        route: TospinoRoute.home,
+        tab: 0,
+        product: false,
+      ),
+      (
+        label: '消息',
+        pageKey: 'tospino-messages-page',
+        route: TospinoRoute.messages,
+        tab: 1,
+        product: false,
+      ),
+      (
+        label: '购物车',
+        pageKey: 'tospino-cart-page',
+        route: TospinoRoute.cart,
+        tab: 2,
+        product: false,
+      ),
+      (
+        label: '我的',
+        pageKey: 'tospino-profile-page',
+        route: TospinoRoute.profile,
+        tab: 3,
+        product: false,
+      ),
+      (
+        label: '商品详情',
+        pageKey: 'tospino-product-page',
+        route: TospinoRoute.product,
+        tab: null,
+        product: true,
+      ),
+    ];
+
+    for (final page in pages) {
+      final api = _FakeTospinoApi();
+      final controller = _controller(api);
+      await api.logout();
+      await controller.initialize();
+      if (page.product) {
+        await controller.openProduct(api.products.first);
+      } else {
+        controller.switchTab(page.tab!);
+      }
+      controller.openLogin(returnTo: page.route);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TospinoMiniProgram(
+            key: ValueKey('tospino-case-${page.pageKey}'),
+            controller: controller,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(Key(page.pageKey)),
+        findsOneWidget,
+        reason: '${page.label}未正常显示',
+      );
+      expect(
+        find.byKey(const Key('tospino-auth-method-picker')),
+        findsOneWidget,
+      );
+
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('tospino-auth-method-picker')),
+        findsNothing,
+        reason: '点击${page.label}登录遮罩后应只关闭登录弹层',
+      );
+      expect(
+        find.byKey(Key(page.pageKey)),
+        findsOneWidget,
+        reason: '点击${page.label}登录遮罩后页面不应退出',
+      );
+      expect(controller.loginOpen, isFalse);
+
+      controller.openLogin(returnTo: page.route);
+      await tester.pumpAndSettle();
+
+      await tester.fling(
+        find.byKey(const Key('tospino-login-drag-handle')),
+        const Offset(0, 500),
+        1200,
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('tospino-auth-method-picker')),
+        findsNothing,
+        reason: '从${page.label}下滑登录弹层后应只关闭登录弹层',
+      );
+      expect(
+        find.byKey(Key(page.pageKey)),
+        findsOneWidget,
+        reason: '从${page.label}下滑登录弹层不应退出页面',
+      );
+      expect(controller.loginOpen, isFalse);
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   testWidgets('消息页登录入口复用登录底部弹层', (tester) async {
     _usePhoneSize(tester);
     final api = _FakeTospinoApi();
