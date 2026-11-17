@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 
+import 'finders.dart';
+
 void main() {
   testWidgets('IM 应用语言页切换英文并进入英文聊天列表', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -39,8 +41,8 @@ void main() {
     expect(find.text('English'), findsOneWidget);
     expect(find.text('隐私政策'), findsNothing);
     expect(find.text('同意并继续'), findsNothing);
-    expect(find.byTooltip('Accessibility'), findsOneWidget);
-    expect(find.byTooltip('More'), findsOneWidget);
+    expect(findMaterialTooltip('Accessibility'), findsOneWidget);
+    expect(findMaterialTooltip('More'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('im-welcome-language')));
     await tester.pumpAndSettle();
@@ -79,7 +81,7 @@ void main() {
       find.text('Interview: Shanghai Shijia Technology wants to meet you'),
       findsOneWidget,
     );
-    expect(find.byTooltip('Search'), findsOneWidget);
+    expect(findMaterialTooltip('Search'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

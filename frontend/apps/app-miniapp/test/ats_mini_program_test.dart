@@ -7,6 +7,8 @@ import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_navigation_bar.
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_status_bar.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 
+import 'finders.dart';
+
 void main() {
   testWidgets('存在系统状态栏时不再绘制模拟状态栏', (tester) async {
     await tester.pumpWidget(
@@ -24,8 +26,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('9:41'), findsNothing);
-    expect(find.byTooltip('小程序菜单'), findsOneWidget);
-    expect(find.byTooltip('退出小程序'), findsOneWidget);
+    expect(findMaterialTooltip('小程序菜单'), findsOneWidget);
+    expect(findMaterialTooltip('退出小程序'), findsOneWidget);
     expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
     expect(find.byType(MiniProgramNavigationBar), findsNothing);
   });
@@ -72,7 +74,7 @@ void main() {
     expect(find.text('消息'), findsOneWidget);
     expect(find.text('我的'), findsOneWidget);
     expect(find.byType(Dialog), findsNothing);
-    expect(find.byTooltip('退出小程序'), findsOneWidget);
+    expect(findMaterialTooltip('退出小程序'), findsOneWidget);
 
     final tabCenters = [
       for (final label in ['首页', '分类', '消息', '我的'])
@@ -186,7 +188,7 @@ void main() {
     await tester.pumpAndSettle();
     await _openAts(tester);
 
-    await tester.tap(find.byTooltip('退出小程序'));
+    await tester.tap(findMaterialTooltip('退出小程序'));
     await tester.pumpAndSettle();
 
     expect(find.text('搜索小程序'), findsOneWidget);
@@ -248,7 +250,7 @@ void main() {
     expect(find.byKey(const Key('mini-program-loading-dots')), findsNothing);
     expect(find.text('我的小程序'), findsOneWidget);
     expect(find.byType(Dialog), findsNothing);
-    expect(find.byTooltip('关闭'), findsNothing);
+    expect(findMaterialTooltip('关闭'), findsNothing);
 
     await tester.tap(find.byKey(const Key('mini-program-picker-ats')));
     await tester.pumpAndSettle();

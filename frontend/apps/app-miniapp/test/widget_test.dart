@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/appearance.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 
+import 'finders.dart';
+
 void main() {
   testWidgets('未登录启动先进入欢迎页，完成欢迎后进入登录页', (tester) async {
     await tester.pumpWidget(const BusinessApp());
@@ -160,10 +162,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('业务静态页（语义化重构）'), findsOneWidget);
-    expect(find.byTooltip('退出小程序'), findsOneWidget);
+    expect(findMaterialTooltip('退出小程序'), findsOneWidget);
     expect(find.byType(Dialog), findsNothing);
 
-    await tester.tap(find.byTooltip('退出小程序'));
+    await tester.tap(findMaterialTooltip('退出小程序'));
     await tester.pumpAndSettle();
     expect(find.text('我的小程序'), findsOneWidget);
 
@@ -203,6 +205,6 @@ void main() {
     await tester.tap(find.byKey(const Key('mini-program-picker-platform')));
     await tester.pumpAndSettle();
     expect(find.text('账号中心'), findsOneWidget);
-    expect(find.byTooltip('退出小程序'), findsOneWidget);
+    expect(findMaterialTooltip('退出小程序'), findsOneWidget);
   });
 }

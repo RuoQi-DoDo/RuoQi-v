@@ -468,6 +468,8 @@ class _ChatRow extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: theme.textTheme.bodyLarge?.copyWith(
                                     color: scheme.onSurface,
                                     fontSize: 16,

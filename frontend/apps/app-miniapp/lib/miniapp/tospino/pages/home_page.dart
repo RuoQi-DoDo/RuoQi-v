@@ -38,7 +38,7 @@ class _TospinoHomePageState extends State<TospinoHomePage> {
   @override
   Widget build(BuildContext context) {
     if (!controller.homeLoaded) {
-      return _HomeLoadingPage(controller: controller);
+      return _HomeLoadingContent(controller: controller);
     }
 
     final products = controller.homeProducts;
@@ -1367,12 +1367,16 @@ class _NewcomerCampaignSection extends StatelessWidget {
                             size: 18,
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                            localizeMiniProgramLabel(context, campaign.title),
-                            style: const TextStyle(
-                              color: Color(0xFF075D64),
-                              fontSize: 16,
-                              fontWeight: TospinoText.strong,
+                          Expanded(
+                            child: Text(
+                              localizeMiniProgramLabel(context, campaign.title),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFF075D64),
+                                fontSize: 16,
+                                fontWeight: TospinoText.strong,
+                              ),
                             ),
                           ),
                         ],
@@ -3247,8 +3251,8 @@ class _HomeDataState extends StatelessWidget {
   }
 }
 
-class _HomeLoadingPage extends StatelessWidget {
-  const _HomeLoadingPage({required this.controller});
+class _HomeLoadingContent extends StatelessWidget {
+  const _HomeLoadingContent({required this.controller});
 
   final TospinoAppController controller;
 

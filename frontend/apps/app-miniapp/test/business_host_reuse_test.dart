@@ -9,6 +9,8 @@ import 'package:ruoqi_app_miniapp/pages/host/business_host_page.dart';
 import 'package:ruoqi_app_miniapp/pages/profile/me_page.dart';
 import 'package:ruoqi_app_miniapp/pages/settings/settings_page.dart';
 
+import 'finders.dart';
+
 void main() {
   testWidgets('替换业务首页后继续复用公共页面和小程序，并保留首页状态', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
@@ -64,7 +66,7 @@ void main() {
     await tester.tap(find.byKey(const Key('mini-program-picker-merchant')));
     await tester.pumpAndSettle();
     expect(find.text('业务静态页（语义化重构）'), findsOneWidget);
-    await tester.tap(find.byTooltip('退出小程序'));
+    await tester.tap(findMaterialTooltip('退出小程序'));
     await tester.pumpAndSettle();
     await tester.drag(
       find.byKey(const Key('mini-program-picker-exit-swipe')),

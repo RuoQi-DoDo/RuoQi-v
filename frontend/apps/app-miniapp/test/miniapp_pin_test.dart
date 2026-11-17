@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 import 'package:ruoqi_app_miniapp/miniapp/common/miniapp_pin.dart';
 
+import 'finders.dart';
+
 void main() {
   test('只保存一个小程序，后钉住的小程序会替换前一个', () async {
     final store = _MemoryMiniProgramPinStore();
@@ -49,7 +51,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('mini-program-close-icon')), findsOneWidget);
-    await tester.longPress(find.byTooltip('退出小程序'));
+    await tester.longPress(findMaterialTooltip('退出小程序'));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('mini-program-pin-icon')), findsOneWidget);
@@ -73,7 +75,7 @@ void main() {
     expect(find.text('搜索岗位或关键词'), findsOneWidget);
     expect(find.byKey(const Key('mini-program-pin-icon')), findsOneWidget);
 
-    await tester.longPress(find.byTooltip('退出小程序'));
+    await tester.longPress(findMaterialTooltip('退出小程序'));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('mini-program-close-icon')), findsOneWidget);
