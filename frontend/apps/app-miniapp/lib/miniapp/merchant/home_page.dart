@@ -1,6 +1,6 @@
 import '../common/miniapp_localizations.dart';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:common/common.dart';
 
 import 'business/account_frozen_dialog.dart';

@@ -1,7 +1,7 @@
 import '../common/miniapp_localizations.dart';
 
 import 'package:common/common.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../localization.dart';
 import 'launcher_widgets.dart';

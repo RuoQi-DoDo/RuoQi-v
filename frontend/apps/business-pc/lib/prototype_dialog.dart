@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:common/common.dart';
 
 /// 业务原型的统一弹窗壳：控制台顶栏（品牌 + 退出）+ 原型内容。

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 展示当前 App 名称与版本号的通用组件。
 class AppBadge extends StatelessWidget {

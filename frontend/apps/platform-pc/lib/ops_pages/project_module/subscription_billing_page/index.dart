@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 订阅计费（运营后台）——业务静态页。
 class SubscriptionBillingPage extends StatelessWidget {

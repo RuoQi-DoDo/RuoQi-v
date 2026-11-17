@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 手机号注册（APP 终端用户）——业务静态页。
 class RegisterPage extends StatefulWidget {

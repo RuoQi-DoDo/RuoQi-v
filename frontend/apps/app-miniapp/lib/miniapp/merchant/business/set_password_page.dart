@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 设置登录密码（APP 注册流程）——业务表单静态页。
 class SetPasswordPage extends StatefulWidget {

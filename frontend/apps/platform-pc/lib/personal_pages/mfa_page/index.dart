@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 多因素认证（平台端个人中心）——业务静态页。
 class MfaPage extends StatelessWidget {

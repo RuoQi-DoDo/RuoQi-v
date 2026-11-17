@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 个人资料编辑（APP 终端用户）——业务表单静态页。
 class EditProfilePage extends StatefulWidget {

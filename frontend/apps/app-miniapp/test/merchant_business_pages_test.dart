@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/miniapp/merchant/business/account_frozen_dialog.dart';
 import 'package:ruoqi_app_miniapp/miniapp/merchant/business/account_links_page.dart';

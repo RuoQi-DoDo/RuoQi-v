@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 协议勾选弹窗（APP 终端用户）——业务静态弹窗。
 class AgreementDialog extends StatelessWidget {

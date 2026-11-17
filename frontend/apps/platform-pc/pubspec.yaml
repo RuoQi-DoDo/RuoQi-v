@@ -36,6 +36,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   json_annotation: ^4.12.0
+  material_ui: ^1.11.1
   common:
     path: ../../packages/common
   network:

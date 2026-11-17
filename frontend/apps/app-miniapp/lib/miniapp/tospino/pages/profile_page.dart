@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../common/miniapp_localizations.dart';
 import '../../common/widgets/miniapp_capsule_overlay.dart';

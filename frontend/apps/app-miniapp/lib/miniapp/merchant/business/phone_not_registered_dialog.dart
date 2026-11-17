@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 手机号未注册提示弹窗（APP 终端用户）——业务静态弹窗。
 class PhoneNotRegisteredDialog extends StatelessWidget {

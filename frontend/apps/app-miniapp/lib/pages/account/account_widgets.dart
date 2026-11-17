@@ -1,7 +1,7 @@
 import 'account_localizations.dart';
 import '../common/page_theme.dart';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import 'account_style.dart';

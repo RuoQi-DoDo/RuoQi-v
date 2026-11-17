@@ -226,6 +226,40 @@ jobs:
             | plutil -extract TeamIdentifier.0 raw -o - -)
           profile_name=$(security cms -D -i "$profile_path" \
             | plutil -extract Name raw -o - -)
+          application_identifier=$(security cms -D -i "$profile_path" \
+            | plutil -extract Entitlements.application-identifier raw -o - -)
+          profile_bundle_id="${application_identifier#*.}"
+          project_file="ios/Runner.xcodeproj/project.pbxproj"
+          project_bundle_id=$(xcodebuild \
+            -project ios/Runner.xcodeproj \
+            -scheme Runner \
+            -configuration Release \
+            -showBuildSettings 2>/dev/null \
+            | awk '/ PRODUCT_BUNDLE_IDENTIFIER =/ { print $3; exit }')
+
+          if [[ -z "$project_bundle_id" ]]; then
+            echo "Unable to read PRODUCT_BUNDLE_IDENTIFIER from the Xcode project." >&2
+            exit 1
+          fi
+
+          case "$project_bundle_id" in
+            $profile_bundle_id) ;;
+            *)
+              echo "Bundle ID mismatch: the app uses '$project_bundle_id', but the provisioning profile covers '$profile_bundle_id'." >&2
+              exit 1
+              ;;
+          esac
+
+          echo "Using provisioning profile: $profile_name"
+          echo "Using Apple team: $team_id"
+          echo "Using bundle ID: $project_bundle_id"
+
+          # The profile name is supplied through a repository secret, so keep the
+          # Xcode project in sync with it instead of relying on a stale local name.
+          TEAM_ID="$team_id" PROFILE_NAME="$profile_name" perl -0pi -e '
+            s/DEVELOPMENT_TEAM = [^;]+;/DEVELOPMENT_TEAM = $ENV{TEAM_ID};/g;
+            s/PROVISIONING_PROFILE_SPECIFIER = [^;]+;/PROVISIONING_PROFILE_SPECIFIER = "$ENV{PROFILE_NAME}";/g;
+          ' "$project_file"
 
           export_options="$RUNNER_TEMP/ExportOptions.plist"
           cat > "$export_options" <<EOF
@@ -241,7 +275,7 @@ jobs:
             <string>${team_id}</string>
             <key>provisioningProfiles</key>
             <dict>
-              <key>com.BMMY.TospinoMall</key>
+              <key>${project_bundle_id}</key>
               <string>${profile_name}</string>
             </dict>
             <key>stripSwiftSymbols</key>

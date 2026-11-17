@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../common/page_widgets.dart';
 import '../mini_programs/mini_programs_page.dart';

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 手机验证码登录（终端用户 APP）——由 IDM 原型重构的业务静态页。
 class SmsLoginPage extends StatefulWidget {

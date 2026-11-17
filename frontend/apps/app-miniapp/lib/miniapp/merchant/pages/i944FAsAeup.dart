@@ -2,7 +2,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 // ignore_for_file: use_key_in_widget_constructors
 // ignore_for_file: file_names, camel_case_types
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 输入邮件登录验证码 (租户-APP端/会员端登录(APP)/邮箱验证码登录)
 class i944FAsAeupPage extends StatelessWidget {
