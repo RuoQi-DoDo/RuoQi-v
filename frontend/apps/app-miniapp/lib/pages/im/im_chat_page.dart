@@ -1,8 +1,12 @@
+import 'dart:ui' as ui;
+
 import 'package:common/common.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../calls/calls_page.dart';
 import '../common/page_theme.dart';
 import '../common/page_widgets.dart';
+import '../scan/scan_page.dart';
 import 'im_localizations.dart';
 import 'im_style.dart';
 
@@ -58,15 +62,15 @@ class _ImChatList extends StatelessWidget {
             ),
             icon: const Icon(Icons.search_rounded),
           ),
-          IconButton(
-            tooltip: imText(context, '发起', 'New chat'),
-            constraints: const BoxConstraints.tightFor(width: 42, height: 42),
-            padding: EdgeInsets.zero,
-            onPressed: () => showPageMessage(
-              context,
-              imText(context, '发起功能为模拟入口', 'New chat is a demo entry'),
+          Builder(
+            builder: (buttonContext) => IconButton(
+              key: const Key('im-new-chat-button'),
+              tooltip: imText(context, '发起', 'New chat'),
+              constraints: const BoxConstraints.tightFor(width: 42, height: 42),
+              padding: EdgeInsets.zero,
+              onPressed: () => _showInitiationMenu(buttonContext),
+              icon: const Icon(Icons.add_circle_outline_rounded),
             ),
-            icon: const Icon(Icons.add_circle_outline_rounded),
           ),
           const SizedBox(width: 6),
         ],
@@ -104,6 +108,200 @@ class _ImChatList extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _showInitiationMenu(BuildContext buttonContext) async {
+    final anchor = buttonContext.findRenderObject();
+    if (anchor is! RenderBox || !anchor.hasSize) return;
+    final anchorRect = anchor.localToGlobal(Offset.zero) & anchor.size;
+    final action = await showGeneralDialog<_InitiationAction>(
+      context: buttonContext,
+      barrierDismissible: true,
+      barrierColor: Colors.transparent,
+      barrierLabel: imText(buttonContext, '关闭发起菜单', 'Close start menu'),
+      transitionDuration: const Duration(milliseconds: 120),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        final media = MediaQuery.sizeOf(context);
+        const menuWidth = 136.0;
+        const menuRight = 5.0;
+        final cardRight = media.width - menuRight;
+        final arrowRight = (cardRight - anchorRect.center.dx - 7).clamp(
+          12.0,
+          menuWidth - 26,
+        );
+        return SafeArea(
+          top: false,
+          child: Padding(
+            key: const Key('im-initiation-sheet'),
+            padding: EdgeInsets.only(
+              top: anchorRect.bottom - 5,
+              right: menuRight,
+            ),
+            child: Align(
+              alignment: Alignment.topRight,
+              child: SizedBox(
+                width: menuWidth,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Padding(
+                        padding: EdgeInsets.only(right: arrowRight),
+                        child: const CustomPaint(
+                          size: Size(14, 8),
+                          painter: _InitiationArrowPainter(),
+                        ),
+                      ),
+                    ),
+                    Material(
+                      color: Colors.transparent,
+                      elevation: 10,
+                      shadowColor: Colors.black38,
+                      borderRadius: BorderRadius.circular(7),
+                      clipBehavior: Clip.antiAlias,
+                      child: BackdropFilter(
+                        filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                        child: ColoredBox(
+                          color: const Color(0xE61C1C1C),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _InitiationMenuItem(
+                                key: const Key('im-initiate-call'),
+                                icon: Icons.call_outlined,
+                                label: imText(context, '发起通话', 'New call'),
+                                onTap: () =>
+                                    Navigator.of(context)
+                                        .pop(_InitiationAction.call),
+                              ),
+                              const _InitiationMenuDivider(),
+                              _InitiationMenuItem(
+                                key: const Key('im-initiate-scan'),
+                                icon: Icons.qr_code_scanner_rounded,
+                                label: imText(context, '扫一扫', 'Scan'),
+                                onTap: () =>
+                                    Navigator.of(context)
+                                        .pop(_InitiationAction.scan),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.96, end: 1).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOut),
+            ),
+            alignment: Alignment.topRight,
+            child: child,
+          ),
+        );
+      },
+    );
+    if (!buttonContext.mounted || action == null) return;
+
+    switch (action) {
+      case _InitiationAction.call:
+        await Navigator.of(buttonContext).push<void>(CallsPage.route());
+      case _InitiationAction.scan:
+        final value = await openScanner(buttonContext);
+        if (value != null && buttonContext.mounted) {
+          await showScanResult(buttonContext, value);
+        }
+    }
+  }
+}
+
+enum _InitiationAction { call, scan }
+
+class _InitiationMenuItem extends StatelessWidget {
+  const _InitiationMenuItem({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      splashColor: Colors.white.withValues(alpha: 0.08),
+      highlightColor: Colors.white.withValues(alpha: 0.05),
+      child: SizedBox(
+        height: 54,
+        child: Row(
+          children: [
+            const SizedBox(width: 16),
+            Icon(icon, color: Colors.white, size: 22),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.1,
+                  height: 1,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InitiationMenuDivider extends StatelessWidget {
+  const _InitiationMenuDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Divider(
+      height: 1,
+      thickness: 1,
+      indent: 50,
+      endIndent: 5,
+      color: Color(0xFF454545),
+    );
+  }
+}
+
+class _InitiationArrowPainter extends CustomPainter {
+  const _InitiationArrowPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(size.width / 2, 0)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = const Color(0xE61C1C1C));
+  }
+
+  @override
+  bool shouldRepaint(covariant _InitiationArrowPainter oldDelegate) => false;
 }
 
 List<_Conversation> _conversations(BuildContext context) {

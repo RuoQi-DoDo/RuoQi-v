@@ -9,6 +9,7 @@ export 'contacts/contacts_page.dart';
 export 'discover/discover_page.dart';
 export 'mini_programs/mini_programs_page.dart';
 export 'profile/me_page.dart';
+export 'scan/scan_page.dart';
 export 'settings/settings_page.dart';
 export 'host/business_host_page.dart';
 export 'account/account.dart';
