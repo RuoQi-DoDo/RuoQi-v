@@ -49,7 +49,7 @@ apps/app-miniapp/
 
 ## 环境准备
 
-Flutter 和 Java 版本固定在仓库根的 `mise.toml`（当前 Flutter `3.47.4`、
+Flutter 和 Java 版本固定在仓库根的 `mise.toml`（当前 Flutter `3.50.0`、
 Java Temurin 17），CI 从同一个文件读取 Flutter 版本，本地请保持一致。
 
 > 为什么必须钉版本：`meta` / `matcher` / `test_api` / `vector_math` 这几个传递依赖
@@ -61,22 +61,23 @@ Java Temurin 17），CI 从同一个文件读取 Flutter 版本，本地请保�
 
 ```bash
 mise install
-flutter --version   # 应输出 3.47.4
+flutter --version   # 应输出 3.50.0
 java -version       # 应输出 17
 ```
 
-手动安装：把 Flutter 3.47.4 和 JDK 17 分别安装到本地目录，再配置环境变量：
+手动安装：把 Flutter 3.50.0 和 JDK 17 分别安装到本地目录，再配置环境变量：
 
 ```bash
 export JAVA_HOME="$HOME/opt/jdk-17"
 export PATH="$JAVA_HOME/bin:$HOME/opt/flutter/bin:$HOME/.pub-cache/bin:$PATH"
-flutter --version # 应输出 3.47.4
+flutter --version # 应输出 3.50.0
 java -version     # 应输出 17
 melos --version   # 首次使用前：dart pub global activate melos 6.3.3
 ```
 
 升级 Flutter 时：改 `mise.toml` 的版本号 → `cd frontend && flutter pub get`
-→ 提交更新后的 `frontend/pubspec.lock`，CI 会自动切到新版本。
+→ `dart pub global activate melos 6.3.3` → 提交更新后的 `frontend/pubspec.lock`，
+CI 会自动切到新版本。Dart 升级后必须重新编译全局 Melos，否则旧 kernel 无法运行。
 
 ## 常用命令
 
