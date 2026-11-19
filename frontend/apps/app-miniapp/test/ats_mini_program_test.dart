@@ -488,6 +488,62 @@ void main() {
     expect(find.byKey(const Key('me-page')), findsOneWidget);
   });
 
+  testWidgets('设置页 AI 分组可进入 DeepSeek API 模型页', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('我').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+
+    final settingsScrollable = find
+        .descendant(
+          of: find.byKey(const Key('settings-page')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    await tester.scrollUntilVisible(
+      find.text('模型'),
+      180,
+      scrollable: settingsScrollable,
+    );
+    expect(find.text('AI'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('settings-ai-model')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('ai-model-settings-page')), findsOneWidget);
+    expect(find.byKey(const Key('deepseek-api-key')), findsOneWidget);
+    expect(find.byKey(const Key('deepseek-api-key-connect')), findsOneWidget);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('deepseek-api-key')))
+          .obscureText,
+      isTrue,
+    );
+
+    await tester.tap(find.byKey(const Key('deepseek-api-key-connect')));
+    await tester.pumpAndSettle();
+    expect(find.text('请输入 DeepSeek API Key'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('deepseek-api-key-visibility')));
+    await tester.pump();
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('deepseek-api-key')))
+          .obscureText,
+      isFalse,
+    );
+
+    await tester.tap(find.byKey(const Key('ai-model-back')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('settings-page')), findsOneWidget);
+    expect(find.text('未选择'), findsOneWidget);
+  });
+
   testWidgets('正常模式与黑色模式可切换并覆盖 AI 页', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
