@@ -56,7 +56,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
 
   _HostSubview _subview = _HostSubview.home;
   _HostSubview _atsReturnSubview = _HostSubview.home;
-  HostTab _hostTab = HostTab.home;
+  HostTab _hostTab = HostTab.ai;
   late final AnimationController _pullController;
   late final AnimationController _closeController;
   late final AnimationController _loadingController;
@@ -560,6 +560,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
             child: IndexedStack(
               index: _hostTab.index,
               children: [
+                AiPage(onOpenSettings: _openSettingsPage),
                 Listener(
                   onPointerDown: _handlePullPointerDown,
                   onPointerMove: _handlePullPointerMove,
@@ -573,7 +574,6 @@ class _BusinessHostPageState extends State<BusinessHostPage>
                     ),
                   ),
                 ),
-                AiPage(onOpenSettings: _openSettingsPage),
                 const DiscoverPage(),
                 MePage(onOpenSettings: _openSettingsPage),
               ],

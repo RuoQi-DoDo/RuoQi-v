@@ -1444,7 +1444,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     final baseTheme = Theme.of(context);
     final aiScheme = baseTheme.colorScheme.copyWith(
-      primary: AiColors.accent,
+      primary: AiColors.accent(context),
       surface: AiColors.background(context),
       onSurface: AiColors.text(context),
       surfaceContainerLowest: AiColors.background(context),
@@ -1746,7 +1746,7 @@ class _AiHeader extends StatelessWidget {
                     onPressed: onToggleAutoRead,
                     icon: DeepSeekAutoReadIcon(
                       color: autoRead
-                          ? AiColors.accent
+                          ? AiColors.accent(context)
                           : AiColors.text(context),
                       muted: !autoRead,
                       size: 25,
@@ -1824,7 +1824,11 @@ class _AiWelcome extends StatelessWidget {
               height: 92,
               child: CustomPaint(
                 key: const Key('ai-whale-mark'),
-                painter: _AiWhalePainter(),
+                painter: _AiWhalePainter(
+                  accent: AiColors.accent(context),
+                  accentDeep: AiColors.accentDeep(context),
+                  belly: AiColors.softSurface(context),
+                ),
               ),
             ),
             const SizedBox(height: 28),
@@ -1860,36 +1864,47 @@ class _AiWelcome extends StatelessWidget {
 }
 
 class _AiWhalePainter extends CustomPainter {
+  const _AiWhalePainter({
+    required this.accent,
+    required this.accentDeep,
+    required this.belly,
+  });
+
+  final Color accent;
+  final Color accentDeep;
+  final Color belly;
+
   @override
   void paint(Canvas canvas, Size size) {
     final scale = size.width / 166;
     canvas.save();
     canvas.scale(scale, scale);
 
-    final blue = Paint()
-      ..shader = const LinearGradient(
+    final body = Paint()
+      ..shader = LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [AiColors.accentDeep, AiColors.accent],
+        colors: [accentDeep, accent],
       ).createShader(const Rect.fromLTWH(0, 0, 166, 92));
-    final deepBlue = Paint()..color = const Color(0xFF3548DB);
-    final belly = Paint()..color = const Color(0xFFEFF2FF);
+    final bodyDeep = Paint()
+      ..color = Color.lerp(accentDeep, Colors.black, 0.2)!;
+    final underside = Paint()..color = belly;
     final line = Paint()
-      ..color = const Color(0xFF2537B8)
+      ..color = Color.lerp(accentDeep, Colors.black, 0.36)!
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.2
       ..strokeCap = StrokeCap.round;
     final white = Paint()..color = Colors.white;
-    final pupil = Paint()..color = const Color(0xFF101A68);
+    final pupil = Paint()..color = Color.lerp(accentDeep, Colors.black, 0.72)!;
 
-    final body = Path()
+    final bodyPath = Path()
       ..moveTo(20, 72)
       ..cubicTo(23, 49, 50, 30, 84, 31)
       ..cubicTo(104, 32, 119, 42, 132, 58)
       ..cubicTo(122, 70, 98, 78, 68, 80)
       ..cubicTo(46, 82, 29, 77, 20, 72)
       ..close();
-    canvas.drawPath(body, blue);
+    canvas.drawPath(bodyPath, body);
 
     final tail = Path()
       ..moveTo(127, 54)
@@ -1899,29 +1914,29 @@ class _AiWhalePainter extends CustomPainter {
       ..cubicTo(154, 71, 148, 80, 135, 79)
       ..cubicTo(125, 78, 119, 68, 115, 62)
       ..close();
-    canvas.drawPath(tail, blue);
+    canvas.drawPath(tail, body);
 
     final dorsal = Path()
       ..moveTo(82, 32)
       ..cubicTo(83, 18, 93, 8, 109, 4)
       ..cubicTo(104, 18, 111, 27, 120, 36)
       ..close();
-    canvas.drawPath(dorsal, blue);
+    canvas.drawPath(dorsal, body);
 
     final fin = Path()
       ..moveTo(92, 66)
       ..cubicTo(99, 77, 113, 84, 128, 81)
       ..cubicTo(121, 75, 115, 68, 112, 61)
       ..close();
-    canvas.drawPath(fin, deepBlue);
+    canvas.drawPath(fin, bodyDeep);
 
-    final underside = Path()
+    final undersidePath = Path()
       ..moveTo(24, 66)
       ..cubicTo(48, 72, 88, 68, 132, 58)
       ..cubicTo(116, 75, 85, 81, 58, 79)
       ..cubicTo(39, 78, 28, 74, 24, 66)
       ..close();
-    canvas.drawPath(underside, belly);
+    canvas.drawPath(undersidePath, underside);
 
     final smile = Path()
       ..moveTo(110, 59)
@@ -1937,7 +1952,7 @@ class _AiWhalePainter extends CustomPainter {
     canvas.drawOval(const Rect.fromLTWH(60, 49, 4.2, 5.6), pupil);
 
     final water = Paint()
-      ..color = const Color(0xFF263BC8)
+      ..color = line.color
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(const Offset(22, 83), const Offset(101, 83), water);
@@ -1945,7 +1960,10 @@ class _AiWhalePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _AiWhalePainter oldDelegate) => false;
+  bool shouldRepaint(covariant _AiWhalePainter oldDelegate) =>
+      oldDelegate.accent != accent ||
+      oldDelegate.accentDeep != accentDeep ||
+      oldDelegate.belly != belly;
 }
 
 class _AiConversation extends StatelessWidget {
@@ -2164,12 +2182,12 @@ class _AiModeTag extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: AiColors.accent),
+          Icon(icon, size: 13, color: AiColors.accent(context)),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              color: AiColors.accent,
+              color: AiColors.accent(context),
               fontSize: 10.5,
               fontWeight: FontWeight.w600,
             ),
@@ -2280,7 +2298,7 @@ class _AnswerActionButton extends StatelessWidget {
       icon: Icon(
         icon,
         size: 20,
-        color: selected ? AiColors.accent : AiColors.muted(context),
+        color: selected ? AiColors.accent(context) : AiColors.muted(context),
       ),
     );
   }
@@ -2335,13 +2353,13 @@ class _AiTypingIndicator extends StatelessWidget {
           Container(
             width: 30,
             height: 30,
-            decoration: const BoxDecoration(
-              gradient: AiColors.brandGradient,
+            decoration: BoxDecoration(
+              gradient: AiColors.brandGradient(context),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.auto_awesome_rounded,
-              color: Colors.white,
+              color: AiColors.onAccent(context),
               size: 16,
             ),
           ),
@@ -2451,14 +2469,12 @@ class _AiComposer extends StatelessWidget {
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(
                     color: voiceActive
-                        ? AiColors.accent
-                        : AiColors.isDark(context)
-                        ? AiColors.border(context)
-                        : const Color(0xFFF2F3F5),
+                        ? AiColors.accent(context)
+                        : AiColors.border(context),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(
+                      color: Theme.of(context).colorScheme.shadow.withValues(
                         alpha: AiColors.isDark(context) ? 0.2 : 0.025,
                       ),
                       blurRadius: 20,
@@ -2486,7 +2502,7 @@ class _AiComposer extends StatelessWidget {
                     child: voiceActive
                         ? _RecordingPanel(
                             cancel: recordingWillCancel,
-                            color: AiColors.accent,
+                            color: AiColors.accent(context),
                           )
                         : Column(
                             mainAxisSize: MainAxisSize.min,
@@ -2570,7 +2586,7 @@ class _AiComposer extends StatelessWidget {
                                         keyboardType: TextInputType.multiline,
                                         textInputAction:
                                             TextInputAction.newline,
-                                        cursorColor: AiColors.accent,
+                                        cursorColor: AiColors.accent(context),
                                         onTapOutside: (_) =>
                                             focusNode.unfocus(),
                                         style: TextStyle(
@@ -2619,7 +2635,7 @@ class _AiComposer extends StatelessWidget {
                                             key: const Key('ai-deep-thinking'),
                                             icon: DeepSeekThinkingIcon(
                                               color: deepThinking
-                                                  ? AiColors.accent
+                                                  ? AiColors.accent(context)
                                                   : AiColors.text(context),
                                               size: 19,
                                             ),
@@ -2636,7 +2652,7 @@ class _AiComposer extends StatelessWidget {
                                             icon: Icon(
                                               Icons.language_rounded,
                                               color: webSearch
-                                                  ? AiColors.accent
+                                                  ? AiColors.accent(context)
                                                   : AiColors.text(context),
                                               size: 19,
                                             ),
@@ -2900,8 +2916,8 @@ class _AiAttachmentTile extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        splashColor: AiColors.accent.withValues(alpha: 0.12),
-        highlightColor: AiColors.accent.withValues(alpha: 0.06),
+        splashColor: AiColors.accent(context).withValues(alpha: 0.12),
+        highlightColor: AiColors.accent(context).withValues(alpha: 0.06),
         child: SizedBox(
           height: 82,
           child: Column(
@@ -2950,14 +2966,14 @@ class _RecordingPanel extends StatelessWidget {
                 : text.text('松手发送，上滑取消', 'Release to send, swipe up to cancel'),
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: cancel ? const Color(0xFFD7464F) : AiColors.text(context),
+              color: cancel ? AiColors.danger(context) : AiColors.text(context),
               fontSize: 20,
               fontWeight: FontWeight.w600,
               letterSpacing: -0.2,
             ),
           ),
           const SizedBox(height: 24),
-          _RecordingWaveform(color: cancel ? const Color(0xFFD7464F) : color),
+          _RecordingWaveform(color: cancel ? AiColors.danger(context) : color),
         ],
       ),
     );
@@ -3069,7 +3085,9 @@ class _AiModeChip extends StatelessWidget {
                 Text(
                   label,
                   style: TextStyle(
-                    color: selected ? AiColors.accent : AiColors.text(context),
+                    color: selected
+                        ? AiColors.accent(context)
+                        : AiColors.text(context),
                     fontSize: 14,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                     letterSpacing: -0.1,
@@ -3167,24 +3185,24 @@ class _AiSendButton extends StatelessWidget {
                   height: 27,
                   decoration: BoxDecoration(
                     color: enabled
-                        ? AiColors.accent
+                        ? AiColors.accent(context)
                         : AiColors.softSurface(context),
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
                   child: responding
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 12,
                           height: 12,
                           child: CircularProgressIndicator(
                             strokeWidth: 1.8,
-                            color: AiColors.accent,
+                            color: AiColors.accent(context),
                           ),
                         )
                       : Icon(
                           Icons.arrow_upward_rounded,
                           color: enabled
-                              ? Colors.white
+                              ? AiColors.onAccent(context)
                               : AiColors.muted(context),
                           size: 16,
                         ),

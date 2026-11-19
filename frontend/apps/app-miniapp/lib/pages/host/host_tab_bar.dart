@@ -4,10 +4,9 @@ import 'package:material_ui/material_ui.dart';
 
 import '../common/page_localizations.dart';
 import '../common/page_theme.dart';
-import '../common/whatsapp_colors.dart';
 import '../ai/ai_style.dart';
 
-enum HostTab { home, ai, discover, me }
+enum HostTab { ai, home, discover, me }
 
 class HostTabBar extends StatelessWidget {
   const HostTabBar({
@@ -34,7 +33,6 @@ class HostTabBar extends StatelessWidget {
     final dividerColor = HostChromeStyle.dividerColor(context);
     final hairline = HostChromeStyle.hairline(context);
     final items = [
-      (HostTab.home, homeIcon, homeActiveIcon, homeLabel, false),
       (
         HostTab.ai,
         Icons.auto_awesome_outlined,
@@ -42,6 +40,7 @@ class HostTabBar extends StatelessWidget {
         'AI',
         false,
       ),
+      (HostTab.home, homeIcon, homeActiveIcon, homeLabel, false),
       (
         HostTab.discover,
         Icons.explore_outlined,
@@ -95,7 +94,7 @@ class HostTabBar extends StatelessWidget {
                               if (tab == HostTab.ai)
                                 AiTabIcon(
                                   color: selected == tab
-                                      ? AiColors.accent
+                                      ? AiColors.accent(context)
                                       : inactiveColor,
                                   filled: selected == tab,
                                   size: 24,
@@ -105,7 +104,7 @@ class HostTabBar extends StatelessWidget {
                                   selected == tab ? activeIcon : icon,
                                   size: 23.5,
                                   color: selected == tab
-                                      ? WhatsAppColors.brandStrong
+                                      ? scheme.primary
                                       : inactiveColor,
                                 ),
                               if (showDot)
@@ -130,9 +129,7 @@ class HostTabBar extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: selected == tab
-                                ? tab == HostTab.ai
-                                      ? AiColors.accent
-                                      : WhatsAppColors.brandStrong
+                                ? AiColors.accent(context)
                                 : inactiveColor,
                             fontSize: 10.5,
                             letterSpacing: 0.1,

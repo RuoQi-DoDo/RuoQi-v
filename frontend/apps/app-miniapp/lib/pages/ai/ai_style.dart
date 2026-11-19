@@ -1,57 +1,65 @@
 import 'package:material_ui/material_ui.dart';
 
-/// DeepSeek-inspired blue palette for the AI conversation surface.
-abstract final class AiColors {
-  static const accent = Color(0xFF4D6BFE);
-  static const accentDeep = Color(0xFF6B4EFF);
-  static const lightBackground = Color(0xFFFFFFFF);
-  static const darkBackground = Color(0xFF101116);
-  static const lightSurface = Color(0xFFFFFFFF);
-  static const darkSurface = Color(0xFF191B22);
-  static const lightSoftSurface = Color(0xFFF0F3FF);
-  static const darkSoftSurface = Color(0xFF1D2238);
-  static const lightSearchSurface = Color(0xFFF5F5F6);
-  static const darkSearchSurface = Color(0xFF24262D);
-  static const lightText = Color(0xFF181A20);
-  static const darkText = Color(0xFFF4F5F8);
-  static const lightMuted = Color(0xFF697083);
-  static const darkMuted = Color(0xFF9BA3B4);
-  static const lightHint = Color(0xFFC6C9D0);
-  static const darkHint = Color(0xFF666D7D);
-  static const lightBorder = Color(0xFFE6E9F0);
-  static const darkBorder = Color(0xFF2B2E37);
+import '../common/page_theme.dart';
 
+/// AI conversation colors resolved from the host application's theme.
+abstract final class AiColors {
   static bool isDark(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark;
 
-  static Color background(BuildContext context) =>
-      isDark(context) ? darkBackground : lightBackground;
+  static ColorScheme _scheme(BuildContext context) =>
+      Theme.of(context).colorScheme;
 
-  static Color surface(BuildContext context) =>
-      isDark(context) ? darkSurface : lightSurface;
+  static Color accent(BuildContext context) => _scheme(context).primary;
+
+  static Color onAccent(BuildContext context) => _scheme(context).onPrimary;
+
+  static Color accentDeep(BuildContext context) {
+    final accent = _scheme(context).primary;
+    return Color.lerp(accent, Colors.black, isDark(context) ? 0.08 : 0.16)!;
+  }
+
+  static Color background(BuildContext context) => _scheme(context).surface;
+
+  static Color surface(BuildContext context) {
+    final scheme = _scheme(context);
+    return isDark(context)
+        ? scheme.surfaceContainerLow
+        : scheme.surfaceContainerLowest;
+  }
 
   static Color softSurface(BuildContext context) =>
-      isDark(context) ? darkSoftSurface : lightSoftSurface;
+      _scheme(context).primaryContainer;
 
-  static Color searchSurface(BuildContext context) =>
-      isDark(context) ? darkSearchSurface : lightSearchSurface;
+  static Color searchSurface(BuildContext context) {
+    final scheme = _scheme(context);
+    return isDark(context)
+        ? scheme.surfaceContainerHigh
+        : scheme.surfaceContainer;
+  }
 
-  static Color text(BuildContext context) =>
-      isDark(context) ? darkText : lightText;
+  static Color text(BuildContext context) => _scheme(context).onSurface;
 
-  static Color muted(BuildContext context) =>
-      isDark(context) ? darkMuted : lightMuted;
+  static Color muted(BuildContext context) => _scheme(context).onSurfaceVariant;
 
-  static Color hint(BuildContext context) =>
-      isDark(context) ? darkHint : lightHint;
+  static Color hint(BuildContext context) {
+    final scheme = _scheme(context);
+    return Color.lerp(
+      scheme.onSurfaceVariant,
+      scheme.surface,
+      isDark(context) ? 0.48 : 0.65,
+    )!;
+  }
 
   static Color border(BuildContext context) =>
-      isDark(context) ? darkBorder : lightBorder;
+      HostChromeStyle.dividerColor(context);
 
-  static const brandGradient = LinearGradient(
+  static Color danger(BuildContext context) => _scheme(context).error;
+
+  static LinearGradient brandGradient(BuildContext context) => LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [accentDeep, accent],
+    colors: [accentDeep(context), accent(context)],
   );
 }
 

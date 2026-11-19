@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:common/common.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:ruoqi_app_miniapp/appearance.dart';
 import 'package:ruoqi_app_miniapp/localization.dart';
 import 'package:ruoqi_app_miniapp/pages/ai/ai_page.dart';
 import 'package:ruoqi_app_miniapp/pages/ai/chat_history_store.dart';
@@ -109,6 +111,37 @@ class _ChatStreamAdapter implements HttpClientAdapter {
 }
 
 void main() {
+  testWidgets('AI 页面沿用主应用主题的强调色与表面色', (tester) async {
+    final hostTheme = ruoQiTheme(accent: defaultAccentColor, mobile: true);
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        theme: hostTheme,
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final page = find.byKey(const Key('ai-page'));
+    final aiTheme = Theme.of(tester.element(page));
+    expect(aiTheme.colorScheme.primary, hostTheme.colorScheme.primary);
+    expect(aiTheme.colorScheme.surface, hostTheme.colorScheme.surface);
+    expect(aiTheme.scaffoldBackgroundColor, hostTheme.colorScheme.surface);
+    expect(
+      tester.widget<Scaffold>(page).backgroundColor,
+      hostTheme.colorScheme.surface,
+    );
+  });
+
   testWidgets('AI 附件入口在输入框下方内联展开并可收起', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;

@@ -52,6 +52,7 @@ void main() {
     await tester.tap(find.byKey(const Key('phone-code-verify')));
     await tester.pumpAndSettle();
 
+    await _openChat(tester);
     for (final chat in ['企业直聘', '佳佳', '文件传输助手', '招聘交流群', '腾讯新闻']) {
       expect(find.text(chat), findsOneWidget);
     }
@@ -67,6 +68,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
+    await _openChat(tester);
 
     expect(find.text('聊天'), findsOneWidget);
     for (final chat in [
@@ -151,6 +153,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
+    await _openChat(tester);
 
     await tester.drag(
       find.byKey(const Key('customer-home-scroll')),
@@ -195,6 +198,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
+    await _openChat(tester);
 
     await tester.drag(
       find.byKey(const Key('customer-home-scroll')),
@@ -207,4 +211,9 @@ void main() {
     expect(find.text('账号中心'), findsOneWidget);
     expect(findMaterialTooltip('退出小程序'), findsOneWidget);
   });
+}
+
+Future<void> _openChat(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('host-tab-home')));
+  await tester.pumpAndSettle();
 }

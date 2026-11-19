@@ -267,12 +267,13 @@ jobs:
           echo "Using Apple team: $team_id"
           echo "Using bundle ID: $project_bundle_id"
 
-          # The profile name is supplied through a repository secret, so keep the
-          # Xcode project in sync with it instead of relying on a stale local name.
-          TEAM_ID="$team_id" PROFILE_NAME="$profile_name" perl -0pi -e '
-            s/DEVELOPMENT_TEAM = [^;]+;/DEVELOPMENT_TEAM = $ENV{TEAM_ID};/g;
-            s/PROVISIONING_PROFILE_SPECIFIER = [^;]+;/PROVISIONING_PROFILE_SPECIFIER = "$ENV{PROFILE_NAME}";/g;
-          ' "$project_file"
+          # Fail early if the checked-in Xcode project is already malformed.
+          plutil -lint "$project_file"
+
+          # Flutter forwards FLUTTER_XCODE_* variables to xcodebuild. Override
+          # signing there instead of rewriting project.pbxproj on the runner.
+          export FLUTTER_XCODE_DEVELOPMENT_TEAM="$team_id"
+          export FLUTTER_XCODE_PROVISIONING_PROFILE_SPECIFIER="$profile_name"
 
           export_options="$RUNNER_TEMP/ExportOptions.plist"
           cat > "$export_options" <<EOF
