@@ -27,7 +27,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>用于扫描二维码和条码。</string>
+	<string>用于拍照上传附件和扫描二维码。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>用于从相册选择图片作为聊天附件。</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>用于语音输入和发送语音消息。</string>
 	<key>UIApplicationSceneManifest</key>

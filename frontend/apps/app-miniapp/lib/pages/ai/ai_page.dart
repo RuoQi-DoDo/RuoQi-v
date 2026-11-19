@@ -6,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:record/record.dart';
 import 'package:share_plus/share_plus.dart';
@@ -56,6 +57,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   late final DeepSeekTtsCache _ttsCache = widget.ttsCache ?? DeepSeekTtsCache();
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final ImagePicker _imagePicker = ImagePicker();
   StreamSubscription<DeepSeekChatChunk>? _chatSubscription;
   StreamSubscription<void>? _speechSubscription;
   File? _ttsFile;
@@ -78,6 +80,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   bool _holdToTalkCancel = false;
   bool _voiceMode = false;
   bool _composerFocused = false;
+  bool _attachmentMenuOpen = false;
   bool _messagesAtBottom = true;
   bool _messagesCanScroll = false;
   int _chatGeneration = 0;
@@ -124,7 +127,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
 
   void _handleComposerFocusChanged() {
     if (mounted) {
-      setState(() => _composerFocused = _composerFocus.hasFocus);
+      setState(() {
+        _composerFocused = _composerFocus.hasFocus;
+        if (_composerFocused) {
+          _attachmentMenuOpen = false;
+        }
+      });
     }
   }
 
@@ -155,6 +163,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       _webSearch = true;
       _autoRead = false;
       _voiceMode = false;
+      _attachmentMenuOpen = false;
       _responding = false;
     });
   }
@@ -230,6 +239,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         _messages.add(_AiMessage.user(prompt));
         _attachmentFile = null;
       }
+      _attachmentMenuOpen = false;
       _responding = true;
     });
     _scrollMessagesToEnd();
@@ -584,6 +594,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
 
   Future<void> _showHistory() async {
     FocusScope.of(context).unfocus();
+    if (_attachmentMenuOpen) {
+      setState(() => _attachmentMenuOpen = false);
+    }
     await Future.wait([_loadDeepSeekSettings(), _loadHistoryEntries()]);
     if (!mounted) {
       return;
@@ -798,61 +811,24 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     return null;
   }
 
-  Future<void> _showAttachmentMessage() async {
+  void _toggleAttachmentMenu() {
+    _composerFocus.unfocus();
+    setState(() => _attachmentMenuOpen = !_attachmentMenuOpen);
+  }
+
+  Future<void> _handleAttachmentAction(_AttachmentAction action) async {
+    if (_attachmentMenuOpen) {
+      setState(() => _attachmentMenuOpen = false);
+    }
     final settings = await _requireDeepSeekSettings();
     if (!mounted || settings == null) {
       return;
     }
-    final action = await showModalBottomSheet<_AttachmentAction>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.upload_file_rounded),
-              title: Text(
-                AppLocalizations.of(context)
-                    .text('上传文件到 DeepSeek', 'Upload a file to DeepSeek'),
-              ),
-              onTap: () => Navigator.of(context).pop(_AttachmentAction.upload),
-            ),
-            ListTile(
-              leading: const Icon(Icons.folder_open_rounded),
-              title: Text(AppLocalizations.of(context).text('文件列表', 'Files')),
-              onTap: () => Navigator.of(context).pop(_AttachmentAction.files),
-            ),
-            ListTile(
-              leading: const Icon(Icons.document_scanner_outlined),
-              title: Text(
-                AppLocalizations.of(context).text('OCR 识别文档', 'OCR a document'),
-              ),
-              onTap: () => Navigator.of(context).pop(_AttachmentAction.ocr),
-            ),
-            ListTile(
-              leading: const Icon(Icons.search_rounded),
-              title: Text(
-                AppLocalizations.of(context).text('搜索网页', 'Search the web'),
-              ),
-              onTap: () => Navigator.of(context).pop(_AttachmentAction.search),
-            ),
-            ListTile(
-              leading: const Icon(Icons.link_rounded),
-              title: Text(
-                AppLocalizations.of(context).text('阅读网页链接', 'Read a web page'),
-              ),
-              onTap: () => Navigator.of(context).pop(_AttachmentAction.fetch),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (!mounted || action == null) {
-      return;
-    }
     switch (action) {
+      case _AttachmentAction.camera:
+        await _pickImageAttachment(settings, ImageSource.camera);
+      case _AttachmentAction.gallery:
+        await _pickImageAttachment(settings, ImageSource.gallery);
       case _AttachmentAction.upload:
         await _uploadAttachment(settings);
       case _AttachmentAction.files:
@@ -866,6 +842,64 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     }
   }
 
+  Future<void> _pickImageAttachment(
+    DeepSeekSettings settings,
+    ImageSource source,
+  ) async {
+    XFile? picked;
+    try {
+      picked = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 88,
+        maxWidth: 2048,
+        preferredCameraDevice: CameraDevice.rear,
+      );
+    } on PlatformException {
+      if (mounted) {
+        showPageMessage(
+          context,
+          source == ImageSource.camera
+              ? AppLocalizations.of(context).text(
+                  '无法打开相机，请检查相机权限',
+                  'Unable to open the camera. Check camera permission.',
+                )
+              : AppLocalizations.of(context).text(
+                  '无法打开相册，请检查照片权限',
+                  'Unable to open the photo library. Check photo permission.',
+                ),
+        );
+      }
+      return;
+    } on Exception {
+      if (mounted) {
+        showPageMessage(
+          context,
+          AppLocalizations.of(context)
+              .text('图片选择失败，请重试', 'Unable to select an image. Try again.'),
+        );
+      }
+      return;
+    }
+    if (picked == null || !mounted) {
+      return;
+    }
+    try {
+      await _uploadSelectedFile(
+        settings,
+        filename: picked.name,
+        bytes: await picked.readAsBytes(),
+      );
+    } on Exception {
+      if (mounted) {
+        showPageMessage(
+          context,
+          AppLocalizations.of(context)
+              .text('图片读取失败，请重试', 'Unable to read the image. Try again.'),
+        );
+      }
+    }
+  }
+
   Future<void> _uploadAttachment(DeepSeekSettings settings) async {
     final picked = await FilePicker.pickFile(
       dialogTitle: AppLocalizations.of(context)
@@ -874,11 +908,22 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     if (picked == null) {
       return;
     }
+    await _uploadSelectedFile(
+      settings,
+      filename: picked.name,
+      bytes: await picked.readAsBytes(),
+    );
+  }
+
+  Future<void> _uploadSelectedFile(
+    DeepSeekSettings settings, {
+    required String filename,
+    required Uint8List bytes,
+  }) async {
     try {
-      final bytes = await picked.readAsBytes();
       final file = await _api.uploadFile(
         apiKey: settings.apiKey,
-        filename: picked.name,
+        filename: filename,
         bytes: bytes,
       );
       if (!mounted) {
@@ -1057,7 +1102,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
           .map((page) => page.text)
           .where((text) => text.trim().isNotEmpty)
           .join('\n\n');
-      _setComposerText(recognized);
+      final output = recognized.trim().isEmpty
+          ? AppLocalizations.of(
+              context,
+            ).text('该文件未识别到可展示的文字。', 'No readable text was found in this file.')
+          : recognized;
+      _appendOcrConversation(filename: picked.name, output: output);
       showPageMessage(
         context,
         AppLocalizations.of(context).text(
@@ -1070,6 +1120,33 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         showPageMessage(context, _chatErrorMessage(error));
       }
     }
+  }
+
+  void _appendOcrConversation({
+    required String filename,
+    required String output,
+  }) {
+    final text = AppLocalizations.of(context);
+    FocusScope.of(context).unfocus();
+    final now = DateTime.now();
+    setState(() {
+      if (_activeConversationId == null) {
+        _activeConversationId = 'conversation-${now.microsecondsSinceEpoch}';
+        _conversationCreatedAt = now;
+      }
+      if (_conversationTitle.isEmpty) {
+        _conversationTitle = _shortTitle(
+          text.text('OCR · $filename', 'OCR · $filename'),
+        );
+      }
+      _messages
+        ..add(
+          _AiMessage.user(text.text('识别文件：$filename', 'OCR file: $filename')),
+        )
+        ..add(_AiMessage.assistant(output));
+    });
+    _scrollMessagesToEnd();
+    unawaited(_saveCurrentConversation());
   }
 
   Future<void> _searchWeb(DeepSeekSettings settings) async {
@@ -1199,6 +1276,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     if (_recording) {
       await _cancelVoiceRecording();
       return;
+    }
+    if (_attachmentMenuOpen) {
+      setState(() => _attachmentMenuOpen = false);
     }
     if (_voiceMode) {
       setState(() => _voiceMode = false);
@@ -1493,7 +1573,11 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                     onToggleWebSearch: () => setState(
                                       () => _webSearch = !_webSearch,
                                     ),
-                                    onAttachment: _showAttachmentMessage,
+                                    attachmentMenuOpen: _attachmentMenuOpen,
+                                    onAttachment: _toggleAttachmentMenu,
+                                    onAttachmentAction: (action) => unawaited(
+                                      _handleAttachmentAction(action),
+                                    ),
                                     onVoice: _showVoiceMessage,
                                     attachmentName: _attachmentFile?.filename,
                                     onRemoveAttachment: () =>
@@ -2293,7 +2377,9 @@ class _AiComposer extends StatelessWidget {
     required this.webSearch,
     required this.onToggleDeepThinking,
     required this.onToggleWebSearch,
+    required this.attachmentMenuOpen,
     required this.onAttachment,
+    required this.onAttachmentAction,
     required this.onVoice,
     required this.onSend,
     this.attachmentName,
@@ -2316,7 +2402,9 @@ class _AiComposer extends StatelessWidget {
   final bool webSearch;
   final VoidCallback onToggleDeepThinking;
   final VoidCallback onToggleWebSearch;
+  final bool attachmentMenuOpen;
   final VoidCallback onAttachment;
+  final ValueChanged<_AttachmentAction> onAttachmentAction;
   final VoidCallback onVoice;
   final VoidCallback onSend;
   final String? attachmentName;
@@ -2340,259 +2428,495 @@ class _AiComposer extends StatelessWidget {
         onPointerCancel: (_) => onHoldToTalkEnd(),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(13, 8, 13, 8),
-          child: AnimatedContainer(
-            key: const Key('ai-composer-card'),
-            duration: const Duration(milliseconds: 160),
-            constraints: const BoxConstraints(minHeight: 106),
-            padding: const EdgeInsets.fromLTRB(18, 7, 9, 9),
-            decoration: BoxDecoration(
-              color: AiColors.surface(context),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: recording
-                    ? AiColors.accent
-                    : AiColors.isDark(context)
-                    ? AiColors.border(context)
-                    : const Color(0xFFF2F3F5),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(
-                    alpha: AiColors.isDark(context) ? 0.2 : 0.025,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                key: const Key('ai-composer-card'),
+                duration: const Duration(milliseconds: 160),
+                constraints: const BoxConstraints(minHeight: 106),
+                padding: const EdgeInsets.fromLTRB(18, 7, 9, 9),
+                decoration: BoxDecoration(
+                  color: AiColors.surface(context),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: recording
+                        ? AiColors.accent
+                        : AiColors.isDark(context)
+                        ? AiColors.border(context)
+                        : const Color(0xFFF2F3F5),
                   ),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: AiColors.isDark(context) ? 0.2 : 0.025,
+                      ),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: GestureDetector(
-              key: const Key('ai-composer-gesture'),
-              behavior: recording || canHoldToTalk
-                  ? HitTestBehavior.opaque
-                  : HitTestBehavior.deferToChild,
-              onTap: recording ? onHoldToTalkEnd : null,
-              onLongPressStart: !recording && canHoldToTalk
-                  ? (_) => onHoldToTalkStart()
-                  : null,
-              onLongPressMoveUpdate: recording || canHoldToTalk
-                  ? (details) => onHoldToTalkMove(details.localOffsetFromOrigin)
-                  : null,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeInCubic,
-                child: recording
-                    ? _RecordingPanel(
-                        cancel: recordingWillCancel,
-                        color: AiColors.accent,
-                      )
-                    : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (attachmentName != null)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.insert_drive_file, size: 16),
-                                  const SizedBox(width: 7),
-                                  Expanded(
-                                    child: Text(
-                                      attachmentName!,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    tooltip: text.text(
-                                      '移除附件',
-                                      'Remove attachment',
-                                    ),
-                                    onPressed: onRemoveAttachment,
-                                    visualDensity: VisualDensity.compact,
-                                    constraints: const BoxConstraints.tightFor(
-                                      width: 30,
-                                      height: 30,
-                                    ),
-                                    padding: EdgeInsets.zero,
-                                    icon: const Icon(
-                                      Icons.close_rounded,
-                                      size: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          SizedBox(
-                            height: 46,
-                            child: Stack(
-                              alignment: Alignment.centerLeft,
-                              children: [
-                                if (voiceMode)
-                                  Positioned.fill(
-                                    child: Container(
-                                      key: const Key('ai-voice-hold-button'),
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: AiColors.softSurface(context),
-                                        borderRadius: BorderRadius.circular(13),
-                                      ),
-                                      child: Text(
-                                        text.text('按住说话', 'Hold to talk'),
-                                        style: TextStyle(
-                                          color: AiColors.text(context),
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  TextField(
-                                    key: const Key('ai-composer'),
-                                    focusNode: focusNode,
-                                    controller: controller,
-                                    minLines: 1,
-                                    maxLines: 4,
-                                    keyboardType: TextInputType.multiline,
-                                    textInputAction: TextInputAction.newline,
-                                    cursorColor: AiColors.accent,
-                                    onTapOutside: (_) => focusNode.unfocus(),
-                                    style: TextStyle(
-                                      color: AiColors.text(context),
-                                      fontSize: 18,
-                                      height: 1.4,
-                                    ),
-                                    decoration: null,
-                                  ),
-                                if (!voiceMode &&
-                                    controller.text.isEmpty &&
-                                    !focused)
-                                  Positioned.fill(
-                                    child: GestureDetector(
-                                      key: const Key('ai-hold-to-talk'),
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: onRequestFocus,
-                                      child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          text.text(
-                                            '发消息或按住说话',
-                                            'Message or hold to talk',
-                                          ),
-                                          style: TextStyle(
-                                            color: AiColors.hint(context),
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
+                child: GestureDetector(
+                  key: const Key('ai-composer-gesture'),
+                  behavior: recording || canHoldToTalk
+                      ? HitTestBehavior.opaque
+                      : HitTestBehavior.deferToChild,
+                  onTap: recording ? onHoldToTalkEnd : null,
+                  onLongPressStart: !recording && canHoldToTalk
+                      ? (_) => onHoldToTalkStart()
+                      : null,
+                  onLongPressMoveUpdate: recording || canHoldToTalk
+                      ? (details) =>
+                            onHoldToTalkMove(details.localOffsetFromOrigin)
+                      : null,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    child: recording
+                        ? _RecordingPanel(
+                            cancel: recordingWillCancel,
+                            color: AiColors.accent,
+                          )
+                        : Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
+                              if (attachmentName != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
                                   child: Row(
                                     children: [
-                                      _AiModeChip(
-                                        key: const Key('ai-deep-thinking'),
-                                        icon: DeepSeekThinkingIcon(
-                                          color: deepThinking
-                                              ? AiColors.accent
-                                              : AiColors.text(context),
-                                          size: 19,
-                                        ),
-                                        label: text.text(
-                                          '深度思考',
-                                          'Deep thinking',
-                                        ),
-                                        selected: deepThinking,
-                                        onTap: onToggleDeepThinking,
+                                      const Icon(
+                                        Icons.insert_drive_file,
+                                        size: 16,
                                       ),
                                       const SizedBox(width: 7),
-                                      _AiModeChip(
-                                        key: const Key('ai-web-search'),
-                                        icon: Icon(
-                                          Icons.language_rounded,
-                                          color: webSearch
-                                              ? AiColors.accent
-                                              : AiColors.text(context),
-                                          size: 19,
+                                      Expanded(
+                                        child: Text(
+                                          attachmentName!,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(fontSize: 12),
                                         ),
-                                        label: text.text(
-                                          '智能搜索',
-                                          'Smart search',
+                                      ),
+                                      IconButton(
+                                        tooltip: text.text(
+                                          '移除附件',
+                                          'Remove attachment',
                                         ),
-                                        selected: webSearch,
-                                        onTap: onToggleWebSearch,
+                                        onPressed: onRemoveAttachment,
+                                        visualDensity: VisualDensity.compact,
+                                        constraints:
+                                            const BoxConstraints.tightFor(
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                        padding: EdgeInsets.zero,
+                                        icon: const Icon(
+                                          Icons.close_rounded,
+                                          size: 16,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 5),
-                              _AiRoundAction(
-                                tooltip: text.text('添加附件', 'Add attachment'),
-                                onPressed: onAttachment,
-                                icon: DeepSeekPlusIcon(
-                                  color: AiColors.text(context),
-                                  size: 19,
+                              SizedBox(
+                                height: 46,
+                                child: Stack(
+                                  alignment: Alignment.centerLeft,
+                                  children: [
+                                    if (voiceMode)
+                                      Positioned.fill(
+                                        child: Container(
+                                          key: const Key(
+                                            'ai-voice-hold-button',
+                                          ),
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: AiColors.softSurface(
+                                              context,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              13,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            text.text('按住说话', 'Hold to talk'),
+                                            style: TextStyle(
+                                              color: AiColors.text(context),
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    else
+                                      TextField(
+                                        key: const Key('ai-composer'),
+                                        focusNode: focusNode,
+                                        controller: controller,
+                                        minLines: 1,
+                                        maxLines: 4,
+                                        keyboardType: TextInputType.multiline,
+                                        textInputAction:
+                                            TextInputAction.newline,
+                                        cursorColor: AiColors.accent,
+                                        onTapOutside: (_) =>
+                                            focusNode.unfocus(),
+                                        style: TextStyle(
+                                          color: AiColors.text(context),
+                                          fontSize: 18,
+                                          height: 1.4,
+                                        ),
+                                        decoration: null,
+                                      ),
+                                    if (!voiceMode &&
+                                        controller.text.isEmpty &&
+                                        !focused)
+                                      Positioned.fill(
+                                        child: GestureDetector(
+                                          key: const Key('ai-hold-to-talk'),
+                                          behavior: HitTestBehavior.opaque,
+                                          onTap: onRequestFocus,
+                                          child: Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              text.text(
+                                                '发消息或按住说话',
+                                                'Message or hold to talk',
+                                              ),
+                                              style: TextStyle(
+                                                color: AiColors.hint(context),
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(width: 7),
-                              if (responding)
-                                _AiSendButton(
-                                  enabled: false,
-                                  responding: true,
-                                  onTap: onSend,
-                                )
-                              else if (voiceMode)
-                                _AiRoundAction(
-                                  key: const Key('ai-voice-mode-toggle'),
-                                  tooltip: text.text(
-                                    '切换至键盘',
-                                    'Switch to keyboard',
-                                  ),
-                                  onPressed: onVoice,
-                                  icon: Icon(
-                                    Icons.keyboard_alt_outlined,
-                                    color: AiColors.text(context),
-                                    size: 23,
-                                  ),
-                                )
-                              else if (controller.text.trim().isEmpty)
-                                GestureDetector(
-                                  key: const Key('ai-voice-long-press'),
-                                  onLongPressStart: (_) => onHoldToTalkStart(),
-                                  child: _AiRoundAction(
-                                    key: const Key('ai-voice-mode-toggle'),
-                                    tooltip: text.text('语音输入', 'Voice input'),
-                                    onPressed: onVoice,
-                                    icon: DeepSeekVoiceIcon(
-                                      color: AiColors.text(context),
-                                      size: 24,
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        children: [
+                                          _AiModeChip(
+                                            key: const Key('ai-deep-thinking'),
+                                            icon: DeepSeekThinkingIcon(
+                                              color: deepThinking
+                                                  ? AiColors.accent
+                                                  : AiColors.text(context),
+                                              size: 19,
+                                            ),
+                                            label: text.text(
+                                              '深度思考',
+                                              'Deep thinking',
+                                            ),
+                                            selected: deepThinking,
+                                            onTap: onToggleDeepThinking,
+                                          ),
+                                          const SizedBox(width: 7),
+                                          _AiModeChip(
+                                            key: const Key('ai-web-search'),
+                                            icon: Icon(
+                                              Icons.language_rounded,
+                                              color: webSearch
+                                                  ? AiColors.accent
+                                                  : AiColors.text(context),
+                                              size: 19,
+                                            ),
+                                            label: text.text(
+                                              '智能搜索',
+                                              'Smart search',
+                                            ),
+                                            selected: webSearch,
+                                            onTap: onToggleWebSearch,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                )
-                              else
-                                _AiSendButton(
-                                  enabled: canSend,
-                                  responding: false,
-                                  onTap: onSend,
-                                ),
+                                  const SizedBox(width: 5),
+                                  _AiRoundAction(
+                                    key: const Key('ai-attachment-toggle'),
+                                    tooltip: attachmentMenuOpen
+                                        ? text.text(
+                                            '关闭附件菜单',
+                                            'Close attachments',
+                                          )
+                                        : text.text('添加附件', 'Add attachment'),
+                                    onPressed: onAttachment,
+                                    icon: AnimatedRotation(
+                                      turns: attachmentMenuOpen ? 0.125 : 0,
+                                      duration: const Duration(
+                                        milliseconds: 190,
+                                      ),
+                                      curve: Curves.easeOutCubic,
+                                      child: DeepSeekPlusIcon(
+                                        color: AiColors.text(context),
+                                        size: 19,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 7),
+                                  if (responding)
+                                    _AiSendButton(
+                                      enabled: false,
+                                      responding: true,
+                                      onTap: onSend,
+                                    )
+                                  else if (voiceMode)
+                                    _AiRoundAction(
+                                      key: const Key('ai-voice-mode-toggle'),
+                                      tooltip: text.text(
+                                        '切换至键盘',
+                                        'Switch to keyboard',
+                                      ),
+                                      onPressed: onVoice,
+                                      icon: Icon(
+                                        Icons.keyboard_alt_outlined,
+                                        color: AiColors.text(context),
+                                        size: 23,
+                                      ),
+                                    )
+                                  else if (controller.text.trim().isEmpty)
+                                    GestureDetector(
+                                      key: const Key('ai-voice-long-press'),
+                                      onLongPressStart: (_) =>
+                                          onHoldToTalkStart(),
+                                      child: _AiRoundAction(
+                                        key: const Key('ai-voice-mode-toggle'),
+                                        tooltip: text.text(
+                                          '语音输入',
+                                          'Voice input',
+                                        ),
+                                        onPressed: onVoice,
+                                        icon: DeepSeekVoiceIcon(
+                                          color: AiColors.text(context),
+                                          size: 24,
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    _AiSendButton(
+                                      enabled: canSend,
+                                      responding: false,
+                                      onTap: onSend,
+                                    ),
+                                ],
+                              ),
                             ],
                           ),
-                        ],
-                      ),
+                  ),
+                ),
+              ),
+              _AiAttachmentReveal(
+                open: attachmentMenuOpen,
+                child: _AiAttachmentMenu(onSelected: onAttachmentAction),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AiAttachmentReveal extends StatefulWidget {
+  const _AiAttachmentReveal({required this.open, required this.child});
+
+  final bool open;
+  final Widget child;
+
+  @override
+  State<_AiAttachmentReveal> createState() => _AiAttachmentRevealState();
+}
+
+class _AiAttachmentRevealState extends State<_AiAttachmentReveal>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 210),
+    reverseDuration: const Duration(milliseconds: 150),
+    value: widget.open ? 1 : 0,
+  );
+
+  @override
+  void didUpdateWidget(covariant _AiAttachmentReveal oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.open == oldWidget.open) {
+      return;
+    }
+    if (widget.open) {
+      unawaited(_controller.forward());
+    } else {
+      unawaited(_controller.reverse());
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      child: widget.child,
+      builder: (context, child) {
+        final progress =
+            (_controller.status == AnimationStatus.reverse
+                    ? Curves.easeInCubic
+                    : Curves.easeOutCubic)
+                .transform(_controller.value);
+        if (progress == 0) {
+          return const SizedBox.shrink();
+        }
+        return ClipRect(
+          child: Align(
+            alignment: Alignment.topCenter,
+            heightFactor: progress,
+            child: IgnorePointer(
+              ignoring: !widget.open,
+              child: ExcludeSemantics(
+                excluding: !widget.open,
+                child: Opacity(
+                  opacity: progress,
+                  child: Transform.translate(
+                    offset: Offset(0, -8 * (1 - progress)),
+                    child: child,
+                  ),
+                ),
               ),
             ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AiAttachmentMenu extends StatelessWidget {
+  const _AiAttachmentMenu({required this.onSelected});
+
+  final ValueChanged<_AttachmentAction> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = AppLocalizations.of(context);
+    final shortcuts = <_AttachmentShortcut>[
+      _AttachmentShortcut(
+        action: _AttachmentAction.camera,
+        icon: Icons.photo_camera_outlined,
+        label: text.text('拍照', 'Camera'),
+      ),
+      _AttachmentShortcut(
+        action: _AttachmentAction.gallery,
+        icon: Icons.photo_library_outlined,
+        label: text.text('相册', 'Photos'),
+      ),
+      _AttachmentShortcut(
+        action: _AttachmentAction.upload,
+        icon: Icons.attach_file_rounded,
+        label: text.text('文件', 'File'),
+      ),
+      _AttachmentShortcut(
+        action: _AttachmentAction.ocr,
+        icon: Icons.document_scanner_outlined,
+        label: text.text('OCR', 'OCR'),
+      ),
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 10, 8, 0),
+      child: Row(
+        key: const Key('ai-attachment-menu'),
+        children: [
+          for (var index = 0; index < shortcuts.length; index++) ...[
+            Expanded(
+              child: _AiAttachmentTile(
+                key: Key('ai-attachment-${shortcuts[index].action.name}'),
+                icon: shortcuts[index].icon,
+                label: shortcuts[index].label,
+                onTap: () => onSelected(shortcuts[index].action),
+              ),
+            ),
+            if (index != shortcuts.length - 1) const SizedBox(width: 8),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _AttachmentShortcut {
+  const _AttachmentShortcut({
+    required this.action,
+    required this.icon,
+    required this.label,
+  });
+
+  final _AttachmentAction action;
+  final IconData icon;
+  final String label;
+}
+
+class _AiAttachmentTile extends StatelessWidget {
+  const _AiAttachmentTile({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = AiColors.isDark(context);
+    final radius = BorderRadius.circular(16);
+    return Material(
+      color: AiColors.searchSurface(context),
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: dark
+            ? BorderSide.none
+            : BorderSide(
+                color: AiColors.border(context).withValues(alpha: 0.8),
+              ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: AiColors.accent.withValues(alpha: 0.12),
+        highlightColor: AiColors.accent.withValues(alpha: 0.06),
+        child: SizedBox(
+          height: 82,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: AiColors.text(context), size: 27),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: AiColors.text(context),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.1,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -2868,7 +3192,7 @@ class _AiSendButton extends StatelessWidget {
   }
 }
 
-enum _AttachmentAction { upload, files, ocr, search, fetch }
+enum _AttachmentAction { camera, gallery, upload, files, ocr, search, fetch }
 
 enum _AiRole { user, assistant }
 

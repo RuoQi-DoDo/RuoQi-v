@@ -109,6 +109,54 @@ class _ChatStreamAdapter implements HttpClientAdapter {
 }
 
 void main() {
+  testWidgets('AI 附件入口在输入框下方内联展开并可收起', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('ai-attachment-menu')), findsNothing);
+    await tester.tap(find.byKey(const Key('ai-attachment-toggle')));
+    await tester.pumpAndSettle();
+
+    final menu = find.byKey(const Key('ai-attachment-menu'));
+    expect(menu, findsOneWidget);
+    expect(find.byKey(const Key('ai-attachment-camera')), findsOneWidget);
+    expect(find.byKey(const Key('ai-attachment-gallery')), findsOneWidget);
+    expect(find.byKey(const Key('ai-attachment-upload')), findsOneWidget);
+    expect(find.byKey(const Key('ai-attachment-ocr')), findsOneWidget);
+    expect(find.text('拍照'), findsOneWidget);
+    expect(find.text('相册'), findsOneWidget);
+    expect(find.text('文件'), findsOneWidget);
+    expect(find.text('OCR'), findsOneWidget);
+    expect(
+      tester.getTopLeft(menu).dy,
+      greaterThan(
+        tester.getBottomLeft(find.byKey(const Key('ai-composer-card'))).dy,
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('ai-attachment-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-attachment-menu')), findsNothing);
+  });
+
   testWidgets('AI 聊天使用 DeepSeek Chat Completions 流式更新', (tester) async {
     final adapter = _ChatStreamAdapter();
     final historyStore = _MemoryHistoryStore();
