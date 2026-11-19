@@ -32,9 +32,9 @@ void main() {
     await tester.tap(find.text('增加业务计数'));
     await tester.pump();
 
-    await tester.tap(find.text('通话'));
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('calls-page')), findsOneWidget);
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
     await tester.tap(find.text('发现').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('discover-page')), findsOneWidget);

@@ -37,6 +37,7 @@ String pageLabel(BuildContext context, String label) {
     '退出后将返回登录页面，是否继续？': 'Log out and return to the login page?',
     '通讯录': 'Contacts',
     '通话': 'Calls',
+    'AI': 'AI',
     '选择联系人': 'Select a contact',
     '发起通话': 'New call',
     '发现': 'Discover',

@@ -3,6 +3,7 @@ library;
 
 export 'im/im_chat_page.dart';
 export 'auth/login_page.dart';
+export 'ai/ai_page.dart';
 export 'calls/calls_page.dart';
 export 'contacts/contact_picker_page.dart';
 export 'contacts/contacts_page.dart';

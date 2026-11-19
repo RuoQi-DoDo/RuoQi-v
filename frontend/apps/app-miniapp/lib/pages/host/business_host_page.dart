@@ -1,12 +1,14 @@
 import 'dart:math' as math;
+
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/physics.dart';
+
 import '../../miniapp/ats/ats_miniapp.dart';
 import '../../miniapp/common/miniapp_pin.dart';
 import '../../miniapp/launcher/launcher.dart';
 import '../../miniapp/launcher/miniapp_catalog.dart';
-import '../calls/calls_page.dart';
+import '../ai/ai_page.dart';
 import '../common/page_theme.dart';
 import '../discover/discover_page.dart';
 import '../profile/me_page.dart';
@@ -15,8 +17,10 @@ import 'host_tab_bar.dart';
 
 /// Attach this controller to the business home scroll view to share pull-down
 /// mini-program navigation with the host.
-typedef BusinessHomeBuilder =
-    Widget Function(BuildContext context, ScrollController scrollController);
+typedef BusinessHomeBuilder = Widget Function(
+  BuildContext context,
+  ScrollController scrollController,
+);
 
 enum _HostSubview { home, picker, ats }
 
@@ -564,7 +568,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
                   ),
                 ),
               ),
-              const CallsPage(),
+              const AiPage(),
               const DiscoverPage(),
               MePage(onOpenSettings: _openSettingsPage),
             ],

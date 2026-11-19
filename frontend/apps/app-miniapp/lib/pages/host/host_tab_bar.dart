@@ -1,10 +1,13 @@
 import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
+
 import '../common/page_localizations.dart';
 import '../common/page_theme.dart';
 import '../common/whatsapp_colors.dart';
+import '../ai/ai_style.dart';
 
-enum HostTab { home, calls, discover, me }
+enum HostTab { home, ai, discover, me }
 
 class HostTabBar extends StatelessWidget {
   const HostTabBar({
@@ -32,7 +35,13 @@ class HostTabBar extends StatelessWidget {
     final hairline = HostChromeStyle.hairline(context);
     final items = [
       (HostTab.home, homeIcon, homeActiveIcon, homeLabel, false),
-      (HostTab.calls, Icons.call_outlined, Icons.call_rounded, '通话', false),
+      (
+        HostTab.ai,
+        Icons.auto_awesome_outlined,
+        Icons.auto_awesome_rounded,
+        'AI',
+        false,
+      ),
       (
         HostTab.discover,
         Icons.explore_outlined,
@@ -83,13 +92,22 @@ class HostTabBar extends StatelessWidget {
                             clipBehavior: Clip.none,
                             alignment: Alignment.center,
                             children: [
-                              Icon(
-                                selected == tab ? activeIcon : icon,
-                                size: 24,
-                                color: selected == tab
-                                    ? WhatsAppColors.brandStrong
-                                    : inactiveColor,
-                              ),
+                              if (tab == HostTab.ai)
+                                AiTabIcon(
+                                  color: selected == tab
+                                      ? AiColors.accent
+                                      : inactiveColor,
+                                  filled: selected == tab,
+                                  size: 24,
+                                )
+                              else
+                                Icon(
+                                  selected == tab ? activeIcon : icon,
+                                  size: 23.5,
+                                  color: selected == tab
+                                      ? WhatsAppColors.brandStrong
+                                      : inactiveColor,
+                                ),
                               if (showDot)
                                 const Positioned(
                                   right: 5,
@@ -112,9 +130,12 @@ class HostTabBar extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: selected == tab
-                                ? WhatsAppColors.brandStrong
+                                ? tab == HostTab.ai
+                                      ? AiColors.accent
+                                      : WhatsAppColors.brandStrong
                                 : inactiveColor,
-                            fontSize: 10,
+                            fontSize: 10.5,
+                            letterSpacing: 0.1,
                             fontWeight: selected == tab
                                 ? FontWeight.w600
                                 : FontWeight.w400,

@@ -325,7 +325,7 @@ void main() {
     expect(find.text('最近'), findsOneWidget);
   });
 
-  testWidgets('通话、发现、我三个底栏页面可切换', (tester) async {
+  testWidgets('AI、发现、我三个底栏页面可切换', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -333,11 +333,12 @@ void main() {
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('通话'));
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('calls-page')), findsOneWidget);
-    expect(find.byKey(const Key('new-call-button')), findsOneWidget);
-    expect(find.text('佳佳'), findsOneWidget);
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    expect(find.byKey(const Key('ai-whale-mark')), findsOneWidget);
+    expect(find.text('你好，我是 RuoQi'), findsOneWidget);
+    expect(find.text('发消息或按住说话'), findsOneWidget);
 
     await tester.tap(find.text('发现').last);
     await tester.pumpAndSettle();
@@ -354,30 +355,25 @@ void main() {
     expect(find.text('设置'), findsOneWidget);
   });
 
-  testWidgets('只有发起通话时才打开通讯录选择联系人', (tester) async {
+  testWidgets('AI 页面可输入问题并显示模拟回复', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('通话'));
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('calls-page')), findsOneWidget);
-    expect(find.byKey(const Key('contact-picker-page')), findsNothing);
+    await tester.enterText(find.byKey(const Key('ai-composer')), '帮我梳理今天的工作重点');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pump();
+    expect(find.byKey(const Key('ai-typing-indicator')), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('new-call-button')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('contact-picker-page')), findsOneWidget);
-    expect(find.text('选择一位联系人发起通话'), findsOneWidget);
-    expect(find.text('新通话链接'), findsOneWidget);
-    expect(find.text('拨打电话号码'), findsOneWidget);
-    expect(find.text('RuoQi 联系人'), findsOneWidget);
-
-    await tester.tap(find.text('Annie'));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('calls-page')), findsOneWidget);
-    expect(find.text('正在呼叫 Annie（模拟）'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.byKey(const Key('ai-user-message')), findsOneWidget);
+    expect(find.byKey(const Key('ai-assistant-message')), findsOneWidget);
+    expect(find.textContaining('先确认今天最重要的一个结果'), findsOneWidget);
   });
 
   testWidgets('我可以进入设置页，通知开关与退出入口可用', (tester) async {
@@ -425,7 +421,7 @@ void main() {
     expect(find.byKey(const Key('me-page')), findsOneWidget);
   });
 
-  testWidgets('正常模式与黑色模式可切换并覆盖通话页', (tester) async {
+  testWidgets('正常模式与黑色模式可切换并覆盖 AI 页', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -437,10 +433,10 @@ void main() {
       tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
       ThemeMode.light,
     );
-    await tester.tap(find.text('通话'));
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
     await tester.pumpAndSettle();
     expect(
-      Theme.of(tester.element(find.byKey(const Key('calls-page')))).brightness,
+      Theme.of(tester.element(find.byKey(const Key('ai-page')))).brightness,
       Brightness.light,
     );
 
@@ -461,9 +457,8 @@ void main() {
       ThemeMode.dark,
     );
     expect(
-      Theme.of(
-        tester.element(find.byKey(const Key('display-settings-page'))),
-      ).brightness,
+      Theme.of(tester.element(find.byKey(const Key('display-settings-page'))))
+          .brightness,
       Brightness.dark,
     );
 
@@ -471,15 +466,15 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('settings-back')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('通话'));
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
     await tester.pumpAndSettle();
     expect(
-      Theme.of(tester.element(find.byKey(const Key('calls-page')))).brightness,
+      Theme.of(tester.element(find.byKey(const Key('ai-page')))).brightness,
       Brightness.dark,
     );
   });
 
-  testWidgets('通话、发现、我和设置页在小屏下无布局异常', (tester) async {
+  testWidgets('AI、发现、我和设置页在小屏下无布局异常', (tester) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -487,7 +482,7 @@ void main() {
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('通话'));
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
 
