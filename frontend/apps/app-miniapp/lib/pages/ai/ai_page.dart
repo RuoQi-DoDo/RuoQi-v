@@ -1290,13 +1290,15 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   }
 
   void _beginHoldToTalk() {
-    _holdToTalkActive = true;
-    _holdToTalkCancel = false;
+    setState(() {
+      _holdToTalkActive = true;
+      _holdToTalkCancel = false;
+    });
     unawaited(_startVoiceRecording(fromHold: true));
   }
 
   void _moveHoldToTalk(Offset offsetFromOrigin) {
-    if (!_recording) {
+    if (!_holdToTalkActive) {
       return;
     }
     final shouldCancel = offsetFromOrigin.dy < -64;
@@ -1306,7 +1308,10 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   }
 
   void _endHoldToTalk() {
-    _holdToTalkActive = false;
+    if (!_holdToTalkActive) {
+      return;
+    }
+    setState(() => _holdToTalkActive = false);
     if (_holdToTalkCancel) {
       unawaited(_cancelVoiceRecording());
     } else {
@@ -1349,7 +1354,11 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         if (mounted) {
           setState(() => _recording = true);
           if (fromHold && !_holdToTalkActive) {
-            await _finishVoiceRecording();
+            if (_holdToTalkCancel) {
+              await _cancelVoiceRecording();
+            } else {
+              await _finishVoiceRecording();
+            }
           }
         }
       }
@@ -1582,7 +1591,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                     attachmentName: _attachmentFile?.filename,
                                     onRemoveAttachment: () =>
                                         setState(() => _attachmentFile = null),
-                                    recording: _recording,
+                                    voiceActive:
+                                        _recording || _holdToTalkActive,
                                     voiceMode: _voiceMode,
                                     onRequestFocus: _requestComposerFocus,
                                     onHoldToTalkStart: _beginHoldToTalk,
@@ -2384,7 +2394,7 @@ class _AiComposer extends StatelessWidget {
     required this.onSend,
     this.attachmentName,
     this.onRemoveAttachment,
-    this.recording = false,
+    this.voiceActive = false,
     required this.voiceMode,
     required this.onRequestFocus,
     required this.onHoldToTalkStart,
@@ -2409,7 +2419,7 @@ class _AiComposer extends StatelessWidget {
   final VoidCallback onSend;
   final String? attachmentName;
   final VoidCallback? onRemoveAttachment;
-  final bool recording;
+  final bool voiceActive;
   final bool voiceMode;
   final VoidCallback onRequestFocus;
   final VoidCallback onHoldToTalkStart;
@@ -2440,7 +2450,7 @@ class _AiComposer extends StatelessWidget {
                   color: AiColors.surface(context),
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(
-                    color: recording
+                    color: voiceActive
                         ? AiColors.accent
                         : AiColors.isDark(context)
                         ? AiColors.border(context)
@@ -2458,14 +2468,14 @@ class _AiComposer extends StatelessWidget {
                 ),
                 child: GestureDetector(
                   key: const Key('ai-composer-gesture'),
-                  behavior: recording || canHoldToTalk
+                  behavior: voiceActive || canHoldToTalk
                       ? HitTestBehavior.opaque
                       : HitTestBehavior.deferToChild,
-                  onTap: recording ? onHoldToTalkEnd : null,
-                  onLongPressStart: !recording && canHoldToTalk
+                  onTap: voiceActive ? onHoldToTalkEnd : null,
+                  onLongPressStart: !voiceActive && canHoldToTalk
                       ? (_) => onHoldToTalkStart()
                       : null,
-                  onLongPressMoveUpdate: recording || canHoldToTalk
+                  onLongPressMoveUpdate: voiceActive || canHoldToTalk
                       ? (details) =>
                             onHoldToTalkMove(details.localOffsetFromOrigin)
                       : null,
@@ -2473,7 +2483,7 @@ class _AiComposer extends StatelessWidget {
                     duration: const Duration(milliseconds: 180),
                     switchInCurve: Curves.easeOutCubic,
                     switchOutCurve: Curves.easeInCubic,
-                    child: recording
+                    child: voiceActive
                         ? _RecordingPanel(
                             cancel: recordingWillCancel,
                             color: AiColors.accent,
@@ -2685,21 +2695,15 @@ class _AiComposer extends StatelessWidget {
                                       ),
                                     )
                                   else if (controller.text.trim().isEmpty)
-                                    GestureDetector(
-                                      key: const Key('ai-voice-long-press'),
-                                      onLongPressStart: (_) =>
-                                          onHoldToTalkStart(),
-                                      child: _AiRoundAction(
-                                        key: const Key('ai-voice-mode-toggle'),
-                                        tooltip: text.text(
-                                          '语音输入',
-                                          'Voice input',
-                                        ),
-                                        onPressed: onVoice,
-                                        icon: DeepSeekVoiceIcon(
-                                          color: AiColors.text(context),
-                                          size: 24,
-                                        ),
+                                    _AiRoundAction(
+                                      key: const Key('ai-voice-mode-toggle'),
+                                      tooltip: text.text('语音输入', 'Voice input'),
+                                      tooltipTriggerMode:
+                                          TooltipTriggerMode.manual,
+                                      onPressed: onVoice,
+                                      icon: DeepSeekVoiceIcon(
+                                        color: AiColors.text(context),
+                                        size: 24,
                                       ),
                                     )
                                   else
@@ -2935,7 +2939,7 @@ class _RecordingPanel extends StatelessWidget {
     final text = AppLocalizations.of(context);
     return SizedBox(
       key: const Key('ai-recording-panel'),
-      height: 176,
+      height: 228,
       width: double.infinity,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -2947,12 +2951,12 @@ class _RecordingPanel extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: cancel ? const Color(0xFFD7464F) : AiColors.text(context),
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.w600,
               letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 26),
+          const SizedBox(height: 24),
           _RecordingWaveform(color: cancel ? const Color(0xFFD7464F) : color),
         ],
       ),
@@ -2985,10 +2989,10 @@ class _RecordingWaveformState extends State<_RecordingWaveform>
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 30,
+      height: 52,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final count = (constraints.maxWidth / 5).floor().clamp(24, 64);
+          final count = (constraints.maxWidth / 4).floor().clamp(32, 80);
           return AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -2996,29 +3000,28 @@ class _RecordingWaveformState extends State<_RecordingWaveform>
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  for (var index = 0; index < count; index++)
-                    Container(
-                      width: 2.2,
-                      height:
-                          5 +
-                          18 *
-                              ((math.sin(
-                                        _controller.value * math.pi * 2 +
-                                            index * 0.48,
-                                      ) +
-                                      1) /
-                                  2),
-                      margin: const EdgeInsets.symmetric(horizontal: 1.1),
-                      decoration: BoxDecoration(
-                        color: widget.color,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
+                  for (var index = 0; index < count; index++) _waveBar(index),
                 ],
               );
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _waveBar(int index) {
+    final phase = _controller.value * math.pi * 2;
+    final broadWave = (math.sin(index * 0.2 + phase) + 1) / 2;
+    final detailWave = (math.sin(index * 0.61 - phase * 1.4) + 1) / 2;
+    final height = 7 + 39 * (0.18 + broadWave * 0.62 + detailWave * 0.2);
+    return Container(
+      width: 1.8,
+      height: height,
+      margin: const EdgeInsets.symmetric(horizontal: 1.1),
+      decoration: BoxDecoration(
+        color: widget.color,
+        borderRadius: BorderRadius.circular(2),
       ),
     );
   }
@@ -3087,16 +3090,19 @@ class _AiRoundAction extends StatelessWidget {
     required this.tooltip,
     required this.onPressed,
     required this.icon,
+    this.tooltipTriggerMode,
   });
 
   final String tooltip;
   final VoidCallback onPressed;
   final Widget icon;
+  final TooltipTriggerMode? tooltipTriggerMode;
 
   @override
   Widget build(BuildContext context) {
     return Tooltip(
       message: tooltip,
+      triggerMode: tooltipTriggerMode,
       child: Material(
         color: Colors.transparent,
         child: InkResponse(
