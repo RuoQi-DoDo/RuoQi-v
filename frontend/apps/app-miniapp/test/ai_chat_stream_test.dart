@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:common/common.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ruoqi_app_miniapp/appearance.dart';
@@ -140,6 +140,14 @@ void main() {
       tester.widget<Scaffold>(page).backgroundColor,
       hostTheme.colorScheme.surface,
     );
+
+    final overlay = tester.widget<AnnotatedRegion<SystemUiOverlayStyle>>(
+      find.byKey(const Key('ai-system-overlay')),
+    );
+    expect(overlay.value.statusBarColor, hostTheme.colorScheme.surface);
+    expect(overlay.value.statusBarIconBrightness, Brightness.dark);
+    expect(overlay.value.statusBarBrightness, Brightness.light);
+    expect(overlay.value.systemStatusBarContrastEnforced, isFalse);
   });
 
   testWidgets('AI 附件入口在输入框下方内联展开并可收起', (tester) async {

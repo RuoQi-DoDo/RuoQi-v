@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../common/page_theme.dart';
@@ -55,6 +56,18 @@ abstract final class AiColors {
       HostChromeStyle.dividerColor(context);
 
   static Color danger(BuildContext context) => _scheme(context).error;
+
+  /// Keeps the system status bar continuous with the AI page on the first
+  /// frame, instead of inheriting the launch theme or the previously shown tab.
+  static SystemUiOverlayStyle systemUiOverlayStyle(BuildContext context) {
+    final dark = isDark(context);
+    return SystemUiOverlayStyle(
+      statusBarColor: background(context),
+      statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+      systemStatusBarContrastEnforced: false,
+    );
+  }
 
   static LinearGradient brandGradient(BuildContext context) => LinearGradient(
     begin: Alignment.topLeft,

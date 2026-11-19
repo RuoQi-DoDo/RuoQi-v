@@ -1460,208 +1460,219 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     );
     final historyEntries = _historyEntries;
 
-    return Theme(
-      data: aiTheme,
-      child: AnimatedBuilder(
-        animation: _historyController,
-        builder: (context, child) {
-          final progress = _historyController.value;
-          final drawerOpen = progress > 0;
-          final drawerWidth = _historyWidth(context);
-          return PopScope(
-            canPop: !drawerOpen,
-            onPopInvokedWithResult: (didPop, result) {
-              if (!didPop && drawerOpen) {
-                _closeHistory();
-              }
-            },
-            child: ClipRect(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Transform.translate(
-                    offset: Offset(drawerWidth * progress, 0),
-                    child: Opacity(
-                      key: const Key('ai-main-fade'),
-                      opacity: 1 - progress * 0.7,
-                      child: ExcludeSemantics(
-                        excluding: drawerOpen,
-                        child: IgnorePointer(
-                          ignoring: drawerOpen,
-                          child: Scaffold(
-                            key: const Key('ai-page'),
-                            backgroundColor: AiColors.background(context),
-                            body: SafeArea(
-                              bottom: false,
-                              child: Column(
-                                children: [
-                                  _AiHeader(
-                                    onHistory: _showHistory,
-                                    onNewConversation: _newConversation,
-                                    title: _conversationTitle,
-                                    autoRead: _autoRead,
-                                    onToggleAutoRead: _toggleAutoRead,
-                                  ),
-                                  Expanded(
-                                    child: Stack(
-                                      children: [
-                                        Positioned.fill(
-                                          child: AnimatedSwitcher(
-                                            duration: const Duration(
-                                              milliseconds: 220,
-                                            ),
-                                            switchInCurve: Curves.easeOutCubic,
-                                            switchOutCurve: Curves.easeInCubic,
-                                            child: _messages.isEmpty
-                                                ? const _AiWelcome(
-                                                    key: ValueKey('ai-welcome'),
-                                                  )
-                                                : _AiConversation(
-                                                    key: const ValueKey(
-                                                      'ai-conversation',
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      key: const Key('ai-system-overlay'),
+      value: AiColors.systemUiOverlayStyle(context),
+      child: Theme(
+        data: aiTheme,
+        child: AnimatedBuilder(
+          animation: _historyController,
+          builder: (context, child) {
+            final progress = _historyController.value;
+            final drawerOpen = progress > 0;
+            final drawerWidth = _historyWidth(context);
+            return PopScope(
+              canPop: !drawerOpen,
+              onPopInvokedWithResult: (didPop, result) {
+                if (!didPop && drawerOpen) {
+                  _closeHistory();
+                }
+              },
+              child: ClipRect(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Transform.translate(
+                      offset: Offset(drawerWidth * progress, 0),
+                      child: Opacity(
+                        key: const Key('ai-main-fade'),
+                        opacity: 1 - progress * 0.7,
+                        child: ExcludeSemantics(
+                          excluding: drawerOpen,
+                          child: IgnorePointer(
+                            ignoring: drawerOpen,
+                            child: Scaffold(
+                              key: const Key('ai-page'),
+                              backgroundColor: AiColors.background(context),
+                              body: SafeArea(
+                                bottom: false,
+                                child: Column(
+                                  children: [
+                                    _AiHeader(
+                                      onHistory: _showHistory,
+                                      onNewConversation: _newConversation,
+                                      title: _conversationTitle,
+                                      autoRead: _autoRead,
+                                      onToggleAutoRead: _toggleAutoRead,
+                                    ),
+                                    Expanded(
+                                      child: Stack(
+                                        children: [
+                                          Positioned.fill(
+                                            child: AnimatedSwitcher(
+                                              duration: const Duration(
+                                                milliseconds: 220,
+                                              ),
+                                              switchInCurve:
+                                                  Curves.easeOutCubic,
+                                              switchOutCurve:
+                                                  Curves.easeInCubic,
+                                              child: _messages.isEmpty
+                                                  ? const _AiWelcome(
+                                                      key: ValueKey(
+                                                        'ai-welcome',
+                                                      ),
+                                                    )
+                                                  : _AiConversation(
+                                                      key: const ValueKey(
+                                                        'ai-conversation',
+                                                      ),
+                                                      messages: _messages,
+                                                      responding: _responding,
+                                                      scrollController:
+                                                          _messageScroll,
+                                                      speakingText:
+                                                          _speakingText,
+                                                      speechLoading:
+                                                          _speechLoading,
+                                                      onCopy: (message) =>
+                                                          unawaited(
+                                                            _copyMessage(
+                                                              message.content,
+                                                            ),
+                                                          ),
+                                                      onFeedback:
+                                                          _setMessageFeedback,
+                                                      onSpeak: (message) =>
+                                                          unawaited(
+                                                            _toggleSpeech(
+                                                              message.content,
+                                                            ),
+                                                          ),
+                                                      onShare: (message) =>
+                                                          unawaited(
+                                                            _shareMessage(
+                                                              message.content,
+                                                            ),
+                                                          ),
+                                                      onRegenerate:
+                                                          _regenerateMessage,
                                                     ),
-                                                    messages: _messages,
-                                                    responding: _responding,
-                                                    scrollController:
-                                                        _messageScroll,
-                                                    speakingText: _speakingText,
-                                                    speechLoading:
-                                                        _speechLoading,
-                                                    onCopy: (message) =>
-                                                        unawaited(
-                                                          _copyMessage(
-                                                            message.content,
-                                                          ),
-                                                        ),
-                                                    onFeedback:
-                                                        _setMessageFeedback,
-                                                    onSpeak: (message) =>
-                                                        unawaited(
-                                                          _toggleSpeech(
-                                                            message.content,
-                                                          ),
-                                                        ),
-                                                    onShare: (message) =>
-                                                        unawaited(
-                                                          _shareMessage(
-                                                            message.content,
-                                                          ),
-                                                        ),
-                                                    onRegenerate:
-                                                        _regenerateMessage,
-                                                  ),
-                                          ),
-                                        ),
-                                        if (_messages.isNotEmpty &&
-                                            _messagesCanScroll)
-                                          Positioned(
-                                            right: 18,
-                                            bottom: 10,
-                                            child: _MessageScrollButton(
-                                              atBottom: _messagesAtBottom,
-                                              onPressed:
-                                                  _toggleMessageScrollEdge,
                                             ),
                                           ),
-                                      ],
+                                          if (_messages.isNotEmpty &&
+                                              _messagesCanScroll)
+                                            Positioned(
+                                              right: 18,
+                                              bottom: 10,
+                                              child: _MessageScrollButton(
+                                                atBottom: _messagesAtBottom,
+                                                onPressed:
+                                                    _toggleMessageScrollEdge,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  _AiComposer(
-                                    controller: _composer,
-                                    focusNode: _composerFocus,
-                                    focused: _composerFocused,
-                                    canSend:
-                                        _composer.text.trim().isNotEmpty &&
-                                        !_responding,
-                                    responding: _responding,
-                                    deepThinking: _deepThinking,
-                                    webSearch: _webSearch,
-                                    onToggleDeepThinking: () => setState(
-                                      () => _deepThinking = !_deepThinking,
+                                    _AiComposer(
+                                      controller: _composer,
+                                      focusNode: _composerFocus,
+                                      focused: _composerFocused,
+                                      canSend:
+                                          _composer.text.trim().isNotEmpty &&
+                                          !_responding,
+                                      responding: _responding,
+                                      deepThinking: _deepThinking,
+                                      webSearch: _webSearch,
+                                      onToggleDeepThinking: () => setState(
+                                        () => _deepThinking = !_deepThinking,
+                                      ),
+                                      onToggleWebSearch: () => setState(
+                                        () => _webSearch = !_webSearch,
+                                      ),
+                                      attachmentMenuOpen: _attachmentMenuOpen,
+                                      onAttachment: _toggleAttachmentMenu,
+                                      onAttachmentAction: (action) => unawaited(
+                                        _handleAttachmentAction(action),
+                                      ),
+                                      onVoice: _showVoiceMessage,
+                                      attachmentName: _attachmentFile?.filename,
+                                      onRemoveAttachment: () => setState(
+                                        () => _attachmentFile = null,
+                                      ),
+                                      voiceActive:
+                                          _recording || _holdToTalkActive,
+                                      voiceMode: _voiceMode,
+                                      onRequestFocus: _requestComposerFocus,
+                                      onHoldToTalkStart: _beginHoldToTalk,
+                                      onHoldToTalkMove: _moveHoldToTalk,
+                                      onHoldToTalkEnd: _endHoldToTalk,
+                                      recordingWillCancel: _holdToTalkCancel,
+                                      onSend: () => unawaited(_send()),
                                     ),
-                                    onToggleWebSearch: () => setState(
-                                      () => _webSearch = !_webSearch,
-                                    ),
-                                    attachmentMenuOpen: _attachmentMenuOpen,
-                                    onAttachment: _toggleAttachmentMenu,
-                                    onAttachmentAction: (action) => unawaited(
-                                      _handleAttachmentAction(action),
-                                    ),
-                                    onVoice: _showVoiceMessage,
-                                    attachmentName: _attachmentFile?.filename,
-                                    onRemoveAttachment: () =>
-                                        setState(() => _attachmentFile = null),
-                                    voiceActive:
-                                        _recording || _holdToTalkActive,
-                                    voiceMode: _voiceMode,
-                                    onRequestFocus: _requestComposerFocus,
-                                    onHoldToTalkStart: _beginHoldToTalk,
-                                    onHoldToTalkMove: _moveHoldToTalk,
-                                    onHoldToTalkEnd: _endHoldToTalk,
-                                    recordingWillCancel: _holdToTalkCancel,
-                                    onSend: () => unawaited(_send()),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  if (drawerOpen)
-                    Positioned.fill(
-                      child: GestureDetector(
-                        key: const Key('ai-history-scrim'),
-                        behavior: HitTestBehavior.opaque,
-                        onTap: _closeHistory,
-                        child: const SizedBox.expand(),
+                    if (drawerOpen)
+                      Positioned.fill(
+                        child: GestureDetector(
+                          key: const Key('ai-history-scrim'),
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _closeHistory,
+                          child: const SizedBox.expand(),
+                        ),
                       ),
-                    ),
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: drawerWidth,
-                    child: Offstage(
-                      offstage: !drawerOpen,
-                      child: Transform.translate(
-                        offset: Offset(-drawerWidth * (1 - progress), 0),
-                        child: ExcludeSemantics(
-                          excluding: !drawerOpen,
-                          child: IgnorePointer(
-                            ignoring: !drawerOpen,
-                            child: Material(
-                              color: AiColors.surface(context),
-                              child: GestureDetector(
-                                behavior: HitTestBehavior.translucent,
-                                onHorizontalDragStart: _handleHistoryDragStart,
-                                onHorizontalDragUpdate:
-                                    _handleHistoryDragUpdate,
-                                onHorizontalDragEnd: _handleHistoryDragEnd,
-                                onHorizontalDragCancel: () {
-                                  if (_historyController.value < 0.5) {
-                                    _closeHistory();
-                                  } else {
-                                    _showHistory();
-                                  }
-                                },
-                                child: SafeArea(
-                                  bottom: false,
-                                  child: AiHistoryPanel(
-                                    entries: historyEntries,
-                                    modelName: _selectedModelName,
-                                    onSelect: (entry) {
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: drawerWidth,
+                      child: Offstage(
+                        offstage: !drawerOpen,
+                        child: Transform.translate(
+                          offset: Offset(-drawerWidth * (1 - progress), 0),
+                          child: ExcludeSemantics(
+                            excluding: !drawerOpen,
+                            child: IgnorePointer(
+                              ignoring: !drawerOpen,
+                              child: Material(
+                                color: AiColors.surface(context),
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.translucent,
+                                  onHorizontalDragStart:
+                                      _handleHistoryDragStart,
+                                  onHorizontalDragUpdate:
+                                      _handleHistoryDragUpdate,
+                                  onHorizontalDragEnd: _handleHistoryDragEnd,
+                                  onHorizontalDragCancel: () {
+                                    if (_historyController.value < 0.5) {
                                       _closeHistory();
-                                      _openHistoryEntry(entry);
-                                    },
-                                    onOpenSettings: () {
-                                      _closeHistory();
-                                      widget.onOpenSettings?.call();
-                                    },
-                                    onRename: _renameHistoryEntry,
-                                    onPin: _pinHistoryEntry,
-                                    onDelete: _deleteHistoryEntry,
+                                    } else {
+                                      _showHistory();
+                                    }
+                                  },
+                                  child: SafeArea(
+                                    bottom: false,
+                                    child: AiHistoryPanel(
+                                      entries: historyEntries,
+                                      modelName: _selectedModelName,
+                                      onSelect: (entry) {
+                                        _closeHistory();
+                                        _openHistoryEntry(entry);
+                                      },
+                                      onOpenSettings: () {
+                                        _closeHistory();
+                                        widget.onOpenSettings?.call();
+                                      },
+                                      onRename: _renameHistoryEntry,
+                                      onPin: _pinHistoryEntry,
+                                      onDelete: _deleteHistoryEntry,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -1670,12 +1681,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
