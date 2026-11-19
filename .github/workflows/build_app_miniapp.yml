@@ -135,7 +135,7 @@ jobs:
             --build-number="$APP_BUILD_NUMBER"
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-miniapp-android-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
           path: frontend/apps/app-miniapp/build/app/outputs/flutter-apk/app-release.apk
@@ -293,7 +293,7 @@ jobs:
 
       - name: Upload signed IPA
         if: steps.signing.outputs.available == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-miniapp-ios-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
           path: frontend/apps/app-miniapp/build/ios/ipa/*.ipa
@@ -317,7 +317,7 @@ jobs:
 
       - name: Upload unsigned iOS app
         if: steps.signing.outputs.available != 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-miniapp-ios-unsigned-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
           path: ${{ runner.temp }}/app-miniapp-*-ios-unsigned.zip
