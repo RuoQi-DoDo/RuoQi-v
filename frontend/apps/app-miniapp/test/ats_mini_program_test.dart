@@ -662,15 +662,6 @@ void main() {
     await tester.tap(find.byKey(const Key('host-tab-ai')));
     await tester.pumpAndSettle();
 
-    final voiceLongPress = tester.widget<GestureDetector>(
-      find.byKey(const Key('ai-voice-long-press')),
-    );
-    expect(voiceLongPress.onLongPressStart, isNotNull);
-    await tester.tap(find.byKey(const Key('ai-voice-mode-toggle')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('ai-voice-hold-button')), findsOneWidget);
-    expect(find.text('按住说话'), findsOneWidget);
-    expect(find.byKey(const Key('ai-composer')), findsNothing);
     final voiceGesture = tester.widget<GestureDetector>(
       find.byKey(const Key('ai-composer-gesture')),
     );
@@ -679,8 +670,43 @@ void main() {
 
     await tester.tap(find.byKey(const Key('ai-voice-mode-toggle')));
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-voice-hold-button')), findsOneWidget);
+    expect(find.text('按住说话'), findsOneWidget);
+    expect(find.byKey(const Key('ai-composer')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('ai-voice-mode-toggle')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-voice-hold-button')), findsNothing);
     expect(find.byKey(const Key('ai-composer')), findsOneWidget);
+  });
+
+  testWidgets('AI 长按语音立即显示录音面板并支持上滑取消', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.pumpAndSettle();
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byKey(const Key('ai-voice-mode-toggle'))),
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump();
+
+    expect(find.byKey(const Key('ai-recording-panel')), findsOneWidget);
+    expect(find.text('松手发送，上滑取消'), findsOneWidget);
+
+    await gesture.moveBy(const Offset(0, -80));
+    await tester.pump();
+    expect(find.text('松开取消'), findsOneWidget);
+
+    await gesture.up();
+    await tester.pump();
+    expect(find.byKey(const Key('ai-recording-panel')), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('正常模式与黑色模式可切换并覆盖 AI 页', (tester) async {
