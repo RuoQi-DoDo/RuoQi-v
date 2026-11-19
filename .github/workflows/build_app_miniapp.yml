@@ -348,6 +348,8 @@ jobs:
       && needs.ios.result == 'success'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
+
       - name: Download build artifacts
         uses: actions/download-artifact@v8
         with:
