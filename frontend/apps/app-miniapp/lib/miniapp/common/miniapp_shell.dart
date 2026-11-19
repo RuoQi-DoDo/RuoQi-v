@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'widgets/miniapp_actions_sheet.dart';
 import 'widgets/miniapp_navigation_bar.dart';

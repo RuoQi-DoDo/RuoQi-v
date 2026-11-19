@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 全站文案可选中复制：`MaterialApp.builder` 用的包裹函数。
 ///

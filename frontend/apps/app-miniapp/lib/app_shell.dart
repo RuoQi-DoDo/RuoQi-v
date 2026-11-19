@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:common/common.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'appearance.dart';
 import 'localization.dart';
@@ -102,9 +101,7 @@ class _BusinessAppFrameState extends State<BusinessAppFrame> {
                     supportedLocales: AppLocalizations.supportedLocales,
                     localizationsDelegates: const [
                       AppLocalizations.delegate,
-                      GlobalMaterialLocalizations.delegate,
-                      GlobalWidgetsLocalizations.delegate,
-                      GlobalCupertinoLocalizations.delegate,
+                      ...GlobalMaterialLocalizations.delegates,
                     ],
                     theme: ruoQiTheme(accent: defaultAccentColor, mobile: true),
                     darkTheme: ruoQiTheme(

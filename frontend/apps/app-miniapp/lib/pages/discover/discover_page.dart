@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../common/page_widgets.dart';
 import '../mini_programs/mini_programs_page.dart';
+import '../scan/scan_page.dart';
 
 class DiscoverPage extends StatelessWidget {
   const DiscoverPage({
@@ -81,7 +82,7 @@ class DiscoverPage extends StatelessWidget {
               icon: Icons.qr_code_scanner_rounded,
               color: const Color(0xFF2F88FF),
               title: '扫一扫',
-              onTap: () => onTap('扫一扫为模拟入口'),
+              onTap: () => _scan(context),
             ),
             PageListRow(
               icon: Icons.graphic_eq_rounded,
@@ -136,13 +137,20 @@ class DiscoverPage extends StatelessWidget {
               title: '小程序',
               onTap:
                   onOpenMiniPrograms ??
-                  () => Navigator.of(
-                    context,
-                  ).push<void>(MiniProgramsPage.route()),
+                  () =>
+                      Navigator.of(context)
+                          .push<void>(MiniProgramsPage.route()),
             ),
           ],
         ),
       ],
     );
+  }
+
+  Future<void> _scan(BuildContext context) async {
+    final value = await openScanner(context);
+    if (value != null && context.mounted) {
+      await showScanResult(context, value);
+    }
   }
 }

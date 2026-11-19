@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/miniapp/miniapp_shell.dart';
 import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_account_home_page.dart';
@@ -13,6 +13,8 @@ import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_profile_edit_p
 import 'package:ruoqi_app_miniapp/miniapp/platform/pages/platform_profile_page.dart';
 import 'package:ruoqi_app_miniapp/miniapp/platform/platform_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/platform/platform_models.dart';
+
+import 'finders.dart';
 
 void main() {
   testWidgets('平台账号中心页面均可使用小程序布局渲染', (tester) async {
@@ -70,7 +72,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('platform-profile-page')), findsOneWidget);
 
-    await tester.tap(find.byTooltip('返回'));
+    await tester.tap(findMaterialTooltip('返回'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('账号安全'));
     await tester.pumpAndSettle();

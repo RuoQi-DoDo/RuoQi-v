@@ -1,5 +1,5 @@
 import 'package:common/common.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 平台端外观设置（个人中心 → 主题）的可选项，由 `PlatformApp` 持有当前取值。
 ///

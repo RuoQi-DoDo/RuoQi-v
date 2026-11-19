@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_capsule_overlay.dart';
@@ -9,6 +9,8 @@ import 'package:ruoqi_app_miniapp/miniapp/hr/hr_models.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/hr_repository.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/hr_routes.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/pages/team_pages.dart';
+
+import 'finders.dart';
 
 void main() {
   testWidgets('存在系统状态栏时不再绘制模拟状态栏', (tester) async {
@@ -27,8 +29,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('9:41'), findsNothing);
-    expect(find.byTooltip('小程序菜单'), findsOneWidget);
-    expect(find.byTooltip('退出小程序'), findsOneWidget);
+    expect(findMaterialTooltip('小程序菜单'), findsOneWidget);
+    expect(findMaterialTooltip('退出小程序'), findsOneWidget);
   });
 
   testWidgets('HR 小程序默认展示完整的静态首页', (tester) async {
@@ -47,7 +49,7 @@ void main() {
     expect(find.text('工资单'), findsOneWidget);
     expect(find.text('首页'), findsOneWidget);
     expect(find.byKey(const Key('hr-tab-团队')), findsOneWidget);
-    expect(find.byTooltip('退出小程序'), findsOneWidget);
+    expect(findMaterialTooltip('退出小程序'), findsOneWidget);
     expect(find.byType(MiniProgramCapsuleOverlay), findsOneWidget);
     expect(find.byType(MiniProgramNavigationBar), findsNothing);
     expect(tester.takeException(), isNull);

@@ -2,7 +2,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 // ignore_for_file: use_key_in_widget_constructors
 // ignore_for_file: file_names, camel_case_types
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 登录授权页面（账号登录状态） (租户-APP端/终端用户注册(APP)/第三方授权注册)
 class dCsxukoWPPage extends StatelessWidget {

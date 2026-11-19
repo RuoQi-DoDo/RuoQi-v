@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 第三方登录授权（APP 终端用户）——业务静态页。
 ///

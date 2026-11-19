@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:common/common.dart';
 
 /// 元信息行：标签 + 值（创建 / 最后编辑等）。

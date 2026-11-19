@@ -1,7 +1,7 @@
 import '../miniapp_localizations.dart';
 import '../../../pages/display/display_settings_page.dart';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 /// 微信小程序右上角三点操作面板。

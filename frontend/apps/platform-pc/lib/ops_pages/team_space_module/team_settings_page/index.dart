@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 团队设置（运营后台）——业务静态页。
 class TeamSettingsPage extends StatelessWidget {

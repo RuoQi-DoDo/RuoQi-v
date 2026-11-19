@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:common/common.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 顶栏头像直径：与顶栏背景模式切换（三个 26px 选项）搭配，避免顶栏头重。
 const double _avatarSize = 28;

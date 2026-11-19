@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 管理类控制台右侧内容区统一使用紧凑字号。
 ///

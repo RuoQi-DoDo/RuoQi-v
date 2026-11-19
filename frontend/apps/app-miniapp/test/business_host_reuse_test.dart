@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/app_shell.dart';
 import 'package:ruoqi_app_miniapp/pages/contacts/contacts_page.dart';
@@ -8,6 +8,8 @@ import 'package:ruoqi_app_miniapp/pages/discover/discover_page.dart';
 import 'package:ruoqi_app_miniapp/pages/host/business_host_page.dart';
 import 'package:ruoqi_app_miniapp/pages/profile/me_page.dart';
 import 'package:ruoqi_app_miniapp/pages/settings/settings_page.dart';
+
+import 'finders.dart';
 
 void main() {
   testWidgets('替换业务首页后继续复用公共页面和小程序，并保留首页状态', (tester) async {
@@ -30,9 +32,9 @@ void main() {
     await tester.tap(find.text('增加业务计数'));
     await tester.pump();
 
-    await tester.tap(find.text('通话'));
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('calls-page')), findsOneWidget);
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
     await tester.tap(find.text('发现').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('discover-page')), findsOneWidget);
@@ -64,7 +66,7 @@ void main() {
     await tester.tap(find.byKey(const Key('mini-program-picker-merchant')));
     await tester.pumpAndSettle();
     expect(find.text('业务静态页（语义化重构）'), findsOneWidget);
-    await tester.tap(find.byTooltip('退出小程序'));
+    await tester.tap(findMaterialTooltip('退出小程序'));
     await tester.pumpAndSettle();
     await tester.drag(
       find.byKey(const Key('mini-program-picker-exit-swipe')),

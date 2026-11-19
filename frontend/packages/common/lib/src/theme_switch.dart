@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 顶栏的背景模式切换：与「个人中心 → 主题 → 背景」同一套三档选项。
 ///

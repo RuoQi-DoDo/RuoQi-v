@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/app_shell.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 import 'package:ruoqi_app_miniapp/pages/discover/discover_page.dart';
 import 'package:ruoqi_app_miniapp/pages/mini_programs/mini_programs_page.dart';
+
+import 'finders.dart';
 
 void main() {
   testWidgets('发现入口打开小程序并返回列表和原发现位置', (tester) async {
@@ -18,7 +20,7 @@ void main() {
     await tester.tap(find.byKey(const Key('mini-program-entry-merchant')));
     await tester.pumpAndSettle();
     expect(find.text('业务静态页（语义化重构）'), findsOneWidget);
-    await tester.tap(find.byTooltip('退出小程序'));
+    await tester.tap(findMaterialTooltip('退出小程序'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('mini-programs-page')), findsOneWidget);
     await tester.tap(find.byType(BackButton));
@@ -91,8 +93,8 @@ void main() {
     await tester.tap(find.byKey(const Key('mini-program-entry-ats')));
     await tester.pumpAndSettle();
     expect(find.text('搜索岗位或关键词'), findsOneWidget);
-    expect(find.byTooltip('退出小程序'), findsOneWidget);
-    await tester.tap(find.byTooltip('退出小程序'));
+    expect(findMaterialTooltip('退出小程序'), findsOneWidget);
+    await tester.tap(findMaterialTooltip('退出小程序'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('mini-programs-page')), findsOneWidget);
     expect(find.byKey(const Key('mini-program-entry-ats')), findsOneWidget);

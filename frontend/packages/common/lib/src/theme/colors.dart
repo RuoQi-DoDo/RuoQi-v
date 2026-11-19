@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 规范默认强调色（品牌热粉）。
 const Color _brandPink = Color(0xFFFE2C55);

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 本地化（平台端个人中心）——业务静态页。
 class LocalizationPage extends StatelessWidget {

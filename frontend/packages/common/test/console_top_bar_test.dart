@@ -1,5 +1,5 @@
 import 'package:common/common.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// 控制台顶栏（规范 §6.7）：品牌 + 标题 + 板块 Tab 在左，

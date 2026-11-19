@@ -2,7 +2,7 @@
 //
 // 左侧菜单为两级树形导航：一级为板块（租户 / 团队空间 / 项目 /
 // API授权 / 个人中心），二级为主页面（真实业务页）。
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:common/common.dart';
 
 import 'operations_nav.dart';

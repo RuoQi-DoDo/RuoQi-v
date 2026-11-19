@@ -4,7 +4,7 @@
 // 在弹窗右侧内容区直接打开对应的真实业务页，不再 push 完整页面路由。
 // 弹窗顶部为按规范 §6.7 实现的控制台导航栏（品牌 + 退出）；
 // 菜单导航全部在左侧树形菜单中（板块 → 页面），来源为真实业务页。
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:common/common.dart';
 
 import '../console_content_theme.dart';

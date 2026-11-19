@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/api/tospino_api.dart';
@@ -21,6 +21,8 @@ import 'package:ruoqi_app_miniapp/miniapp/tospino/widgets/product_html_view.dart
 import 'package:ruoqi_app_miniapp/miniapp/tospino/widgets/product_gallery.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/widgets/tospino_fulfillment_card.dart';
 import 'package:ruoqi_app_miniapp/pages/mini_programs/mini_programs_page.dart';
+
+import 'finders.dart';
 
 void main() {
   test('Tospino 默认使用生产 API 和 SSO 地址', () {
@@ -1301,12 +1303,12 @@ void main() {
     settings.setLocale(const Locale('en'));
     await tester.pumpAndSettle();
 
-    expect(find.byTooltip('Home'), findsOneWidget);
-    expect(find.byTooltip('Categories'), findsNothing);
-    expect(find.byTooltip('Messages'), findsOneWidget);
-    expect(find.byTooltip('Cart'), findsOneWidget);
-    expect(find.byTooltip('Me'), findsOneWidget);
-    expect(find.byTooltip('Close mini-program'), findsOneWidget);
+    expect(findMaterialTooltip('Home'), findsOneWidget);
+    expect(findMaterialTooltip('Categories'), findsNothing);
+    expect(findMaterialTooltip('Messages'), findsOneWidget);
+    expect(findMaterialTooltip('Cart'), findsOneWidget);
+    expect(findMaterialTooltip('Me'), findsOneWidget);
+    expect(findMaterialTooltip('Close mini-program'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('tospino-tab-我的')));
     await tester.pumpAndSettle();
@@ -1548,6 +1550,7 @@ void main() {
       find.byKey(const Key('tospino-register-code')),
       '123456',
     );
+    await tester.pump();
     await tester.tap(find.byKey(const Key('tospino-register-verify-code')));
     await tester.pumpAndSettle();
     expect(api.registrationVerifyCalls, 1);
@@ -1560,6 +1563,7 @@ void main() {
       find.byKey(const Key('tospino-register-password-repeat')),
       'abc12345',
     );
+    await tester.pump();
     await tester.tap(find.byKey(const Key('tospino-register-submit')));
     await tester.pumpAndSettle();
 

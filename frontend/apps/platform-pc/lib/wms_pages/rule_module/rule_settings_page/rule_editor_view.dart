@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:common/common.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'rule_models.dart';
 

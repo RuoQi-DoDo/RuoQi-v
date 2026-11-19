@@ -1,6 +1,6 @@
 import '../miniapp_localizations.dart';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 微信式小程序公共胶囊。
 ///

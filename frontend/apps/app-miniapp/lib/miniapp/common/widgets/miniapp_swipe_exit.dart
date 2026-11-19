@@ -1,6 +1,6 @@
 import '../miniapp_localizations.dart';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 包裹小程序底部区域，提供统一的上滑退出手势。
 class MiniProgramSwipeExitRegion extends StatefulWidget {

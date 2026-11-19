@@ -2,7 +2,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 // ignore_for_file: use_key_in_widget_constructors
 // ignore_for_file: file_names, camel_case_types
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 账号关联 (租户-APP端/APP/H5-个人中心/(APP)用户个人中心 (1)/账号安全)
 class P7tGZvikVXuPage extends StatelessWidget {

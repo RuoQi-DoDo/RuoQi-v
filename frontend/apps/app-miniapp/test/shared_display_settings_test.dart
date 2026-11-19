@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/app_shell.dart';
@@ -11,6 +11,8 @@ import 'package:ruoqi_app_miniapp/miniapp/common/common.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/hr_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/hr_style.dart';
 import 'package:ruoqi_app_miniapp/pages/display/display_settings_page.dart';
+
+import 'finders.dart';
 
 void main() {
   test('字体默认对齐微信标准的最终显示字号', () {
@@ -90,7 +92,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('increment'));
     await tester.pump();
-    await tester.tap(find.byTooltip('小程序菜单'));
+    await tester.tap(findMaterialTooltip('小程序菜单'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('设置'));
     await tester.tap(find.text('设置'));
@@ -122,7 +124,7 @@ void main() {
     expect(Theme.of(probe).brightness, Brightness.dark);
     expect(Localizations.localeOf(probe).languageCode, 'en');
     expect(MediaQuery.textScalerOf(probe).scale(20), 24);
-    expect(find.byTooltip('Close mini-program'), findsOneWidget);
+    expect(findMaterialTooltip('Close mini-program'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -164,7 +166,7 @@ void main() {
       expect(background(after).computeLuminance(), lessThan(0.1));
       settings.setLocale(const Locale('en'));
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Close mini-program'), findsOneWidget);
+      expect(findMaterialTooltip('Close mini-program'), findsOneWidget);
       expect(
         find.text(name == 'ATS' ? 'Recruitment' : 'HR workspace'),
         findsOneWidget,

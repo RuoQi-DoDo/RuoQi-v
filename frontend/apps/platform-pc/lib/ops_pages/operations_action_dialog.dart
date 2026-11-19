@@ -3,7 +3,7 @@
 // 查看 / 编辑 / 删除 / 绑定 等动作不再作为独立菜单页面，
 // 而是由主页面按钮打开的动作弹窗：与主页面占用相同的空间，
 // 覆盖在内容区之上（左侧菜单与顶部导航栏保持可见）。
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:common/common.dart';
 
 /// 左侧菜单宽度与顶部导航栏高度（与 运营后台 弹窗布局一致）。

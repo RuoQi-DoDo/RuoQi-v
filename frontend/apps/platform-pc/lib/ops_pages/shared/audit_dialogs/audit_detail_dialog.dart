@@ -1,5 +1,5 @@
 // 审核详情（对应 查看）。
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AuditDetailDialog extends StatelessWidget {
   const AuditDetailDialog({super.key});

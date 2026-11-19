@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:common/common.dart';
 
 /// 管理后台左侧菜单宽度与顶部导航栏高度（与 system_settings_dialog 布局一致）。

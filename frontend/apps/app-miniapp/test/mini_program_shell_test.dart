@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/miniapp/miniapp_shell.dart';
+
+import 'finders.dart';
 
 void main() {
   testWidgets('公共胶囊使用固定半透明样式并响应两个操作', (tester) async {
@@ -33,10 +35,10 @@ void main() {
     expect(surface.color, MiniProgramCapsule.surfaceColor);
     expect(surface.shape, isA<RoundedRectangleBorder>());
 
-    await tester.tap(find.byTooltip('小程序菜单'));
+    await tester.tap(findMaterialTooltip('小程序菜单'));
     expect(moreTapCount, 1);
 
-    await tester.tap(find.byTooltip('退出小程序'));
+    await tester.tap(findMaterialTooltip('退出小程序'));
     expect(closeTapCount, 1);
   });
 
@@ -50,7 +52,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byTooltip('小程序菜单'));
+    await tester.tap(findMaterialTooltip('小程序菜单'));
     await tester.pumpAndSettle();
 
     expect(find.text('转发给'), findsOneWidget);

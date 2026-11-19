@@ -1,5 +1,5 @@
 import 'package:common/common.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 abstract final class HostChromeStyle {
   static const Color lightAppBar = Color(0xFFEDEDED);
