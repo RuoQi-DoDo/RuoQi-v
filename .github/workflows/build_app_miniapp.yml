@@ -230,12 +230,25 @@ jobs:
             | plutil -extract Entitlements.application-identifier raw -o - -)
           profile_bundle_id="${application_identifier#*.}"
           project_file="ios/Runner.xcodeproj/project.pbxproj"
-          project_bundle_id=$(xcodebuild \
-            -project ios/Runner.xcodeproj \
-            -scheme Runner \
-            -configuration Release \
-            -showBuildSettings 2>/dev/null \
-            | awk '/ PRODUCT_BUNDLE_IDENTIFIER =/ { print $3; exit }')
+          # Do not call xcodebuild here. The project references Flutter's
+          # generated Swift package, which does not exist on a clean runner
+          # until flutter build prepares it.
+          project_bundle_id=$(perl -ne '
+            if (!$in_config
+                && /^\s*[[:xdigit:]]{24} \/\* (?:Debug|Release|Profile) \*\/ = \{/) {
+              $in_config = 1;
+              $block = "";
+            }
+            $block .= $_ if $in_config;
+            if ($in_config && /^\s*name = Release;$/) {
+              if ($block =~ /INFOPLIST_FILE = Runner\/Info\.plist;/
+                  && $block =~ /PRODUCT_BUNDLE_IDENTIFIER = ([^;]+);/) {
+                print "$1\n";
+                exit;
+              }
+              $in_config = 0;
+            }
+          ' "$project_file")
 
           if [[ -z "$project_bundle_id" ]]; then
             echo "Unable to read PRODUCT_BUNDLE_IDENTIFIER from the Xcode project." >&2
