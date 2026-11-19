@@ -10,6 +10,8 @@ abstract final class AiColors {
   static const darkSurface = Color(0xFF191B22);
   static const lightSoftSurface = Color(0xFFF0F3FF);
   static const darkSoftSurface = Color(0xFF1D2238);
+  static const lightSearchSurface = Color(0xFFF5F5F6);
+  static const darkSearchSurface = Color(0xFF24262D);
   static const lightText = Color(0xFF181A20);
   static const darkText = Color(0xFFF4F5F8);
   static const lightMuted = Color(0xFF697083);
@@ -30,6 +32,9 @@ abstract final class AiColors {
 
   static Color softSurface(BuildContext context) =>
       isDark(context) ? darkSoftSurface : lightSoftSurface;
+
+  static Color searchSurface(BuildContext context) =>
+      isDark(context) ? darkSearchSurface : lightSearchSurface;
 
   static Color text(BuildContext context) =>
       isDark(context) ? darkText : lightText;

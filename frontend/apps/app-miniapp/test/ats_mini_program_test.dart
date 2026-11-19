@@ -376,6 +376,73 @@ void main() {
     expect(find.textContaining('先确认今天最重要的一个结果'), findsOneWidget);
   });
 
+  testWidgets('AI 左上角打开 DeepSeek 式历史侧边栏并可进入设置', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.pumpAndSettle();
+    final welcomeTitle = find.text('你好，我是 RuoQi');
+    final initialTitleX = tester.getTopLeft(welcomeTitle).dx;
+    await tester.tap(find.byKey(const Key('ai-history')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('ai-history-drawer')), findsOneWidget);
+    expect(
+      tester.getTopLeft(welcomeTitle).dx,
+      greaterThan(initialTitleX + 200),
+    );
+    expect(
+      tester.widget<Opacity>(find.byKey(const Key('ai-main-fade'))).opacity,
+      closeTo(0.3, 0.01),
+    );
+    expect(find.text('搜索对话内容...'), findsOneWidget);
+    expect(find.text('今天'), findsOneWidget);
+    expect(find.text('昨天'), findsOneWidget);
+    expect(find.text('7 天内'), findsOneWidget);
+    expect(find.text('如何提高招聘沟通效率'), findsOneWidget);
+    expect(find.text('Jengro Woo'), findsOneWidget);
+
+    await tester.dragFrom(const Offset(280, 420), const Offset(-260, 0));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-history-drawer')), findsNothing);
+    expect(tester.getTopLeft(welcomeTitle).dx, closeTo(initialTitleX, 0.1));
+    expect(
+      tester.widget<Opacity>(find.byKey(const Key('ai-main-fade'))).opacity,
+      1,
+    );
+
+    await tester.tap(find.byKey(const Key('ai-history')));
+    await tester.pumpAndSettle();
+    await tester.longPress(find.text('如何提高招聘沟通效率'));
+    await tester.pumpAndSettle();
+    expect(find.text('重命名'), findsOneWidget);
+    expect(find.text('置顶'), findsOneWidget);
+    expect(find.text('删除'), findsOneWidget);
+
+    await tester.tap(find.text('重命名'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('ai-history-rename-input')),
+      '招聘沟通优化',
+    );
+    await tester.tap(find.byKey(const Key('ai-history-rename-confirm')));
+    await tester.pumpAndSettle();
+    expect(find.text('招聘沟通优化'), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('ai-history-search')), '职位');
+    await tester.pumpAndSettle();
+    expect(find.text('帮我润色职位描述'), findsOneWidget);
+    expect(find.text('如何提高招聘沟通效率'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('ai-history-settings')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('settings-page')), findsOneWidget);
+  });
+
   testWidgets('我可以进入设置页，通知开关与退出入口可用', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;

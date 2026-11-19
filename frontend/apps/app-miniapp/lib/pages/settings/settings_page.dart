@@ -80,9 +80,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _SettingsRow(
                       title: '账号安全',
-                      onTap: () => Navigator.of(
-                        context,
-                      ).push(AccountSecurityPage.route()),
+                      onTap: () =>
+                          Navigator.of(context)
+                              .push(AccountSecurityPage.route()),
                     ),
                     _SettingsRow(
                       title: '个人信息与权限',
@@ -104,9 +104,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _SettingsRow(
                       title: '界面与显示',
-                      onTap: () => Navigator.of(
-                        context,
-                      ).push(DisplaySettingsPage.route()),
+                      onTap: () =>
+                          Navigator.of(context)
+                              .push(DisplaySettingsPage.route()),
                     ),
                     _SettingsRow(
                       title: '朋友权限',
@@ -147,7 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       onTap: () => _showSettingsMessage(context, '帮助与反馈为演示入口'),
                     ),
                     _SettingsRow(
-                      title: '关于微信',
+                      title: '关于RuoQi',
                       trailingText: 'v8.0.58',
                       onTap: () =>
                           _showSettingsMessage(context, 'RuoQi 业务端 1.0.0'),

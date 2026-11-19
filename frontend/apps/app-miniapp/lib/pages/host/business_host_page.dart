@@ -568,7 +568,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
                   ),
                 ),
               ),
-              const AiPage(),
+              AiPage(onOpenSettings: _openSettingsPage),
               const DiscoverPage(),
               MePage(onOpenSettings: _openSettingsPage),
             ],

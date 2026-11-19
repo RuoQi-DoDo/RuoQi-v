@@ -28,7 +28,7 @@ String pageLabel(BuildContext context, String label) {
     '个人信息与权限': 'Personal information & permissions',
     '个人信息收集清单': 'Collected personal information',
     '第三方信息共享清单': 'Third-party data sharing',
-    '关于微信': 'About',
+    '关于RuoQi': 'About RuoQi',
     '帮助与反馈': 'Help & feedback',
     '切换账号': 'Switch account',
     '退出登录': 'Log out',

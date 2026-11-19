@@ -1,25 +1,30 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 
 import '../../localization.dart';
 import '../common/page_widgets.dart';
+import 'ai_history_drawer.dart';
 import 'ai_style.dart';
 import 'deepseek_icons.dart';
 
 /// A DeepSeek-inspired AI conversation surface with local demo interactions.
 class AiPage extends StatefulWidget {
-  const AiPage({super.key});
+  const AiPage({super.key, this.onOpenSettings});
+
+  final VoidCallback? onOpenSettings;
 
   @override
   State<AiPage> createState() => _AiPageState();
 }
 
-class _AiPageState extends State<AiPage> {
+class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   final TextEditingController _composer = TextEditingController();
   final ScrollController _messageScroll = ScrollController();
   final List<_AiMessage> _messages = <_AiMessage>[];
 
+  late final AnimationController _historyController;
   Timer? _responseTimer;
   bool _deepThinking = false;
   bool _webSearch = true;
@@ -29,6 +34,11 @@ class _AiPageState extends State<AiPage> {
   @override
   void initState() {
     super.initState();
+    _historyController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 280),
+      reverseDuration: const Duration(milliseconds: 240),
+    );
     _composer.addListener(_handleComposerChanged);
   }
 
@@ -39,6 +49,7 @@ class _AiPageState extends State<AiPage> {
       ..removeListener(_handleComposerChanged)
       ..dispose();
     _messageScroll.dispose();
+    _historyController.dispose();
     super.dispose();
   }
 
@@ -157,66 +168,60 @@ class _AiPageState extends State<AiPage> {
     );
   }
 
-  Future<void> _showHistory() async {
-    final text = AppLocalizations.of(context);
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      backgroundColor: AiColors.surface(context),
-      builder: (context) => SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                text.text('对话记录', 'Chat history'),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AiColors.text(context),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 14),
-              for (final item in [
-                (
-                  text.text('如何提高招聘沟通效率', 'Improving recruiting outreach'),
-                  text.text('今天', 'Today'),
-                ),
-                (
-                  text.text('帮我润色职位描述', 'Polishing a job description'),
-                  text.text('昨天', 'Yesterday'),
-                ),
-                (
-                  text.text('整理本周工作重点', 'Planning this week'),
-                  text.text('11 月 16 日', 'Nov 16'),
-                ),
-              ])
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(
-                    Icons.chat_bubble_outline_rounded,
-                    color: AiColors.muted(context),
-                  ),
-                  title: Text(
-                    item.$1,
-                    style: TextStyle(color: AiColors.text(context)),
-                  ),
-                  trailing: Text(
-                    item.$2,
-                    style: TextStyle(
-                      color: AiColors.muted(context),
-                      fontSize: 12,
-                    ),
-                  ),
-                  onTap: () => Navigator.of(context).pop(),
-                ),
-            ],
-          ),
-        ),
-      ),
+  double _historyWidth(BuildContext context) =>
+      math.min(288.0, MediaQuery.sizeOf(context).width * 0.84);
+
+  void _showHistory() {
+    FocusScope.of(context).unfocus();
+    _historyController.animateTo(
+      1,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOutCubic,
     );
+  }
+
+  void _closeHistory() {
+    _historyController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeInCubic,
+    );
+  }
+
+  void _handleHistoryDragStart(DragStartDetails details) {
+    _historyController.stop();
+  }
+
+  void _handleHistoryDragUpdate(DragUpdateDetails details) {
+    final width = _historyWidth(context);
+    _historyController.value =
+        (_historyController.value + details.delta.dx / width).clamp(0.0, 1.0);
+  }
+
+  void _handleHistoryDragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (_historyController.value < 0.72 || velocity < -350) {
+      _closeHistory();
+    } else {
+      _showHistory();
+    }
+  }
+
+  void _openHistoryEntry(AiHistoryEntry entry) {
+    _closeHistory();
+    _responseTimer?.cancel();
+    _composer.clear();
+    final response = _demoResponse(entry.prompt);
+    setState(() {
+      _messages
+        ..clear()
+        ..add(_AiMessage.user(entry.prompt))
+        ..add(_AiMessage.assistant(response, webSearch: true));
+      _deepThinking = false;
+      _webSearch = true;
+      _responding = false;
+    });
+    _scrollMessagesToEnd();
   }
 
   void _showAttachmentMessage() {
@@ -253,54 +258,161 @@ class _AiPageState extends State<AiPage> {
       scaffoldBackgroundColor: AiColors.background(context),
       colorScheme: aiScheme,
     );
+    final text = AppLocalizations.of(context);
+    final historyEntries = buildDemoAiHistoryEntries(text);
 
     return Theme(
       data: aiTheme,
-      child: Scaffold(
-        key: const Key('ai-page'),
-        backgroundColor: AiColors.background(context),
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              _AiHeader(
-                onHistory: _showHistory,
-                onNewConversation: _newConversation,
-                autoRead: _autoRead,
-                onToggleAutoRead: () => setState(() => _autoRead = !_autoRead),
-              ),
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  child: _messages.isEmpty
-                      ? _AiWelcome(key: const ValueKey('ai-welcome'))
-                      : _AiConversation(
-                          key: const ValueKey('ai-conversation'),
-                          messages: _messages,
-                          responding: _responding,
-                          scrollController: _messageScroll,
+      child: AnimatedBuilder(
+        animation: _historyController,
+        builder: (context, child) {
+          final progress = _historyController.value;
+          final drawerOpen = progress > 0;
+          final drawerWidth = _historyWidth(context);
+          return PopScope(
+            canPop: !drawerOpen,
+            onPopInvokedWithResult: (didPop, result) {
+              if (!didPop && drawerOpen) {
+                _closeHistory();
+              }
+            },
+            child: ClipRect(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Transform.translate(
+                    offset: Offset(drawerWidth * progress, 0),
+                    child: Opacity(
+                      key: const Key('ai-main-fade'),
+                      opacity: 1 - progress * 0.7,
+                      child: ExcludeSemantics(
+                        excluding: drawerOpen,
+                        child: IgnorePointer(
+                          ignoring: drawerOpen,
+                          child: Scaffold(
+                            key: const Key('ai-page'),
+                            backgroundColor: AiColors.background(context),
+                            body: SafeArea(
+                              bottom: false,
+                              child: Column(
+                                children: [
+                                  _AiHeader(
+                                    onHistory: _showHistory,
+                                    onNewConversation: _newConversation,
+                                    autoRead: _autoRead,
+                                    onToggleAutoRead: () =>
+                                        setState(() => _autoRead = !_autoRead),
+                                  ),
+                                  Expanded(
+                                    child: AnimatedSwitcher(
+                                      duration: const Duration(
+                                        milliseconds: 220,
+                                      ),
+                                      switchInCurve: Curves.easeOutCubic,
+                                      switchOutCurve: Curves.easeInCubic,
+                                      child: _messages.isEmpty
+                                          ? const _AiWelcome(
+                                              key: ValueKey('ai-welcome'),
+                                            )
+                                          : _AiConversation(
+                                              key: const ValueKey(
+                                                'ai-conversation',
+                                              ),
+                                              messages: _messages,
+                                              responding: _responding,
+                                              scrollController: _messageScroll,
+                                            ),
+                                    ),
+                                  ),
+                                  _AiComposer(
+                                    controller: _composer,
+                                    canSend:
+                                        _composer.text.trim().isNotEmpty &&
+                                        !_responding,
+                                    responding: _responding,
+                                    deepThinking: _deepThinking,
+                                    webSearch: _webSearch,
+                                    onToggleDeepThinking: () => setState(
+                                      () => _deepThinking = !_deepThinking,
+                                    ),
+                                    onToggleWebSearch: () => setState(
+                                      () => _webSearch = !_webSearch,
+                                    ),
+                                    onAttachment: _showAttachmentMessage,
+                                    onVoice: _showVoiceMessage,
+                                    onSend: _send,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                ),
+                      ),
+                    ),
+                  ),
+                  if (drawerOpen)
+                    Positioned.fill(
+                      child: GestureDetector(
+                        key: const Key('ai-history-scrim'),
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _closeHistory,
+                        child: const SizedBox.expand(),
+                      ),
+                    ),
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: drawerWidth,
+                    child: Offstage(
+                      offstage: !drawerOpen,
+                      child: Transform.translate(
+                        offset: Offset(-drawerWidth * (1 - progress), 0),
+                        child: ExcludeSemantics(
+                          excluding: !drawerOpen,
+                          child: IgnorePointer(
+                            ignoring: !drawerOpen,
+                            child: Material(
+                              color: AiColors.surface(context),
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onHorizontalDragStart: _handleHistoryDragStart,
+                                onHorizontalDragUpdate:
+                                    _handleHistoryDragUpdate,
+                                onHorizontalDragEnd: _handleHistoryDragEnd,
+                                onHorizontalDragCancel: () {
+                                  if (_historyController.value < 0.5) {
+                                    _closeHistory();
+                                  } else {
+                                    _showHistory();
+                                  }
+                                },
+                                child: SafeArea(
+                                  bottom: false,
+                                  child: AiHistoryPanel(
+                                    entries: historyEntries,
+                                    onSelect: (entry) {
+                                      _closeHistory();
+                                      _openHistoryEntry(entry);
+                                    },
+                                    onOpenSettings: () {
+                                      _closeHistory();
+                                      widget.onOpenSettings?.call();
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              _AiComposer(
-                controller: _composer,
-                canSend: _composer.text.trim().isNotEmpty && !_responding,
-                responding: _responding,
-                deepThinking: _deepThinking,
-                webSearch: _webSearch,
-                onToggleDeepThinking: () =>
-                    setState(() => _deepThinking = !_deepThinking),
-                onToggleWebSearch: () =>
-                    setState(() => _webSearch = !_webSearch),
-                onAttachment: _showAttachmentMessage,
-                onVoice: _showVoiceMessage,
-                onSend: _send,
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
