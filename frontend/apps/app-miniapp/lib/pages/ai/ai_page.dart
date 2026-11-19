@@ -18,6 +18,7 @@ import 'chat_history_store.dart';
 import 'deepseek_api.dart';
 import 'deepseek_settings_store.dart';
 import 'deepseek_icons.dart';
+import 'deepseek_tts_cache.dart';
 
 /// A DeepSeek-inspired AI conversation surface with local demo interactions.
 class AiPage extends StatefulWidget {
@@ -27,12 +28,14 @@ class AiPage extends StatefulWidget {
     this.settingsStore,
     this.api,
     this.historyStore,
+    this.ttsCache,
   });
 
   final VoidCallback? onOpenSettings;
   final DeepSeekSettingsStore? settingsStore;
   final DeepSeekApi? api;
   final ChatHistoryStore? historyStore;
+  final DeepSeekTtsCache? ttsCache;
 
   @override
   State<AiPage> createState() => _AiPageState();
@@ -40,6 +43,7 @@ class AiPage extends StatefulWidget {
 
 class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   final TextEditingController _composer = TextEditingController();
+  final FocusNode _composerFocus = FocusNode();
   final ScrollController _messageScroll = ScrollController();
   final List<_AiMessage> _messages = <_AiMessage>[];
 
@@ -49,13 +53,19 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       widget.settingsStore ?? const SharedPreferencesDeepSeekSettingsStore();
   late final ChatHistoryStore _historyStore =
       widget.historyStore ?? const SharedPreferencesChatHistoryStore();
+  late final DeepSeekTtsCache _ttsCache = widget.ttsCache ?? DeepSeekTtsCache();
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _audioPlayer = AudioPlayer();
   StreamSubscription<DeepSeekChatChunk>? _chatSubscription;
+  StreamSubscription<void>? _speechSubscription;
+  File? _ttsFile;
   Timer? _responseTimer;
   bool _deepThinking = false;
   bool _webSearch = true;
   bool _autoRead = false;
+  bool _speaking = false;
+  bool _speechLoading = false;
+  String _speakingText = '';
   bool _responding = false;
   String _selectedModelName = '';
   String _conversationTitle = '';
@@ -64,6 +74,10 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   List<AiHistoryEntry> _historyEntries = const [];
   DeepSeekFile? _attachmentFile;
   bool _recording = false;
+  bool _holdToTalkActive = false;
+  bool _holdToTalkCancel = false;
+  bool _voiceMode = false;
+  bool _composerFocused = false;
   bool _messagesAtBottom = true;
   bool _messagesCanScroll = false;
   int _chatGeneration = 0;
@@ -78,6 +92,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     );
     unawaited(_loadDeepSeekSettings());
     _composer.addListener(_handleComposerChanged);
+    _composerFocus.addListener(_handleComposerFocusChanged);
     _messageScroll.addListener(_handleMessageScroll);
   }
 
@@ -85,10 +100,15 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   void dispose() {
     _responseTimer?.cancel();
     _chatSubscription?.cancel();
+    _speechSubscription?.cancel();
+    _ttsFile = null;
     unawaited(_recorder.dispose());
     unawaited(_audioPlayer.dispose());
     _composer
       ..removeListener(_handleComposerChanged)
+      ..dispose();
+    _composerFocus
+      ..removeListener(_handleComposerFocusChanged)
       ..dispose();
     _messageScroll.removeListener(_handleMessageScroll);
     _messageScroll.dispose();
@@ -102,9 +122,27 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     }
   }
 
+  void _handleComposerFocusChanged() {
+    if (mounted) {
+      setState(() => _composerFocused = _composerFocus.hasFocus);
+    }
+  }
+
+  void _requestComposerFocus() {
+    _composerFocus.requestFocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _composerFocus.hasFocus) {
+        unawaited(
+          SystemChannels.textInput.invokeMethod<void>('TextInput.show'),
+        );
+      }
+    });
+  }
+
   void _newConversation() {
     _responseTimer?.cancel();
     _chatSubscription?.cancel();
+    unawaited(_stopSpeech());
     _chatGeneration++;
     FocusScope.of(context).unfocus();
     _composer.clear();
@@ -116,6 +154,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       _deepThinking = false;
       _webSearch = true;
       _autoRead = false;
+      _voiceMode = false;
       _responding = false;
     });
   }
@@ -266,7 +305,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
               }
             });
             if (_autoRead && responseBuffer.trim().isNotEmpty) {
-              unawaited(_speakText(responseBuffer.trim()));
+              unawaited(_startSpeech(responseBuffer.trim()));
             }
             unawaited(_saveCurrentConversation());
             _scrollMessagesToEnd();
@@ -274,31 +313,138 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         );
   }
 
-  Future<void> _speakText(String text) async {
+  Future<void> _toggleSpeech(String text) async {
+    if (_speechLoading) {
+      await _stopSpeech();
+      return;
+    }
+    if (_speaking && _speakingText != text) {
+      await _startSpeech(text);
+      return;
+    }
+    if (_speaking) {
+      await _stopSpeech();
+      return;
+    }
+    await _startSpeech(text);
+  }
+
+  void _toggleAutoRead() {
+    final enabled = !_autoRead;
+    setState(() => _autoRead = enabled);
+    if (!enabled) {
+      unawaited(_stopSpeech());
+    }
+  }
+
+  Future<void> _startSpeech(String text) async {
+    await _stopSpeech();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _speechLoading = true;
+      _speakingText = text;
+    });
     try {
-      final settings = await _settingsStore.load();
-      if (!mounted || settings.apiKey.isEmpty) {
+      File? audioFile = await _ttsCache.get(text: text);
+      if (audioFile == null) {
+        final settings = await _settingsStore.load();
+        if (!mounted) {
+          return;
+        }
+        if (settings.apiKey.isEmpty) {
+          setState(() => _speechLoading = false);
+          showPageMessage(
+            context,
+            AppLocalizations.of(context).text(
+              '请先在设置中配置 DeepSeek API Key',
+              'Configure a DeepSeek API key in Settings first',
+            ),
+          );
+          return;
+        }
+        final audio = await _api.textToSpeech(
+          apiKey: settings.apiKey,
+          text: text,
+        );
+        audioFile = await _ttsCache.put(text: text, bytes: audio.bytes);
+      }
+      _ttsFile = audioFile;
+      await _audioPlayer.play(
+        DeviceFileSource(audioFile.path, mimeType: 'audio/wav'),
+      );
+      if (!mounted) {
         return;
       }
-      final audio = await _api.textToSpeech(
-        apiKey: settings.apiKey,
-        text: text,
-      );
-      await _audioPlayer.stop();
-      await _audioPlayer.play(
-        BytesSource(audio.bytes, mimeType: audio.contentType ?? 'audio/wav'),
-      );
+      setState(() {
+        _speechLoading = false;
+        _speaking = true;
+        _speakingText = text;
+      });
+      await _speechSubscription?.cancel();
+      _speechSubscription = _audioPlayer.onPlayerComplete.listen((_) {
+        unawaited(_finishSpeechPlayback());
+      });
     } on DeepSeekApiException catch (error) {
       if (mounted) {
+        setState(() {
+          _speechLoading = false;
+          _speaking = false;
+          _speakingText = '';
+        });
         showPageMessage(context, _chatErrorMessage(error));
       }
     } catch (_) {
       if (mounted) {
+        setState(() {
+          _speechLoading = false;
+          _speaking = false;
+          _speakingText = '';
+        });
+        await _deleteTtsFile();
+        if (!mounted) {
+          return;
+        }
         showPageMessage(
           context,
           AppLocalizations.of(context).text('语音播放失败', 'Unable to play audio'),
         );
       }
+    }
+  }
+
+  Future<void> _stopSpeech() async {
+    await _speechSubscription?.cancel();
+    _speechSubscription = null;
+    await _audioPlayer.stop();
+    _ttsFile = null;
+    if (mounted) {
+      setState(() {
+        _speaking = false;
+        _speechLoading = false;
+        _speakingText = '';
+      });
+    }
+  }
+
+  Future<void> _finishSpeechPlayback() async {
+    await _speechSubscription?.cancel();
+    _speechSubscription = null;
+    _ttsFile = null;
+    if (mounted) {
+      setState(() {
+        _speaking = false;
+        _speakingText = '';
+      });
+    }
+  }
+
+  Future<void> _deleteTtsFile() async {
+    final file = _ttsFile;
+    _ttsFile = null;
+    if (file != null && await file.exists()) {
+      await file.delete();
     }
   }
 
@@ -1029,11 +1175,13 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     return value;
   }
 
-  void _setComposerText(String text) {
+  void _setComposerText(String text, {bool focus = true}) {
     _composer
       ..text = text
       ..selection = TextSelection.collapsed(offset: text.length);
-    FocusScope.of(context).requestFocus();
+    if (focus) {
+      _composerFocus.requestFocus();
+    }
     setState(() {});
   }
 
@@ -1048,6 +1196,48 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   }
 
   Future<void> _showVoiceMessage() async {
+    if (_recording) {
+      await _cancelVoiceRecording();
+      return;
+    }
+    if (_voiceMode) {
+      setState(() => _voiceMode = false);
+      _composerFocus.requestFocus();
+    } else {
+      _composerFocus.unfocus();
+      setState(() => _voiceMode = true);
+    }
+  }
+
+  void _beginHoldToTalk() {
+    _holdToTalkActive = true;
+    _holdToTalkCancel = false;
+    unawaited(_startVoiceRecording(fromHold: true));
+  }
+
+  void _moveHoldToTalk(Offset offsetFromOrigin) {
+    if (!_recording) {
+      return;
+    }
+    final shouldCancel = offsetFromOrigin.dy < -64;
+    if (shouldCancel != _holdToTalkCancel) {
+      setState(() => _holdToTalkCancel = shouldCancel);
+    }
+  }
+
+  void _endHoldToTalk() {
+    _holdToTalkActive = false;
+    if (_holdToTalkCancel) {
+      unawaited(_cancelVoiceRecording());
+    } else {
+      unawaited(_finishVoiceRecording());
+    }
+  }
+
+  Future<void> _startVoiceRecording({bool fromHold = false}) async {
+    if (_recording) {
+      return;
+    }
     final settings = await _requireDeepSeekSettings();
     if (!mounted || settings == null) {
       return;
@@ -1078,32 +1268,11 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         );
         if (mounted) {
           setState(() => _recording = true);
-          showPageMessage(
-            context,
-            AppLocalizations.of(context)
-                .text('正在录音，再次点击结束', 'Recording. Tap again to stop.'),
-          );
+          if (fromHold && !_holdToTalkActive) {
+            await _finishVoiceRecording();
+          }
         }
-        return;
       }
-
-      final path = await _recorder.stop();
-      if (mounted) {
-        setState(() => _recording = false);
-      }
-      if (path == null) {
-        return;
-      }
-      final bytes = await File(path).readAsBytes();
-      final result = await _api.speechToText(
-        apiKey: settings.apiKey,
-        filename: 'voice.wav',
-        bytes: bytes,
-      );
-      if (!mounted) {
-        return;
-      }
-      _setComposerText(result.text);
     } on DeepSeekApiException catch (error) {
       if (mounted) {
         setState(() => _recording = false);
@@ -1118,6 +1287,67 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
               .text('录音或语音识别失败', 'Recording or speech recognition failed'),
         );
       }
+    }
+  }
+
+  Future<void> _finishVoiceRecording() async {
+    if (!_recording) {
+      return;
+    }
+    final settings = await _requireDeepSeekSettings();
+    if (!mounted) {
+      return;
+    }
+    if (settings == null) {
+      await _recorder.cancel();
+      if (mounted) {
+        setState(() => _recording = false);
+      }
+      return;
+    }
+    try {
+      final path = await _recorder.stop();
+      setState(() => _recording = false);
+      if (path == null) {
+        return;
+      }
+      final bytes = await File(path).readAsBytes();
+      final result = await _api.speechToText(
+        apiKey: settings.apiKey,
+        filename: 'voice.wav',
+        bytes: bytes,
+      );
+      if (mounted) {
+        setState(() => _voiceMode = false);
+        _setComposerText(result.text, focus: false);
+      }
+    } on DeepSeekApiException catch (error) {
+      if (mounted) {
+        setState(() => _recording = false);
+        showPageMessage(context, _chatErrorMessage(error));
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _recording = false);
+        showPageMessage(
+          context,
+          AppLocalizations.of(context)
+              .text('录音或语音识别失败', 'Recording or speech recognition failed'),
+        );
+      }
+    }
+  }
+
+  Future<void> _cancelVoiceRecording() async {
+    if (!_recording) {
+      return;
+    }
+    await _recorder.cancel();
+    if (mounted) {
+      setState(() {
+        _recording = false;
+        _holdToTalkCancel = false;
+      });
     }
   }
 
@@ -1181,8 +1411,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                     onNewConversation: _newConversation,
                                     title: _conversationTitle,
                                     autoRead: _autoRead,
-                                    onToggleAutoRead: () =>
-                                        setState(() => _autoRead = !_autoRead),
+                                    onToggleAutoRead: _toggleAutoRead,
                                   ),
                                   Expanded(
                                     child: Stack(
@@ -1206,6 +1435,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                                     responding: _responding,
                                                     scrollController:
                                                         _messageScroll,
+                                                    speakingText: _speakingText,
+                                                    speechLoading:
+                                                        _speechLoading,
                                                     onCopy: (message) =>
                                                         unawaited(
                                                           _copyMessage(
@@ -1216,7 +1448,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                                         _setMessageFeedback,
                                                     onSpeak: (message) =>
                                                         unawaited(
-                                                          _speakText(
+                                                          _toggleSpeech(
                                                             message.content,
                                                           ),
                                                         ),
@@ -1247,6 +1479,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                   ),
                                   _AiComposer(
                                     controller: _composer,
+                                    focusNode: _composerFocus,
+                                    focused: _composerFocused,
                                     canSend:
                                         _composer.text.trim().isNotEmpty &&
                                         !_responding,
@@ -1265,6 +1499,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                     onRemoveAttachment: () =>
                                         setState(() => _attachmentFile = null),
                                     recording: _recording,
+                                    voiceMode: _voiceMode,
+                                    onRequestFocus: _requestComposerFocus,
+                                    onHoldToTalkStart: _beginHoldToTalk,
+                                    onHoldToTalkMove: _moveHoldToTalk,
+                                    onHoldToTalkEnd: _endHoldToTalk,
+                                    recordingWillCancel: _holdToTalkCancel,
                                     onSend: () => unawaited(_send()),
                                   ),
                                 ],
@@ -1620,6 +1860,8 @@ class _AiConversation extends StatelessWidget {
     required this.messages,
     required this.responding,
     required this.scrollController,
+    required this.speakingText,
+    required this.speechLoading,
     required this.onCopy,
     required this.onFeedback,
     required this.onSpeak,
@@ -1630,6 +1872,8 @@ class _AiConversation extends StatelessWidget {
   final List<_AiMessage> messages;
   final bool responding;
   final ScrollController scrollController;
+  final String speakingText;
+  final bool speechLoading;
   final ValueChanged<_AiMessage> onCopy;
   final void Function(_AiMessage message, int feedback) onFeedback;
   final ValueChanged<_AiMessage> onSpeak;
@@ -1664,6 +1908,11 @@ class _AiConversation extends StatelessWidget {
           onCopy: () => onCopy(message),
           onFeedback: (feedback) => onFeedback(message, feedback),
           onSpeak: () => onSpeak(message),
+          speaking: message.content == speakingText && speakingText.isNotEmpty,
+          speechLoading:
+              message.content == speakingText &&
+              speechLoading &&
+              speakingText.isNotEmpty,
           onShare: () => onShare(message),
           onRegenerate: () => onRegenerate(message),
         );
@@ -1679,6 +1928,8 @@ class _AiMessageBubble extends StatelessWidget {
     required this.onCopy,
     required this.onFeedback,
     required this.onSpeak,
+    required this.speaking,
+    required this.speechLoading,
     required this.onShare,
     required this.onRegenerate,
   });
@@ -1688,6 +1939,8 @@ class _AiMessageBubble extends StatelessWidget {
   final VoidCallback onCopy;
   final ValueChanged<int> onFeedback;
   final VoidCallback onSpeak;
+  final bool speaking;
+  final bool speechLoading;
   final VoidCallback onShare;
   final VoidCallback onRegenerate;
 
@@ -1784,6 +2037,8 @@ class _AiMessageBubble extends StatelessWidget {
               const SizedBox(height: 10),
               _AnswerActionBar(
                 feedback: message.feedback,
+                speaking: speaking,
+                speechLoading: speechLoading,
                 onCopy: onCopy,
                 onFeedback: onFeedback,
                 onSpeak: onSpeak,
@@ -1834,6 +2089,8 @@ class _AiModeTag extends StatelessWidget {
 class _AnswerActionBar extends StatelessWidget {
   const _AnswerActionBar({
     required this.feedback,
+    required this.speaking,
+    required this.speechLoading,
     required this.onCopy,
     required this.onFeedback,
     required this.onSpeak,
@@ -1842,6 +2099,8 @@ class _AnswerActionBar extends StatelessWidget {
   });
 
   final int feedback;
+  final bool speaking;
+  final bool speechLoading;
   final VoidCallback onCopy;
   final ValueChanged<int> onFeedback;
   final VoidCallback onSpeak;
@@ -1877,9 +2136,16 @@ class _AnswerActionBar extends StatelessWidget {
           selected: feedback == -1,
         ),
         _AnswerActionButton(
-          tooltip: text.text('朗读', 'Read aloud'),
+          tooltip: speaking || speechLoading
+              ? text.text('停止朗读', 'Stop reading')
+              : text.text('朗读', 'Read aloud'),
           onPressed: onSpeak,
-          icon: Icons.volume_up_outlined,
+          icon: speechLoading
+              ? Icons.hourglass_top_rounded
+              : speaking
+              ? Icons.stop_circle_outlined
+              : Icons.volume_up_outlined,
+          selected: speaking || speechLoading,
         ),
         _AnswerActionButton(
           tooltip: text.text('分享', 'Share'),
@@ -2019,6 +2285,8 @@ class _AiTypingIndicator extends StatelessWidget {
 class _AiComposer extends StatelessWidget {
   const _AiComposer({
     required this.controller,
+    required this.focusNode,
+    required this.focused,
     required this.canSend,
     required this.responding,
     required this.deepThinking,
@@ -2031,9 +2299,17 @@ class _AiComposer extends StatelessWidget {
     this.attachmentName,
     this.onRemoveAttachment,
     this.recording = false,
+    required this.voiceMode,
+    required this.onRequestFocus,
+    required this.onHoldToTalkStart,
+    required this.onHoldToTalkMove,
+    required this.onHoldToTalkEnd,
+    required this.recordingWillCancel,
   });
 
   final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool focused;
   final bool canSend;
   final bool responding;
   final bool deepThinking;
@@ -2046,175 +2322,379 @@ class _AiComposer extends StatelessWidget {
   final String? attachmentName;
   final VoidCallback? onRemoveAttachment;
   final bool recording;
+  final bool voiceMode;
+  final VoidCallback onRequestFocus;
+  final VoidCallback onHoldToTalkStart;
+  final ValueChanged<Offset> onHoldToTalkMove;
+  final VoidCallback onHoldToTalkEnd;
+  final bool recordingWillCancel;
 
   @override
   Widget build(BuildContext context) {
     final text = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(13, 8, 13, 8),
-      child: Container(
-        key: const Key('ai-composer-card'),
-        constraints: const BoxConstraints(minHeight: 106),
-        padding: const EdgeInsets.fromLTRB(18, 7, 9, 9),
-        decoration: BoxDecoration(
-          color: AiColors.surface(context),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: AiColors.isDark(context)
-                ? AiColors.border(context)
-                : const Color(0xFFF2F3F5),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(
-                alpha: AiColors.isDark(context) ? 0.2 : 0.025,
+    final canHoldToTalk = (voiceMode || controller.text.isEmpty) && !focused;
+    return TextFieldTapRegion(
+      child: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerUp: (_) => onHoldToTalkEnd(),
+        onPointerCancel: (_) => onHoldToTalkEnd(),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(13, 8, 13, 8),
+          child: AnimatedContainer(
+            key: const Key('ai-composer-card'),
+            duration: const Duration(milliseconds: 160),
+            constraints: const BoxConstraints(minHeight: 106),
+            padding: const EdgeInsets.fromLTRB(18, 7, 9, 9),
+            decoration: BoxDecoration(
+              color: AiColors.surface(context),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: recording
+                    ? AiColors.accent
+                    : AiColors.isDark(context)
+                    ? AiColors.border(context)
+                    : const Color(0xFFF2F3F5),
               ),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (attachmentName != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  children: [
-                    const Icon(Icons.insert_drive_file, size: 16),
-                    const SizedBox(width: 7),
-                    Expanded(
-                      child: Text(
-                        attachmentName!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: text.text('移除附件', 'Remove attachment'),
-                      onPressed: onRemoveAttachment,
-                      visualDensity: VisualDensity.compact,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 30,
-                        height: 30,
-                      ),
-                      padding: EdgeInsets.zero,
-                      icon: const Icon(Icons.close_rounded, size: 16),
-                    ),
-                  ],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(
+                    alpha: AiColors.isDark(context) ? 0.2 : 0.025,
+                  ),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-            SizedBox(
-              height: 46,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: TextField(
-                  key: const Key('ai-composer'),
-                  controller: controller,
-                  minLines: 1,
-                  maxLines: 4,
-                  keyboardType: TextInputType.multiline,
-                  textInputAction: TextInputAction.newline,
-                  style: TextStyle(
-                    color: AiColors.text(context),
-                    fontSize: 18,
-                    height: 1.4,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: text.text('发消息或按住说话', 'Message or hold to talk'),
-                    hintStyle: TextStyle(
-                      color: AiColors.hint(context),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    errorBorder: InputBorder.none,
-                    focusedErrorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _AiModeChip(
-                          key: const Key('ai-deep-thinking'),
-                          icon: DeepSeekThinkingIcon(
-                            color: deepThinking
-                                ? AiColors.accent
-                                : AiColors.text(context),
-                            size: 19,
-                          ),
-                          label: text.text('深度思考', 'Deep thinking'),
-                          selected: deepThinking,
-                          onTap: onToggleDeepThinking,
-                        ),
-                        const SizedBox(width: 7),
-                        _AiModeChip(
-                          key: const Key('ai-web-search'),
-                          icon: Icon(
-                            Icons.language_rounded,
-                            color: webSearch
-                                ? AiColors.accent
-                                : AiColors.text(context),
-                            size: 19,
-                          ),
-                          label: text.text('智能搜索', 'Smart search'),
-                          selected: webSearch,
-                          onTap: onToggleWebSearch,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 5),
-                _AiRoundAction(
-                  tooltip: text.text('添加附件', 'Add attachment'),
-                  onPressed: onAttachment,
-                  icon: DeepSeekPlusIcon(
-                    color: AiColors.text(context),
-                    size: 19,
-                  ),
-                ),
-                const SizedBox(width: 7),
-                if (responding)
-                  _AiSendButton(enabled: false, responding: true, onTap: onSend)
-                else if (recording || controller.text.trim().isEmpty)
-                  _AiRoundAction(
-                    tooltip: recording
-                        ? text.text('结束录音', 'Stop recording')
-                        : text.text('语音输入', 'Voice input'),
-                    onPressed: onVoice,
-                    icon: DeepSeekVoiceIcon(
-                      color: recording
-                          ? const Color(0xFFD7464F)
-                          : AiColors.text(context),
-                      size: 24,
-                    ),
-                    color: recording ? const Color(0xFFD7464F) : null,
-                  )
-                else
-                  _AiSendButton(
-                    enabled: canSend,
-                    responding: false,
-                    onTap: onSend,
-                  ),
               ],
             ),
-          ],
+            child: GestureDetector(
+              key: const Key('ai-composer-gesture'),
+              behavior: recording || canHoldToTalk
+                  ? HitTestBehavior.opaque
+                  : HitTestBehavior.deferToChild,
+              onTap: recording ? onHoldToTalkEnd : null,
+              onLongPressStart: !recording && canHoldToTalk
+                  ? (_) => onHoldToTalkStart()
+                  : null,
+              onLongPressMoveUpdate: recording || canHoldToTalk
+                  ? (details) => onHoldToTalkMove(details.localOffsetFromOrigin)
+                  : null,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                child: recording
+                    ? _RecordingPanel(
+                        cancel: recordingWillCancel,
+                        color: AiColors.accent,
+                      )
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (attachmentName != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.insert_drive_file, size: 16),
+                                  const SizedBox(width: 7),
+                                  Expanded(
+                                    child: Text(
+                                      attachmentName!,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    tooltip: text.text(
+                                      '移除附件',
+                                      'Remove attachment',
+                                    ),
+                                    onPressed: onRemoveAttachment,
+                                    visualDensity: VisualDensity.compact,
+                                    constraints: const BoxConstraints.tightFor(
+                                      width: 30,
+                                      height: 30,
+                                    ),
+                                    padding: EdgeInsets.zero,
+                                    icon: const Icon(
+                                      Icons.close_rounded,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          SizedBox(
+                            height: 46,
+                            child: Stack(
+                              alignment: Alignment.centerLeft,
+                              children: [
+                                if (voiceMode)
+                                  Positioned.fill(
+                                    child: Container(
+                                      key: const Key('ai-voice-hold-button'),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: AiColors.softSurface(context),
+                                        borderRadius: BorderRadius.circular(13),
+                                      ),
+                                      child: Text(
+                                        text.text('按住说话', 'Hold to talk'),
+                                        style: TextStyle(
+                                          color: AiColors.text(context),
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  TextField(
+                                    key: const Key('ai-composer'),
+                                    focusNode: focusNode,
+                                    controller: controller,
+                                    minLines: 1,
+                                    maxLines: 4,
+                                    keyboardType: TextInputType.multiline,
+                                    textInputAction: TextInputAction.newline,
+                                    cursorColor: AiColors.accent,
+                                    onTapOutside: (_) => focusNode.unfocus(),
+                                    style: TextStyle(
+                                      color: AiColors.text(context),
+                                      fontSize: 18,
+                                      height: 1.4,
+                                    ),
+                                    decoration: null,
+                                  ),
+                                if (!voiceMode &&
+                                    controller.text.isEmpty &&
+                                    !focused)
+                                  Positioned.fill(
+                                    child: GestureDetector(
+                                      key: const Key('ai-hold-to-talk'),
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: onRequestFocus,
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          text.text(
+                                            '发消息或按住说话',
+                                            'Message or hold to talk',
+                                          ),
+                                          style: TextStyle(
+                                            color: AiColors.hint(context),
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: [
+                                      _AiModeChip(
+                                        key: const Key('ai-deep-thinking'),
+                                        icon: DeepSeekThinkingIcon(
+                                          color: deepThinking
+                                              ? AiColors.accent
+                                              : AiColors.text(context),
+                                          size: 19,
+                                        ),
+                                        label: text.text(
+                                          '深度思考',
+                                          'Deep thinking',
+                                        ),
+                                        selected: deepThinking,
+                                        onTap: onToggleDeepThinking,
+                                      ),
+                                      const SizedBox(width: 7),
+                                      _AiModeChip(
+                                        key: const Key('ai-web-search'),
+                                        icon: Icon(
+                                          Icons.language_rounded,
+                                          color: webSearch
+                                              ? AiColors.accent
+                                              : AiColors.text(context),
+                                          size: 19,
+                                        ),
+                                        label: text.text(
+                                          '智能搜索',
+                                          'Smart search',
+                                        ),
+                                        selected: webSearch,
+                                        onTap: onToggleWebSearch,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              _AiRoundAction(
+                                tooltip: text.text('添加附件', 'Add attachment'),
+                                onPressed: onAttachment,
+                                icon: DeepSeekPlusIcon(
+                                  color: AiColors.text(context),
+                                  size: 19,
+                                ),
+                              ),
+                              const SizedBox(width: 7),
+                              if (responding)
+                                _AiSendButton(
+                                  enabled: false,
+                                  responding: true,
+                                  onTap: onSend,
+                                )
+                              else if (voiceMode)
+                                _AiRoundAction(
+                                  key: const Key('ai-voice-mode-toggle'),
+                                  tooltip: text.text(
+                                    '切换至键盘',
+                                    'Switch to keyboard',
+                                  ),
+                                  onPressed: onVoice,
+                                  icon: Icon(
+                                    Icons.keyboard_alt_outlined,
+                                    color: AiColors.text(context),
+                                    size: 23,
+                                  ),
+                                )
+                              else if (controller.text.trim().isEmpty)
+                                GestureDetector(
+                                  key: const Key('ai-voice-long-press'),
+                                  onLongPressStart: (_) => onHoldToTalkStart(),
+                                  child: _AiRoundAction(
+                                    key: const Key('ai-voice-mode-toggle'),
+                                    tooltip: text.text('语音输入', 'Voice input'),
+                                    onPressed: onVoice,
+                                    icon: DeepSeekVoiceIcon(
+                                      color: AiColors.text(context),
+                                      size: 24,
+                                    ),
+                                  ),
+                                )
+                              else
+                                _AiSendButton(
+                                  enabled: canSend,
+                                  responding: false,
+                                  onTap: onSend,
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _RecordingPanel extends StatelessWidget {
+  const _RecordingPanel({required this.cancel, required this.color});
+
+  final bool cancel;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = AppLocalizations.of(context);
+    return SizedBox(
+      key: const Key('ai-recording-panel'),
+      height: 176,
+      width: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            cancel
+                ? text.text('松开取消', 'Release to cancel')
+                : text.text('松手发送，上滑取消', 'Release to send, swipe up to cancel'),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: cancel ? const Color(0xFFD7464F) : AiColors.text(context),
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: 26),
+          _RecordingWaveform(color: cancel ? const Color(0xFFD7464F) : color),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecordingWaveform extends StatefulWidget {
+  const _RecordingWaveform({required this.color});
+
+  final Color color;
+
+  @override
+  State<_RecordingWaveform> createState() => _RecordingWaveformState();
+}
+
+class _RecordingWaveformState extends State<_RecordingWaveform>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 30,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final count = (constraints.maxWidth / 5).floor().clamp(24, 64);
+          return AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  for (var index = 0; index < count; index++)
+                    Container(
+                      width: 2.2,
+                      height:
+                          5 +
+                          18 *
+                              ((math.sin(
+                                        _controller.value * math.pi * 2 +
+                                            index * 0.48,
+                                      ) +
+                                      1) /
+                                  2),
+                      margin: const EdgeInsets.symmetric(horizontal: 1.1),
+                      decoration: BoxDecoration(
+                        color: widget.color,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                ],
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -2279,16 +2759,15 @@ class _AiModeChip extends StatelessWidget {
 
 class _AiRoundAction extends StatelessWidget {
   const _AiRoundAction({
+    super.key,
     required this.tooltip,
     required this.onPressed,
     required this.icon,
-    this.color,
   });
 
   final String tooltip;
   final VoidCallback onPressed;
   final Widget icon;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -2308,7 +2787,7 @@ class _AiRoundAction extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: color ?? AiColors.text(context),
+                    color: AiColors.text(context),
                     width: 1.35,
                   ),
                 ),

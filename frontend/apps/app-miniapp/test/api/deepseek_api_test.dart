@@ -197,6 +197,41 @@ class _ToolsAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
+class _WavAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    final bytes = Uint8List(52);
+    bytes.setAll(0, 'RIFF'.codeUnits);
+    bytes.setAll(8, 'WAVE'.codeUnits);
+    bytes.setAll(12, 'fmt '.codeUnits);
+    ByteData.sublistView(bytes)
+      ..setUint32(4, 0xFFFFFFFF, Endian.little)
+      ..setUint32(16, 16, Endian.little)
+      ..setUint16(20, 1, Endian.little)
+      ..setUint16(22, 1, Endian.little)
+      ..setUint32(24, 24000, Endian.little)
+      ..setUint32(28, 48000, Endian.little)
+      ..setUint16(32, 2, Endian.little)
+      ..setUint16(34, 16, Endian.little)
+      ..setUint32(40, 0xFFFFFFFF, Endian.little);
+    bytes.setAll(36, 'data'.codeUnits);
+    return ResponseBody.fromBytes(
+      bytes,
+      200,
+      headers: {
+        Headers.contentTypeHeader: ['audio/wav'],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
 void main() {
   test('DeepSeek API 获取模型并注入 Bearer Key', () async {
     final adapter = _DeepSeekAdapter();
@@ -336,5 +371,18 @@ void main() {
         '/v1/tools/asr',
       ]),
     );
+  });
+
+  test('TTS 流式 WAV 的未知长度头会按实际字节修正', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
+      ..httpClientAdapter = _WavAdapter();
+    final api = DeepSeekApi(dio: dio);
+
+    final audio = await api.textToSpeech(apiKey: 'sk-test', text: '你好');
+    final view = ByteData.sublistView(audio.bytes);
+
+    expect(audio.bytes.length, 52);
+    expect(view.getUint32(4, Endian.little), 44);
+    expect(view.getUint32(40, Endian.little), 8);
   });
 }

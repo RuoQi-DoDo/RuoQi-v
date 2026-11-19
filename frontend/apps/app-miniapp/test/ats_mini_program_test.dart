@@ -611,10 +611,21 @@ void main() {
       matching: find.byType(EditableText, skipOffstage: false),
       skipOffstage: false,
     );
-    await tester.tap(composer);
+    final holdToTalk = find.byKey(const Key('ai-hold-to-talk'));
+    expect(holdToTalk, findsOneWidget);
+    await tester.tap(holdToTalk);
     await tester.pump();
+    expect(find.byKey(const Key('ai-hold-to-talk')), findsNothing);
     expect(tester.widget<EditableText>(editable).focusNode.hasFocus, isTrue);
+    expect(tester.testTextInput.isVisible, isTrue);
 
+    await tester.tap(find.text('你好，我是 RuoQi'));
+    await tester.pump();
+    expect(tester.widget<EditableText>(editable).focusNode.hasFocus, isFalse);
+    expect(find.byKey(const Key('ai-hold-to-talk')), findsOneWidget);
+
+    await tester.tap(holdToTalk);
+    await tester.pump();
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     addTearDown(tester.view.resetViewInsets);
     await tester.pumpAndSettle();
@@ -639,6 +650,37 @@ void main() {
 
     expect(tester.widget<EditableText>(editable).focusNode.hasFocus, isFalse);
     expect(tester.testTextInput.isVisible, isFalse);
+  });
+
+  testWidgets('AI 语音按钮切换到按住说话模式并可返回键盘', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.pumpAndSettle();
+
+    final voiceLongPress = tester.widget<GestureDetector>(
+      find.byKey(const Key('ai-voice-long-press')),
+    );
+    expect(voiceLongPress.onLongPressStart, isNotNull);
+    await tester.tap(find.byKey(const Key('ai-voice-mode-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-voice-hold-button')), findsOneWidget);
+    expect(find.text('按住说话'), findsOneWidget);
+    expect(find.byKey(const Key('ai-composer')), findsNothing);
+    final voiceGesture = tester.widget<GestureDetector>(
+      find.byKey(const Key('ai-composer-gesture')),
+    );
+    expect(voiceGesture.onLongPressStart, isNotNull);
+    expect(voiceGesture.onLongPressMoveUpdate, isNotNull);
+
+    await tester.tap(find.byKey(const Key('ai-voice-mode-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-voice-hold-button')), findsNothing);
+    expect(find.byKey(const Key('ai-composer')), findsOneWidget);
   });
 
   testWidgets('正常模式与黑色模式可切换并覆盖 AI 页', (tester) async {

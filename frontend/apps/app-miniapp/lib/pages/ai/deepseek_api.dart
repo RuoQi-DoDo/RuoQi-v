@@ -255,8 +255,11 @@ class DeepSeekApi {
           message: 'DeepSeek returned empty audio data.',
         );
       }
+      final audioBytes = format == 'wav'
+          ? _normalizeWavLengths(Uint8List.fromList(bytes))
+          : Uint8List.fromList(bytes);
       return DeepSeekAudioData(
-        bytes: Uint8List.fromList(bytes),
+        bytes: audioBytes,
         contentType: response.headers.value(Headers.contentTypeHeader),
       );
     } on DioException catch (error) {
@@ -820,4 +823,34 @@ int? _asInt(dynamic value) {
 
 List<String> _stringList(dynamic value) {
   return value is List ? value.whereType<String>().toList(growable: false) : [];
+}
+
+Uint8List _normalizeWavLengths(Uint8List bytes) {
+  if (bytes.length < 44 ||
+      String.fromCharCodes(bytes.sublist(0, 4)) != 'RIFF' ||
+      String.fromCharCodes(bytes.sublist(8, 12)) != 'WAVE') {
+    return bytes;
+  }
+  var dataHeaderOffset = -1;
+  for (var index = 12; index + 8 <= bytes.length; index++) {
+    if (bytes[index] == 0x64 &&
+        bytes[index + 1] == 0x61 &&
+        bytes[index + 2] == 0x74 &&
+        bytes[index + 3] == 0x61) {
+      dataHeaderOffset = index;
+      break;
+    }
+  }
+  if (dataHeaderOffset < 0) {
+    return bytes;
+  }
+  final normalized = Uint8List.fromList(bytes);
+  final view = ByteData.sublistView(normalized);
+  view.setUint32(4, normalized.length - 8, Endian.little);
+  view.setUint32(
+    dataHeaderOffset + 4,
+    normalized.length - dataHeaderOffset - 8,
+    Endian.little,
+  );
+  return normalized;
 }
