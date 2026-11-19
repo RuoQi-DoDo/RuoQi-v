@@ -146,9 +146,11 @@ class DisplaySettingsPage extends StatelessWidget {
                         trailing: settings.mode == choice.$1
                             ? Icon(Icons.check_rounded, color: scheme.primary)
                             : null,
-                        onTap: () {
-                          settings.setMode(choice.$1);
-                          Navigator.of(pageContext).pop();
+                        onTap: () async {
+                          await settings.setMode(choice.$1);
+                          if (pageContext.mounted) {
+                            Navigator.of(pageContext).pop();
+                          }
                         },
                       ),
                   ],
@@ -177,9 +179,9 @@ class DisplaySettingsPage extends StatelessWidget {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(
-                      pageContext,
-                    ).colorScheme.surfaceContainerLow,
+                    color: Theme.of(pageContext)
+                        .colorScheme
+                        .surfaceContainerLow,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),

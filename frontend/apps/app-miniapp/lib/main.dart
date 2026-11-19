@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:material_ui/material_ui.dart';
 
 import 'app_shell.dart';
+import 'appearance.dart';
 import 'miniapp/common/miniapp_pin.dart';
 import 'pages/auth/business_session.dart';
 import 'pages/auth/phone_login_page.dart';
@@ -15,11 +16,16 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final miniProgramPinController = MiniProgramPinController();
   await miniProgramPinController.initialize();
+  final themeController = BusinessThemeController(
+    themeStore: const SharedPreferencesBusinessThemeStore(),
+  );
+  await themeController.initialize();
   const sessionStore = SharedPreferencesBusinessSessionStore();
   final signedIn = await sessionStore.readSignedIn();
   runApp(
     BusinessApp(
       miniProgramPinController: miniProgramPinController,
+      themeController: themeController,
       sessionStore: sessionStore,
       initiallyAuthenticated: signedIn,
     ),
@@ -44,6 +50,7 @@ class BusinessApp extends StatefulWidget {
     this.loginBuilder,
     this.onLogout,
     this.miniProgramPinController,
+    this.themeController,
     this.initiallyAuthenticated = false,
     this.sessionStore,
   });
@@ -56,6 +63,7 @@ class BusinessApp extends StatefulWidget {
   final WidgetBuilder? loginBuilder;
   final VoidCallback? onLogout;
   final MiniProgramPinController? miniProgramPinController;
+  final BusinessThemeController? themeController;
   final bool initiallyAuthenticated;
   final BusinessSessionStore? sessionStore;
 
@@ -154,6 +162,7 @@ class _BusinessAppState extends State<BusinessApp> {
       title: widget.title,
       home: _buildHome,
       miniProgramPinController: widget.miniProgramPinController,
+      themeController: widget.themeController,
     );
   }
 }

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:common/common.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppOrientation { system, portrait, landscape }
 
@@ -47,17 +50,73 @@ const backgroundChoices = <BackgroundChoice>[
   BackgroundChoice('暗色', Icons.dark_mode_outlined, ThemeMode.dark),
 ];
 
+const businessThemeModePreferenceKey = 'ruoqi.business.theme_mode';
+
+/// Persistence boundary for the app-wide appearance mode.
+abstract interface class BusinessThemeStore {
+  Future<ThemeMode?> readMode();
+
+  Future<void> writeMode(ThemeMode mode);
+}
+
+class SharedPreferencesBusinessThemeStore implements BusinessThemeStore {
+  const SharedPreferencesBusinessThemeStore();
+
+  @override
+  Future<ThemeMode?> readMode() async {
+    final preferences = await SharedPreferences.getInstance();
+    final value = preferences.getString(businessThemeModePreferenceKey);
+    for (final mode in ThemeMode.values) {
+      if (mode.name == value) {
+        return mode;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<void> writeMode(ThemeMode mode) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(businessThemeModePreferenceKey, mode.name);
+  }
+}
+
 /// App-wide theme selection shared by the host and pushed settings pages.
 class BusinessThemeController extends ChangeNotifier {
+  BusinessThemeController({this.themeStore});
+
+  final BusinessThemeStore? themeStore;
+  Future<void>? _initialization;
   ThemeMode _mode = ThemeMode.light;
   Locale? _locale;
   double _fontScale = defaultFontScale;
   AppOrientation _orientation = AppOrientation.system;
 
+  Future<void> initialize() {
+    return _initialization ??= _restoreMode();
+  }
+
   ThemeMode get mode => _mode;
   Locale? get locale => _locale;
   double get fontScale => _fontScale;
   AppOrientation get orientation => _orientation;
+
+  Future<void> _restoreMode() async {
+    final store = themeStore;
+    if (store == null) {
+      return;
+    }
+    try {
+      final restored = await store.readMode();
+      if (restored == null || restored == _mode) {
+        return;
+      }
+      _mode = restored;
+      notifyListeners();
+    } catch (_) {
+      // A storage failure should not prevent the app from starting.
+    }
+  }
 
   void setLocale(Locale? locale) {
     if (_locale == locale) return;
@@ -88,16 +147,25 @@ class BusinessThemeController extends ChangeNotifier {
 
   bool get isDarkMode => _mode == ThemeMode.dark;
 
-  void setMode(ThemeMode mode) {
+  Future<void> setMode(ThemeMode mode) async {
     if (_mode == mode) {
       return;
     }
     _mode = mode;
     notifyListeners();
+    final store = themeStore;
+    if (store == null) {
+      return;
+    }
+    try {
+      await store.writeMode(mode);
+    } catch (_) {
+      // Keep the in-memory selection active if persistence fails.
+    }
   }
 
-  void setDarkMode(bool enabled) {
-    setMode(enabled ? ThemeMode.dark : ThemeMode.light);
+  Future<void> setDarkMode(bool enabled) {
+    return setMode(enabled ? ThemeMode.dark : ThemeMode.light);
   }
 }
 
