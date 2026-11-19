@@ -68,6 +68,13 @@ class _SettingsPageState extends State<SettingsPage> {
         builder: (context) {
           final theme = Theme.of(context);
           final scheme = theme.colorScheme;
+          const buildVersion = String.fromEnvironment(
+            'FLUTTER_BUILD_NAME',
+            defaultValue: 'dev',
+          );
+          final displayedVersion = buildVersion.startsWith('v')
+              ? buildVersion
+              : 'v$buildVersion';
           return Scaffold(
             key: const Key('settings-page'),
             backgroundColor: scheme.surface,
@@ -185,9 +192,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _SettingsRow(
                       title: '关于RuoQi',
-                      trailingText: 'v8.0.58',
-                      onTap: () =>
-                          _showSettingsMessage(context, 'RuoQi 业务端 1.0.0'),
+                      trailingText: displayedVersion,
+                      onTap: () => _showSettingsMessage(
+                        context,
+                        'RuoQi $displayedVersion',
+                      ),
                     ),
                   ],
                 ),
