@@ -6,6 +6,7 @@ import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_capsule_overlay
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_navigation_bar.dart';
 import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_status_bar.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'finders.dart';
 
@@ -355,7 +356,8 @@ void main() {
     expect(find.text('设置'), findsOneWidget);
   });
 
-  testWidgets('AI 页面可输入问题并显示模拟回复', (tester) async {
+  testWidgets('未配置 DeepSeek 时提示先完成 API 设置', (tester) async {
+    SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -367,13 +369,14 @@ void main() {
     await tester.enterText(find.byKey(const Key('ai-composer')), '帮我梳理今天的工作重点');
     await tester.pump();
     await tester.tap(find.byKey(const Key('ai-send')));
-    await tester.pump();
-    expect(find.byKey(const Key('ai-typing-indicator')), findsOneWidget);
-
-    await tester.pump(const Duration(milliseconds: 600));
-    expect(find.byKey(const Key('ai-user-message')), findsOneWidget);
-    expect(find.byKey(const Key('ai-assistant-message')), findsOneWidget);
-    expect(find.textContaining('先确认今天最重要的一个结果'), findsOneWidget);
+    await tester.pumpAndSettle();
+    final snackBar = find.byType(SnackBar);
+    expect(snackBar, findsOneWidget);
+    expect(
+      find.descendant(of: snackBar, matching: find.textContaining('DeepSeek')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('ai-typing-indicator')), findsNothing);
   });
 
   testWidgets('AI 左上角打开 DeepSeek 式历史侧边栏并支持管理', (tester) async {
@@ -566,6 +569,17 @@ void main() {
     await tester.tap(composer);
     await tester.pump();
     expect(tester.widget<EditableText>(editable).focusNode.hasFocus, isTrue);
+
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('host-tab-ai')), findsNothing);
+    expect(
+      tester.getBottomLeft(find.byKey(const Key('ai-composer-card'))).dy,
+      lessThan(600),
+    );
+    tester.view.resetViewInsets();
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('host-tab-me')));
     await tester.pumpAndSettle();

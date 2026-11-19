@@ -550,48 +550,52 @@ class _BusinessHostPageState extends State<BusinessHostPage>
     );
   }
 
-  Widget _buildHostPage(BuildContext context, {required Key key}) => Material(
-    child: Column(
-      key: key,
-      children: [
-        Expanded(
-          child: IndexedStack(
-            index: _hostTab.index,
-            children: [
-              Listener(
-                onPointerDown: _handlePullPointerDown,
-                onPointerMove: _handlePullPointerMove,
-                onPointerUp: _handlePullPointerUp,
-                onPointerCancel: _handlePullPointerCancel,
-                child: ScrollConfiguration(
-                  behavior: const _NoOverscrollGlowBehavior(),
-                  child: Builder(
-                    builder: (context) =>
-                        widget.homeBuilder(context, _hostScrollController),
+  Widget _buildHostPage(BuildContext context, {required Key key}) {
+    final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
+    return Material(
+      child: Column(
+        key: key,
+        children: [
+          Expanded(
+            child: IndexedStack(
+              index: _hostTab.index,
+              children: [
+                Listener(
+                  onPointerDown: _handlePullPointerDown,
+                  onPointerMove: _handlePullPointerMove,
+                  onPointerUp: _handlePullPointerUp,
+                  onPointerCancel: _handlePullPointerCancel,
+                  child: ScrollConfiguration(
+                    behavior: const _NoOverscrollGlowBehavior(),
+                    child: Builder(
+                      builder: (context) =>
+                          widget.homeBuilder(context, _hostScrollController),
+                    ),
                   ),
                 ),
+                AiPage(onOpenSettings: _openSettingsPage),
+                const DiscoverPage(),
+                MePage(onOpenSettings: _openSettingsPage),
+              ],
+            ),
+          ),
+          if (!keyboardVisible)
+            Theme(
+              data: _hostTab == HostTab.home
+                  ? Theme.of(context)
+                  : sharedPageTheme(context),
+              child: HostTabBar(
+                selected: _hostTab,
+                onSelected: _selectHostTab,
+                homeLabel: widget.homeLabel,
+                homeIcon: widget.homeIcon,
+                homeActiveIcon: widget.homeActiveIcon,
               ),
-              AiPage(onOpenSettings: _openSettingsPage),
-              const DiscoverPage(),
-              MePage(onOpenSettings: _openSettingsPage),
-            ],
-          ),
-        ),
-        Theme(
-          data: _hostTab == HostTab.home
-              ? Theme.of(context)
-              : sharedPageTheme(context),
-          child: HostTabBar(
-            selected: _hostTab,
-            onSelected: _selectHostTab,
-            homeLabel: widget.homeLabel,
-            homeIcon: widget.homeIcon,
-            homeActiveIcon: widget.homeActiveIcon,
-          ),
-        ),
-      ],
-    ),
-  );
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _NoOverscrollGlowBehavior extends ScrollBehavior {
