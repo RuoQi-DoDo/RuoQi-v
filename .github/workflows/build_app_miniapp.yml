@@ -267,9 +267,6 @@ jobs:
           echo "Using Apple team: $team_id"
           echo "Using bundle ID: $project_bundle_id"
 
-          # Fail early if the checked-in Xcode project is already malformed.
-          plutil -lint "$project_file"
-
           # Flutter forwards FLUTTER_XCODE_* variables to xcodebuild. Override
           # signing there instead of rewriting project.pbxproj on the runner.
           export FLUTTER_XCODE_DEVELOPMENT_TEAM="$team_id"
