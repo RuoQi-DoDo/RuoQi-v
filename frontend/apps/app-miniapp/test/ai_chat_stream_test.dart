@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ruoqi_app_miniapp/localization.dart';
 import 'package:ruoqi_app_miniapp/pages/ai/ai_page.dart';
+import 'package:ruoqi_app_miniapp/pages/ai/chat_history_store.dart';
 import 'package:ruoqi_app_miniapp/pages/ai/deepseek_api.dart';
 import 'package:ruoqi_app_miniapp/pages/ai/deepseek_settings_store.dart';
 
@@ -30,6 +31,43 @@ class _ChatSettingsStore implements DeepSeekSettingsStore {
     required String id,
     required String name,
   }) async {}
+}
+
+class _MemoryHistoryStore implements ChatHistoryStore {
+  final List<ChatConversation> conversations = <ChatConversation>[];
+
+  @override
+  Future<void> deleteConversation(String id) async {
+    conversations.removeWhere((conversation) => conversation.id == id);
+  }
+
+  @override
+  Future<ChatConversation?> getConversation(String id) async {
+    for (final conversation in conversations) {
+      if (conversation.id == id) {
+        return conversation;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<List<ChatConversation>> loadConversations() async {
+    return List<ChatConversation>.of(conversations);
+  }
+
+  @override
+  Future<void> renameConversation(String id, String title) async {}
+
+  @override
+  Future<void> saveConversation(ChatConversation conversation) async {
+    conversations
+      ..removeWhere((item) => item.id == conversation.id)
+      ..add(conversation);
+  }
+
+  @override
+  Future<void> setPinned(String id, bool pinned) async {}
 }
 
 class _ChatStreamAdapter implements HttpClientAdapter {
@@ -73,6 +111,7 @@ class _ChatStreamAdapter implements HttpClientAdapter {
 void main() {
   testWidgets('AI 聊天使用 DeepSeek Chat Completions 流式更新', (tester) async {
     final adapter = _ChatStreamAdapter();
+    final historyStore = _MemoryHistoryStore();
     final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
       ..httpClientAdapter = adapter;
 
@@ -87,6 +126,7 @@ void main() {
         home: AiPage(
           settingsStore: _ChatSettingsStore(),
           api: DeepSeekApi(dio: dio),
+          historyStore: historyStore,
         ),
       ),
     );
@@ -101,6 +141,7 @@ void main() {
     expect(find.byKey(const Key('ai-assistant-message')), findsOneWidget);
     expect(find.text('你好，世界'), findsOneWidget);
     expect(find.text('介绍一下你自己'), findsWidgets);
+    expect(find.text('联网搜索'), findsNothing);
     expect(find.byKey(const Key('ai-answer-actions')), findsOneWidget);
     expect(find.byIcon(Icons.thumb_up_alt_outlined), findsOneWidget);
     await tester.tap(find.byIcon(Icons.thumb_up_alt_outlined));
@@ -109,6 +150,8 @@ void main() {
     expect(adapter.lastRequest?.path, '/chat/completions');
     expect(adapter.lastRequest?.data['model'], 'deepseek-flash');
     expect(adapter.lastRequest?.data['stream'], isTrue);
+    expect(historyStore.conversations, hasLength(1));
+    expect(historyStore.conversations.single.messages, hasLength(2));
   });
 
   testWidgets('聊天内容可滚动时按钮支持跳转顶部和底部', (tester) async {
@@ -118,6 +161,7 @@ void main() {
 
     final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
       ..httpClientAdapter = _ChatStreamAdapter(longResponse: true);
+    final historyStore = _MemoryHistoryStore();
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('zh'),
@@ -129,6 +173,7 @@ void main() {
         home: AiPage(
           settingsStore: _ChatSettingsStore(),
           api: DeepSeekApi(dio: dio),
+          historyStore: historyStore,
         ),
       ),
     );

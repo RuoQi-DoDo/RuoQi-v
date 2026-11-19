@@ -3,45 +3,39 @@ import 'package:material_ui/material_ui.dart';
 import '../../localization.dart';
 import 'ai_style.dart';
 
-enum AiHistoryGroup { today, yesterday, lastSevenDays }
+enum AiHistoryGroup { today, yesterday, lastSevenDays, older }
 
 enum _HistoryAction { rename, pin, multiSelect, delete }
 
 class AiHistoryEntry {
   const AiHistoryEntry({
+    required this.id,
     required this.title,
-    required this.prompt,
     required this.group,
+    required this.updatedAt,
+    this.pinned = false,
   });
 
+  final String id;
   final String title;
-  final String prompt;
   final AiHistoryGroup group;
-}
+  final DateTime updatedAt;
+  final bool pinned;
 
-List<AiHistoryEntry> buildDemoAiHistoryEntries(AppLocalizations text) {
-  return [
-    AiHistoryEntry(
-      title: text.text('如何提高招聘沟通效率', 'Improving recruiting outreach'),
-      prompt: text.text('如何提高招聘沟通效率', 'How can I improve recruiting outreach?'),
-      group: AiHistoryGroup.today,
-    ),
-    AiHistoryEntry(
-      title: text.text('帮我润色职位描述', 'Polishing a job description'),
-      prompt: text.text('帮我润色职位描述', 'Help me polish a job description'),
-      group: AiHistoryGroup.yesterday,
-    ),
-    AiHistoryEntry(
-      title: text.text('整理本周工作重点', 'Planning this week'),
-      prompt: text.text('整理本周工作重点', 'Help me plan this week'),
-      group: AiHistoryGroup.lastSevenDays,
-    ),
-    AiHistoryEntry(
-      title: text.text('写一封面试邀请', 'Drafting an interview invite'),
-      prompt: text.text('写一封面试邀请', 'Write an interview invitation'),
-      group: AiHistoryGroup.lastSevenDays,
-    ),
-  ];
+  AiHistoryEntry copyWith({
+    String? title,
+    AiHistoryGroup? group,
+    DateTime? updatedAt,
+    bool? pinned,
+  }) {
+    return AiHistoryEntry(
+      id: id,
+      title: title ?? this.title,
+      group: group ?? this.group,
+      updatedAt: updatedAt ?? this.updatedAt,
+      pinned: pinned ?? this.pinned,
+    );
+  }
 }
 
 class AiHistoryPanel extends StatefulWidget {
@@ -51,12 +45,18 @@ class AiHistoryPanel extends StatefulWidget {
     required this.onSelect,
     required this.modelName,
     required this.onOpenSettings,
+    required this.onRename,
+    required this.onPin,
+    required this.onDelete,
   });
 
   final List<AiHistoryEntry> entries;
   final ValueChanged<AiHistoryEntry> onSelect;
   final String modelName;
   final VoidCallback onOpenSettings;
+  final Future<void> Function(AiHistoryEntry entry, String title) onRename;
+  final Future<void> Function(AiHistoryEntry entry, bool pinned) onPin;
+  final Future<void> Function(AiHistoryEntry entry) onDelete;
 
   @override
   State<AiHistoryPanel> createState() => _AiHistoryPanelState();
@@ -64,9 +64,7 @@ class AiHistoryPanel extends StatefulWidget {
 
 class _AiHistoryPanelState extends State<AiHistoryPanel> {
   final TextEditingController _search = TextEditingController();
-  late final List<AiHistoryEntry> _entries = List<AiHistoryEntry>.of(
-    widget.entries,
-  );
+  late List<AiHistoryEntry> _entries = List<AiHistoryEntry>.of(widget.entries);
   final Set<AiHistoryEntry> _selected = <AiHistoryEntry>{};
   bool _selectionMode = false;
 
@@ -74,6 +72,15 @@ class _AiHistoryPanelState extends State<AiHistoryPanel> {
   void initState() {
     super.initState();
     _search.addListener(_refreshSearch);
+  }
+
+  @override
+  void didUpdateWidget(covariant AiHistoryPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.entries, widget.entries)) {
+      _entries = List<AiHistoryEntry>.of(widget.entries);
+      _selected.clear();
+    }
   }
 
   @override
@@ -177,13 +184,13 @@ class _AiHistoryPanelState extends State<AiHistoryPanel> {
         await _renameEntry(entry);
         break;
       case _HistoryAction.pin:
-        _pinEntry(entry);
+        await _pinEntry(entry);
         break;
       case _HistoryAction.multiSelect:
         _beginSelection(entry);
         break;
       case _HistoryAction.delete:
-        _deleteEntry(entry);
+        await _deleteEntry(entry);
         break;
     }
   }
@@ -252,36 +259,40 @@ class _AiHistoryPanelState extends State<AiHistoryPanel> {
     if (!mounted || renamed == null || renamed.isEmpty) {
       return;
     }
-    final index = _entries.indexOf(entry);
+    final index = _entries.indexWhere((item) => item.id == entry.id);
     if (index < 0) {
       return;
     }
     setState(() {
-      _entries[index] = AiHistoryEntry(
+      _entries[index] = _entries[index].copyWith(
         title: renamed,
-        prompt: entry.prompt,
-        group: entry.group,
+        updatedAt: DateTime.now(),
       );
     });
+    await widget.onRename(entry, renamed);
   }
 
-  void _pinEntry(AiHistoryEntry entry) {
-    final index = _entries.indexOf(entry);
+  Future<void> _pinEntry(AiHistoryEntry entry) async {
+    final index = _entries.indexWhere((item) => item.id == entry.id);
     if (index < 0) {
       return;
     }
+    final current = _entries[index];
+    final pinned = !current.pinned;
     setState(() {
       _entries
         ..removeAt(index)
         ..insert(
           0,
-          AiHistoryEntry(
-            title: entry.title,
-            prompt: entry.prompt,
-            group: AiHistoryGroup.today,
+          current.copyWith(
+            pinned: pinned,
+            group: pinned
+                ? AiHistoryGroup.today
+                : _groupForDate(current.updatedAt),
           ),
         );
     });
+    await widget.onPin(entry, pinned);
   }
 
   void _beginSelection(AiHistoryEntry entry) {
@@ -293,11 +304,29 @@ class _AiHistoryPanelState extends State<AiHistoryPanel> {
     });
   }
 
-  void _deleteEntry(AiHistoryEntry entry) {
+  Future<void> _deleteEntry(AiHistoryEntry entry) async {
     setState(() {
-      _entries.remove(entry);
-      _selected.remove(entry);
+      _entries.removeWhere((item) => item.id == entry.id);
+      _selected.removeWhere((item) => item.id == entry.id);
     });
+    await widget.onDelete(entry);
+  }
+
+  AiHistoryGroup _groupForDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(date.year, date.month, date.day);
+    final difference = today.difference(day).inDays;
+    if (difference <= 0) {
+      return AiHistoryGroup.today;
+    }
+    if (difference == 1) {
+      return AiHistoryGroup.yesterday;
+    }
+    if (difference < 7) {
+      return AiHistoryGroup.lastSevenDays;
+    }
+    return AiHistoryGroup.older;
   }
 
   @override
@@ -374,7 +403,9 @@ class _AiHistoryPanelState extends State<AiHistoryPanel> {
             child: visible.isEmpty
                 ? Center(
                     child: Text(
-                      text.text('没有找到相关对话', 'No matching chats'),
+                      query.isEmpty
+                          ? text.text('暂无对话记录', 'No chats yet')
+                          : text.text('没有找到相关对话', 'No matching chats'),
                       style: TextStyle(
                         color: AiColors.muted(context),
                         fontSize: 14,
@@ -473,6 +504,7 @@ class _AiHistoryPanelState extends State<AiHistoryPanel> {
       AiHistoryGroup.today => text.text('今天', 'Today'),
       AiHistoryGroup.yesterday => text.text('昨天', 'Yesterday'),
       AiHistoryGroup.lastSevenDays => text.text('7 天内', 'Previous 7 days'),
+      AiHistoryGroup.older => text.text('更早', 'Earlier'),
     };
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/miniapp/ats/ats_miniapp.dart';
@@ -380,6 +382,44 @@ void main() {
   });
 
   testWidgets('AI 左上角打开 DeepSeek 式历史侧边栏并支持管理', (tester) async {
+    final now = DateTime.now();
+    SharedPreferences.setMockInitialValues({
+      'deepseek_chat_history_v1': jsonEncode([
+        {
+          'id': 'conversation-today',
+          'title': '如何提高招聘沟通效率',
+          'createdAt': now.toIso8601String(),
+          'updatedAt': now.toIso8601String(),
+          'pinned': false,
+          'messages': [
+            {'role': 'user', 'content': '如何提高招聘沟通效率'},
+            {'role': 'assistant', 'content': '可以从明确目标开始。'},
+          ],
+        },
+        {
+          'id': 'conversation-yesterday',
+          'title': '帮我润色职位描述',
+          'createdAt': now.subtract(const Duration(days: 1)).toIso8601String(),
+          'updatedAt': now.subtract(const Duration(days: 1)).toIso8601String(),
+          'pinned': false,
+          'messages': [
+            {'role': 'user', 'content': '帮我润色职位描述'},
+            {'role': 'assistant', 'content': '可以，把原文发给我。'},
+          ],
+        },
+        {
+          'id': 'conversation-week',
+          'title': '整理本周工作重点',
+          'createdAt': now.subtract(const Duration(days: 3)).toIso8601String(),
+          'updatedAt': now.subtract(const Duration(days: 3)).toIso8601String(),
+          'pinned': false,
+          'messages': [
+            {'role': 'user', 'content': '整理本周工作重点'},
+            {'role': 'assistant', 'content': '先确认最重要的目标。'},
+          ],
+        },
+      ]),
+    });
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -437,6 +477,11 @@ void main() {
     );
     await tester.tap(find.byKey(const Key('ai-history-rename-confirm')));
     await tester.pumpAndSettle();
+    final historyPreferences = await SharedPreferences.getInstance();
+    expect(
+      historyPreferences.getString('deepseek_chat_history_v1'),
+      contains('招聘沟通优化'),
+    );
     expect(find.text('招聘沟通优化'), findsOneWidget);
 
     await tester.enterText(find.byKey(const Key('ai-history-search')), '职位');

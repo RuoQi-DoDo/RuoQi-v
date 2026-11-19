@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:record/record.dart';
 import 'package:share_plus/share_plus.dart';
@@ -13,17 +14,25 @@ import '../../localization.dart';
 import '../common/page_widgets.dart';
 import 'ai_history_drawer.dart';
 import 'ai_style.dart';
+import 'chat_history_store.dart';
 import 'deepseek_api.dart';
 import 'deepseek_settings_store.dart';
 import 'deepseek_icons.dart';
 
 /// A DeepSeek-inspired AI conversation surface with local demo interactions.
 class AiPage extends StatefulWidget {
-  const AiPage({super.key, this.onOpenSettings, this.settingsStore, this.api});
+  const AiPage({
+    super.key,
+    this.onOpenSettings,
+    this.settingsStore,
+    this.api,
+    this.historyStore,
+  });
 
   final VoidCallback? onOpenSettings;
   final DeepSeekSettingsStore? settingsStore;
   final DeepSeekApi? api;
+  final ChatHistoryStore? historyStore;
 
   @override
   State<AiPage> createState() => _AiPageState();
@@ -38,6 +47,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   late final DeepSeekApi _api = widget.api ?? DeepSeekApi();
   late final DeepSeekSettingsStore _settingsStore =
       widget.settingsStore ?? const SharedPreferencesDeepSeekSettingsStore();
+  late final ChatHistoryStore _historyStore =
+      widget.historyStore ?? const SharedPreferencesChatHistoryStore();
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _audioPlayer = AudioPlayer();
   StreamSubscription<DeepSeekChatChunk>? _chatSubscription;
@@ -48,6 +59,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   bool _responding = false;
   String _selectedModelName = '';
   String _conversationTitle = '';
+  String? _activeConversationId;
+  DateTime? _conversationCreatedAt;
+  List<AiHistoryEntry> _historyEntries = const [];
   DeepSeekFile? _attachmentFile;
   bool _recording = false;
   bool _messagesAtBottom = true;
@@ -97,6 +111,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     setState(() {
       _messages.clear();
       _conversationTitle = '';
+      _activeConversationId = null;
+      _conversationCreatedAt = null;
       _deepThinking = false;
       _webSearch = true;
       _autoRead = false;
@@ -165,7 +181,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     var responseBuffer = '';
     setState(() {
       _selectedModelName = settings.selectedModelName;
-      _conversationTitle = nextTitle;
+      _conversationTitle = _shortTitle(nextTitle);
+      if (addUserMessage && _activeConversationId == null) {
+        final now = DateTime.now();
+        _activeConversationId = 'conversation-${now.microsecondsSinceEpoch}';
+        _conversationCreatedAt = now;
+      }
       if (addUserMessage) {
         _messages.add(_AiMessage.user(prompt));
         _attachmentFile = null;
@@ -225,6 +246,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                 ),
               );
             });
+            unawaited(_saveCurrentConversation());
             _scrollMessagesToEnd();
           },
           onDone: () {
@@ -246,6 +268,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
             if (_autoRead && responseBuffer.trim().isNotEmpty) {
               unawaited(_speakText(responseBuffer.trim()));
             }
+            unawaited(_saveCurrentConversation());
             _scrollMessagesToEnd();
           },
         );
@@ -332,6 +355,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         feedback: message.feedback == feedback ? 0 : feedback,
       );
     });
+    unawaited(_saveCurrentConversation());
   }
 
   Future<void> _shareMessage(String content) async {
@@ -409,63 +433,15 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     );
   }
 
-  String _demoResponse(String prompt) {
-    final l10n = AppLocalizations.of(context);
-    if (prompt.contains('工作') || prompt.toLowerCase().contains('work')) {
-      return l10n.text(
-        '可以从三件事开始：\n\n'
-            '1. 先确认今天最重要的一个结果。\n'
-            '2. 把任务拆成 25–45 分钟可以完成的小块。\n'
-            '3. 留出一段不被打断的时间处理核心工作。\n\n'
-            '需要的话，我可以继续帮你整理成一份可执行的今日清单。',
-        'Start with three things:\n\n'
-            '1. Define the one most important outcome for today.\n'
-            '2. Break the work into 25–45 minute blocks.\n'
-            '3. Protect one uninterrupted block for the core task.\n\n'
-            'I can turn this into an actionable checklist if you like.',
-      );
-    }
-    if (prompt.contains('邀请') || prompt.toLowerCase().contains('invite')) {
-      return l10n.text(
-        '当然可以：\n\n'
-            '你好，我们认真阅读了你的经历，认为你与当前岗位非常匹配。'
-            '想邀请你参加一次线上沟通，预计约 30 分钟。'
-            '请告知你方便的时间，我们会为你安排会议链接。\n\n'
-            '你可以把岗位名称和时间补充给我，我会继续润色。',
-        'Of course:\n\n'
-            'Hello, we reviewed your experience and believe you are a strong '
-            'match for this role. We would like to invite you to a 30-minute '
-            'online conversation. Please share a convenient time and we will '
-            'send you a meeting link.\n\n'
-            'Tell me the role and preferred time to refine it further.',
-      );
-    }
-    if (prompt.contains('润色') || prompt.toLowerCase().contains('polish')) {
-      return l10n.text(
-        '没问题。把原文发给我，我会在保留原意的基础上，'
-            '让表达更清晰、专业，并根据使用场景调整语气。',
-        'Sure. Send me the original text and I will make it clearer and more '
-            'professional while preserving the meaning and tone you need.',
-      );
-    }
-    return l10n.text(
-      '收到。这是 RuoQi AI 的界面演示，我已经记录你的问题：\n\n'
-          '“$prompt”\n\n'
-          '你可以继续补充背景、目标或期望格式，我会按更完整的信息给出结果。',
-      'Got it. This is the RuoQi AI interface demo and I have noted your '
-          'question:\n\n'
-          '"$prompt"\n\n'
-          'Add more context, goals, or a preferred format and I will respond '
-          'with a more complete result.',
-    );
-  }
-
   double _historyWidth(BuildContext context) =>
       math.min(288.0, MediaQuery.sizeOf(context).width * 0.84);
 
-  void _showHistory() {
+  Future<void> _showHistory() async {
     FocusScope.of(context).unfocus();
-    unawaited(_loadDeepSeekSettings());
+    await Future.wait([_loadDeepSeekSettings(), _loadHistoryEntries()]);
+    if (!mounted) {
+      return;
+    }
     _historyController.animateTo(
       1,
       duration: const Duration(milliseconds: 280),
@@ -514,22 +490,140 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     }
   }
 
-  void _openHistoryEntry(AiHistoryEntry entry) {
+  Future<void> _openHistoryEntry(AiHistoryEntry entry) async {
     _closeHistory();
     _responseTimer?.cancel();
+    _chatSubscription?.cancel();
+    _chatGeneration++;
     _composer.clear();
-    final response = _demoResponse(entry.prompt);
+    final conversation = await _historyStore.getConversation(entry.id);
+    if (!mounted || conversation == null) {
+      return;
+    }
     setState(() {
       _messages
         ..clear()
-        ..add(_AiMessage.user(entry.prompt))
-        ..add(_AiMessage.assistant(response, webSearch: true));
-      _conversationTitle = entry.title;
-      _deepThinking = false;
-      _webSearch = true;
+        ..addAll(conversation.messages.map(_toAiMessage));
+      _conversationTitle = conversation.title;
+      _activeConversationId = conversation.id;
+      _conversationCreatedAt = conversation.createdAt;
+      final lastAssistant = conversation.messages.lastWhere(
+        (message) => message.role == 'assistant',
+        orElse: () => const ChatHistoryMessage(role: 'assistant', content: ''),
+      );
+      _deepThinking = lastAssistant.deepThinking;
+      _webSearch = lastAssistant.webSearch;
       _responding = false;
     });
     _scrollMessagesToEnd();
+  }
+
+  Future<void> _loadHistoryEntries() async {
+    try {
+      final conversations = await _historyStore.loadConversations();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _historyEntries = conversations
+            .map(
+              (conversation) => AiHistoryEntry(
+                id: conversation.id,
+                title: conversation.title,
+                group: _historyGroup(conversation.updatedAt),
+                updatedAt: conversation.updatedAt,
+                pinned: conversation.pinned,
+              ),
+            )
+            .toList(growable: false);
+      });
+    } catch (_) {
+      // Keep the drawer usable when history storage is unavailable.
+    }
+  }
+
+  AiHistoryGroup _historyGroup(DateTime updatedAt) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(updatedAt.year, updatedAt.month, updatedAt.day);
+    final difference = today.difference(day).inDays;
+    if (difference <= 0) {
+      return AiHistoryGroup.today;
+    }
+    if (difference == 1) {
+      return AiHistoryGroup.yesterday;
+    }
+    if (difference < 7) {
+      return AiHistoryGroup.lastSevenDays;
+    }
+    return AiHistoryGroup.older;
+  }
+
+  _AiMessage _toAiMessage(ChatHistoryMessage message) {
+    return message.role == 'assistant'
+        ? _AiMessage.assistant(
+            message.content,
+            deepThinking: message.deepThinking,
+            webSearch: message.webSearch,
+          ).copyWith(feedback: message.feedback)
+        : _AiMessage.user(message.content);
+  }
+
+  Future<void> _saveCurrentConversation() async {
+    final id = _activeConversationId;
+    if (id == null || _messages.isEmpty) {
+      return;
+    }
+    final now = DateTime.now();
+    final conversation = ChatConversation(
+      id: id,
+      title: _conversationTitle.isEmpty
+          ? AppLocalizations.of(context).text('新对话', 'New chat')
+          : _conversationTitle,
+      createdAt: _conversationCreatedAt ?? now,
+      updatedAt: now,
+      messages: _messages
+          .map(
+            (message) => ChatHistoryMessage(
+              role: message.role == _AiRole.user ? 'user' : 'assistant',
+              content: message.content,
+              deepThinking: message.deepThinking,
+              webSearch: message.webSearch,
+              feedback: message.feedback,
+            ),
+          )
+          .toList(growable: false),
+    );
+    await _historyStore.saveConversation(conversation);
+  }
+
+  Future<void> _renameHistoryEntry(AiHistoryEntry entry, String title) async {
+    await _historyStore.renameConversation(entry.id, title);
+    if (mounted && _activeConversationId == entry.id) {
+      setState(() => _conversationTitle = title);
+    }
+    await _loadHistoryEntries();
+  }
+
+  Future<void> _pinHistoryEntry(AiHistoryEntry entry, bool pinned) async {
+    await _historyStore.setPinned(entry.id, pinned);
+    await _loadHistoryEntries();
+  }
+
+  Future<void> _deleteHistoryEntry(AiHistoryEntry entry) async {
+    await _historyStore.deleteConversation(entry.id);
+    if (mounted && _activeConversationId == entry.id) {
+      _newConversation();
+    }
+    await _loadHistoryEntries();
+  }
+
+  String _shortTitle(String value) {
+    final normalized = value.replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (normalized.runes.length <= 24) {
+      return normalized;
+    }
+    return String.fromCharCodes(normalized.runes.take(24));
   }
 
   Future<DeepSeekSettings?> _requireDeepSeekSettings() async {
@@ -1045,8 +1139,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       scaffoldBackgroundColor: AiColors.background(context),
       colorScheme: aiScheme,
     );
-    final text = AppLocalizations.of(context);
-    final historyEntries = buildDemoAiHistoryEntries(text);
+    final historyEntries = _historyEntries;
 
     return Theme(
       data: aiTheme,
@@ -1232,6 +1325,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                       _closeHistory();
                                       widget.onOpenSettings?.call();
                                     },
+                                    onRename: _renameHistoryEntry,
+                                    onPin: _pinHistoryEntry,
+                                    onDelete: _deleteHistoryEntry,
                                   ),
                                 ),
                               ),
@@ -1634,34 +1730,54 @@ class _AiMessageBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (message.deepThinking || message.webSearch) ...[
+            if (message.deepThinking) ...[
               Wrap(
                 spacing: 6,
                 runSpacing: 6,
                 children: [
-                  if (message.deepThinking)
-                    _AiModeTag(
-                      icon: Icons.psychology_alt_outlined,
-                      label: AppLocalizations.of(context)
-                          .text('深度思考', 'Deep thinking'),
-                    ),
-                  if (message.webSearch)
-                    _AiModeTag(
-                      icon: Icons.language_rounded,
-                      label: AppLocalizations.of(context)
-                          .text('联网搜索', 'Web search'),
-                    ),
+                  _AiModeTag(
+                    icon: Icons.psychology_alt_outlined,
+                    label: AppLocalizations.of(context)
+                        .text('深度思考', 'Deep thinking'),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
             ],
-            SelectableText(
-              message.content,
-              style: TextStyle(
-                color: AiColors.text(context),
-                fontSize: 18,
-                height: 1.72,
-                letterSpacing: -0.08,
+            MarkdownBody(
+              data: message.content,
+              selectable: true,
+              styleSheet: MarkdownStyleSheet(
+                p: TextStyle(
+                  color: AiColors.text(context),
+                  fontSize: 18.5,
+                  height: 1.72,
+                  letterSpacing: -0.08,
+                ),
+                h1: TextStyle(
+                  color: AiColors.text(context),
+                  fontSize: 23,
+                  height: 1.45,
+                  fontWeight: FontWeight.w700,
+                ),
+                h2: TextStyle(
+                  color: AiColors.text(context),
+                  fontSize: 20.5,
+                  height: 1.5,
+                  fontWeight: FontWeight.w700,
+                ),
+                h3: TextStyle(
+                  color: AiColors.text(context),
+                  fontSize: 19,
+                  height: 1.55,
+                  fontWeight: FontWeight.w600,
+                ),
+                listBullet: TextStyle(
+                  color: AiColors.text(context),
+                  fontSize: 18.5,
+                  height: 1.65,
+                ),
+                blockSpacing: 12,
               ),
             ),
             if (showActions) ...[
