@@ -203,7 +203,7 @@ class _AiHistoryPanelState extends State<AiHistoryPanel> {
     bool destructive = false,
   }) {
     final color = destructive
-        ? const Color(0xFFFF5E66)
+        ? AiColors.danger(context)
         : AiColors.text(context);
     return PopupMenuItem<_HistoryAction>(
       value: value,
@@ -596,18 +596,20 @@ class _HistoryRow extends StatelessWidget {
                     height: 20,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: selected ? AiColors.accent : Colors.transparent,
+                      color: selected
+                          ? AiColors.accent(context)
+                          : Colors.transparent,
                       border: Border.all(
                         color: selected
-                            ? AiColors.accent
+                            ? AiColors.accent(context)
                             : AiColors.border(context),
                         width: 1.4,
                       ),
                     ),
                     child: selected
-                        ? const Icon(
+                        ? Icon(
                             Icons.check_rounded,
-                            color: Colors.white,
+                            color: AiColors.onAccent(context),
                             size: 14,
                           )
                         : null,
