@@ -16,6 +16,7 @@ String pageLabel(BuildContext context, String label) {
     'DeepSeek API': 'DeepSeek API',
     'DeepSeek API Key': 'DeepSeek API Key',
     '当前模型': 'Current model',
+    '未选择模型': 'No model selected',
     '可用模型': 'Available models',
     '通用模型': 'General model',
     '深度思考': 'Deep reasoning',

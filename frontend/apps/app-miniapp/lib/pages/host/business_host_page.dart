@@ -240,16 +240,19 @@ class _BusinessHostPageState extends State<BusinessHostPage>
     await _openMiniProgramLauncherItem(pinnedItem);
   }
 
-  void _openSettingsPage() {
-    Navigator.of(context).push<void>(
+  Future<void> _openSettingsPage() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    await Navigator.of(context).push<void>(
       SettingsPage.route(
         onLogout: widget.onLogout,
         loginBuilder: widget.loginBuilder,
       ),
     );
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   void _selectHostTab(HostTab tab) {
+    FocusManager.instance.primaryFocus?.unfocus();
     if (_hostTab == tab) {
       return;
     }

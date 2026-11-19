@@ -49,11 +49,13 @@ class AiHistoryPanel extends StatefulWidget {
     super.key,
     required this.entries,
     required this.onSelect,
+    required this.modelName,
     required this.onOpenSettings,
   });
 
   final List<AiHistoryEntry> entries;
   final ValueChanged<AiHistoryEntry> onSelect;
+  final String modelName;
   final VoidCallback onOpenSettings;
 
   @override
@@ -314,11 +316,11 @@ class _AiHistoryPanelState extends State<AiHistoryPanel> {
           Padding(
             padding: const EdgeInsets.fromLTRB(17, 13, 17, 8),
             child: Container(
-              height: 52,
+              height: 46,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: AiColors.searchSurface(context),
-                borderRadius: BorderRadius.circular(26),
+                borderRadius: BorderRadius.circular(23),
               ),
               child: Row(
                 children: [
@@ -405,60 +407,60 @@ class _AiHistoryPanelState extends State<AiHistoryPanel> {
                     ],
                   ),
           ),
-          SafeArea(
-            top: false,
-            child: InkWell(
-              key: const Key('ai-history-settings'),
-              onTap: widget.onOpenSettings,
-              child: SizedBox(
-                height: 72,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 17),
-                  child: Row(
+          Container(
+            key: const Key('ai-history-model'),
+            padding: const EdgeInsets.fromLTRB(24, 12, 16, 16),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: AiColors.border(context),
+                  width: 1 / MediaQuery.devicePixelRatioOf(context),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [Color(0xFFF0D6B8), Color(0xFFCEA985)],
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.person_rounded,
-                          color: Colors.white,
-                          size: 29,
-                        ),
-                      ),
-                      const SizedBox(width: 13),
-                      Expanded(
-                        child: Text(
-                          'Jengro Woo',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: AiColors.text(context),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                      ),
-                      Tooltip(
-                        message: text.text('设置', 'Settings'),
-                        child: Icon(
-                          Icons.more_horiz_rounded,
-                          size: 23,
+                      Text(
+                        text.text('当前模型', 'Current model'),
+                        style: TextStyle(
                           color: AiColors.muted(context),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        widget.modelName.isEmpty
+                            ? text.text('未选择模型', 'No model selected')
+                            : widget.modelName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AiColors.text(context),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
+                IconButton(
+                  key: const Key('ai-history-settings'),
+                  tooltip: text.text('设置', 'Settings'),
+                  onPressed: widget.onOpenSettings,
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    Icons.more_horiz_rounded,
+                    size: 23,
+                    color: AiColors.muted(context),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

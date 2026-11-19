@@ -376,7 +376,7 @@ void main() {
     expect(find.textContaining('先确认今天最重要的一个结果'), findsOneWidget);
   });
 
-  testWidgets('AI 左上角打开 DeepSeek 式历史侧边栏并可进入设置', (tester) async {
+  testWidgets('AI 左上角打开 DeepSeek 式历史侧边栏并支持管理', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -404,7 +404,10 @@ void main() {
     expect(find.text('昨天'), findsOneWidget);
     expect(find.text('7 天内'), findsOneWidget);
     expect(find.text('如何提高招聘沟通效率'), findsOneWidget);
-    expect(find.text('Jengro Woo'), findsOneWidget);
+    expect(find.byKey(const Key('ai-history-settings')), findsOneWidget);
+    expect(find.text('Jengro Woo'), findsNothing);
+    expect(find.byKey(const Key('ai-history-model')), findsOneWidget);
+    expect(find.text('当前模型'), findsOneWidget);
 
     await tester.dragFrom(const Offset(280, 420), const Offset(-260, 0));
     await tester.pumpAndSettle();
@@ -542,6 +545,41 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('settings-page')), findsOneWidget);
     expect(find.text('未选择'), findsOneWidget);
+  });
+
+  testWidgets('从设置返回并切换 AI 页面时不恢复输入框焦点', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.pumpAndSettle();
+
+    final composer = find.byKey(const Key('ai-composer'), skipOffstage: false);
+    final editable = find.descendant(
+      of: composer,
+      matching: find.byType(EditableText, skipOffstage: false),
+      skipOffstage: false,
+    );
+    await tester.tap(composer);
+    await tester.pump();
+    expect(tester.widget<EditableText>(editable).focusNode.hasFocus, isTrue);
+
+    await tester.tap(find.byKey(const Key('host-tab-me')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<EditableText>(editable).focusNode.hasFocus, isFalse);
+
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-back')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<EditableText>(editable).focusNode.hasFocus, isFalse);
+    expect(tester.testTextInput.isVisible, isFalse);
   });
 
   testWidgets('正常模式与黑色模式可切换并覆盖 AI 页', (tester) async {

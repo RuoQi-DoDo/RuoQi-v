@@ -7,6 +7,7 @@ import '../../localization.dart';
 import '../common/page_widgets.dart';
 import 'ai_history_drawer.dart';
 import 'ai_style.dart';
+import 'deepseek_settings_store.dart';
 import 'deepseek_icons.dart';
 
 /// A DeepSeek-inspired AI conversation surface with local demo interactions.
@@ -30,6 +31,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   bool _webSearch = true;
   bool _autoRead = false;
   bool _responding = false;
+  String _selectedModelName = '';
 
   @override
   void initState() {
@@ -39,6 +41,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       duration: const Duration(milliseconds: 280),
       reverseDuration: const Duration(milliseconds: 240),
     );
+    unawaited(_loadSelectedModel());
     _composer.addListener(_handleComposerChanged);
   }
 
@@ -173,11 +176,25 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
 
   void _showHistory() {
     FocusScope.of(context).unfocus();
+    unawaited(_loadSelectedModel());
     _historyController.animateTo(
       1,
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeOutCubic,
     );
+  }
+
+  Future<void> _loadSelectedModel() async {
+    try {
+      final settings = await const SharedPreferencesDeepSeekSettingsStore()
+          .load();
+      if (!mounted || settings.selectedModelName == _selectedModelName) {
+        return;
+      }
+      setState(() => _selectedModelName = settings.selectedModelName);
+    } catch (_) {
+      // The drawer remains usable when local preferences are unavailable.
+    }
   }
 
   void _closeHistory() {
@@ -391,6 +408,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                   bottom: false,
                                   child: AiHistoryPanel(
                                     entries: historyEntries,
+                                    modelName: _selectedModelName,
                                     onSelect: (entry) {
                                       _closeHistory();
                                       _openHistoryEntry(entry);
