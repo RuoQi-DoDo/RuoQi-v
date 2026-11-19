@@ -77,6 +77,8 @@ void main() {
     await tester.tap(find.byKey(const Key('phone-code-verify')));
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.pumpAndSettle();
     expect(find.text('Enterprise Recruiting'), findsOneWidget);
     expect(find.text('File Transfer'), findsOneWidget);
     expect(
@@ -121,6 +123,9 @@ void main() {
 
     expect(find.text('欢迎使用 RuoQi'), findsNothing);
     expect(find.byKey(const Key('phone-login-page')), findsNothing);
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.pumpAndSettle();
     expect(find.text('企业直聘'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -210,6 +215,8 @@ void main() {
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('host-tab-home')));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('im-new-chat-button')));

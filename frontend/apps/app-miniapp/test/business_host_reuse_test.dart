@@ -27,6 +27,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    await tester.tap(find.text('业务首页'));
+    await tester.pumpAndSettle();
     expect(find.text('其他业务工作台'), findsOneWidget);
     expect(find.text('客户模拟'), findsNothing);
     await tester.tap(find.text('增加业务计数'));

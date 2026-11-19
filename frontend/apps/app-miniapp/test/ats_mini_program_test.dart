@@ -54,7 +54,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('应用默认打开客户首页，再进入小程序并可退出', (tester) async {
+  testWidgets('应用默认打开 AI 首页，再切到聊天进入小程序并可退出', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -62,6 +62,8 @@ void main() {
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    expect(find.byKey(const Key('customer-home-scroll')), findsNothing);
     expect(find.text('客户模拟'), findsNothing);
     expect(find.text('最近使用的小程序'), findsNothing);
     expect(find.text('下拉打开最近使用的小程序'), findsNothing);
@@ -205,6 +207,8 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.pumpAndSettle();
 
     double panelScale() {
       return tester
@@ -267,6 +271,8 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.pumpAndSettle();
     await tester.drag(
       find.byKey(const Key('customer-home-scroll')),
       const Offset(0, 320),
@@ -294,6 +300,8 @@ void main() {
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('host-tab-home')));
     await tester.pumpAndSettle();
     await tester.drag(
       find.byKey(const Key('customer-home-scroll')),
@@ -328,7 +336,7 @@ void main() {
     expect(find.text('最近'), findsOneWidget);
   });
 
-  testWidgets('AI、发现、我三个底栏页面可切换', (tester) async {
+  testWidgets('AI 为默认首页，底栏顺序为 AI、聊天、发现、我', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -336,12 +344,22 @@ void main() {
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
-    await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-page')), findsOneWidget);
     expect(find.byKey(const Key('ai-whale-mark')), findsOneWidget);
     expect(find.text('你好，我是 RuoQi'), findsOneWidget);
     expect(find.text('发消息或按住说话'), findsOneWidget);
+    final tabCenters = [
+      for (final tab in ['ai', 'home', 'discover', 'me'])
+        tester.getCenter(find.byKey(Key('host-tab-$tab'))).dx,
+    ];
+    for (var index = 1; index < tabCenters.length; index++) {
+      expect(tabCenters[index], greaterThan(tabCenters[index - 1]));
+    }
+
+    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('customer-home-scroll')), findsOneWidget);
+    expect(find.text('企业直聘'), findsOneWidget);
 
     await tester.tap(find.text('发现').last);
     await tester.pumpAndSettle();
@@ -819,6 +837,8 @@ Future<void> _openAts(WidgetTester tester) async {
 }
 
 Future<void> _openAtsFromCustomer(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('host-tab-home')));
+  await tester.pumpAndSettle();
   await tester.drag(
     find.byKey(const Key('customer-home-scroll')),
     const Offset(0, 320),
