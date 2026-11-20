@@ -12,9 +12,9 @@ class MiniProgramLibraryController extends ChangeNotifier {
   MiniProgramLibraryController({
     List<MiniProgramLauncherItem>? recentItems,
     List<MiniProgramLauncherItem>? myItems,
-  }) : _recentItems = _unique(
-         recentItems ?? defaultRecentMiniPrograms,
-       ).map(_withoutTileKey).toList(),
+  }) : _recentItems = _unique(recentItems ?? defaultRecentMiniPrograms)
+           .map(_withoutTileKey)
+           .toList(),
        _myItems = _unique(myItems ?? defaultMyMiniPrograms).map(_asMy).toList();
 
   final List<MiniProgramLauncherItem> _recentItems;
@@ -96,7 +96,6 @@ class MiniProgramLibraryController extends ChangeNotifier {
           MiniProgramLauncherIds.ats ||
           MiniProgramLauncherIds.hr ||
           MiniProgramLauncherIds.merchant ||
-          MiniProgramLauncherIds.partner ||
           MiniProgramLauncherIds.platform => ValueKey(
             'mini-program-picker-${item.id}',
           ),

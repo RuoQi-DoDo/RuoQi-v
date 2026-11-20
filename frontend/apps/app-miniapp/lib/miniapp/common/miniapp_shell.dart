@@ -6,7 +6,7 @@ import 'widgets/miniapp_swipe_exit.dart';
 
 /// 通用业务小程序壳。
 ///
-/// 商户和伙伴页面作为全屏子视图打开，保留公共小程序导航栏、内部页面栈
+/// 商户页面作为全屏子视图打开，保留公共小程序导航栏、内部页面栈
 /// 和底部上滑退出，不使用 Dialog。
 class MiniProgramShell extends StatefulWidget {
   const MiniProgramShell({

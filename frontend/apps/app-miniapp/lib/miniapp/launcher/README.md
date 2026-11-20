@@ -4,7 +4,7 @@
 我的小程序”视图，以及把选中的 `MiniProgramLauncherItem` 上报给宿主。
 
 具体小程序路由由 IM 宿主根据 `item.id` 决定，启动器不直接依赖 ATS、HR、
-商户、伙伴或平台模块。
+商户或平台模块。
 
 - `miniapp_picker_page.dart`：选择页和小程序目录。
 - `miniapp_collection_page.dart`：最近使用 / 我的小程序集合页。

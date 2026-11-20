@@ -20,10 +20,10 @@ const _hr = MiniProgramLauncherItem(
   icon: Icons.badge_outlined,
   color: Colors.deepOrange,
 );
-const _files = MiniProgramLauncherItem(
-  id: 'file-assistant',
-  label: '文件助手',
-  icon: Icons.folder_outlined,
+const _merchant = MiniProgramLauncherItem(
+  id: 'merchant',
+  label: '商户',
+  icon: Icons.fingerprint,
   color: Colors.blue,
 );
 
@@ -40,7 +40,7 @@ void main() {
       onExit: () => exits++,
     );
 
-    final gesture = await _startDrag(tester, 'recent', 'file-assistant');
+    final gesture = await _startDrag(tester, 'recent', 'merchant');
     expect(find.byKey(const Key('mini-program-drop-add')), findsOneWidget);
     expect(find.byKey(const Key('mini-program-drop-delete')), findsOneWidget);
     await gesture.moveTo(
@@ -53,13 +53,13 @@ void main() {
     expect(controller.recentItems.map((item) => item.id), [
       'ats',
       'hr',
-      'file-assistant',
+      'merchant',
     ]);
     expect(controller.myItems.map((item) => item.id), ['ats', 'hr']);
     expect(opens, 0);
     expect(exits, 0);
     expect(find.byKey(const Key('mini-program-drop-delete')), findsNothing);
-    await tester.tap(_tile('recent', 'file-assistant'));
+    await tester.tap(_tile('recent', 'merchant'));
     await tester.pumpAndSettle();
     expect(opens, 1);
     expect(tester.takeException(), isNull);
@@ -70,18 +70,15 @@ void main() {
     addTearDown(controller.dispose);
     await _pumpPicker(tester, controller);
 
-    await _drop(tester, 'recent', 'file-assistant', 'mini-program-drop-add');
+    await _drop(tester, 'recent', 'merchant', 'mini-program-drop-add');
     expect(
-      controller.myItems.where((item) => item.id == 'file-assistant'),
+      controller.myItems.where((item) => item.id == 'merchant'),
       hasLength(1),
     );
+    expect(controller.recentItems.any((item) => item.id == 'merchant'), isTrue);
+    await _drop(tester, 'recent', 'merchant', 'mini-program-drop-add');
     expect(
-      controller.recentItems.any((item) => item.id == 'file-assistant'),
-      isTrue,
-    );
-    await _drop(tester, 'recent', 'file-assistant', 'mini-program-drop-add');
-    expect(
-      controller.myItems.where((item) => item.id == 'file-assistant'),
+      controller.myItems.where((item) => item.id == 'merchant'),
       hasLength(1),
     );
     expect(tester.takeException(), isNull);
@@ -135,11 +132,8 @@ void main() {
     final controller = MiniProgramLibraryScope.maybeOf(
       tester.element(find.byKey(const Key('customer-mini-program-picker'))),
     )!;
-    await _drop(tester, 'recent', 'file-assistant', 'mini-program-drop-delete');
-    expect(
-      controller.recentItems.any((item) => item.id == 'file-assistant'),
-      isFalse,
-    );
+    await _drop(tester, 'recent', 'hr', 'mini-program-drop-delete');
+    expect(controller.recentItems.any((item) => item.id == 'hr'), isFalse);
     await tester.drag(
       find.byKey(const Key('mini-program-picker-exit-swipe')),
       const Offset(0, -90),
@@ -148,11 +142,8 @@ void main() {
     expect(find.byKey(const Key('customer-mini-program-picker')), findsNothing);
 
     await _openPicker(tester);
-    expect(_tile('recent', 'file-assistant'), findsNothing);
-    expect(
-      controller.recentItems.any((item) => item.id == 'file-assistant'),
-      isFalse,
-    );
+    expect(_tile('recent', 'hr'), findsNothing);
+    expect(controller.recentItems.any((item) => item.id == 'hr'), isFalse);
     expect(tester.takeException(), isNull);
   });
 
@@ -181,7 +172,7 @@ void main() {
     settings.setFontScale(1.2);
     await tester.pumpAndSettle();
 
-    final gesture = await _startDrag(tester, 'recent', 'file-assistant');
+    final gesture = await _startDrag(tester, 'recent', 'hr');
     await gesture.moveTo(
       tester.getCenter(find.byKey(const Key('mini-program-drop-delete'))),
     );
@@ -189,16 +180,13 @@ void main() {
     expect(find.text('Release to delete'), findsOneWidget);
     await gesture.cancel();
     await tester.pumpAndSettle();
-    expect(
-      controller.recentItems.any((item) => item.id == 'file-assistant'),
-      isTrue,
-    );
+    expect(controller.recentItems.any((item) => item.id == 'hr'), isTrue);
     expect(tester.takeException(), isNull);
   });
 }
 
 MiniProgramLibraryController _controller() => MiniProgramLibraryController(
-  recentItems: const [_ats, _hr, _files],
+  recentItems: const [_ats, _hr, _merchant],
   myItems: const [_ats, _hr],
 );
 

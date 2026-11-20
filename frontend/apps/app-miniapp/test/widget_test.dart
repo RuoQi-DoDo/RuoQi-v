@@ -148,7 +148,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('商户和伙伴从客户小程序选择页打开', (tester) async {
+  testWidgets('商户从客户小程序选择页打开', (tester) async {
     tester.view.physicalSize = const Size(414, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
@@ -170,11 +170,6 @@ void main() {
     await tester.tap(findMaterialTooltip('退出小程序'));
     await tester.pumpAndSettle();
     expect(find.text('我的小程序'), findsOneWidget);
-
-    await tester.tap(find.byKey(const Key('mini-program-picker-partner')));
-    await tester.pumpAndSettle();
-    expect(find.text('伙伴移动端'), findsOneWidget);
-    expect(find.byType(Dialog), findsNothing);
   });
 
   testWidgets('业务端使用共享 RuoQi 主题与默认强调色', (tester) async {

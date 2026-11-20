@@ -22,7 +22,7 @@ scripts:
     description: Run the platform PC web app.
   run:app_miniapp:
     run: melos exec --scope ruoqi_app_miniapp --concurrency 1 -- flutter run
-    description: Run the business mini-app host (customer / merchant / partner).
+    description: Run the business mini-app host (customer / merchant).
   run:business_pc:
     run: melos exec --scope ruoqi_business_pc --concurrency 1 -- flutter run
     description: Run the business PC web app (customer / merchant / partner).

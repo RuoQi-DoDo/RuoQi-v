@@ -50,7 +50,6 @@ void main() {
       'hr': 'l10n/hr_labels.dart',
       'launcher': 'l10n/launcher_labels.dart',
       'merchant': 'l10n/merchant_labels.dart',
-      'partner': 'l10n/partner_labels.dart',
       'platform': 'l10n/platform_localizations.dart',
       'tospino': 'l10n/tospino_labels.dart',
     };
@@ -67,14 +66,7 @@ void main() {
     final commonAggregator = File(
       'lib/miniapp/common/l10n/miniapp_localizations.dart',
     ).readAsStringSync();
-    for (final owner in [
-      'ats',
-      'hr',
-      'merchant',
-      'partner',
-      'tospino',
-      'launcher',
-    ]) {
+    for (final owner in ['ats', 'hr', 'merchant', 'tospino', 'launcher']) {
       expect(
         commonAggregator,
         contains("import '../../$owner/l10n/${owner}_labels.dart';"),
@@ -83,7 +75,7 @@ void main() {
   });
 
   test('小程序私有 API 位于所属小程序目录', () {
-    const owners = ['ats', 'hr', 'merchant', 'partner', 'platform', 'tospino'];
+    const owners = ['ats', 'hr', 'merchant', 'platform', 'tospino'];
 
     for (final owner in owners) {
       expect(

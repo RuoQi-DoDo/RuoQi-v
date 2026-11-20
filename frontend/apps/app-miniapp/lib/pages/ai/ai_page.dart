@@ -1837,19 +1837,8 @@ class _AiWelcome extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 166,
-              height: 92,
-              child: CustomPaint(
-                key: const Key('ai-whale-mark'),
-                painter: _AiWhalePainter(
-                  accent: AiColors.accent(context),
-                  accentDeep: AiColors.accentDeep(context),
-                  belly: AiColors.softSurface(context),
-                ),
-              ),
-            ),
-            const SizedBox(height: 28),
+            const AiBrandMark(key: Key('ai-brand-mark')),
+            const SizedBox(height: 24),
             Text.rich(
               TextSpan(
                 text: text.text('你好，我是 ', 'Hello, I’m '),
@@ -1879,109 +1868,6 @@ class _AiWelcome extends StatelessWidget {
       ),
     );
   }
-}
-
-class _AiWhalePainter extends CustomPainter {
-  const _AiWhalePainter({
-    required this.accent,
-    required this.accentDeep,
-    required this.belly,
-  });
-
-  final Color accent;
-  final Color accentDeep;
-  final Color belly;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final scale = size.width / 166;
-    canvas.save();
-    canvas.scale(scale, scale);
-
-    final body = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [accentDeep, accent],
-      ).createShader(const Rect.fromLTWH(0, 0, 166, 92));
-    final bodyDeep = Paint()
-      ..color = Color.lerp(accentDeep, Colors.black, 0.2)!;
-    final underside = Paint()..color = belly;
-    final line = Paint()
-      ..color = Color.lerp(accentDeep, Colors.black, 0.36)!
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..strokeCap = StrokeCap.round;
-    final white = Paint()..color = Colors.white;
-    final pupil = Paint()..color = Color.lerp(accentDeep, Colors.black, 0.72)!;
-
-    final bodyPath = Path()
-      ..moveTo(20, 72)
-      ..cubicTo(23, 49, 50, 30, 84, 31)
-      ..cubicTo(104, 32, 119, 42, 132, 58)
-      ..cubicTo(122, 70, 98, 78, 68, 80)
-      ..cubicTo(46, 82, 29, 77, 20, 72)
-      ..close();
-    canvas.drawPath(bodyPath, body);
-
-    final tail = Path()
-      ..moveTo(127, 54)
-      ..cubicTo(140, 50, 145, 38, 158, 40)
-      ..cubicTo(153, 49, 155, 56, 162, 61)
-      ..cubicTo(164, 61, 165, 64, 166, 66)
-      ..cubicTo(154, 71, 148, 80, 135, 79)
-      ..cubicTo(125, 78, 119, 68, 115, 62)
-      ..close();
-    canvas.drawPath(tail, body);
-
-    final dorsal = Path()
-      ..moveTo(82, 32)
-      ..cubicTo(83, 18, 93, 8, 109, 4)
-      ..cubicTo(104, 18, 111, 27, 120, 36)
-      ..close();
-    canvas.drawPath(dorsal, body);
-
-    final fin = Path()
-      ..moveTo(92, 66)
-      ..cubicTo(99, 77, 113, 84, 128, 81)
-      ..cubicTo(121, 75, 115, 68, 112, 61)
-      ..close();
-    canvas.drawPath(fin, bodyDeep);
-
-    final undersidePath = Path()
-      ..moveTo(24, 66)
-      ..cubicTo(48, 72, 88, 68, 132, 58)
-      ..cubicTo(116, 75, 85, 81, 58, 79)
-      ..cubicTo(39, 78, 28, 74, 24, 66)
-      ..close();
-    canvas.drawPath(undersidePath, underside);
-
-    final smile = Path()
-      ..moveTo(110, 59)
-      ..cubicTo(118, 62, 124, 67, 131, 73);
-    canvas.drawPath(smile, line);
-
-    final eye = Path()
-      ..moveTo(52, 52)
-      ..cubicTo(59, 45, 70, 47, 75, 52)
-      ..cubicTo(69, 56, 60, 57, 52, 52)
-      ..close();
-    canvas.drawPath(eye, white);
-    canvas.drawOval(const Rect.fromLTWH(60, 49, 4.2, 5.6), pupil);
-
-    final water = Paint()
-      ..color = line.color
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(const Offset(22, 83), const Offset(101, 83), water);
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant _AiWhalePainter oldDelegate) =>
-      oldDelegate.accent != accent ||
-      oldDelegate.accentDeep != accentDeep ||
-      oldDelegate.belly != belly;
 }
 
 class _AiConversation extends StatelessWidget {

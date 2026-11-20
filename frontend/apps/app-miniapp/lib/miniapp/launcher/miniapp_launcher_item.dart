@@ -7,7 +7,6 @@ abstract final class MiniProgramLauncherIds {
   static const tospino = 'tospino';
   static const ats = 'ats';
   static const merchant = 'merchant';
-  static const partner = 'partner';
   static const hr = 'hr';
   static const platform = 'platform';
 }

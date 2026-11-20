@@ -91,22 +91,14 @@ class HostTabBar extends StatelessWidget {
                             clipBehavior: Clip.none,
                             alignment: Alignment.center,
                             children: [
-                              if (tab == HostTab.ai)
-                                AiTabIcon(
-                                  color: selected == tab
-                                      ? AiColors.accent(context)
-                                      : inactiveColor,
-                                  filled: selected == tab,
-                                  size: 24,
-                                )
-                              else
-                                Icon(
-                                  selected == tab ? activeIcon : icon,
-                                  size: 23.5,
-                                  color: selected == tab
-                                      ? scheme.primary
-                                      : inactiveColor,
-                                ),
+                              Icon(
+                                selected == tab ? activeIcon : icon,
+                                key: Key('host-tab-${tab.name}-icon'),
+                                size: 23.5,
+                                color: selected == tab
+                                    ? AiColors.accent(context)
+                                    : inactiveColor,
+                              ),
                               if (showDot)
                                 const Positioned(
                                   right: 5,
