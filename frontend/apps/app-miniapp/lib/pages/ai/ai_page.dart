@@ -1908,10 +1908,9 @@ class _AiHeader extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    key: const Key('ai-auto-read'),
-                    style: _aiIconButtonStyle,
-                    tooltip: text.text('自动朗读', 'Auto read'),
+                  _AiHeaderAction(
+                    buttonKey: const Key('ai-auto-read'),
+                    label: text.text('自动朗读', 'Auto read'),
                     onPressed: onToggleAutoRead,
                     icon: DeepSeekAutoReadIcon(
                       color: autoRead
@@ -1921,11 +1920,11 @@ class _AiHeader extends StatelessWidget {
                       size: 27,
                     ),
                   ),
-                  IconButton(
-                    key: const Key('ai-new-conversation'),
-                    style: _aiIconButtonStyle,
-                    tooltip: text.text('新对话', 'New chat'),
+                  _AiHeaderAction(
+                    buttonKey: const Key('ai-new-conversation'),
+                    label: text.text('新对话', 'New chat'),
                     onPressed: onNewConversation,
+                    onLongPress: onNewConversation,
                     icon: DeepSeekNewChatIcon(
                       color: AiColors.text(context),
                       size: 25,
@@ -1936,6 +1935,44 @@ class _AiHeader extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _AiHeaderAction extends StatelessWidget {
+  const _AiHeaderAction({
+    required this.buttonKey,
+    required this.label,
+    required this.onPressed,
+    required this.icon,
+    this.onLongPress,
+  });
+
+  final Key buttonKey;
+  final String label;
+  final VoidCallback onPressed;
+  final VoidCallback? onLongPress;
+  final Widget icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final button = IconButton(
+      key: buttonKey,
+      style: _aiIconButtonStyle,
+      onPressed: onPressed,
+      icon: icon,
+    );
+    return Semantics(
+      button: true,
+      label: label,
+      onTap: onPressed,
+      onLongPress: onLongPress,
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onLongPress: onLongPress ?? () {},
+        child: button,
       ),
     );
   }
@@ -3420,6 +3457,9 @@ class _AiComposer extends StatelessWidget {
                                             'Close attachments',
                                           )
                                         : text.text('添加附件', 'Add attachment'),
+                                    tooltipTriggerMode:
+                                        TooltipTriggerMode.manual,
+                                    onLongPress: onAttachment,
                                     onPressed: onAttachment,
                                     icon: AnimatedRotation(
                                       turns: attachmentMenuOpen ? 0.125 : 0,
@@ -3857,12 +3897,14 @@ class _AiRoundAction extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     this.tooltipTriggerMode,
+    this.onLongPress,
   });
 
   final String tooltip;
   final VoidCallback onPressed;
   final Widget icon;
   final TooltipTriggerMode? tooltipTriggerMode;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -3872,6 +3914,7 @@ class _AiRoundAction extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onPressed,
+        onLongPress: onLongPress,
         child: SizedBox.square(
           dimension: 44,
           child: Center(
