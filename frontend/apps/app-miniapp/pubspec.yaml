@@ -2,7 +2,7 @@ name: ruoqi_app_miniapp
 description: "RuoQi business mini-app host for customer, merchant and partner."
 resolution: workspace
 publish_to: 'none'
-version: 0.1.8
+version: 0.1.9
 
 environment:
   sdk: ^3.13.0
