@@ -15,8 +15,8 @@ import '../profile/me_page.dart';
 import '../settings/settings_page.dart';
 import 'host_tab_bar.dart';
 
-/// Attach this controller to the business home scroll view to share pull-down
-/// mini-program navigation with the host.
+/// Builds the business tab. The host supplies the scroll controller owned by
+/// that tab.
 typedef BusinessHomeBuilder = Widget Function(
   BuildContext context,
   ScrollController scrollController,
@@ -61,6 +61,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
   late final AnimationController _closeController;
   late final AnimationController _loadingController;
   late final ScrollController _hostScrollController;
+  late final ScrollController _aiScrollController;
   bool _pullDragging = false;
   bool _pullAnimating = false;
   bool _pullPointerCanDrag = false;
@@ -86,6 +87,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
       duration: const Duration(milliseconds: 1200),
     );
     _hostScrollController = ScrollController();
+    _aiScrollController = ScrollController();
   }
 
   @override
@@ -108,6 +110,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
     _closeController.dispose();
     _loadingController.dispose();
     _hostScrollController.dispose();
+    _aiScrollController.dispose();
     super.dispose();
   }
 
@@ -287,11 +290,12 @@ class _BusinessHostPageState extends State<BusinessHostPage>
     _pullPointerLastY = event.position.dy;
     _pullPointerCanDrag =
         _subview == _HostSubview.home &&
-        _hostTab == HostTab.home &&
         !_pullAnimating &&
-        (!_hostScrollController.hasClients ||
-            _hostScrollController.offset <=
-                _hostScrollController.position.minScrollExtent + 0.5);
+        switch (_hostTab) {
+          HostTab.ai => _isAtScrollTop(_aiScrollController),
+          HostTab.home => _isAtScrollTop(_hostScrollController),
+          HostTab.discover || HostTab.me => false,
+        };
     _pullVelocityTracker = VelocityTracker.withKind(event.kind)
       ..addPosition(event.timeStamp, event.position);
   }
@@ -349,6 +353,11 @@ class _BusinessHostPageState extends State<BusinessHostPage>
     _pullVelocityTracker = null;
     _pullPointerCanDrag = false;
     _finishPull(velocity: 0);
+  }
+
+  bool _isAtScrollTop(ScrollController controller) {
+    return !controller.hasClients ||
+        controller.offset <= controller.position.minScrollExtent + 0.5;
   }
 
   double _panelRevealProgress(double progress) {
@@ -560,18 +569,18 @@ class _BusinessHostPageState extends State<BusinessHostPage>
             child: IndexedStack(
               index: _hostTab.index,
               children: [
-                AiPage(onOpenSettings: _openSettingsPage),
-                Listener(
-                  onPointerDown: _handlePullPointerDown,
-                  onPointerMove: _handlePullPointerMove,
-                  onPointerUp: _handlePullPointerUp,
-                  onPointerCancel: _handlePullPointerCancel,
-                  child: ScrollConfiguration(
-                    behavior: const _NoOverscrollGlowBehavior(),
-                    child: Builder(
-                      builder: (context) =>
-                          widget.homeBuilder(context, _hostScrollController),
-                    ),
+                _withPullGesture(
+                  key: const Key('ai-home-pull-listener'),
+                  child: AiPage(
+                    onOpenSettings: _openSettingsPage,
+                    scrollController: _aiScrollController,
+                  ),
+                ),
+                ScrollConfiguration(
+                  behavior: const _NoOverscrollGlowBehavior(),
+                  child: Builder(
+                    builder: (context) =>
+                        widget.homeBuilder(context, _hostScrollController),
                   ),
                 ),
                 const DiscoverPage(),
@@ -594,6 +603,17 @@ class _BusinessHostPageState extends State<BusinessHostPage>
             ),
         ],
       ),
+    );
+  }
+
+  Widget _withPullGesture({required Key key, required Widget child}) {
+    return Listener(
+      key: key,
+      onPointerDown: _handlePullPointerDown,
+      onPointerMove: _handlePullPointerMove,
+      onPointerUp: _handlePullPointerUp,
+      onPointerCancel: _handlePullPointerCancel,
+      child: child,
     );
   }
 }

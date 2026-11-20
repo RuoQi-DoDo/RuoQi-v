@@ -42,10 +42,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('host-tab-home')));
-    await tester.pumpAndSettle();
     await tester.drag(
-      find.byKey(const Key('customer-home-scroll')),
+      find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();

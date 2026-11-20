@@ -54,7 +54,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('应用默认打开 AI 首页，再切到聊天进入小程序并可退出', (tester) async {
+  testWidgets('应用默认打开 AI 首页并可直接进入小程序和退出', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -70,7 +70,7 @@ void main() {
     expect(find.text('搜索'), findsNothing);
     expect(find.text('搜索岗位或关键词'), findsNothing);
 
-    await _openAtsFromCustomer(tester);
+    await _openAtsFromAiHome(tester);
 
     expect(find.text('欢迎来到企业直聘'), findsNothing);
     expect(find.text('搜索岗位或关键词'), findsOneWidget);
@@ -110,7 +110,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
-    expect(find.text('企业直聘'), findsOneWidget);
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
   });
 
   testWidgets('小程序底部导航与招聘者身份可用', (tester) async {
@@ -200,16 +200,13 @@ void main() {
     expect(find.text('搜索岗位或关键词'), findsNothing);
   });
 
-  testWidgets('客户首页下滑直接打开小程序选择页且不展示刷新 loading', (tester) async {
+  testWidgets('AI 首页下滑打开小程序选择页，聊天页不再触发', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-home')));
-    await tester.pumpAndSettle();
-
     double panelScale() {
       return tester
           .widget<Transform>(find.byKey(const Key('mini-program-panel-scale')))
@@ -218,7 +215,7 @@ void main() {
     }
 
     final dragStart = tester.getCenter(
-      find.byKey(const Key('customer-home-scroll')),
+      find.byKey(const Key('ai-home-pull-listener')),
     );
     final gesture = await tester.startGesture(dragStart);
     await gesture.moveTo(
@@ -262,19 +259,36 @@ void main() {
     await tester.tap(find.byKey(const Key('mini-program-picker-ats')));
     await tester.pumpAndSettle();
     expect(find.text('搜索岗位或关键词'), findsOneWidget);
+
+    await tester.drag(
+      find.byKey(const Key('mini-program-exit-swipe')),
+      const Offset(0, -80),
+    );
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byKey(const Key('mini-program-picker-exit-swipe')),
+      const Offset(0, -80),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byKey(const Key('customer-home-scroll')),
+      const Offset(0, 320),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('customer-mini-program-picker')), findsNothing);
   });
 
-  testWidgets('小程序选择页是子视图，上滑回到客户首页', (tester) async {
+  testWidgets('小程序选择页是子视图，上滑回到 AI 首页', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-home')));
-    await tester.pumpAndSettle();
     await tester.drag(
-      find.byKey(const Key('customer-home-scroll')),
+      find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
@@ -290,7 +304,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
 
-    expect(find.text('企业直聘'), findsOneWidget);
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
     expect(find.byKey(const Key('customer-mini-program-picker')), findsNothing);
   });
 
@@ -301,10 +315,8 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-home')));
-    await tester.pumpAndSettle();
     await tester.drag(
-      find.byKey(const Key('customer-home-scroll')),
+      find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
@@ -833,14 +845,12 @@ void main() {
 }
 
 Future<void> _openAts(WidgetTester tester) async {
-  await _openAtsFromCustomer(tester);
+  await _openAtsFromAiHome(tester);
 }
 
-Future<void> _openAtsFromCustomer(WidgetTester tester) async {
-  await tester.tap(find.byKey(const Key('host-tab-home')));
-  await tester.pumpAndSettle();
+Future<void> _openAtsFromAiHome(WidgetTester tester) async {
   await tester.drag(
-    find.byKey(const Key('customer-home-scroll')),
+    find.byKey(const Key('ai-home-pull-listener')),
     const Offset(0, 320),
   );
   await tester.pumpAndSettle();

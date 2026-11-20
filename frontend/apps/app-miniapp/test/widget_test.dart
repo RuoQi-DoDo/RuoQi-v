@@ -154,10 +154,8 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await _openChat(tester);
-
     await tester.drag(
-      find.byKey(const Key('customer-home-scroll')),
+      find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
@@ -218,10 +216,8 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await _openChat(tester);
-
     await tester.drag(
-      find.byKey(const Key('customer-home-scroll')),
+      find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();

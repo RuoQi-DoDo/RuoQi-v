@@ -30,6 +30,7 @@ class AiPage extends StatefulWidget {
     this.api,
     this.historyStore,
     this.ttsCache,
+    this.scrollController,
   });
 
   final VoidCallback? onOpenSettings;
@@ -37,6 +38,7 @@ class AiPage extends StatefulWidget {
   final DeepSeekApi? api;
   final ChatHistoryStore? historyStore;
   final DeepSeekTtsCache? ttsCache;
+  final ScrollController? scrollController;
 
   @override
   State<AiPage> createState() => _AiPageState();
@@ -45,7 +47,8 @@ class AiPage extends StatefulWidget {
 class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   final TextEditingController _composer = TextEditingController();
   final FocusNode _composerFocus = FocusNode();
-  final ScrollController _messageScroll = ScrollController();
+  late final ScrollController _messageScroll;
+  late final bool _ownsMessageScroll;
   final List<_AiMessage> _messages = <_AiMessage>[];
 
   late final AnimationController _historyController;
@@ -88,6 +91,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _ownsMessageScroll = widget.scrollController == null;
+    _messageScroll = widget.scrollController ?? ScrollController();
     _historyController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 280),
@@ -114,7 +119,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       ..removeListener(_handleComposerFocusChanged)
       ..dispose();
     _messageScroll.removeListener(_handleMessageScroll);
-    _messageScroll.dispose();
+    if (_ownsMessageScroll) {
+      _messageScroll.dispose();
+    }
     _historyController.dispose();
     super.dispose();
   }
