@@ -393,6 +393,12 @@ void main() {
     expect(find.text('朋友圈'), findsOneWidget);
     expect(find.text('视频号'), findsOneWidget);
     expect(find.text('小程序'), findsOneWidget);
+    final chevrons = find.byIcon(Icons.chevron_right_rounded);
+    final chevronXs = [
+      for (var index = 0; index < chevrons.evaluate().length; index++)
+        tester.getCenter(chevrons.at(index)).dx.toStringAsFixed(1),
+    ];
+    expect(chevronXs.toSet(), hasLength(1));
 
     await tester.tap(find.text('我').last);
     await tester.pumpAndSettle();
@@ -416,10 +422,10 @@ void main() {
     await tester.pump();
     await tester.tap(find.byKey(const Key('ai-send')));
     await tester.pumpAndSettle();
-    final snackBar = find.byType(SnackBar);
-    expect(snackBar, findsOneWidget);
+    final notice = find.byKey(const Key('ai-transient-notice'));
+    expect(notice, findsOneWidget);
     expect(
-      find.descendant(of: snackBar, matching: find.textContaining('DeepSeek')),
+      find.descendant(of: notice, matching: find.textContaining('DeepSeek')),
       findsOneWidget,
     );
     expect(find.byKey(const Key('ai-typing-indicator')), findsNothing);
@@ -720,6 +726,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-voice-hold-button')), findsOneWidget);
     expect(find.byKey(const Key('ai-voice-mode-divider')), findsOneWidget);
+    final divider = tester.widget<Container>(
+      find.byKey(const Key('ai-voice-mode-divider')),
+    );
+    final gradient = (divider.decoration! as BoxDecoration).gradient!;
+    expect(gradient, isA<LinearGradient>());
+    expect((gradient as LinearGradient).colors.first, Colors.transparent);
+    expect((gradient).colors.last, Colors.transparent);
     expect(find.byKey(const Key('ai-voice-keyboard-icon')), findsOneWidget);
     expect(find.text('按住说话'), findsOneWidget);
     expect(find.byKey(const Key('ai-composer')), findsNothing);

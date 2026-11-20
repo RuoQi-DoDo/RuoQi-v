@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -106,6 +107,60 @@ class _ChatStreamAdapter implements HttpClientAdapter {
         Headers.contentTypeHeader: ['text/event-stream'],
       },
     );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+class _ControlledChatStreamAdapter implements HttpClientAdapter {
+  final StreamController<Uint8List> _controller = StreamController<Uint8List>();
+  RequestOptions? lastRequest;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    lastRequest = options;
+    return ResponseBody(
+      _controller.stream,
+      200,
+      headers: {
+        Headers.contentTypeHeader: ['text/event-stream'],
+      },
+    );
+  }
+
+  void addContent(String content) {
+    _controller.add(
+      Uint8List.fromList(
+        utf8.encode(
+          'data: ${jsonEncode({
+            'choices': [
+              {
+                'delta': {'content': content},
+                'finish_reason': null,
+              },
+            ],
+          })}\n\n',
+        ),
+      ),
+    );
+  }
+
+  Future<void> finish() async {
+    _controller
+      ..add(
+        Uint8List.fromList(
+          utf8.encode(
+            'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n'
+            'data: [DONE]\n\n',
+          ),
+        ),
+      )
+      ..close();
   }
 
   @override
@@ -332,6 +387,51 @@ void main() {
     }
   });
 
+  testWidgets('AI 顶部与圆形操作按钮不绘制灰色按压反馈', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    for (final key in ['ai-history', 'ai-auto-read', 'ai-new-conversation']) {
+      final button = tester.widget<IconButton>(find.byKey(Key(key)));
+      expect(
+        button.style?.overlayColor?.resolve(const <WidgetState>{}),
+        Colors.transparent,
+        reason: key,
+      );
+    }
+    for (final key in ['ai-attachment-toggle', 'ai-voice-mode-toggle']) {
+      final action = find.byKey(Key(key));
+      expect(
+        find.descendant(of: action, matching: find.byType(InkResponse)),
+        findsNothing,
+        reason: key,
+      );
+      expect(
+        find.descendant(of: action, matching: find.byType(InkWell)),
+        findsNothing,
+        reason: key,
+      );
+    }
+  });
+
   testWidgets('自动朗读开关在页面中央显示灰色圆角提示', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
@@ -374,6 +474,39 @@ void main() {
     expect(find.text('已关闭自动朗读'), findsOneWidget);
   });
 
+  testWidgets('重复点击新对话时在页面中央提示已经在新对话中', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('ai-new-conversation')));
+    await tester.pump(const Duration(milliseconds: 160));
+
+    expect(find.text('已经在新对话中'), findsOneWidget);
+    final notice = find.byKey(const Key('ai-transient-notice'));
+    expect(tester.getCenter(notice).dx, closeTo(207, 1));
+    expect(tester.getCenter(notice).dy, closeTo(448, 1));
+    await tester.pump(const Duration(milliseconds: 1600));
+    expect(notice, findsNothing);
+  });
+
   testWidgets('AI 聊天使用 DeepSeek Chat Completions 流式更新', (tester) async {
     final adapter = _ChatStreamAdapter();
     final historyStore = _MemoryHistoryStore();
@@ -408,6 +541,7 @@ void main() {
     expect(find.text('介绍一下你自己'), findsWidgets);
     expect(find.text('联网搜索'), findsNothing);
     expect(find.byKey(const Key('ai-answer-actions')), findsOneWidget);
+    expect(find.byIcon(Icons.forward_outlined), findsOneWidget);
     expect(find.byIcon(Icons.thumb_up_alt_outlined), findsOneWidget);
     await tester.tap(find.byIcon(Icons.thumb_up_alt_outlined));
     await tester.pump();
@@ -417,6 +551,155 @@ void main() {
     expect(adapter.lastRequest?.data['stream'], isTrue);
     expect(historyStore.conversations, hasLength(1));
     expect(historyStore.conversations.single.messages, hasLength(2));
+  });
+
+  testWidgets('长按用户消息和 AI 回答显示对应操作菜单', (tester) async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
+      ..httpClientAdapter = _ChatStreamAdapter();
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(dio: dio),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '介绍一下你自己');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byKey(const Key('ai-user-message')));
+    await tester.pumpAndSettle();
+    for (final label in ['复制', '选择文本', '修改', '分享']) {
+      expect(find.text(label), findsOneWidget, reason: label);
+    }
+    expect(find.text('重新生成'), findsNothing);
+
+    await tester.tap(find.text('修改'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('ai-composer')))
+          .controller
+          ?.text,
+      '介绍一下你自己',
+    );
+
+    await tester.longPress(find.text('你好，世界'));
+    await tester.pumpAndSettle();
+    for (final label in ['复制', '选择文本', '重新生成', '喜欢', '不喜欢', '朗读', '分享']) {
+      expect(find.text(label), findsOneWidget, reason: label);
+    }
+    expect(find.text('修改'), findsNothing);
+  });
+
+  testWidgets('流式回答中长按消息暂停自动滚动但不停止回答', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final adapter = _ControlledChatStreamAdapter();
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
+      ..httpClientAdapter = adapter;
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(dio: dio),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '滚动测试');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pump();
+    adapter.addContent(
+      List.generate(
+        24,
+        (index) => '第 $index 段回答内容。这里是一段用于测试滚动跟随的较长文本。',
+      ).join('\n\n'),
+    );
+    for (
+      var attempt = 0;
+      attempt < 20 &&
+          find.byKey(const Key('ai-assistant-message')).evaluate().isEmpty;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await tester.pump(const Duration(milliseconds: 400));
+
+    final scrollable = tester.state<ScrollableState>(
+      find.descendant(
+        of: find.byKey(const Key('ai-conversation')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.drag(
+      find.byKey(const Key('ai-conversation')).last,
+      const Offset(0, 2000),
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+    final pausedOffset = scrollable.position.pixels;
+    final pausedMax = scrollable.position.maxScrollExtent;
+    expect(pausedOffset, lessThan(pausedMax));
+
+    await tester.longPress(find.byKey(const Key('ai-user-message')));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tapAt(const Offset(4, 4));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    adapter.addContent(
+      List.generate(
+        24,
+        (index) => '新增流式内容 $index。这里继续追加回答，但阅读位置应保持不变。',
+      ).join('\n\n'),
+    );
+    for (var attempt = 0; attempt < 10; attempt++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(scrollable.position.pixels, closeTo(pausedOffset, 1));
+    expect(scrollable.position.maxScrollExtent, greaterThan(pausedMax));
+
+    await tester.drag(
+      find.byKey(const Key('ai-conversation')).last,
+      const Offset(0, -5000),
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+    adapter.addContent(
+      List.generate(12, (index) => '恢复跟随内容 $index。回到列表底部后继续自动滚动。').join('\n\n'),
+    );
+    for (var attempt = 0; attempt < 10; attempt++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(
+      scrollable.position.pixels,
+      closeTo(scrollable.position.maxScrollExtent, 1),
+    );
+
+    await adapter.finish();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-assistant-message')), findsOneWidget);
   });
 
   testWidgets('AI 语音转写完成后直接作为消息发送', (tester) async {

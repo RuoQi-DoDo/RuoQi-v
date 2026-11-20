@@ -53,7 +53,7 @@ class _ImChatList extends StatelessWidget {
                 onPressed: onOpenAi,
                 icon: AiBrandMark(
                   key: const Key('im-open-ai-icon'),
-                  size: 21,
+                  size: 18,
                   color: scheme.onSurface,
                 ),
               ),
