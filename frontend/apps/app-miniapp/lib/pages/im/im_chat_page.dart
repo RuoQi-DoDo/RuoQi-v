@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:common/common.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../ai/ai_style.dart';
 import '../calls/calls_page.dart';
 import '../common/page_theme.dart';
 import '../common/page_widgets.dart';
@@ -13,23 +14,25 @@ import 'im_style.dart';
 /// Authenticated IM business home. Unauthenticated entry is handled by the app
 /// shell's welcome and login gates.
 class ImChatPage extends StatelessWidget {
-  const ImChatPage({super.key, this.scrollController});
+  const ImChatPage({super.key, this.scrollController, this.onOpenAi});
 
   final ScrollController? scrollController;
+  final VoidCallback? onOpenAi;
 
-  static Route<void> route() =>
-      MaterialPageRoute<void>(builder: (_) => const ImChatPage());
+  static Route<void> route({VoidCallback? onOpenAi}) =>
+      MaterialPageRoute<void>(builder: (_) => ImChatPage(onOpenAi: onOpenAi));
 
   @override
   Widget build(BuildContext context) {
-    return _ImChatList(scrollController: scrollController);
+    return _ImChatList(scrollController: scrollController, onOpenAi: onOpenAi);
   }
 }
 
 class _ImChatList extends StatelessWidget {
-  const _ImChatList({required this.scrollController});
+  const _ImChatList({required this.scrollController, required this.onOpenAi});
 
   final ScrollController? scrollController;
+  final VoidCallback? onOpenAi;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +45,18 @@ class _ImChatList extends StatelessWidget {
         centerTitle: true,
         titleSpacing: 0,
         backgroundColor: HostChromeStyle.appBarBackground(context),
+        leading: onOpenAi == null
+            ? null
+            : IconButton(
+                key: const Key('im-open-ai'),
+                tooltip: imText(context, 'AI 助手', 'AI assistant'),
+                onPressed: onOpenAi,
+                icon: AiBrandMark(
+                  key: const Key('im-open-ai-icon'),
+                  size: 21,
+                  color: scheme.onSurface,
+                ),
+              ),
         title: Text(
           'RuoQi',
           style: zh(

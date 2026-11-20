@@ -154,6 +154,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
+    await _openAi(tester);
     await tester.drag(
       find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
@@ -186,12 +187,14 @@ void main() {
     expect(app.darkTheme!.colorScheme.primary, defaultAccentColor);
   });
 
-  testWidgets('应用首次打开 AI 首页时立即同步状态栏样式', (tester) async {
+  testWidgets('从聊天打开 AI 时立即同步状态栏样式', (tester) async {
     tester.view.physicalSize = const Size(414, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pump();
 
     final page = find.byKey(const Key('ai-page'));
@@ -211,6 +214,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
+    await _openAi(tester);
     await tester.drag(
       find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
@@ -226,5 +230,10 @@ void main() {
 
 Future<void> _openChat(WidgetTester tester) async {
   await tester.tap(find.byKey(const Key('host-tab-home')));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _openAi(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('im-open-ai')));
   await tester.pumpAndSettle();
 }

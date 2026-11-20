@@ -25,6 +25,7 @@ import 'deepseek_tts_cache.dart';
 class AiPage extends StatefulWidget {
   const AiPage({
     super.key,
+    this.onBack,
     this.onOpenSettings,
     this.settingsStore,
     this.api,
@@ -34,6 +35,7 @@ class AiPage extends StatefulWidget {
     this.scrollController,
   });
 
+  final VoidCallback? onBack;
   final VoidCallback? onOpenSettings;
   final DeepSeekSettingsStore? settingsStore;
   final DeepSeekApi? api;
@@ -67,9 +69,11 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   StreamSubscription<void>? _speechSubscription;
   File? _ttsFile;
   Timer? _responseTimer;
+  Timer? _autoReadNoticeTimer;
   bool _deepThinking = false;
   bool _webSearch = true;
   bool _autoRead = false;
+  String? _autoReadNotice;
   bool _speaking = false;
   bool _speechLoading = false;
   String _speakingText = '';
@@ -109,6 +113,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   @override
   void dispose() {
     _responseTimer?.cancel();
+    _autoReadNoticeTimer?.cancel();
     _chatSubscription?.cancel();
     _speechSubscription?.cancel();
     _ttsFile = null;
@@ -350,7 +355,20 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
 
   void _toggleAutoRead() {
     final enabled = !_autoRead;
-    setState(() => _autoRead = enabled);
+    final text = AppLocalizations.of(context);
+    setState(() {
+      _autoRead = enabled;
+      _autoReadNotice = text.text(
+        enabled ? '已开启自动朗读' : '已关闭自动朗读',
+        enabled ? 'Auto read on' : 'Auto read off',
+      );
+    });
+    _autoReadNoticeTimer?.cancel();
+    _autoReadNoticeTimer = Timer(const Duration(milliseconds: 1600), () {
+      if (mounted) {
+        setState(() => _autoReadNotice = null);
+      }
+    });
     if (!enabled) {
       unawaited(_stopSpeech());
     }
@@ -1519,6 +1537,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                 child: Column(
                                   children: [
                                     _AiHeader(
+                                      onBack: widget.onBack,
                                       onHistory: _showHistory,
                                       onNewConversation: _newConversation,
                                       title: _conversationTitle,
@@ -1638,6 +1657,14 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                         ),
                       ),
                     ),
+                    if (_autoReadNotice case final notice?)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: Center(
+                            child: _AiTransientNotice(message: notice),
+                          ),
+                        ),
+                      ),
                     if (drawerOpen)
                       Positioned.fill(
                         child: GestureDetector(
@@ -1714,6 +1741,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
 
 class _AiHeader extends StatelessWidget {
   const _AiHeader({
+    required this.onBack,
     required this.onHistory,
     required this.onNewConversation,
     required this.title,
@@ -1721,6 +1749,7 @@ class _AiHeader extends StatelessWidget {
     required this.onToggleAutoRead,
   });
 
+  final VoidCallback? onBack;
   final VoidCallback onHistory;
   final VoidCallback onNewConversation;
   final String title;
@@ -1759,11 +1788,27 @@ class _AiHeader extends StatelessWidget {
             ),
             Align(
               alignment: Alignment.centerLeft,
-              child: IconButton(
-                key: const Key('ai-history'),
-                tooltip: text.text('对话记录', 'Chat history'),
-                onPressed: onHistory,
-                icon: _TwoLineMenuIcon(color: AiColors.text(context)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (onBack != null)
+                    IconButton(
+                      key: const Key('ai-back'),
+                      tooltip: text.text('返回聊天', 'Back to chat'),
+                      onPressed: onBack,
+                      icon: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: AiColors.text(context),
+                        size: 20,
+                      ),
+                    ),
+                  IconButton(
+                    key: const Key('ai-history'),
+                    tooltip: text.text('对话记录', 'Chat history'),
+                    onPressed: onHistory,
+                    icon: _TwoLineMenuIcon(color: AiColors.text(context)),
+                  ),
+                ],
               ),
             ),
             Align(
@@ -1780,7 +1825,7 @@ class _AiHeader extends StatelessWidget {
                           ? AiColors.accent(context)
                           : AiColors.text(context),
                       muted: !autoRead,
-                      size: 25,
+                      size: 27,
                     ),
                   ),
                   IconButton(
@@ -1877,6 +1922,50 @@ class _AiWelcome extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AiTransientNotice extends StatelessWidget {
+  const _AiTransientNotice({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.92, end: 1),
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) => Opacity(
+        opacity: value,
+        child: Transform.scale(scale: value, child: child),
+      ),
+      child: Container(
+        key: const Key('ai-transient-notice'),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xE64A4A4A),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33000000),
+              blurRadius: 18,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            height: 1.2,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.15,
+          ),
         ),
       ),
     );
@@ -2472,25 +2561,19 @@ class _AiComposer extends StatelessWidget {
                                   children: [
                                     if (voiceMode)
                                       Positioned.fill(
-                                        child: Container(
+                                        child: SizedBox.expand(
                                           key: const Key(
                                             'ai-voice-hold-button',
                                           ),
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            color: AiColors.softSurface(
-                                              context,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              13,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            text.text('按住说话', 'Hold to talk'),
-                                            style: TextStyle(
-                                              color: AiColors.text(context),
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.w600,
+                                          child: Center(
+                                            child: Text(
+                                              text.text('按住说话', 'Hold to talk'),
+                                              style: TextStyle(
+                                                color: AiColors.text(context),
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w600,
+                                                letterSpacing: -0.15,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -2542,7 +2625,17 @@ class _AiComposer extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 5),
+                              if (voiceMode)
+                                Divider(
+                                  key: const Key('ai-voice-mode-divider'),
+                                  height: 1,
+                                  thickness: 1,
+                                  indent: 2,
+                                  endIndent: 8,
+                                  color: AiColors.border(context),
+                                ),
+                              SizedBox(height: voiceMode ? 7 : 4),
                               Row(
                                 children: [
                                   Expanded(
@@ -2623,10 +2716,12 @@ class _AiComposer extends StatelessWidget {
                                         'Switch to keyboard',
                                       ),
                                       onPressed: onVoice,
-                                      icon: Icon(
-                                        Icons.keyboard_alt_outlined,
+                                      icon: DeepSeekKeyboardIcon(
+                                        key: const Key(
+                                          'ai-voice-keyboard-icon',
+                                        ),
                                         color: AiColors.text(context),
-                                        size: 23,
+                                        size: 18,
                                       ),
                                     )
                                   else if (controller.text.trim().isEmpty)
@@ -2992,6 +3087,8 @@ class _AiModeChip extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         child: SizedBox(
           height: 34,
           child: Padding(

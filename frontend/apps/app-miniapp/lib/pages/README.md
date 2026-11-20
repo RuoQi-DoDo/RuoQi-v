@@ -3,8 +3,8 @@
 `pages/` 按业务首页和可复用功能划分。各页面是独立 Dart 库，可以单独作为路由
 运行；通过 `pages/index.dart` 统一导出。
 
-- `host/`：公共业务宿主，组合业务首页、通讯录、发现、我的和小程序选择页。
-- `im/`：当前业务首页，仅提供 IM 聊天列表。
+- `host/`：公共业务宿主，组合业务首页、AI 子页面、发现、我的和小程序选择页。
+- `im/`：当前业务首页，提供 IM 聊天列表及左上角 AI 入口。
 - `contacts/`：公共通讯录。
 - `discover/`：公共发现页。
 - `mini_programs/`：从发现进入的小程序目录，支持中英文名称搜索和启动已实现的小程序。
@@ -25,15 +25,18 @@ BusinessAppFrame(
   title: '新业务',
   home: (_) => BusinessHostPage(
     homeLabel: '首页',
-    homeBuilder: (context, scrollController) => NewBusinessHomePage(
+    homeBuilder: (context, scrollController, onOpenAi) => NewBusinessHomePage(
       scrollController: scrollController,
+      onOpenAi: onOpenAi,
     ),
   ),
 )
 ```
 
 首页将宿主提供的 `ScrollController` 连接到主滚动区域，宿主即可在首页滚动到
-顶部时响应下拉小程序手势。切换公共页面和打开子路由会保留业务首页状态。
+顶部时响应下拉小程序手势。业务首页通过 `onOpenAi` 打开 AI 子页面；AI 子页面
+保留下拉小程序手势，并可通过左上角返回聊天。切换公共页面和打开子路由会保留
+业务首页状态。
 通讯录、发现与我的也可以直接作为 `MaterialApp.home` 或普通路由运行。当前
 宿主保留各页自己的 Scaffold 和主题；其他容器需要嵌入页面内容时，可选用
 `embedded: true`。

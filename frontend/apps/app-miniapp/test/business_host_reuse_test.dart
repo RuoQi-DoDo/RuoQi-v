@@ -21,23 +21,26 @@ void main() {
         title: '其他业务',
         home: (_) => BusinessHostPage(
           homeLabel: '业务首页',
-          homeBuilder: (context, scrollController) =>
-              _ReplacementBusinessHome(scrollController: scrollController),
+          homeBuilder: (context, scrollController, onOpenAi) =>
+              _ReplacementBusinessHome(
+                scrollController: scrollController,
+                onOpenAi: onOpenAi,
+              ),
         ),
       ),
     );
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('ai-page')), findsOneWidget);
-    await tester.tap(find.text('业务首页'));
     await tester.pumpAndSettle();
     expect(find.text('其他业务工作台'), findsOneWidget);
     expect(find.text('客户模拟'), findsNothing);
     await tester.tap(find.text('增加业务计数'));
     await tester.pump();
 
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('replacement-open-ai')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    expect(find.byKey(const Key('host-tab-home')), findsNothing);
+    await tester.tap(find.byKey(const Key('ai-back')));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('发现').last);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('discover-page')), findsOneWidget);
@@ -54,7 +57,9 @@ void main() {
     await tester.tap(find.byKey(const Key('settings-back')));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('replacement-open-ai')));
     await tester.pumpAndSettle();
     await tester.drag(
       find.byKey(const Key('ai-home-pull-listener')),
@@ -77,7 +82,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-page')), findsOneWidget);
 
-    await tester.tap(find.text('业务首页'));
+    await tester.tap(find.byKey(const Key('ai-back')));
     await tester.pumpAndSettle();
     expect(find.text('业务计数：1'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -123,8 +128,11 @@ void main() {
       BusinessAppFrame(
         title: '其他业务',
         home: (_) => BusinessHostPage(
-          homeBuilder: (context, scrollController) =>
-              _ReplacementBusinessHome(scrollController: scrollController),
+          homeBuilder: (context, scrollController, onOpenAi) =>
+              _ReplacementBusinessHome(
+                scrollController: scrollController,
+                onOpenAi: onOpenAi,
+              ),
           loginBuilder: (_) => const Scaffold(body: Text('其他业务登录')),
         ),
       ),
@@ -201,9 +209,13 @@ Future<void> _confirmLogout(WidgetTester tester) async {
 }
 
 class _ReplacementBusinessHome extends StatefulWidget {
-  const _ReplacementBusinessHome({required this.scrollController});
+  const _ReplacementBusinessHome({
+    required this.scrollController,
+    required this.onOpenAi,
+  });
 
   final ScrollController scrollController;
+  final VoidCallback onOpenAi;
 
   @override
   State<_ReplacementBusinessHome> createState() =>
@@ -215,7 +227,15 @@ class _ReplacementBusinessHomeState extends State<_ReplacementBusinessHome> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('其他业务工作台')),
+    appBar: AppBar(
+      title: const Text('其他业务工作台'),
+      leading: IconButton(
+        key: const Key('replacement-open-ai'),
+        tooltip: 'AI',
+        onPressed: widget.onOpenAi,
+        icon: const Icon(Icons.auto_awesome_rounded),
+      ),
+    ),
     body: ListView(
       key: const Key('replacement-home-scroll'),
       controller: widget.scrollController,

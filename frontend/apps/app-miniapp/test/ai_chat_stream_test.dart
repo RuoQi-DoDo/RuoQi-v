@@ -294,6 +294,86 @@ void main() {
     expect(find.byKey(const Key('ai-attachment-menu')), findsNothing);
   });
 
+  testWidgets('AI 模式按钮不绘制矩形按压覆盖层', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    for (final key in ['ai-deep-thinking', 'ai-web-search']) {
+      final chip = find.byKey(Key(key));
+      final ink = tester.widget<InkWell>(
+        find.descendant(of: chip, matching: find.byType(InkWell)),
+      );
+      expect(ink.splashFactory, NoSplash.splashFactory, reason: key);
+      expect(
+        ink.overlayColor?.resolve(const <WidgetState>{}),
+        Colors.transparent,
+        reason: key,
+      );
+      await tester.tap(chip);
+      await tester.pump();
+    }
+  });
+
+  testWidgets('自动朗读开关在页面中央显示灰色圆角提示', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('ai-auto-read')));
+    await tester.pump(const Duration(milliseconds: 160));
+    expect(find.text('已开启自动朗读'), findsOneWidget);
+    expect(find.byKey(const Key('ai-transient-notice')), findsOneWidget);
+    final notice = find.byKey(const Key('ai-transient-notice'));
+    expect(tester.getCenter(notice).dx, closeTo(207, 1));
+    expect(tester.getCenter(notice).dy, closeTo(448, 1));
+    final decoration =
+        tester.widget<Container>(notice).decoration! as BoxDecoration;
+    expect(decoration.color, const Color(0xE64A4A4A));
+    expect(decoration.borderRadius, BorderRadius.circular(18));
+
+    await tester.pump(const Duration(milliseconds: 1600));
+    expect(find.byKey(const Key('ai-transient-notice')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('ai-auto-read')));
+    await tester.pump(const Duration(milliseconds: 160));
+    expect(find.text('已关闭自动朗读'), findsOneWidget);
+  });
+
   testWidgets('AI 聊天使用 DeepSeek Chat Completions 流式更新', (tester) async {
     final adapter = _ChatStreamAdapter();
     final historyStore = _MemoryHistoryStore();

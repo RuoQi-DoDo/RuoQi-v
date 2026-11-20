@@ -54,7 +54,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('应用默认打开 AI 首页并可直接进入小程序和退出', (tester) async {
+  testWidgets('应用默认打开聊天并可从左上角进入 AI 和小程序', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -62,14 +62,16 @@ void main() {
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('ai-page')), findsOneWidget);
-    expect(find.byKey(const Key('customer-home-scroll')), findsNothing);
+    expect(find.byKey(const Key('ai-page')), findsNothing);
+    expect(find.byKey(const Key('customer-home-scroll')), findsOneWidget);
+    expect(find.byKey(const Key('im-open-ai')), findsOneWidget);
     expect(find.text('客户模拟'), findsNothing);
     expect(find.text('最近使用的小程序'), findsNothing);
     expect(find.text('下拉打开最近使用的小程序'), findsNothing);
     expect(find.text('搜索'), findsNothing);
     expect(find.text('搜索岗位或关键词'), findsNothing);
 
+    await _openAi(tester);
     await _openAtsFromAiHome(tester);
 
     expect(find.text('欢迎来到企业直聘'), findsNothing);
@@ -200,13 +202,14 @@ void main() {
     expect(find.text('搜索岗位或关键词'), findsNothing);
   });
 
-  testWidgets('AI 首页下滑打开小程序选择页，聊天页不再触发', (tester) async {
+  testWidgets('AI 首页和聊天页均支持下滑打开小程序选择页', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
+    await _openAi(tester);
     double panelScale() {
       return tester
           .widget<Transform>(find.byKey(const Key('mini-program-panel-scale')))
@@ -270,14 +273,17 @@ void main() {
       const Offset(0, -80),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.tap(find.byKey(const Key('ai-back')));
     await tester.pumpAndSettle();
     await tester.drag(
-      find.byKey(const Key('customer-home-scroll')),
+      find.byKey(const Key('chat-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('customer-mini-program-picker')), findsNothing);
+    expect(
+      find.byKey(const Key('customer-mini-program-picker')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('小程序选择页是子视图，上滑回到 AI 首页', (tester) async {
@@ -287,6 +293,7 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
+    await _openAi(tester);
     await tester.drag(
       find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
@@ -315,6 +322,7 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
+    await _openAi(tester);
     await tester.drag(
       find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
@@ -348,7 +356,7 @@ void main() {
     expect(find.text('最近'), findsOneWidget);
   });
 
-  testWidgets('AI 为默认首页，底栏顺序为 AI、聊天、发现、我', (tester) async {
+  testWidgets('聊天为默认首页，底栏为聊天、发现、我，左上角进入 AI', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -356,23 +364,28 @@ void main() {
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('ai-page')), findsOneWidget);
-    expect(find.byKey(const Key('ai-brand-mark')), findsOneWidget);
-    expect(find.byKey(const Key('host-tab-ai-icon')), findsOneWidget);
-    expect(find.text('你好，我是 RuoQi'), findsOneWidget);
-    expect(find.text('发消息或按住说话'), findsOneWidget);
+    expect(find.byKey(const Key('customer-home-scroll')), findsOneWidget);
+    expect(find.byKey(const Key('im-open-ai-icon')), findsOneWidget);
+    expect(find.byKey(const Key('host-tab-ai')), findsNothing);
     final tabCenters = [
-      for (final tab in ['ai', 'home', 'discover', 'me'])
+      for (final tab in ['home', 'discover', 'me'])
         tester.getCenter(find.byKey(Key('host-tab-$tab'))).dx,
     ];
     for (var index = 1; index < tabCenters.length; index++) {
       expect(tabCenters[index], greaterThan(tabCenters[index - 1]));
     }
 
-    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.tap(find.byKey(const Key('im-open-ai')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    expect(find.byKey(const Key('ai-brand-mark')), findsOneWidget);
+    expect(find.text('你好，我是 RuoQi'), findsOneWidget);
+    expect(find.byKey(const Key('ai-back')), findsOneWidget);
+    expect(find.byKey(const Key('host-tab-home')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('ai-back')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('customer-home-scroll')), findsOneWidget);
-    expect(find.text('企业直聘'), findsOneWidget);
 
     await tester.tap(find.text('发现').last);
     await tester.pumpAndSettle();
@@ -397,7 +410,7 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('ai-composer')), '帮我梳理今天的工作重点');
     await tester.pump();
@@ -457,7 +470,7 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pumpAndSettle();
     final welcomeTitle = find.text('你好，我是 RuoQi');
     final initialTitleX = tester.getTopLeft(welcomeTitle).dx;
@@ -633,7 +646,7 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pumpAndSettle();
 
     final composer = find.byKey(const Key('ai-composer'), skipOffstage: false);
@@ -660,7 +673,7 @@ void main() {
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     addTearDown(tester.view.resetViewInsets);
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('host-tab-ai')), findsNothing);
+    expect(find.byKey(const Key('host-tab-home')), findsNothing);
     expect(
       tester.getBottomLeft(find.byKey(const Key('ai-composer-card'))).dy,
       lessThan(600),
@@ -668,6 +681,8 @@ void main() {
     tester.view.resetViewInsets();
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byKey(const Key('ai-back')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('host-tab-me')));
     await tester.pumpAndSettle();
     expect(tester.widget<EditableText>(editable).focusNode.hasFocus, isFalse);
@@ -676,7 +691,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('settings-back')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pumpAndSettle();
 
     expect(tester.widget<EditableText>(editable).focusNode.hasFocus, isFalse);
@@ -690,7 +707,7 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pumpAndSettle();
 
     final voiceGesture = tester.widget<GestureDetector>(
@@ -702,6 +719,8 @@ void main() {
     await tester.tap(find.byKey(const Key('ai-voice-mode-toggle')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-voice-hold-button')), findsOneWidget);
+    expect(find.byKey(const Key('ai-voice-mode-divider')), findsOneWidget);
+    expect(find.byKey(const Key('ai-voice-keyboard-icon')), findsOneWidget);
     expect(find.text('按住说话'), findsOneWidget);
     expect(find.byKey(const Key('ai-composer')), findsNothing);
 
@@ -718,7 +737,7 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pumpAndSettle();
 
     final gesture = await tester.startGesture(
@@ -752,13 +771,15 @@ void main() {
       tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
       ThemeMode.light,
     );
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pumpAndSettle();
     expect(
       Theme.of(tester.element(find.byKey(const Key('ai-page')))).brightness,
       Brightness.light,
     );
 
+    await tester.tap(find.byKey(const Key('ai-back')));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('我').last);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('open-settings')));
@@ -785,7 +806,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('settings-back')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pumpAndSettle();
     expect(
       Theme.of(tester.element(find.byKey(const Key('ai-page')))).brightness,
@@ -801,10 +824,12 @@ void main() {
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
 
+    await tester.tap(find.byKey(const Key('ai-back')));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('发现').last);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
@@ -850,11 +875,20 @@ Future<void> _openAts(WidgetTester tester) async {
 }
 
 Future<void> _openAtsFromAiHome(WidgetTester tester) async {
+  await _openAi(tester);
   await tester.drag(
     find.byKey(const Key('ai-home-pull-listener')),
     const Offset(0, 320),
   );
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(const Key('mini-program-picker-ats')));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _openAi(WidgetTester tester) async {
+  if (find.byKey(const Key('ai-page')).evaluate().isNotEmpty) {
+    return;
+  }
+  await tester.tap(find.byKey(const Key('im-open-ai')));
   await tester.pumpAndSettle();
 }

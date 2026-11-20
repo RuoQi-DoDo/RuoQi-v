@@ -20,6 +20,7 @@ import 'host_tab_bar.dart';
 typedef BusinessHomeBuilder = Widget Function(
   BuildContext context,
   ScrollController scrollController,
+  VoidCallback onOpenAi,
 );
 
 enum _HostSubview { home, picker, ats }
@@ -56,7 +57,8 @@ class _BusinessHostPageState extends State<BusinessHostPage>
 
   _HostSubview _subview = _HostSubview.home;
   _HostSubview _atsReturnSubview = _HostSubview.home;
-  HostTab _hostTab = HostTab.ai;
+  HostTab _hostTab = HostTab.home;
+  bool _aiOpen = false;
   late final AnimationController _pullController;
   late final AnimationController _closeController;
   late final AnimationController _loadingController;
@@ -256,10 +258,36 @@ class _BusinessHostPageState extends State<BusinessHostPage>
 
   void _selectHostTab(HostTab tab) {
     FocusManager.instance.primaryFocus?.unfocus();
-    if (_hostTab == tab) {
+    if (tab == HostTab.home && _aiOpen) {
+      setState(() => _aiOpen = false);
       return;
     }
-    setState(() => _hostTab = tab);
+    if (_hostTab == tab && !_aiOpen) {
+      return;
+    }
+    setState(() {
+      _hostTab = tab;
+      _aiOpen = false;
+    });
+  }
+
+  void _openAi() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (_aiOpen) {
+      return;
+    }
+    setState(() {
+      _hostTab = HostTab.home;
+      _aiOpen = true;
+    });
+  }
+
+  void _closeAi() {
+    if (!_aiOpen) {
+      return;
+    }
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() => _aiOpen = false);
   }
 
   void _finishPull({required double velocity}) {
@@ -291,11 +319,10 @@ class _BusinessHostPageState extends State<BusinessHostPage>
     _pullPointerCanDrag =
         _subview == _HostSubview.home &&
         !_pullAnimating &&
-        switch (_hostTab) {
-          HostTab.ai => _isAtScrollTop(_aiScrollController),
-          HostTab.home => _isAtScrollTop(_hostScrollController),
-          HostTab.discover || HostTab.me => false,
-        };
+        (_aiOpen
+            ? _isAtScrollTop(_aiScrollController)
+            : _hostTab == HostTab.home &&
+                  _isAtScrollTop(_hostScrollController));
     _pullVelocityTracker = VelocityTracker.withKind(event.kind)
       ..addPosition(event.timeStamp, event.position);
   }
@@ -396,6 +423,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
     return PopScope(
       canPop:
           _subview == _HostSubview.home &&
+          !_aiOpen &&
           !_pullAnimating &&
           _pullController.value == 0,
       onPopInvokedWithResult: (didPop, result) {
@@ -404,7 +432,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
         }
         switch (_subview) {
           case _HostSubview.home:
-            break;
+            _closeAi();
           case _HostSubview.picker:
             _closeMiniProgramPicker();
           case _HostSubview.ats:
@@ -567,28 +595,35 @@ class _BusinessHostPageState extends State<BusinessHostPage>
         children: [
           Expanded(
             child: IndexedStack(
-              index: _hostTab.index,
+              index: _aiOpen ? 3 : _hostTab.index,
               children: [
                 _withPullGesture(
-                  key: const Key('ai-home-pull-listener'),
-                  child: AiPage(
-                    onOpenSettings: _openSettingsPage,
-                    scrollController: _aiScrollController,
-                  ),
-                ),
-                ScrollConfiguration(
-                  behavior: const _NoOverscrollGlowBehavior(),
-                  child: Builder(
-                    builder: (context) =>
-                        widget.homeBuilder(context, _hostScrollController),
+                  key: const Key('chat-home-pull-listener'),
+                  child: ScrollConfiguration(
+                    behavior: const _NoOverscrollGlowBehavior(),
+                    child: Builder(
+                      builder: (context) => widget.homeBuilder(
+                        context,
+                        _hostScrollController,
+                        _openAi,
+                      ),
+                    ),
                   ),
                 ),
                 const DiscoverPage(),
                 MePage(onOpenSettings: _openSettingsPage),
+                _withPullGesture(
+                  key: const Key('ai-home-pull-listener'),
+                  child: AiPage(
+                    onBack: _closeAi,
+                    onOpenSettings: _openSettingsPage,
+                    scrollController: _aiScrollController,
+                  ),
+                ),
               ],
             ),
           ),
-          if (!keyboardVisible)
+          if (!keyboardVisible && !_aiOpen)
             Theme(
               data: _hostTab == HostTab.home
                   ? Theme.of(context)
