@@ -214,7 +214,11 @@ class _VoiceDeepSeekApi extends DeepSeekApi {
 }
 
 class _VoiceRecordPlatform extends RecordPlatform {
+  _VoiceRecordPlatform({this.permissionResult});
+
+  final Future<bool>? permissionResult;
   String? outputPath;
+  int permissionCalls = 0;
   int startCalls = 0;
   int stopCalls = 0;
 
@@ -223,7 +227,8 @@ class _VoiceRecordPlatform extends RecordPlatform {
 
   @override
   Future<bool> hasPermission(String recorderId, {bool request = true}) async {
-    return true;
+    permissionCalls++;
+    return permissionResult == null ? true : await permissionResult!;
   }
 
   @override
@@ -297,6 +302,10 @@ void main() {
     expect(
       tester.widget<Scaffold>(page).backgroundColor,
       hostTheme.colorScheme.surface,
+    );
+    expect(
+      tester.getSize(find.byKey(const Key('ai-brand-mark'))),
+      const Size.square(72),
     );
 
     final overlay = tester.widget<AnnotatedRegion<SystemUiOverlayStyle>>(
@@ -1134,6 +1143,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final composer = find.byKey(const Key('ai-composer'));
+    await tester.tap(find.byKey(const Key('ai-hold-to-talk')));
+    await tester.pump();
+    expect(tester.widget<TextField>(composer).focusNode?.hasFocus, isTrue);
+
     final gesture = await tester.startGesture(
       tester.getCenter(find.byKey(const Key('ai-voice-mode-toggle'))),
     );
@@ -1146,6 +1160,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(find.byKey(const Key('ai-recording-panel')), findsOneWidget);
+    expect(find.byKey(const Key('ai-voice-keyboard-icon')), findsNothing);
     expect(recordPlatform.startCalls, 1);
 
     await gesture.up();
@@ -1174,6 +1189,55 @@ void main() {
       isEmpty,
     );
     expect(historyStore.conversations.single.messages, hasLength(2));
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('AI 首次授权麦克风后松手不会启动空录音', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final previousRecordPlatform = RecordPlatform.instance;
+    final permissionResult = Completer<bool>();
+    final recordPlatform = _VoiceRecordPlatform(
+      permissionResult: permissionResult.future,
+    );
+    RecordPlatform.instance = recordPlatform;
+    addTearDown(() => RecordPlatform.instance = previousRecordPlatform);
+    final api = _VoiceDeepSeekApi();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: api,
+          historyStore: _MemoryHistoryStore(),
+          recordingReader: (_) async => Uint8List.fromList(const [1, 2, 3]),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byKey(const Key('ai-voice-mode-toggle'))),
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(recordPlatform.permissionCalls, 1);
+
+    await gesture.up();
+    permissionResult.complete(true);
+    await tester.pumpAndSettle();
+
+    expect(recordPlatform.startCalls, 0);
+    expect(recordPlatform.stopCalls, 0);
+    expect(api.transcriptionCalls, 0);
+    expect(find.text('录音或语音识别失败'), findsNothing);
+    expect(find.text('未识别到语音内容'), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
