@@ -99,8 +99,8 @@ jobs:
             echo "flutter_version=$flutter_version"
           } >> "$GITHUB_OUTPUT"
 
-  android:
-    name: Build Android packages
+  android_apk:
+    name: Build Android APK
     needs: detect_version
     if: needs.detect_version.outputs.changed == 'true'
     runs-on: ubuntu-latest
@@ -134,6 +134,39 @@ jobs:
             --build-name="$APP_VERSION" \
             --build-number="$APP_BUILD_NUMBER"
 
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-miniapp-android-apk-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
+          path: frontend/apps/app-miniapp/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  android_aab:
+    name: Build Android AAB
+    needs: detect_version
+    if: needs.detect_version.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.detect_version.outputs.flutter_version }}
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        working-directory: frontend
+        run: flutter pub get
+
       - name: Build release AAB
         working-directory: frontend/apps/app-miniapp
         env:
@@ -143,14 +176,6 @@ jobs:
           flutter build appbundle --release \
             --build-name="$APP_VERSION" \
             --build-number="$APP_BUILD_NUMBER"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v7
-        with:
-          name: app-miniapp-android-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
-          path: frontend/apps/app-miniapp/build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
-          retention-days: 14
 
       - name: Upload AAB
         uses: actions/upload-artifact@v7
@@ -399,22 +424,65 @@ jobs:
             exit 1
           fi
 
-          private_keys_dir="$RUNNER_TEMP/appstoreconnect/private_keys"
+          appstore_dir="$RUNNER_TEMP/appstoreconnect"
+          private_keys_dir="$appstore_dir/private_keys"
+          private_key_secret="$appstore_dir/private_key.secret"
+          private_key_normalized="$appstore_dir/private_key.normalized"
+          private_key_decoded="$appstore_dir/private_key.decoded"
+          private_key_reddecoded="$appstore_dir/private_key.reddecoded"
           private_key="$private_keys_dir/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
-          private_key_raw="$RUNNER_TEMP/appstoreconnect/private_key.raw"
+          api_key_json="$appstore_dir/appstoreconnect-api-key.json"
           mkdir -p "$private_keys_dir"
-          echo -n "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" \
-            | base64 --decode -o "$private_key_raw"
-          LC_ALL=C tr -d '\000\r' < "$private_key_raw" > "$private_key"
-          rm -f "$private_key_raw"
-          chmod 600 "$private_key"
+          umask 077
+          trap 'rm -f "$private_key_secret" "$private_key_normalized" "$private_key_decoded" "$private_key_reddecoded" "$private_key" "$api_key_json"' EXIT
 
-          if ! openssl pkey -in "$private_key" -noout >/dev/null 2>&1; then
-            echo "::error::APP_STORE_CONNECT_PRIVATE_KEY_BASE64 does not decode to a valid App Store Connect .p8 private key."
+          printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" \
+            | LC_ALL=C tr -d '\000\r' > "$private_key_secret"
+
+          has_pem_key() {
+            grep -q '^-----BEGIN PRIVATE KEY-----$' "$1" \
+              && grep -q '^-----END PRIVATE KEY-----$' "$1"
+          }
+
+          decode_base64_key() {
+            local source_path="$1"
+            local output_path="$2"
+            if LC_ALL=C grep -Eq '[^A-Za-z0-9+/=[:space:]]' "$source_path"; then
+              return 1
+            fi
+            base64 --decode < "$source_path" > "$output_path" 2>/dev/null \
+              && [[ -s "$output_path" ]]
+          }
+
+          key_format=""
+          if has_pem_key "$private_key_secret"; then
+            key_format="raw PEM"
+            cp "$private_key_secret" "$private_key_normalized"
+          elif decode_base64_key "$private_key_secret" "$private_key_decoded"; then
+            if has_pem_key "$private_key_decoded"; then
+              key_format="single Base64"
+              cp "$private_key_decoded" "$private_key_normalized"
+            elif decode_base64_key "$private_key_decoded" "$private_key_reddecoded" \
+              && has_pem_key "$private_key_reddecoded"; then
+              key_format="double Base64"
+              cp "$private_key_reddecoded" "$private_key_normalized"
+            fi
+          fi
+
+          if [[ -z "$key_format" ]]; then
+            echo "::error::APP_STORE_CONNECT_PRIVATE_KEY_BASE64 is not a PEM key or valid Base64-encoded PEM key."
             exit 1
           fi
 
-          api_key_json="$RUNNER_TEMP/appstoreconnect-api-key.json"
+          LC_ALL=C tr -d '\000\r' < "$private_key_normalized" > "$private_key"
+          chmod 600 "$private_key"
+          echo "Detected App Store Connect key format: $key_format"
+
+          if ! openssl pkey -in "$private_key" -noout >/dev/null 2>&1; then
+            echo "::error::App Store Connect .p8 contains a PEM header but is not a valid private key."
+            exit 1
+          fi
+
           jq -n \
             --arg key_id "$APP_STORE_CONNECT_KEY_ID" \
             --arg issuer_id "$APP_STORE_CONNECT_ISSUER_ID" \
@@ -428,8 +496,6 @@ jobs:
             exit 1
           fi
 
-          trap 'rm -f "$private_key" "$api_key_json"' EXIT
-
           echo "Uploading $ipa to App Store Connect with Transporter..."
           FASTLANE_SKIP_UPDATE_CHECK=true \
           fastlane pilot upload \
@@ -442,13 +508,15 @@ jobs:
     name: Publish GitHub Release
     needs:
       - detect_version
-      - android
-      - ios_upload
+      - android_apk
+      - android_aab
+      - ios_build
     if: >-
       github.event_name == 'push'
       && needs.detect_version.outputs.changed == 'true'
-      && needs.android.result == 'success'
-      && needs.ios_upload.result == 'success'
+      && needs.android_apk.result == 'success'
+      && needs.android_aab.result == 'success'
+      && needs.ios_build.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
