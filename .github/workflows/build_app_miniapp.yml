@@ -143,7 +143,7 @@ jobs:
           retention-days: 14
 
   ios:
-    name: Build iOS app
+    name: Build and upload iOS app
     needs: detect_version
     if: needs.detect_version.outputs.changed == 'true'
     runs-on: macos-latest
@@ -161,26 +161,41 @@ jobs:
         working-directory: frontend
         run: flutter pub get
 
-      - name: Check iOS signing secrets
+      - name: Check iOS distribution credentials
         id: signing
         env:
           IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY_BASE64 }}
         shell: bash
         run: |
-          if [[ -n "$IOS_CERTIFICATE_P12_BASE64" \
-            && -n "$IOS_CERTIFICATE_PASSWORD" \
-            && -n "$IOS_PROVISIONING_PROFILE_BASE64" ]]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-            echo "iOS signing secrets found."
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::iOS signing secrets are missing; building an unsigned Runner.app archive."
+          set -euo pipefail
+
+          missing=()
+          [[ -n "$IOS_CERTIFICATE_P12_BASE64" ]] \
+            || missing+=("IOS_CERTIFICATE_P12_BASE64")
+          [[ -n "$IOS_CERTIFICATE_PASSWORD" ]] \
+            || missing+=("IOS_CERTIFICATE_PASSWORD")
+          [[ -n "$IOS_PROVISIONING_PROFILE_BASE64" ]] \
+            || missing+=("IOS_PROVISIONING_PROFILE_BASE64")
+          [[ -n "$APP_STORE_CONNECT_KEY_ID" ]] \
+            || missing+=("APP_STORE_CONNECT_KEY_ID")
+          [[ -n "$APP_STORE_CONNECT_ISSUER_ID" ]] \
+            || missing+=("APP_STORE_CONNECT_ISSUER_ID")
+          [[ -n "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" ]] \
+            || missing+=("APP_STORE_CONNECT_PRIVATE_KEY_BASE64")
+
+          if (( ${#missing[@]} > 0 )); then
+            echo "::error::Missing App Store distribution secrets: ${missing[*]}"
+            exit 1
           fi
 
+          echo "App Store distribution credentials found."
+
       - name: Install Apple certificate and provisioning profile
-        if: steps.signing.outputs.available == 'true'
         env:
           IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
@@ -212,7 +227,6 @@ jobs:
           cp "$profile_path" "$HOME/Library/MobileDevice/Provisioning Profiles/"
 
       - name: Build signed IPA
-        if: steps.signing.outputs.available == 'true'
         working-directory: frontend/apps/app-miniapp
         env:
           APP_VERSION: ${{ needs.detect_version.outputs.version }}
@@ -279,7 +293,7 @@ jobs:
           <plist version="1.0">
           <dict>
             <key>method</key>
-            <string>app-store</string>
+            <string>app-store-connect</string>
             <key>signingStyle</key>
             <string>manual</string>
             <key>teamID</key>
@@ -303,7 +317,6 @@ jobs:
             --export-options-plist="$export_options"
 
       - name: Upload signed IPA
-        if: steps.signing.outputs.available == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: app-miniapp-ios-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
@@ -311,29 +324,45 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Build unsigned iOS app
-        if: steps.signing.outputs.available != 'true'
+      - name: Upload IPA to App Store Connect
         working-directory: frontend/apps/app-miniapp
         env:
-          APP_VERSION: ${{ needs.detect_version.outputs.version }}
-          APP_BUILD_NUMBER: ${{ needs.detect_version.outputs.build_number }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY_BASE64 }}
+        shell: bash
         run: |
-          flutter build ios --release --no-codesign \
-            --build-name="$APP_VERSION" \
-            --build-number="$APP_BUILD_NUMBER"
+          set -euo pipefail
 
-          ditto -c -k --sequesterRsrc --keepParent \
-            build/ios/iphoneos/Runner.app \
-            "$RUNNER_TEMP/app-miniapp-${APP_VERSION}-${APP_BUILD_NUMBER}-ios-unsigned.zip"
+          shopt -s nullglob
+          ipas=(build/ios/ipa/*.ipa)
+          if (( ${#ipas[@]} != 1 )); then
+            echo "::error::Expected exactly one IPA, found ${#ipas[@]}."
+            exit 1
+          fi
+          ipa="${ipas[0]}"
 
-      - name: Upload unsigned iOS app
-        if: steps.signing.outputs.available != 'true'
-        uses: actions/upload-artifact@v7
-        with:
-          name: app-miniapp-ios-unsigned-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
-          path: ${{ runner.temp }}/app-miniapp-*-ios-unsigned.zip
-          if-no-files-found: error
-          retention-days: 14
+          private_keys_dir="$RUNNER_TEMP/appstoreconnect/private_keys"
+          private_key="$private_keys_dir/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
+          mkdir -p "$private_keys_dir"
+          echo -n "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" \
+            | base64 --decode -o "$private_key"
+          chmod 600 "$private_key"
+          export API_PRIVATE_KEYS_DIR="$private_keys_dir"
+
+          echo "Validating $ipa with App Store Connect..."
+          xcrun altool --validate-app \
+            --file "$ipa" \
+            --type ios \
+            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+
+          echo "Uploading $ipa to App Store Connect..."
+          xcrun altool --upload-app \
+            --file "$ipa" \
+            --type ios \
+            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
 
   release:
     name: Publish GitHub Release
