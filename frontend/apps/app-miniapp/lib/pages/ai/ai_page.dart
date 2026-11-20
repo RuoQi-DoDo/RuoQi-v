@@ -3511,7 +3511,10 @@ class _AiComposer extends StatelessWidget {
                                         '切换至键盘',
                                         'Switch to keyboard',
                                       ),
+                                      tooltipTriggerMode:
+                                          TooltipTriggerMode.manual,
                                       onPressed: onVoice,
+                                      onLongPress: onVoice,
                                       icon: DeepSeekKeyboardIcon(
                                         key: const Key(
                                           'ai-voice-keyboard-icon',

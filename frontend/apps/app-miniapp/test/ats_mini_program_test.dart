@@ -738,9 +738,22 @@ void main() {
     expect(find.text('按住说话'), findsOneWidget);
     expect(find.byKey(const Key('ai-composer')), findsNothing);
 
-    await tester.tap(find.byKey(const Key('ai-voice-mode-toggle')));
+    final keyboardToggle = find.byKey(const Key('ai-voice-mode-toggle'));
+    final keyboardTooltip = tester.widget<Tooltip>(
+      find.descendant(of: keyboardToggle, matching: find.byType(Tooltip)),
+    );
+    expect(keyboardTooltip.triggerMode, TooltipTriggerMode.manual);
+
+    await tester.longPress(keyboardToggle);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-voice-hold-button')), findsNothing);
+    expect(find.byKey(const Key('ai-composer')), findsOneWidget);
+
+    await tester.tap(keyboardToggle);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-voice-hold-button')), findsOneWidget);
+    await tester.tap(keyboardToggle);
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-composer')), findsOneWidget);
   });
 
