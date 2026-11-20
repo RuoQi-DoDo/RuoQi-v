@@ -689,11 +689,26 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     final canScroll = position.maxScrollExtent > 24;
     final atBottom =
         position.maxScrollExtent - position.pixels <= _messageBottomTolerance;
+    final userScrolledAway =
+        _responding &&
+        _followResponseScroll &&
+        !atBottom &&
+        position.userScrollDirection != ScrollDirection.idle;
+    final resumeFollow = atBottom && !_followResponseScroll;
     final becameScrollable = canScroll && !_messagesCanScroll;
-    if (canScroll != _messagesCanScroll || atBottom != _messagesAtBottom) {
+    if (canScroll != _messagesCanScroll ||
+        atBottom != _messagesAtBottom ||
+        userScrolledAway ||
+        resumeFollow) {
       setState(() {
         _messagesCanScroll = canScroll;
         _messagesAtBottom = atBottom;
+        if (userScrolledAway) {
+          _followResponseScroll = false;
+        }
+        if (resumeFollow) {
+          _followResponseScroll = true;
+        }
       });
     }
     if (becameScrollable && _followResponseScroll) {
@@ -735,7 +750,16 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   }
 
   void _pauseResponseScroll() {
-    if (_responding && _followResponseScroll) {
+    if (!_responding) {
+      return;
+    }
+    if (_messageScroll.hasClients) {
+      final position = _messageScroll.position;
+      if (position.activity is DrivenScrollActivity) {
+        position.jumpTo(position.pixels);
+      }
+    }
+    if (_followResponseScroll) {
       setState(() => _followResponseScroll = false);
     }
   }
@@ -1649,134 +1673,140 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                             child: Scaffold(
                               key: const Key('ai-page'),
                               backgroundColor: AiColors.background(context),
-                              body: SafeArea(
-                                bottom: false,
-                                child: Column(
-                                  children: [
-                                    _AiHeader(
-                                      onBack: _handleHeaderBack,
-                                      onHistory: _showHistory,
-                                      onNewConversation: _newConversation,
-                                      title: _conversationTitle,
-                                      autoRead: _autoRead,
-                                      onToggleAutoRead: _toggleAutoRead,
-                                    ),
-                                    Expanded(
-                                      child: Stack(
-                                        children: [
-                                          Positioned.fill(
-                                            child: AnimatedSwitcher(
-                                              duration: const Duration(
-                                                milliseconds: 220,
-                                              ),
-                                              switchInCurve:
-                                                  Curves.easeOutCubic,
-                                              switchOutCurve:
-                                                  Curves.easeInCubic,
-                                              child: _messages.isEmpty
-                                                  ? const _AiWelcome(
-                                                      key: ValueKey(
-                                                        'ai-welcome',
+                              body: Listener(
+                                behavior: HitTestBehavior.translucent,
+                                onPointerDown: (_) => _pauseResponseScroll(),
+                                child: SafeArea(
+                                  bottom: false,
+                                  child: Column(
+                                    children: [
+                                      _AiHeader(
+                                        onBack: _handleHeaderBack,
+                                        onHistory: _showHistory,
+                                        onNewConversation: _newConversation,
+                                        title: _conversationTitle,
+                                        autoRead: _autoRead,
+                                        onToggleAutoRead: _toggleAutoRead,
+                                      ),
+                                      Expanded(
+                                        child: Stack(
+                                          children: [
+                                            Positioned.fill(
+                                              child: AnimatedSwitcher(
+                                                duration: const Duration(
+                                                  milliseconds: 220,
+                                                ),
+                                                switchInCurve:
+                                                    Curves.easeOutCubic,
+                                                switchOutCurve:
+                                                    Curves.easeInCubic,
+                                                child: _messages.isEmpty
+                                                    ? const _AiWelcome(
+                                                        key: ValueKey(
+                                                          'ai-welcome',
+                                                        ),
+                                                      )
+                                                    : _AiConversation(
+                                                        key: const ValueKey(
+                                                          'ai-conversation',
+                                                        ),
+                                                        messages: _messages,
+                                                        responding: _responding,
+                                                        scrollController:
+                                                            _messageScroll,
+                                                        reserveScrollButtonSpace:
+                                                            _messagesCanScroll,
+                                                        speakingText:
+                                                            _speakingText,
+                                                        speechLoading:
+                                                            _speechLoading,
+                                                        textSelectionController:
+                                                            widget
+                                                                .textSelectionController,
+                                                        onCopy: (message) =>
+                                                            unawaited(
+                                                              _copyMessage(
+                                                                message.content,
+                                                              ),
+                                                            ),
+                                                        onEdit: _editMessage,
+                                                        onFeedback:
+                                                            _setMessageFeedback,
+                                                        onPauseAutoScroll:
+                                                            _pauseResponseScroll,
+                                                        onUserScroll:
+                                                            _handleUserMessageScroll,
+                                                        onSpeak: (message) =>
+                                                            unawaited(
+                                                              _toggleSpeech(
+                                                                message.content,
+                                                              ),
+                                                            ),
+                                                        onShare: (message) =>
+                                                            unawaited(
+                                                              _shareMessage(
+                                                                message.content,
+                                                              ),
+                                                            ),
+                                                        onRegenerate:
+                                                            _regenerateMessage,
                                                       ),
-                                                    )
-                                                  : _AiConversation(
-                                                      key: const ValueKey(
-                                                        'ai-conversation',
-                                                      ),
-                                                      messages: _messages,
-                                                      responding: _responding,
-                                                      scrollController:
-                                                          _messageScroll,
-                                                      reserveScrollButtonSpace:
-                                                          _messagesCanScroll,
-                                                      speakingText:
-                                                          _speakingText,
-                                                      speechLoading:
-                                                          _speechLoading,
-                                                      textSelectionController:
-                                                          widget
-                                                              .textSelectionController,
-                                                      onCopy: (message) =>
-                                                          unawaited(
-                                                            _copyMessage(
-                                                              message.content,
-                                                            ),
-                                                          ),
-                                                      onEdit: _editMessage,
-                                                      onFeedback:
-                                                          _setMessageFeedback,
-                                                      onPauseAutoScroll:
-                                                          _pauseResponseScroll,
-                                                      onUserScroll:
-                                                          _handleUserMessageScroll,
-                                                      onSpeak: (message) =>
-                                                          unawaited(
-                                                            _toggleSpeech(
-                                                              message.content,
-                                                            ),
-                                                          ),
-                                                      onShare: (message) =>
-                                                          unawaited(
-                                                            _shareMessage(
-                                                              message.content,
-                                                            ),
-                                                          ),
-                                                      onRegenerate:
-                                                          _regenerateMessage,
-                                                    ),
-                                            ),
-                                          ),
-                                          if (_messages.isNotEmpty &&
-                                              _messagesCanScroll)
-                                            Positioned(
-                                              right: 18,
-                                              bottom: 10,
-                                              child: _MessageScrollButton(
-                                                atBottom: _messagesAtBottom,
-                                                onPressed:
-                                                    _toggleMessageScrollEdge,
                                               ),
                                             ),
-                                        ],
+                                            if (_messages.isNotEmpty &&
+                                                _messagesCanScroll)
+                                              Positioned(
+                                                right: 18,
+                                                bottom: 10,
+                                                child: _MessageScrollButton(
+                                                  atBottom: _messagesAtBottom,
+                                                  onPressed:
+                                                      _toggleMessageScrollEdge,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    _AiComposer(
-                                      controller: _composer,
-                                      focusNode: _composerFocus,
-                                      focused: _composerFocused,
-                                      canSend:
-                                          _composer.text.trim().isNotEmpty &&
-                                          !_responding,
-                                      responding: _responding,
-                                      deepThinking: _deepThinking,
-                                      webSearch: _webSearch,
-                                      onToggleDeepThinking: () => setState(
-                                        () => _deepThinking = !_deepThinking,
+                                      _AiComposer(
+                                        controller: _composer,
+                                        focusNode: _composerFocus,
+                                        focused: _composerFocused,
+                                        canSend:
+                                            _composer.text.trim().isNotEmpty &&
+                                            !_responding,
+                                        responding: _responding,
+                                        deepThinking: _deepThinking,
+                                        webSearch: _webSearch,
+                                        onToggleDeepThinking: () => setState(
+                                          () => _deepThinking = !_deepThinking,
+                                        ),
+                                        onToggleWebSearch: () => setState(
+                                          () => _webSearch = !_webSearch,
+                                        ),
+                                        attachmentMenuOpen: _attachmentMenuOpen,
+                                        onAttachment: _toggleAttachmentMenu,
+                                        onAttachmentAction: (action) =>
+                                            unawaited(
+                                              _handleAttachmentAction(action),
+                                            ),
+                                        onVoice: _showVoiceMessage,
+                                        attachmentName:
+                                            _attachmentFile?.filename,
+                                        onRemoveAttachment: () => setState(
+                                          () => _attachmentFile = null,
+                                        ),
+                                        voiceActive:
+                                            _recording || _holdToTalkActive,
+                                        voiceMode: _voiceMode,
+                                        onRequestFocus: _requestComposerFocus,
+                                        onHoldToTalkStart: _beginHoldToTalk,
+                                        onHoldToTalkMove: _moveHoldToTalk,
+                                        onHoldToTalkEnd: _endHoldToTalk,
+                                        recordingWillCancel: _holdToTalkCancel,
+                                        onSend: () => unawaited(_send()),
                                       ),
-                                      onToggleWebSearch: () => setState(
-                                        () => _webSearch = !_webSearch,
-                                      ),
-                                      attachmentMenuOpen: _attachmentMenuOpen,
-                                      onAttachment: _toggleAttachmentMenu,
-                                      onAttachmentAction: (action) => unawaited(
-                                        _handleAttachmentAction(action),
-                                      ),
-                                      onVoice: _showVoiceMessage,
-                                      attachmentName: _attachmentFile?.filename,
-                                      onRemoveAttachment: () => setState(
-                                        () => _attachmentFile = null,
-                                      ),
-                                      voiceActive:
-                                          _recording || _holdToTalkActive,
-                                      voiceMode: _voiceMode,
-                                      onRequestFocus: _requestComposerFocus,
-                                      onHoldToTalkStart: _beginHoldToTalk,
-                                      onHoldToTalkMove: _moveHoldToTalk,
-                                      onHoldToTalkEnd: _endHoldToTalk,
-                                      recordingWillCancel: _holdToTalkCancel,
-                                      onSend: () => unawaited(_send()),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -1937,10 +1967,9 @@ class _AiHeader extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    key: const Key('ai-auto-read'),
-                    style: _aiIconButtonStyle,
-                    tooltip: text.text('自动朗读', 'Auto read'),
+                  _AiHeaderAction(
+                    buttonKey: const Key('ai-auto-read'),
+                    label: text.text('自动朗读', 'Auto read'),
                     onPressed: onToggleAutoRead,
                     icon: DeepSeekAutoReadIcon(
                       color: autoRead
@@ -1950,11 +1979,11 @@ class _AiHeader extends StatelessWidget {
                       size: 27,
                     ),
                   ),
-                  IconButton(
-                    key: const Key('ai-new-conversation'),
-                    style: _aiIconButtonStyle,
-                    tooltip: text.text('新对话', 'New chat'),
+                  _AiHeaderAction(
+                    buttonKey: const Key('ai-new-conversation'),
+                    label: text.text('新对话', 'New chat'),
                     onPressed: onNewConversation,
+                    onLongPress: onNewConversation,
                     icon: DeepSeekNewChatIcon(
                       color: AiColors.text(context),
                       size: 25,
@@ -1965,6 +1994,44 @@ class _AiHeader extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _AiHeaderAction extends StatelessWidget {
+  const _AiHeaderAction({
+    required this.buttonKey,
+    required this.label,
+    required this.onPressed,
+    required this.icon,
+    this.onLongPress,
+  });
+
+  final Key buttonKey;
+  final String label;
+  final VoidCallback onPressed;
+  final VoidCallback? onLongPress;
+  final Widget icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final button = IconButton(
+      key: buttonKey,
+      style: _aiIconButtonStyle,
+      onPressed: onPressed,
+      icon: icon,
+    );
+    return Semantics(
+      button: true,
+      label: label,
+      onTap: onPressed,
+      onLongPress: onLongPress,
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onLongPress: onLongPress ?? () {},
+        child: button,
       ),
     );
   }
@@ -3467,6 +3534,9 @@ class _AiComposer extends StatelessWidget {
                                             'Close attachments',
                                           )
                                         : text.text('添加附件', 'Add attachment'),
+                                    tooltipTriggerMode:
+                                        TooltipTriggerMode.manual,
+                                    onLongPress: onAttachment,
                                     onPressed: onAttachment,
                                     icon: AnimatedRotation(
                                       turns: attachmentMenuOpen ? 0.125 : 0,
@@ -3904,12 +3974,14 @@ class _AiRoundAction extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     this.tooltipTriggerMode,
+    this.onLongPress,
   });
 
   final String tooltip;
   final VoidCallback onPressed;
   final Widget icon;
   final TooltipTriggerMode? tooltipTriggerMode;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -3919,6 +3991,7 @@ class _AiRoundAction extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onPressed,
+        onLongPress: onLongPress,
         child: SizedBox.square(
           dimension: 44,
           child: Center(

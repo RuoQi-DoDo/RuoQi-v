@@ -117,41 +117,42 @@ class PageTransientNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxWidth = (MediaQuery.sizeOf(context).width - 48).clamp(0.0, 320.0);
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.92, end: 1),
-      duration: const Duration(milliseconds: 140),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) => Opacity(
-        opacity: value,
-        child: Transform.scale(scale: value, child: child),
+    final baseStyle =
+        Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
+    return DefaultTextStyle(
+      style: baseStyle.copyWith(
+        color: Colors.white,
+        fontSize: 16,
+        height: 1.35,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.15,
+        decoration: TextDecoration.none,
       ),
-      child: Semantics(
-        liveRegion: true,
-        child: Container(
-          constraints: BoxConstraints(maxWidth: maxWidth),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xE64A4A4A),
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x33000000),
-                blurRadius: 18,
-                offset: Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Text(
-            message,
-            textAlign: TextAlign.center,
-            softWrap: true,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              height: 1.35,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.15,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.92, end: 1),
+        duration: const Duration(milliseconds: 140),
+        curve: Curves.easeOutCubic,
+        builder: (context, value, child) => Opacity(
+          opacity: value,
+          child: Transform.scale(scale: value, child: child),
+        ),
+        child: Semantics(
+          liveRegion: true,
+          child: Container(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4A4A4A),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 18,
+                  offset: Offset(0, 6),
+                ),
+              ],
             ),
+            child: Text(message, textAlign: TextAlign.center, softWrap: true),
           ),
         ),
       ),
