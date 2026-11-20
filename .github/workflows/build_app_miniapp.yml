@@ -142,8 +142,8 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  ios:
-    name: Build and upload iOS app
+  ios_build:
+    name: Build iOS IPA
     needs: detect_version
     if: needs.detect_version.outputs.changed == 'true'
     runs-on: macos-latest
@@ -162,14 +162,10 @@ jobs:
         run: flutter pub get
 
       - name: Check iOS distribution credentials
-        id: signing
         env:
           IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY_BASE64 }}
         shell: bash
         run: |
           set -euo pipefail
@@ -181,12 +177,6 @@ jobs:
             || missing+=("IOS_CERTIFICATE_PASSWORD")
           [[ -n "$IOS_PROVISIONING_PROFILE_BASE64" ]] \
             || missing+=("IOS_PROVISIONING_PROFILE_BASE64")
-          [[ -n "$APP_STORE_CONNECT_KEY_ID" ]] \
-            || missing+=("APP_STORE_CONNECT_KEY_ID")
-          [[ -n "$APP_STORE_CONNECT_ISSUER_ID" ]] \
-            || missing+=("APP_STORE_CONNECT_ISSUER_ID")
-          [[ -n "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" ]] \
-            || missing+=("APP_STORE_CONNECT_PRIVATE_KEY_BASE64")
 
           if (( ${#missing[@]} > 0 )); then
             echo "::error::Missing App Store distribution secrets: ${missing[*]}"
@@ -319,10 +309,48 @@ jobs:
       - name: Upload signed IPA
         uses: actions/upload-artifact@v7
         with:
-          name: app-miniapp-ios-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
+          name: app-miniapp-ios-ipa-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
           path: frontend/apps/app-miniapp/build/ios/ipa/*.ipa
           if-no-files-found: error
           retention-days: 14
+
+  ios_upload:
+    name: Upload iOS to App Store Connect
+    needs:
+      - detect_version
+      - ios_build
+    if: >-
+      needs.detect_version.outputs.changed == 'true'
+      && needs.ios_build.result == 'success'
+    runs-on: macos-latest
+    steps:
+      - name: Check App Store Connect credentials
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          missing=()
+          [[ -n "$APP_STORE_CONNECT_KEY_ID" ]] \
+            || missing+=("APP_STORE_CONNECT_KEY_ID")
+          [[ -n "$APP_STORE_CONNECT_ISSUER_ID" ]] \
+            || missing+=("APP_STORE_CONNECT_ISSUER_ID")
+          [[ -n "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" ]] \
+            || missing+=("APP_STORE_CONNECT_PRIVATE_KEY_BASE64")
+
+          if (( ${#missing[@]} > 0 )); then
+            echo "::error::Missing App Store Connect secrets: ${missing[*]}"
+            exit 1
+          fi
+
+      - name: Download signed IPA
+        uses: actions/download-artifact@v8
+        with:
+          name: app-miniapp-ios-ipa-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
+          path: frontend/apps/app-miniapp/build/ios/ipa
 
       - name: Upload IPA to App Store Connect
         working-directory: frontend/apps/app-miniapp
@@ -355,9 +383,12 @@ jobs:
 
           private_keys_dir="$RUNNER_TEMP/appstoreconnect/private_keys"
           private_key="$private_keys_dir/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
+          private_key_raw="$RUNNER_TEMP/appstoreconnect/private_key.raw"
           mkdir -p "$private_keys_dir"
           echo -n "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" \
-            | base64 --decode -o "$private_key"
+            | base64 --decode -o "$private_key_raw"
+          tr -d '\000\r' < "$private_key_raw" > "$private_key"
+          rm -f "$private_key_raw"
           chmod 600 "$private_key"
 
           if ! openssl pkey -in "$private_key" -noout >/dev/null 2>&1; then
@@ -373,6 +404,12 @@ jobs:
             '{key_id: $key_id, issuer_id: $issuer_id, key: $key}' \
             > "$api_key_json"
           chmod 600 "$api_key_json"
+
+          if grep -Fq '\u0000' "$api_key_json"; then
+            echo "::error::App Store Connect API key JSON still contains a null byte."
+            exit 1
+          fi
+
           trap 'rm -f "$private_key" "$api_key_json"' EXIT
 
           echo "Uploading $ipa to App Store Connect with Transporter..."
@@ -388,12 +425,12 @@ jobs:
     needs:
       - detect_version
       - android
-      - ios
+      - ios_upload
     if: >-
       github.event_name == 'push'
       && needs.detect_version.outputs.changed == 'true'
       && needs.android.result == 'success'
-      && needs.ios.result == 'success'
+      && needs.ios_upload.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
