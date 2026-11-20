@@ -405,7 +405,7 @@ jobs:
           mkdir -p "$private_keys_dir"
           echo -n "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" \
             | base64 --decode -o "$private_key_raw"
-          tr -d '\000\r' < "$private_key_raw" > "$private_key"
+          LC_ALL=C tr -d '\000\r' < "$private_key_raw" > "$private_key"
           rm -f "$private_key_raw"
           chmod 600 "$private_key"
 
