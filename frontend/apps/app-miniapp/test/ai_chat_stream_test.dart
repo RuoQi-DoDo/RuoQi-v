@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:common/common.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:record/record.dart';
 import 'package:ruoqi_app_miniapp/appearance.dart';
 import 'package:ruoqi_app_miniapp/localization.dart';
 import 'package:ruoqi_app_miniapp/pages/ai/ai_page.dart';
@@ -108,6 +110,100 @@ class _ChatStreamAdapter implements HttpClientAdapter {
 
   @override
   void close({bool force = false}) {}
+}
+
+class _VoiceDeepSeekApi extends DeepSeekApi {
+  int transcriptionCalls = 0;
+  final List<List<DeepSeekChatMessage>> chatRequests = [];
+
+  @override
+  Future<DeepSeekTranscription> speechToText({
+    required String apiKey,
+    required String filename,
+    required Uint8List bytes,
+  }) async {
+    transcriptionCalls++;
+    expect(filename, 'voice.wav');
+    expect(bytes, isNotEmpty);
+    return const DeepSeekTranscription(
+      requestId: 'voice-request',
+      text: '  直接用语音发送  ',
+      durationMs: 1200,
+    );
+  }
+
+  @override
+  Stream<DeepSeekChatChunk> streamChatCompletion({
+    required String apiKey,
+    required String model,
+    required List<DeepSeekChatMessage> messages,
+    bool thinking = false,
+    bool webSearch = false,
+    int? maxTokens,
+    double? temperature,
+  }) async* {
+    chatRequests.add(messages);
+    yield const DeepSeekChatChunk(
+      content: '语音消息已收到',
+      reasoningContent: '',
+      finishReason: 'stop',
+    );
+  }
+}
+
+class _VoiceRecordPlatform extends RecordPlatform {
+  String? outputPath;
+  int startCalls = 0;
+  int stopCalls = 0;
+
+  @override
+  Future<void> create(String recorderId) async {}
+
+  @override
+  Future<bool> hasPermission(String recorderId, {bool request = true}) async {
+    return true;
+  }
+
+  @override
+  Future<void> start(
+    String recorderId,
+    RecordConfig config, {
+    required String path,
+  }) async {
+    startCalls++;
+    outputPath = path;
+    File(path).writeAsBytesSync(const [0, 1, 2, 3]);
+  }
+
+  @override
+  Future<String?> stop(String recorderId) async {
+    stopCalls++;
+    return outputPath;
+  }
+
+  @override
+  Future<bool> isRecording(String recorderId) async => false;
+
+  @override
+  Future<void> cancel(String recorderId) async {
+    final path = outputPath;
+    if (path != null) {
+      final file = File(path);
+      if (await file.exists()) {
+        await file.delete();
+      }
+    }
+  }
+
+  @override
+  Future<void> dispose(String recorderId) async {}
+
+  @override
+  Stream<RecordState> onStateChanged(String recorderId) =>
+      const Stream<RecordState>.empty();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {
@@ -241,6 +337,78 @@ void main() {
     expect(adapter.lastRequest?.data['stream'], isTrue);
     expect(historyStore.conversations, hasLength(1));
     expect(historyStore.conversations.single.messages, hasLength(2));
+  });
+
+  testWidgets('AI 语音转写完成后直接作为消息发送', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final previousRecordPlatform = RecordPlatform.instance;
+    final recordPlatform = _VoiceRecordPlatform();
+    RecordPlatform.instance = recordPlatform;
+    addTearDown(() => RecordPlatform.instance = previousRecordPlatform);
+    final api = _VoiceDeepSeekApi();
+    final historyStore = _MemoryHistoryStore();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: api,
+          historyStore: historyStore,
+          recordingReader: (_) async => Uint8List.fromList(const [1, 2, 3]),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byKey(const Key('ai-voice-mode-toggle'))),
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+    for (
+      var attempt = 0;
+      attempt < 20 && recordPlatform.outputPath == null;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(find.byKey(const Key('ai-recording-panel')), findsOneWidget);
+    expect(recordPlatform.startCalls, 1);
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+    for (
+      var attempt = 0;
+      attempt < 20 && api.transcriptionCalls == 0;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+
+    expect(recordPlatform.stopCalls, 1);
+    expect(File(recordPlatform.outputPath!).existsSync(), isTrue);
+    expect(find.text('录音或语音识别失败'), findsNothing);
+    expect(api.transcriptionCalls, 1);
+    expect(api.chatRequests, hasLength(1));
+    expect(api.chatRequests.single.last.content, '直接用语音发送');
+    expect(find.text('直接用语音发送'), findsWidgets);
+    expect(find.text('语音消息已收到'), findsOneWidget);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('ai-composer')))
+          .controller
+          ?.text,
+      isEmpty,
+    );
+    expect(historyStore.conversations.single.messages, hasLength(2));
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets('聊天内容可滚动时按钮支持跳转顶部和底部', (tester) async {

@@ -30,6 +30,7 @@ class AiPage extends StatefulWidget {
     this.api,
     this.historyStore,
     this.ttsCache,
+    this.recordingReader,
     this.scrollController,
   });
 
@@ -38,6 +39,7 @@ class AiPage extends StatefulWidget {
   final DeepSeekApi? api;
   final ChatHistoryStore? historyStore;
   final DeepSeekTtsCache? ttsCache;
+  final Future<Uint8List> Function(String path)? recordingReader;
   final ScrollController? scrollController;
 
   @override
@@ -1407,16 +1409,27 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       if (path == null) {
         return;
       }
-      final bytes = await File(path).readAsBytes();
+      final bytes =
+          await (widget.recordingReader?.call(path) ??
+              File(path).readAsBytes());
       final result = await _api.speechToText(
         apiKey: settings.apiKey,
         filename: 'voice.wav',
         bytes: bytes,
       );
-      if (mounted) {
-        setState(() => _voiceMode = false);
-        _setComposerText(result.text, focus: false);
+      if (!mounted) {
+        return;
       }
+      setState(() => _voiceMode = false);
+      final transcript = result.text.trim();
+      if (transcript.isEmpty) {
+        showPageMessage(
+          context,
+          AppLocalizations.of(context).text('未识别到语音内容', 'No speech detected'),
+        );
+        return;
+      }
+      await _send(transcript);
     } on DeepSeekApiException catch (error) {
       if (mounted) {
         setState(() => _recording = false);
