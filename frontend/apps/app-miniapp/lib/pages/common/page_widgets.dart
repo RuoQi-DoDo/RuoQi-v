@@ -131,7 +131,7 @@ class PageTransientNotice extends StatelessWidget {
           constraints: BoxConstraints(maxWidth: maxWidth),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: const Color(0xE64A4A4A),
+            color: const Color(0xFF4A4A4A),
             borderRadius: BorderRadius.circular(18),
             boxShadow: const [
               BoxShadow(
@@ -151,6 +151,7 @@ class PageTransientNotice extends StatelessWidget {
               height: 1.35,
               fontWeight: FontWeight.w600,
               letterSpacing: -0.15,
+              decoration: TextDecoration.none,
             ),
           ),
         ),
