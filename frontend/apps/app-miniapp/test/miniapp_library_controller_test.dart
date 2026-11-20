@@ -25,23 +25,13 @@ const _c = MiniProgramLauncherItem(
 );
 
 void main() {
-  test('default launcher entries only contain implemented mini-programs', () {
-    const implementedIds = {
+  test('default launcher entries only expose Tospino', () {
+    expect(defaultRecentMiniPrograms.map((item) => item.id), [
       MiniProgramLauncherIds.tospino,
-      MiniProgramLauncherIds.ats,
-      MiniProgramLauncherIds.merchant,
-      MiniProgramLauncherIds.hr,
-      MiniProgramLauncherIds.platform,
-    };
-
-    expect(
-      defaultRecentMiniPrograms.map((item) => item.id),
-      everyElement(isIn(implementedIds)),
-    );
-    expect(
-      defaultMyMiniPrograms.map((item) => item.id),
-      everyElement(isIn(implementedIds)),
-    );
+    ]);
+    expect(defaultMyMiniPrograms.map((item) => item.id), [
+      MiniProgramLauncherIds.tospino,
+    ]);
   });
 
   test('initial lists deduplicate IDs and cannot be mutated externally', () {
@@ -85,15 +75,15 @@ void main() {
     );
     addTearDown(controller.dispose);
     const item = MiniProgramLauncherItem(
-      id: MiniProgramLauncherIds.ats,
-      label: '企业直聘',
-      icon: Icons.work_outline,
+      id: MiniProgramLauncherIds.tospino,
+      label: 'Tospino',
+      icon: Icons.storefront_rounded,
       color: Colors.teal,
     );
     controller.addToMy(item);
     expect(
       controller.myItems.single.tileKey,
-      const ValueKey('mini-program-picker-ats'),
+      const ValueKey('mini-program-picker-tospino'),
     );
     controller.recordOpen(controller.myItems.single);
     expect(controller.recentItems.single.tileKey, isNull);

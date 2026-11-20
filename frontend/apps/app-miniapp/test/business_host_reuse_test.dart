@@ -8,11 +8,12 @@ import 'package:ruoqi_app_miniapp/pages/discover/discover_page.dart';
 import 'package:ruoqi_app_miniapp/pages/host/business_host_page.dart';
 import 'package:ruoqi_app_miniapp/pages/profile/me_page.dart';
 import 'package:ruoqi_app_miniapp/pages/settings/settings_page.dart';
-
-import 'finders.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('替换业务首页后继续复用公共页面和小程序，并保留首页状态', (tester) async {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('公共宿主仅保留 AI 首页、Tospino 和精简设置', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -28,33 +29,22 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-page')), findsOneWidget);
-    await tester.tap(find.text('业务首页'));
-    await tester.pumpAndSettle();
-    expect(find.text('其他业务工作台'), findsOneWidget);
-    expect(find.text('客户模拟'), findsNothing);
-    await tester.tap(find.text('增加业务计数'));
-    await tester.pump();
+    for (final tab in ['ai', 'home', 'discover', 'me']) {
+      expect(find.byKey(Key('host-tab-$tab')), findsNothing);
+    }
 
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.tap(find.byKey(const Key('ai-history')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('ai-page')), findsOneWidget);
-    await tester.tap(find.text('发现').last);
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('discover-page')), findsOneWidget);
-    await tester.tap(find.text('我').last);
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('me-page')), findsOneWidget);
-    await tester.drag(find.byKey(const Key('me-page')), const Offset(0, -240));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.tap(find.byKey(const Key('ai-history-settings')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('settings-page')), findsOneWidget);
     expect(find.text('界面与显示'), findsOneWidget);
-    expect(find.text('账号安全'), findsOneWidget);
+    expect(find.text('模型'), findsOneWidget);
+    expect(find.text('账号安全'), findsNothing);
     await tester.tap(find.byKey(const Key('settings-back')));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('host-tab-ai')));
+    await tester.dragFrom(const Offset(280, 420), const Offset(-260, 0));
     await tester.pumpAndSettle();
     await tester.drag(
       find.byKey(const Key('ai-home-pull-listener')),
@@ -65,21 +55,18 @@ void main() {
       find.byKey(const Key('customer-mini-program-picker')),
       findsOneWidget,
     );
-    await tester.tap(find.byKey(const Key('mini-program-picker-merchant')));
-    await tester.pumpAndSettle();
-    expect(find.text('业务静态页（语义化重构）'), findsOneWidget);
-    await tester.tap(findMaterialTooltip('退出小程序'));
-    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('mini-program-picker-tospino')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('mini-program-picker-merchant')), findsNothing);
+    expect(find.byKey(const Key('mini-program-picker-ats')), findsNothing);
     await tester.drag(
       find.byKey(const Key('mini-program-picker-exit-swipe')),
       const Offset(0, -80),
     );
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-page')), findsOneWidget);
-
-    await tester.tap(find.text('业务首页'));
-    await tester.pumpAndSettle();
-    expect(find.text('业务计数：1'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -115,41 +102,15 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('新业务可指定退出后进入自己的登录路由', (tester) async {
-    tester.view.physicalSize = const Size(414, 896);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(
-      BusinessAppFrame(
-        title: '其他业务',
-        home: (_) => BusinessHostPage(
-          homeBuilder: (context, scrollController) =>
-              _ReplacementBusinessHome(scrollController: scrollController),
-          loginBuilder: (_) => const Scaffold(body: Text('其他业务登录')),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('我').last);
-    await tester.pumpAndSettle();
-    await tester.drag(find.byKey(const Key('me-page')), const Offset(0, -240));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('open-settings')));
-    await tester.pumpAndSettle();
-    await _confirmLogout(tester);
-    expect(find.text('其他业务登录'), findsOneWidget);
-    expect(find.byType(BusinessHostPage), findsNothing);
-  });
-
-  testWidgets('公共设置可将登出交给业务处理', (tester) async {
+  testWidgets('公共设置不保留退出登录入口', (tester) async {
     var logoutCount = 0;
     await tester.pumpWidget(
       MaterialApp(home: SettingsPage(onLogout: () => logoutCount++)),
     );
     await tester.pumpAndSettle();
-    await _confirmLogout(tester);
-    expect(logoutCount, 1);
     expect(find.byKey(const Key('settings-page')), findsOneWidget);
+    expect(find.byKey(const Key('settings-logout')), findsNothing);
+    expect(logoutCount, 0);
     expect(tester.takeException(), isNull);
   });
 
@@ -183,21 +144,6 @@ void main() {
     }
     expect(offenders, isEmpty);
   });
-}
-
-Future<void> _confirmLogout(WidgetTester tester) async {
-  await tester.drag(
-    find.descendant(
-      of: find.byKey(const Key('settings-page')),
-      matching: find.byType(ListView),
-    ),
-    const Offset(0, -1000),
-  );
-  await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const Key('settings-logout')));
-  await tester.pumpAndSettle();
-  await tester.tap(find.text('退出'));
-  await tester.pumpAndSettle();
 }
 
 class _ReplacementBusinessHome extends StatefulWidget {

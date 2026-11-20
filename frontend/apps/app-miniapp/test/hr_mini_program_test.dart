@@ -56,7 +56,7 @@ void main() {
     expect(HrConfig.useMockData, isTrue);
   });
 
-  testWidgets('客户小程序选择页可以打开人事小程序', (tester) async {
+  testWidgets('客户小程序选择页仅展示 Tospino', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -69,12 +69,15 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('mini-program-picker-hr')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('人事工作台'), findsOneWidget);
-    expect(find.text('林知夏'), findsOneWidget);
-    expect(find.text('搜索岗位或关键词'), findsNothing);
+    expect(find.text('Tospino'), findsNWidgets(2));
+    expect(
+      find.byKey(const Key('mini-program-picker-tospino')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('mini-program-picker-hr')), findsNothing);
+    expect(find.byKey(const Key('mini-program-picker-ats')), findsNothing);
+    expect(find.byKey(const Key('mini-program-picker-merchant')), findsNothing);
+    expect(find.byKey(const Key('mini-program-picker-platform')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

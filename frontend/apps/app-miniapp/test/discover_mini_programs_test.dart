@@ -1,25 +1,22 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/app_shell.dart';
-import 'package:ruoqi_app_miniapp/main.dart';
 import 'package:ruoqi_app_miniapp/pages/discover/discover_page.dart';
 import 'package:ruoqi_app_miniapp/pages/mini_programs/mini_programs_page.dart';
 
 import 'finders.dart';
 
 void main() {
-  testWidgets('发现入口打开小程序并返回列表和原发现位置', (tester) async {
+  testWidgets('发现入口打开 Tospino 并返回列表和原发现位置', (tester) async {
     _usePhoneSize(tester);
-    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('host-tab-discover')));
+    await tester.pumpWidget(const MaterialApp(home: DiscoverPage()));
     await tester.pumpAndSettle();
     final offset = await _openFromDiscover(tester);
 
     expect(find.byKey(const Key('mini-programs-page')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('mini-program-entry-merchant')));
+    await tester.tap(find.byKey(const Key('mini-program-entry-tospino')));
     await tester.pumpAndSettle();
-    expect(find.text('业务静态页（语义化重构）'), findsOneWidget);
+    expect(findMaterialTooltip('退出小程序'), findsOneWidget);
     await tester.tap(findMaterialTooltip('退出小程序'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('mini-programs-page')), findsOneWidget);
@@ -42,8 +39,9 @@ void main() {
     await tester.pumpAndSettle();
     await _openFromDiscover(tester);
 
+    expect(find.byKey(const Key('mini-program-entry-tospino')), findsOneWidget);
     for (final id in ['ats', 'hr', 'merchant', 'platform']) {
-      expect(find.byKey(Key('mini-program-entry-$id')), findsOneWidget);
+      expect(find.byKey(Key('mini-program-entry-$id')), findsNothing);
     }
     expect(find.byType(SnackBar), findsNothing);
     expect(tester.takeException(), isNull);
@@ -57,18 +55,13 @@ void main() {
     await tester.pumpAndSettle();
     final search = find.byKey(const Key('mini-programs-search'));
 
+    await tester.enterText(search, 'Mall');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('mini-program-entry-tospino')), findsOneWidget);
+
     await tester.enterText(search, '商户');
     await tester.pumpAndSettle();
-    expect(
-      find.byKey(const Key('mini-program-entry-merchant')),
-      findsOneWidget,
-    );
-    expect(find.byKey(const Key('mini-program-entry-ats')), findsNothing);
-
-    await tester.enterText(search, 'HR');
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('mini-program-entry-hr')), findsOneWidget);
-    expect(find.byKey(const Key('mini-program-entry-merchant')), findsNothing);
+    expect(find.byKey(const Key('mini-programs-empty')), findsOneWidget);
 
     await tester.enterText(search, '不存在的小程序');
     await tester.pumpAndSettle();
@@ -77,27 +70,27 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.widget<TextField>(search).controller!.text, isEmpty);
     expect(find.byKey(const Key('mini-programs-empty')), findsNothing);
+    expect(find.byKey(const Key('mini-program-entry-tospino')), findsOneWidget);
     for (final id in ['ats', 'hr', 'merchant', 'platform']) {
-      expect(find.byKey(Key('mini-program-entry-$id')), findsOneWidget);
+      expect(find.byKey(Key('mini-program-entry-$id')), findsNothing);
     }
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('从发现启动 ATS 后退出返回原小程序列表', (tester) async {
+  testWidgets('从发现启动 Tospino 后退出返回原小程序列表', (tester) async {
     _usePhoneSize(tester);
     await tester.pumpWidget(
       BusinessAppFrame(title: 'test', home: (_) => const DiscoverPage()),
     );
     await tester.pumpAndSettle();
     await _openFromDiscover(tester);
-    await tester.tap(find.byKey(const Key('mini-program-entry-ats')));
+    await tester.tap(find.byKey(const Key('mini-program-entry-tospino')));
     await tester.pumpAndSettle();
-    expect(find.text('搜索岗位或关键词'), findsOneWidget);
     expect(findMaterialTooltip('退出小程序'), findsOneWidget);
     await tester.tap(findMaterialTooltip('退出小程序'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('mini-programs-page')), findsOneWidget);
-    expect(find.byKey(const Key('mini-program-entry-ats')), findsOneWidget);
+    expect(find.byKey(const Key('mini-program-entry-tospino')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -111,30 +104,6 @@ void main() {
     await _openFromDiscover(tester);
     expect(calls, 1);
     expect(find.byKey(const Key('mini-programs-page')), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('ATS 系统返回先回小程序首页再退出到目录', (tester) async {
-    _usePhoneSize(tester);
-    await tester.pumpWidget(
-      BusinessAppFrame(title: 'test', home: (_) => const DiscoverPage()),
-    );
-    await tester.pumpAndSettle();
-    await _openFromDiscover(tester);
-    await tester.tap(find.byKey(const Key('mini-program-entry-ats')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('搜索岗位或关键词'));
-    await tester.pumpAndSettle();
-    expect(find.widgetWithText(TextField, '搜索职位、公司或技能'), findsOneWidget);
-
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    expect(find.text('搜索岗位或关键词'), findsOneWidget);
-    expect(find.byKey(const Key('mini-programs-page')), findsNothing);
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('mini-programs-page')), findsOneWidget);
-    expect(find.byKey(const Key('mini-program-entry-ats')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

@@ -12,6 +12,7 @@ import 'package:ruoqi_app_miniapp/miniapp/common/widgets/miniapp_status_bar.dart
 import 'package:ruoqi_app_miniapp/miniapp/launcher/miniapp_launcher_item.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/pages/home_page.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/pages/address_qr_scanner_page.dart';
+import 'package:ruoqi_app_miniapp/miniapp/tospino/pages/settings_page.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_models.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/tospino_routes.dart';
@@ -1318,6 +1319,41 @@ void main() {
     expect(find.text('Invite friends'), findsOneWidget);
     expect(find.text('Contact support'), findsOneWidget);
     expect(find.text('最近浏览'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Tospino 语言设置使用并更新全局语言', (tester) async {
+    _usePhoneSize(tester);
+    final controller = TospinoAppController(api: _FakeTospinoApi());
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      BusinessAppFrame(
+        title: 'test',
+        home: (_) =>
+            Material(child: TospinoSettingsPage(controller: controller)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final scope = BusinessThemeScope.of(
+      tester.element(find.byKey(const Key('tospino-settings-page'))),
+    );
+    scope.setLocale(const Locale('zh'));
+    await tester.pumpAndSettle();
+    expect(find.text('语言设置'), findsOneWidget);
+    expect(find.text('中文'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('tospino-language-setting')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('app-language-page')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('app-language-en')));
+    await tester.pumpAndSettle();
+
+    expect(scope.locale, const Locale('en'));
+    expect(find.byKey(const Key('tospino-settings-page')), findsOneWidget);
+    expect(find.text('Language'), findsOneWidget);
+    expect(find.text('English'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../pages/common/app_language_page.dart';
 import '../../common/miniapp_localizations.dart';
 import '../tospino_routes.dart';
 import '../tospino_style.dart';
@@ -89,10 +90,11 @@ class TospinoSettingsPage extends StatelessWidget {
                 onTap: () => showTospinoToast(context, '支付设置'),
               ),
               _SettingsRow(
+                key: const Key('tospino-language-setting'),
                 label: '语言设置',
                 value: languageLabel,
                 showDivider: false,
-                onTap: () => showTospinoToast(context, '请在主体显示设置中切换语言'),
+                onTap: () => AppLanguagePage.show(context),
               ),
             ],
           ),
@@ -174,6 +176,7 @@ class _SettingsGroup extends StatelessWidget {
 
 class _SettingsRow extends StatelessWidget {
   const _SettingsRow({
+    super.key,
     required this.label,
     required this.onTap,
     this.value,

@@ -12,14 +12,14 @@ void main() {
     addTearDown(controller.dispose);
 
     await controller.initialize();
+    await controller.pin('tospino');
+    expect(controller.pinnedId, 'tospino');
+    expect(store.pinnedId, 'tospino');
+
     await controller.pin('ats');
     expect(controller.pinnedId, 'ats');
     expect(store.pinnedId, 'ats');
-
-    await controller.pin('hr');
-    expect(controller.pinnedId, 'hr');
-    expect(store.pinnedId, 'hr');
-    expect(controller.isPinned('ats'), isFalse);
+    expect(controller.isPinned('tospino'), isFalse);
 
     await controller.unpin();
     expect(controller.pinnedId, isNull);
@@ -47,7 +47,7 @@ void main() {
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('mini-program-picker-ats')));
+    await tester.tap(find.byKey(const Key('mini-program-picker-tospino')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('mini-program-close-icon')), findsOneWidget);
@@ -56,7 +56,7 @@ void main() {
 
     expect(find.byKey(const Key('mini-program-pin-icon')), findsOneWidget);
     expect(find.byKey(const Key('mini-program-close-icon')), findsNothing);
-    expect(store.pinnedId, 'ats');
+    expect(store.pinnedId, 'tospino');
 
     await tester.pumpWidget(const SizedBox.shrink());
     firstController.dispose();
@@ -72,7 +72,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('搜索岗位或关键词'), findsOneWidget);
+    expect(find.byKey(const Key('tospino-home-page')), findsOneWidget);
     expect(find.byKey(const Key('mini-program-pin-icon')), findsOneWidget);
 
     await tester.longPress(findMaterialTooltip('退出小程序'));

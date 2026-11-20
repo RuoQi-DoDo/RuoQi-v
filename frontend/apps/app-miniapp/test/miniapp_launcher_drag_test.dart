@@ -132,8 +132,8 @@ void main() {
     final controller = MiniProgramLibraryScope.maybeOf(
       tester.element(find.byKey(const Key('customer-mini-program-picker'))),
     )!;
-    await _drop(tester, 'recent', 'hr', 'mini-program-drop-delete');
-    expect(controller.recentItems.any((item) => item.id == 'hr'), isFalse);
+    await _drop(tester, 'recent', 'tospino', 'mini-program-drop-delete');
+    expect(controller.recentItems.any((item) => item.id == 'tospino'), isFalse);
     await tester.drag(
       find.byKey(const Key('mini-program-picker-exit-swipe')),
       const Offset(0, -90),
@@ -142,8 +142,8 @@ void main() {
     expect(find.byKey(const Key('customer-mini-program-picker')), findsNothing);
 
     await _openPicker(tester);
-    expect(_tile('recent', 'hr'), findsNothing);
-    expect(controller.recentItems.any((item) => item.id == 'hr'), isFalse);
+    expect(_tile('recent', 'tospino'), findsNothing);
+    expect(controller.recentItems, isEmpty);
     expect(tester.takeException(), isNull);
   });
 
@@ -172,7 +172,7 @@ void main() {
     settings.setFontScale(1.2);
     await tester.pumpAndSettle();
 
-    final gesture = await _startDrag(tester, 'recent', 'hr');
+    final gesture = await _startDrag(tester, 'recent', 'tospino');
     await gesture.moveTo(
       tester.getCenter(find.byKey(const Key('mini-program-drop-delete'))),
     );
@@ -180,7 +180,7 @@ void main() {
     expect(find.text('Release to delete'), findsOneWidget);
     await gesture.cancel();
     await tester.pumpAndSettle();
-    expect(controller.recentItems.any((item) => item.id == 'hr'), isTrue);
+    expect(controller.recentItems.any((item) => item.id == 'tospino'), isTrue);
     expect(tester.takeException(), isNull);
   });
 }

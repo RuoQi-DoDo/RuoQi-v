@@ -16,6 +16,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'finders.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   test('字体默认对齐微信标准的最终显示字号', () {
     final controller = BusinessThemeController();
     addTearDown(controller.dispose);
@@ -203,7 +205,7 @@ void main() {
     });
   }
 
-  testWidgets('小屏英文及放大字体下可以从宿主设置进入公共页面', (tester) async {
+  testWidgets('小屏英文及放大字体下可进入精简设置和显示页面', (tester) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -215,16 +217,18 @@ void main() {
     settings.setLocale(const Locale('en'));
     settings.setFontScale(1.2);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Me'));
+    await tester.tap(find.byKey(const Key('ai-history')));
     await tester.pumpAndSettle();
-    await tester.drag(find.byKey(const Key('me-page')), const Offset(0, -300));
+    await tester.tap(find.byKey(const Key('ai-history-settings')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('open-settings')));
-    await tester.pumpAndSettle();
+    expect(find.text('Models'), findsOneWidget);
     expect(find.text('Appearance & display'), findsOneWidget);
-    await tester.tap(find.text('Account security'));
+    expect(find.text('Account security'), findsNothing);
+    expect(find.text('Translation'), findsNothing);
+    await tester.tap(find.text('Appearance & display'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('account-security-page')), findsOneWidget);
+    expect(find.byKey(const Key('display-settings-page')), findsOneWidget);
+    expect(find.text('Translation'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

@@ -9,7 +9,6 @@ import '../../miniapp/common/miniapp_pin.dart';
 import '../../miniapp/launcher/launcher.dart';
 import '../../miniapp/launcher/miniapp_catalog.dart';
 import '../ai/ai_page.dart';
-import '../common/page_theme.dart';
 import '../discover/discover_page.dart';
 import '../profile/me_page.dart';
 import '../settings/settings_page.dart';
@@ -56,7 +55,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
 
   _HostSubview _subview = _HostSubview.home;
   _HostSubview _atsReturnSubview = _HostSubview.home;
-  HostTab _hostTab = HostTab.ai;
+  final HostTab _hostTab = HostTab.ai;
   late final AnimationController _pullController;
   late final AnimationController _closeController;
   late final AnimationController _loadingController;
@@ -252,14 +251,6 @@ class _BusinessHostPageState extends State<BusinessHostPage>
       ),
     );
     FocusManager.instance.primaryFocus?.unfocus();
-  }
-
-  void _selectHostTab(HostTab tab) {
-    FocusManager.instance.primaryFocus?.unfocus();
-    if (_hostTab == tab) {
-      return;
-    }
-    setState(() => _hostTab = tab);
   }
 
   void _finishPull({required double velocity}) {
@@ -560,7 +551,6 @@ class _BusinessHostPageState extends State<BusinessHostPage>
   }
 
   Widget _buildHostPage(BuildContext context, {required Key key}) {
-    final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
     return Material(
       child: Column(
         key: key,
@@ -588,19 +578,6 @@ class _BusinessHostPageState extends State<BusinessHostPage>
               ],
             ),
           ),
-          if (!keyboardVisible)
-            Theme(
-              data: _hostTab == HostTab.home
-                  ? Theme.of(context)
-                  : sharedPageTheme(context),
-              child: HostTabBar(
-                selected: _hostTab,
-                onSelected: _selectHostTab,
-                homeLabel: widget.homeLabel,
-                homeIcon: widget.homeIcon,
-                homeActiveIcon: widget.homeActiveIcon,
-              ),
-            ),
         ],
       ),
     );

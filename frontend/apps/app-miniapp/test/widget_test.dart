@@ -3,75 +3,32 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ruoqi_app_miniapp/appearance.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
-
-import 'finders.dart';
+import 'package:ruoqi_app_miniapp/pages/im/im_chat_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('未登录启动先进入欢迎页，完成欢迎后进入登录页', (tester) async {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('应用启动直接进入 AI 页面', (tester) async {
     await tester.pumpWidget(const BusinessApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('客户模拟'), findsNothing);
-    expect(find.text('欢迎使用 RuoQi'), findsOneWidget);
-    expect(find.text('同意并继续'), findsOneWidget);
-    expect(find.text('企业直聘'), findsNothing);
-
-    final continueButton = find.byKey(const Key('im-welcome-continue'));
-    await tester.drag(
-      find.byKey(const Key('customer-home-scroll')),
-      const Offset(0, -180),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(continueButton);
-    await tester.pumpAndSettle();
-
-    expect(find.text('输入电话号码'), findsOneWidget);
-    expect(find.byKey(const Key('phone-number-input')), findsOneWidget);
-    expect(find.text('企业直聘'), findsNothing);
-
-    await tester.enterText(
-      find.byKey(const Key('phone-number-input')),
-      '13800138000',
-    );
-    await tester.pump();
-    await tester.tap(find.byKey(const Key('phone-next')));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('phone-verification-page')), findsOneWidget);
-    expect(find.text('验证你的电话号码'), findsOneWidget);
-    expect(find.text('企业直聘'), findsNothing);
-
-    await tester.enterText(find.byKey(const Key('phone-code-input')), '000000');
-    await tester.pump();
-    await tester.tap(find.byKey(const Key('phone-code-verify')));
-    await tester.pumpAndSettle();
-    expect(find.text('验证码不正确，请重新输入'), findsOneWidget);
-    expect(find.text('企业直聘'), findsNothing);
-
-    await tester.enterText(find.byKey(const Key('phone-code-input')), '123456');
-    await tester.pump();
-    await tester.tap(find.byKey(const Key('phone-code-verify')));
-    await tester.pumpAndSettle();
-
-    await _openChat(tester);
-    for (final chat in ['企业直聘', '佳佳', '文件传输助手', '招聘交流群', '腾讯新闻']) {
-      expect(find.text(chat), findsOneWidget);
-    }
-    expect(find.byKey(const Key('im-icon-unread')), findsWidgets);
-    expect(find.byKey(const Key('im-new-chat-fab')), findsNothing);
-    expect(find.text('业务工作台'), findsNothing);
-    expect(find.text('RuoQi 业务端 App'), findsNothing);
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    expect(find.text('欢迎使用 RuoQi'), findsNothing);
+    expect(find.byKey(const Key('im-welcome-continue')), findsNothing);
+    expect(find.byKey(const Key('phone-login-page')), findsNothing);
+    expect(find.byKey(const Key('phone-number-input')), findsNothing);
+    expect(find.byKey(const Key('host-tab-ai')), findsNothing);
+    expect(find.byKey(const Key('host-tab-home')), findsNothing);
   });
 
   testWidgets('IM 首页首屏展示聊天并可滚动查看全部 20 条', (tester) async {
     tester.view.physicalSize = const Size(360, 780);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pumpWidget(const MaterialApp(home: ImChatPage()));
     await tester.pumpAndSettle();
-    await _openChat(tester);
 
-    expect(find.text('聊天'), findsOneWidget);
     for (final chat in [
       '企业直聘',
       '佳佳',
@@ -118,37 +75,29 @@ void main() {
     }
   });
 
-  testWidgets('登录后退出会返回登录页而不是欢迎页', (tester) async {
+  testWidgets('AI 设置页仅展示模型和界面与显示', (tester) async {
     tester.view.physicalSize = const Size(414, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('我').last);
+    await tester.tap(find.byKey(const Key('ai-history')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('open-settings')));
-    await tester.pumpAndSettle();
-    await tester.drag(
-      find.descendant(
-        of: find.byKey(const Key('settings-page')),
-        matching: find.byType(ListView),
-      ),
-      const Offset(0, -1000),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('settings-logout')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('退出'));
+    expect(find.byKey(const Key('ai-history-settings')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ai-history-settings')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('phone-login-page')), findsOneWidget);
-    expect(find.text('欢迎使用 RuoQi'), findsNothing);
-    expect(find.text('企业直聘'), findsNothing);
+    expect(find.byKey(const Key('settings-ai-model')), findsOneWidget);
+    expect(find.text('模型'), findsOneWidget);
+    expect(find.text('界面与显示'), findsOneWidget);
+    expect(find.text('账号安全'), findsNothing);
+    expect(find.text('通知'), findsNothing);
+    expect(find.byKey(const Key('settings-logout')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('商户从客户小程序选择页打开', (tester) async {
+  testWidgets('客户小程序选择页只展示 Tospino', (tester) async {
     tester.view.physicalSize = const Size(414, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
@@ -160,16 +109,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('mini-program-picker-merchant')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('业务静态页（语义化重构）'), findsOneWidget);
-    expect(findMaterialTooltip('退出小程序'), findsOneWidget);
-    expect(find.byType(Dialog), findsNothing);
-
-    await tester.tap(findMaterialTooltip('退出小程序'));
-    await tester.pumpAndSettle();
-    expect(find.text('我的小程序'), findsOneWidget);
+    expect(find.text('Tospino'), findsNWidgets(2));
+    expect(
+      find.byKey(const Key('mini-program-picker-tospino')),
+      findsOneWidget,
+    );
+    for (final id in ['ats', 'hr', 'merchant', 'platform']) {
+      expect(find.byKey(Key('mini-program-picker-$id')), findsNothing);
+    }
   });
 
   testWidgets('业务端使用共享 RuoQi 主题与默认强调色', (tester) async {
@@ -205,26 +152,15 @@ void main() {
     expect(overlay.value.systemStatusBarContrastEnforced, isFalse);
   });
 
-  testWidgets('平台管理从客户小程序选择页打开', (tester) async {
+  testWidgets('客户首页不再展示宿主底部导航', (tester) async {
     tester.view.physicalSize = const Size(414, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.drag(
-      find.byKey(const Key('ai-home-pull-listener')),
-      const Offset(0, 320),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(const Key('mini-program-picker-platform')));
-    await tester.pumpAndSettle();
-    expect(find.text('账号中心'), findsOneWidget);
-    expect(findMaterialTooltip('退出小程序'), findsOneWidget);
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    for (final tab in ['ai', 'home', 'discover', 'me']) {
+      expect(find.byKey(Key('host-tab-$tab')), findsNothing);
+    }
   });
-}
-
-Future<void> _openChat(WidgetTester tester) async {
-  await tester.tap(find.byKey(const Key('host-tab-home')));
-  await tester.pumpAndSettle();
 }

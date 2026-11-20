@@ -89,16 +89,6 @@ class DisplaySettingsPage extends StatelessWidget {
                 value: languageLabel,
                 onTap: () => _openLanguagePage(context),
               ),
-              _DisplayValueRow(
-                title: l10n.text('翻译', 'Translation'),
-                onTap: () => _showMessage(
-                  context,
-                  l10n.text(
-                    '翻译设置为演示入口',
-                    'Translation settings are a demo entry',
-                  ),
-                ),
-              ),
             ],
           ),
         ],
@@ -236,12 +226,6 @@ class DisplaySettingsPage extends StatelessWidget {
 
   Future<void> _openLanguagePage(BuildContext context) {
     return AppLanguagePage.show(context);
-  }
-
-  void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
