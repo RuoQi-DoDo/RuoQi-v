@@ -3564,7 +3564,10 @@ class _AiComposer extends StatelessWidget {
                                         '切换至键盘',
                                         'Switch to keyboard',
                                       ),
+                                      tooltipTriggerMode:
+                                          TooltipTriggerMode.manual,
                                       onPressed: onVoice,
+                                      onLongPress: onVoice,
                                       icon: DeepSeekKeyboardIcon(
                                         key: const Key(
                                           'ai-voice-keyboard-icon',
@@ -3764,17 +3767,14 @@ class _AiAttachmentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dark = AiColors.isDark(context);
     final radius = BorderRadius.circular(16);
     return Material(
-      color: AiColors.searchSurface(context),
+      color: AiColors.surface(context),
       shape: RoundedRectangleBorder(
         borderRadius: radius,
-        side: dark
-            ? BorderSide.none
-            : BorderSide(
-                color: AiColors.border(context).withValues(alpha: 0.8),
-              ),
+        side: BorderSide(
+          color: AiColors.border(context).withValues(alpha: 0.8),
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -3782,12 +3782,12 @@ class _AiAttachmentTile extends StatelessWidget {
         splashColor: AiColors.accent(context).withValues(alpha: 0.12),
         highlightColor: AiColors.accent(context).withValues(alpha: 0.06),
         child: SizedBox(
-          height: 82,
+          height: 70,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: AiColors.text(context), size: 27),
-              const SizedBox(height: 8),
+              Icon(icon, color: AiColors.text(context), size: 24),
+              const SizedBox(height: 6),
               Text(
                 label,
                 maxLines: 1,
