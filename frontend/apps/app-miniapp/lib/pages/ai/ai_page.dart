@@ -27,6 +27,10 @@ const _aiIconButtonStyle = ButtonStyle(
   splashFactory: NoSplash.splashFactory,
 );
 
+const _aiMessageListBottomPadding = 18.0;
+const _aiMessageListScrollButtonPadding = 52.0;
+const _aiMessageBottomTolerance = 24.0;
+
 /// Lets the host page clear an active text selection before handling Back.
 class AiTextSelectionController {
   Object? _owner;
@@ -666,7 +670,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       return;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_followResponseScroll || !_messageScroll.hasClients) {
+      if (!mounted || !_messageScroll.hasClients || !_followResponseScroll) {
         return;
       }
       _messageScroll.animateTo(
@@ -683,13 +687,15 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     }
     final position = _messageScroll.position;
     final canScroll = position.maxScrollExtent > 24;
-    final atBottom = position.maxScrollExtent - position.pixels <= 24;
+    final atBottom =
+        position.maxScrollExtent - position.pixels <= _messageBottomTolerance;
     final userScrolledAway =
         _responding &&
         _followResponseScroll &&
         !atBottom &&
         position.userScrollDirection != ScrollDirection.idle;
     final resumeFollow = atBottom && !_followResponseScroll;
+    final becameScrollable = canScroll && !_messagesCanScroll;
     if (canScroll != _messagesCanScroll ||
         atBottom != _messagesAtBottom ||
         userScrolledAway ||
@@ -704,6 +710,29 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
           _followResponseScroll = true;
         }
       });
+    }
+    if (becameScrollable && _followResponseScroll) {
+      _scrollMessagesToEnd();
+    }
+  }
+
+  double get _messageBottomTolerance =>
+      _aiMessageBottomTolerance +
+      (_messagesCanScroll
+          ? _aiMessageListScrollButtonPadding - _aiMessageListBottomPadding
+          : 0);
+
+  void _handleUserMessageScroll(ScrollDirection direction) {
+    if (direction != ScrollDirection.idle) {
+      _pauseResponseScroll();
+      return;
+    }
+    if (!_responding || _followResponseScroll || !_messageScroll.hasClients) {
+      return;
+    }
+    final position = _messageScroll.position;
+    if (position.maxScrollExtent - position.pixels <= _messageBottomTolerance) {
+      setState(() => _followResponseScroll = true);
     }
   }
 
@@ -726,7 +755,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     }
     if (_messageScroll.hasClients) {
       final position = _messageScroll.position;
-      position.jumpTo(position.pixels);
+      if (position.activity is DrivenScrollActivity) {
+        position.jumpTo(position.pixels);
+      }
     }
     if (_followResponseScroll) {
       setState(() => _followResponseScroll = false);
@@ -1683,6 +1714,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                                         responding: _responding,
                                                         scrollController:
                                                             _messageScroll,
+                                                        reserveScrollButtonSpace:
+                                                            _messagesCanScroll,
                                                         speakingText:
                                                             _speakingText,
                                                         speechLoading:
@@ -1701,6 +1734,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                                             _setMessageFeedback,
                                                         onPauseAutoScroll:
                                                             _pauseResponseScroll,
+                                                        onUserScroll:
+                                                            _handleUserMessageScroll,
                                                         onSpeak: (message) =>
                                                             unawaited(
                                                               _toggleSpeech(
@@ -2103,6 +2138,7 @@ class _AiConversation extends StatelessWidget {
     required this.messages,
     required this.responding,
     required this.scrollController,
+    required this.reserveScrollButtonSpace,
     required this.speakingText,
     required this.speechLoading,
     required this.textSelectionController,
@@ -2110,6 +2146,7 @@ class _AiConversation extends StatelessWidget {
     required this.onEdit,
     required this.onFeedback,
     required this.onPauseAutoScroll,
+    required this.onUserScroll,
     required this.onSpeak,
     required this.onShare,
     required this.onRegenerate,
@@ -2118,6 +2155,7 @@ class _AiConversation extends StatelessWidget {
   final List<_AiMessage> messages;
   final bool responding;
   final ScrollController scrollController;
+  final bool reserveScrollButtonSpace;
   final String speakingText;
   final bool speechLoading;
   final AiTextSelectionController? textSelectionController;
@@ -2125,6 +2163,7 @@ class _AiConversation extends StatelessWidget {
   final ValueChanged<_AiMessage> onEdit;
   final void Function(_AiMessage message, int feedback) onFeedback;
   final VoidCallback onPauseAutoScroll;
+  final ValueChanged<ScrollDirection> onUserScroll;
   final ValueChanged<_AiMessage> onSpeak;
   final ValueChanged<_AiMessage> onShare;
   final ValueChanged<_AiMessage> onRegenerate;
@@ -2134,41 +2173,55 @@ class _AiConversation extends StatelessWidget {
     final showTyping =
         responding &&
         (messages.isEmpty || messages.last.role != _AiRole.assistant);
-    return ListView.builder(
-      key: const Key('ai-conversation'),
-      controller: scrollController,
-      padding: const EdgeInsets.fromLTRB(24, 14, 18, 18),
-      itemCount: messages.length + (showTyping ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (showTyping && index == messages.length) {
-          return const _AiTypingIndicator();
-        }
-        final message = messages[index];
-        final streaming =
-            responding &&
-            index == messages.length - 1 &&
-            message.role == _AiRole.assistant;
-        return _AiMessageBubble(
-          message: message,
-          showActions:
-              message.role == _AiRole.assistant &&
-              message.content.isNotEmpty &&
-              !streaming,
-          onCopy: () => onCopy(message),
-          onEdit: () => onEdit(message),
-          onFeedback: (feedback) => onFeedback(message, feedback),
-          onPauseAutoScroll: onPauseAutoScroll,
-          onSpeak: () => onSpeak(message),
-          speaking: message.content == speakingText && speakingText.isNotEmpty,
-          speechLoading:
-              message.content == speakingText &&
-              speechLoading &&
-              speakingText.isNotEmpty,
-          textSelectionController: textSelectionController,
-          onShare: () => onShare(message),
-          onRegenerate: () => onRegenerate(message),
-        );
+    return NotificationListener<UserScrollNotification>(
+      onNotification: (notification) {
+        onUserScroll(notification.direction);
+        return false;
       },
+      child: ListView.builder(
+        key: const Key('ai-conversation'),
+        controller: scrollController,
+        padding: EdgeInsets.fromLTRB(
+          24,
+          14,
+          18,
+          reserveScrollButtonSpace
+              ? _aiMessageListScrollButtonPadding
+              : _aiMessageListBottomPadding,
+        ),
+        itemCount: messages.length + (showTyping ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (showTyping && index == messages.length) {
+            return const _AiTypingIndicator();
+          }
+          final message = messages[index];
+          final streaming =
+              responding &&
+              index == messages.length - 1 &&
+              message.role == _AiRole.assistant;
+          return _AiMessageBubble(
+            message: message,
+            showActions:
+                message.role == _AiRole.assistant &&
+                message.content.isNotEmpty &&
+                !streaming,
+            onCopy: () => onCopy(message),
+            onEdit: () => onEdit(message),
+            onFeedback: (feedback) => onFeedback(message, feedback),
+            onPauseAutoScroll: onPauseAutoScroll,
+            onSpeak: () => onSpeak(message),
+            speaking:
+                message.content == speakingText && speakingText.isNotEmpty,
+            speechLoading:
+                message.content == speakingText &&
+                speechLoading &&
+                speakingText.isNotEmpty,
+            textSelectionController: textSelectionController,
+            onShare: () => onShare(message),
+            onRegenerate: () => onRegenerate(message),
+          );
+        },
+      ),
     );
   }
 }

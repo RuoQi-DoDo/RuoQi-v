@@ -740,6 +740,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('ai-voice-mode-toggle')));
     await tester.pumpAndSettle();
+
     expect(find.byKey(const Key('ai-voice-hold-button')), findsNothing);
     expect(find.byKey(const Key('ai-composer')), findsOneWidget);
   });
@@ -754,6 +755,14 @@ void main() {
     await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pumpAndSettle();
 
+    final voiceTooltip = tester.widget<Tooltip>(
+      find.descendant(
+        of: find.byKey(const Key('ai-voice-mode-toggle')),
+        matching: find.byType(Tooltip),
+      ),
+    );
+    expect(voiceTooltip.triggerMode, TooltipTriggerMode.manual);
+
     final gesture = await tester.startGesture(
       tester.getCenter(find.byKey(const Key('ai-voice-mode-toggle'))),
     );
@@ -762,6 +771,8 @@ void main() {
 
     expect(find.byKey(const Key('ai-recording-panel')), findsOneWidget);
     expect(find.text('松手发送，上滑取消'), findsOneWidget);
+    expect(find.text('语音输入'), findsNothing);
+    expect(find.byKey(const Key('ai-voice-hold-button')), findsNothing);
 
     await gesture.moveBy(const Offset(0, -80));
     await tester.pump();
