@@ -1487,6 +1487,14 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     }
   }
 
+  Future<void> _cancelRecorderQuietly() async {
+    try {
+      await _recorder.cancel();
+    } catch (_) {
+      // The gesture already ended; there is no recording left to report.
+    }
+  }
+
   Future<void> _startVoiceRecording({bool fromHold = false}) async {
     if (_recording) {
       return;
@@ -1507,6 +1515,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
           }
           return;
         }
+        if (!mounted || (fromHold && !_holdToTalkActive)) {
+          return;
+        }
         final path =
             '${Directory.systemTemp.path}/ruoqi_voice_${DateTime.now().millisecondsSinceEpoch}.wav';
         await _recorder.start(
@@ -1518,16 +1529,21 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
           ),
           path: path,
         );
-        if (mounted) {
-          setState(() => _recording = true);
-          if (fromHold && !_holdToTalkActive) {
-            if (_holdToTalkCancel) {
-              await _cancelVoiceRecording();
-            } else {
-              await _finishVoiceRecording();
-            }
-          }
+        if (!mounted) {
+          await _cancelRecorderQuietly();
+          return;
         }
+        if (fromHold && !_holdToTalkActive) {
+          await _cancelRecorderQuietly();
+          if (mounted) {
+            setState(() {
+              _recording = false;
+              _holdToTalkCancel = false;
+            });
+          }
+          return;
+        }
+        setState(() => _recording = true);
       }
     } on DeepSeekApiException catch (error) {
       if (mounted) {
@@ -2085,7 +2101,7 @@ class _AiWelcome extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const AiBrandMark(key: Key('ai-brand-mark')),
+            const AiBrandMark(key: Key('ai-brand-mark'), size: 72),
             const SizedBox(height: 24),
             Text.rich(
               TextSpan(
@@ -3583,6 +3599,12 @@ class _AiComposer extends StatelessWidget {
                                       tooltipTriggerMode:
                                           TooltipTriggerMode.manual,
                                       onPressed: onVoice,
+                                      onLongPressStart: focused
+                                          ? onHoldToTalkStart
+                                          : null,
+                                      onLongPressMoveUpdate: focused
+                                          ? onHoldToTalkMove
+                                          : null,
                                       icon: DeepSeekVoiceIcon(
                                         color: AiColors.text(context),
                                         size: 24,
@@ -3975,6 +3997,8 @@ class _AiRoundAction extends StatelessWidget {
     required this.icon,
     this.tooltipTriggerMode,
     this.onLongPress,
+    this.onLongPressStart,
+    this.onLongPressMoveUpdate,
   });
 
   final String tooltip;
@@ -3982,6 +4006,8 @@ class _AiRoundAction extends StatelessWidget {
   final Widget icon;
   final TooltipTriggerMode? tooltipTriggerMode;
   final VoidCallback? onLongPress;
+  final VoidCallback? onLongPressStart;
+  final ValueChanged<Offset>? onLongPressMoveUpdate;
 
   @override
   Widget build(BuildContext context) {
@@ -3992,6 +4018,13 @@ class _AiRoundAction extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onPressed,
         onLongPress: onLongPress,
+        onLongPressStart: onLongPress == null && onLongPressStart != null
+            ? (_) => onLongPressStart!()
+            : null,
+        onLongPressMoveUpdate:
+            onLongPress == null && onLongPressMoveUpdate != null
+            ? (details) => onLongPressMoveUpdate!(details.localOffsetFromOrigin)
+            : null,
         child: SizedBox.square(
           dimension: 44,
           child: Center(
