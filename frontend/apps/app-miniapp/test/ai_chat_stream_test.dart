@@ -478,10 +478,14 @@ void main() {
             as BoxDecoration;
     expect(decoration.color, const Color(0xFF4A4A4A));
     expect(decoration.borderRadius, BorderRadius.circular(18));
-    final noticeText = tester.widget<Text>(
-      find.descendant(of: notice, matching: find.text('已开启自动朗读')),
-    );
-    expect(noticeText.style?.decoration, TextDecoration.none);
+    final noticeStyle = tester
+        .widget<DefaultTextStyle>(
+          find
+              .descendant(of: notice, matching: find.byType(DefaultTextStyle))
+              .first,
+        )
+        .style;
+    expect(noticeStyle.decoration, TextDecoration.none);
 
     await tester.pump(const Duration(milliseconds: 1600));
     expect(find.byKey(const Key('ai-transient-notice')), findsNothing);
@@ -522,6 +526,92 @@ void main() {
     expect(tester.getCenter(notice).dy, closeTo(448, 1));
     await tester.pump(const Duration(milliseconds: 1600));
     expect(notice, findsNothing);
+  });
+
+  testWidgets('长按附件按钮执行点击动作且不显示白色 Tooltip', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byKey(const Key('ai-attachment-toggle')));
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.byKey(const Key('ai-attachment-menu')), findsOneWidget);
+    expect(find.text('添加附件'), findsNothing);
+  });
+
+  testWidgets('长按自动朗读按钮不显示白色 Tooltip 或中间提示', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byKey(const Key('ai-auto-read')));
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('自动朗读'), findsNothing);
+    expect(find.byKey(const Key('ai-transient-notice')), findsNothing);
+  });
+
+  testWidgets('长按新对话按钮执行点击动作', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byKey(const Key('ai-new-conversation')));
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('已经在新对话中'), findsOneWidget);
   });
 
   testWidgets('AI 聊天使用 DeepSeek Chat Completions 流式更新', (tester) async {
