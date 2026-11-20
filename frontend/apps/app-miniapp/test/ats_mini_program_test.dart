@@ -54,7 +54,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('应用默认打开聊天并可从左上角进入 AI 和小程序', (tester) async {
+  testWidgets('应用默认打开聊天，可从左上角进入 AI 并从聊天打开小程序', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -72,7 +72,10 @@ void main() {
     expect(find.text('搜索岗位或关键词'), findsNothing);
 
     await _openAi(tester);
-    await _openAtsFromAiHome(tester);
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ai-back')));
+    await tester.pumpAndSettle();
+    await _openAtsFromChatHome(tester);
 
     expect(find.text('欢迎来到企业直聘'), findsNothing);
     expect(find.text('搜索岗位或关键词'), findsOneWidget);
@@ -112,7 +115,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    expect(find.byKey(const Key('customer-home-scroll')), findsOneWidget);
   });
 
   testWidgets('小程序底部导航与招聘者身份可用', (tester) async {
@@ -202,7 +205,7 @@ void main() {
     expect(find.text('搜索岗位或关键词'), findsNothing);
   });
 
-  testWidgets('AI 首页和聊天页均支持下滑打开小程序选择页', (tester) async {
+  testWidgets('AI 首页下滑不打开小程序选择页，聊天首页仍支持', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -210,6 +213,16 @@ void main() {
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
     await _openAi(tester);
+    await tester.drag(
+      find.byKey(const Key('ai-home-pull-listener')),
+      const Offset(0, 320),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('customer-mini-program-picker')), findsNothing);
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ai-back')));
+    await tester.pumpAndSettle();
+
     double panelScale() {
       return tester
           .widget<Transform>(find.byKey(const Key('mini-program-panel-scale')))
@@ -218,7 +231,7 @@ void main() {
     }
 
     final dragStart = tester.getCenter(
-      find.byKey(const Key('ai-home-pull-listener')),
+      find.byKey(const Key('chat-home-pull-listener')),
     );
     final gesture = await tester.startGesture(dragStart);
     await gesture.moveTo(
@@ -273,29 +286,18 @@ void main() {
       const Offset(0, -80),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('ai-back')));
-    await tester.pumpAndSettle();
-    await tester.drag(
-      find.byKey(const Key('chat-home-pull-listener')),
-      const Offset(0, 320),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const Key('customer-mini-program-picker')),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('customer-home-scroll')), findsOneWidget);
   });
 
-  testWidgets('小程序选择页是子视图，上滑回到 AI 首页', (tester) async {
+  testWidgets('小程序选择页是子视图，上滑回到聊天首页', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await _openAi(tester);
     await tester.drag(
-      find.byKey(const Key('ai-home-pull-listener')),
+      find.byKey(const Key('chat-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
@@ -311,7 +313,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    expect(find.byKey(const Key('customer-home-scroll')), findsOneWidget);
     expect(find.byKey(const Key('customer-mini-program-picker')), findsNothing);
   });
 
@@ -322,9 +324,8 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await _openAi(tester);
     await tester.drag(
-      find.byKey(const Key('ai-home-pull-listener')),
+      find.byKey(const Key('chat-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
@@ -884,13 +885,12 @@ void main() {
 }
 
 Future<void> _openAts(WidgetTester tester) async {
-  await _openAtsFromAiHome(tester);
+  await _openAtsFromChatHome(tester);
 }
 
-Future<void> _openAtsFromAiHome(WidgetTester tester) async {
-  await _openAi(tester);
+Future<void> _openAtsFromChatHome(WidgetTester tester) async {
   await tester.drag(
-    find.byKey(const Key('ai-home-pull-listener')),
+    find.byKey(const Key('chat-home-pull-listener')),
     const Offset(0, 320),
   );
   await tester.pumpAndSettle();

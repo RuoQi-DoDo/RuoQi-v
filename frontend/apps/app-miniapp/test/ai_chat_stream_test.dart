@@ -76,9 +76,10 @@ class _MemoryHistoryStore implements ChatHistoryStore {
 }
 
 class _ChatStreamAdapter implements HttpClientAdapter {
-  _ChatStreamAdapter({this.longResponse = false});
+  _ChatStreamAdapter({this.longResponse = false, this.response});
 
   final bool longResponse;
+  final String? response;
   RequestOptions? lastRequest;
 
   @override
@@ -88,19 +89,24 @@ class _ChatStreamAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     lastRequest = options;
-    final content = longResponse
-        ? List.filled(60, '这是一段用于测试快速滚动按钮的长文本内容。').join('\n\n')
-        : null;
+    final content =
+        response ??
+        (longResponse
+            ? List.filled(60, '这是一段用于测试快速滚动按钮的长文本内容。').join('\n\n')
+            : '你好');
+    final stopChunk = response != null || longResponse
+        ? 'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n'
+        : 'data: {"choices":[{"delta":{"content":"，世界"},"finish_reason":"stop"}]}\n\n';
     return ResponseBody.fromString(
       'data: ${jsonEncode({
         'choices': [
           {
-            'delta': {'content': content ?? '你好'},
+            'delta': {'content': content},
             'finish_reason': null,
           },
         ],
       })}\n\n'
-      '${content == null ? 'data: {"choices":[{"delta":{"content":"，世界"},"finish_reason":"stop"}]}\n\n' : 'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n'}'
+      '$stopChunk'
       'data: [DONE]\n\n',
       200,
       headers: {
@@ -462,7 +468,14 @@ void main() {
     expect(tester.getCenter(notice).dx, closeTo(207, 1));
     expect(tester.getCenter(notice).dy, closeTo(448, 1));
     final decoration =
-        tester.widget<Container>(notice).decoration! as BoxDecoration;
+        tester
+                .widget<Container>(
+                  find
+                      .descendant(of: notice, matching: find.byType(Container))
+                      .first,
+                )
+                .decoration!
+            as BoxDecoration;
     expect(decoration.color, const Color(0xE64A4A4A));
     expect(decoration.borderRadius, BorderRadius.circular(18));
 
@@ -541,8 +554,22 @@ void main() {
     expect(find.text('介绍一下你自己'), findsWidgets);
     expect(find.text('联网搜索'), findsNothing);
     expect(find.byKey(const Key('ai-answer-actions')), findsOneWidget);
-    expect(find.byIcon(Icons.forward_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.reply_rounded), findsOneWidget);
     expect(find.byIcon(Icons.thumb_up_alt_outlined), findsOneWidget);
+    Map<Object?, Object?>? sharePayload;
+    const shareChannel = MethodChannel('dev.fluttercommunity.plus/share');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(shareChannel, (call) async {
+      expect(call.method, 'share');
+      sharePayload = call.arguments as Map<Object?, Object?>;
+      return 'success';
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(shareChannel, null));
+    await tester.tap(find.byTooltip('分享'));
+    await tester.pumpAndSettle();
+    expect(sharePayload?['text'], '你好，世界');
+    expect(find.text('分享方式'), findsNothing);
     await tester.tap(find.byIcon(Icons.thumb_up_alt_outlined));
     await tester.pump();
     expect(find.byIcon(Icons.thumb_up_alt_rounded), findsOneWidget);
@@ -601,6 +628,127 @@ void main() {
       expect(find.text(label), findsOneWidget, reason: label);
     }
     expect(find.text('修改'), findsNothing);
+  });
+
+  testWidgets('选择文本在 AI 回答原位进入选区并显示横排工具栏', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
+      ..httpClientAdapter = _ChatStreamAdapter();
+    final selectionController = AiTextSelectionController();
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(dio: dio),
+          historyStore: _MemoryHistoryStore(),
+          textSelectionController: selectionController,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '介绍一下你自己');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('你好，世界'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('选择文本'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(
+      find.byKey(const Key('ai-assistant-selectable-message')),
+      findsOneWidget,
+    );
+    expect(find.byType(SelectionArea), findsOneWidget);
+    expect(find.byKey(const Key('ai-text-selection-toolbar')), findsOneWidget);
+    expect(find.byKey(const Key('ai-selection-end-handle')), findsOneWidget);
+    expect(selectionController.isActive, isTrue);
+    for (final label in ['复制', '全选', '分享']) {
+      expect(find.text(label), findsOneWidget, reason: label);
+    }
+
+    selectionController.dismiss();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    expect(find.byType(SelectionArea), findsNothing);
+    expect(find.byKey(const Key('ai-text-selection-toolbar')), findsNothing);
+    expect(find.byKey(const Key('ai-selection-end-handle')), findsNothing);
+  });
+
+  testWidgets('全选会选中当前 AI 回答的全部段落', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    const answer = '第一段回答。\n\n第二段回答。';
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
+      ..httpClientAdapter = _ChatStreamAdapter(response: answer);
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(dio: dio),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '测试问题');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('第一段回答。'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('选择文本'));
+    await tester.pumpAndSettle();
+    final paragraphEnd = tester.getCenter(
+      find.byKey(const Key('ai-selection-end-handle')),
+    );
+
+    await tester.tap(find.byKey(const Key('ai-selection-select-all')));
+    await tester.pumpAndSettle();
+    final answerEnd = tester.getCenter(
+      find.byKey(const Key('ai-selection-end-handle')),
+    );
+    expect(answerEnd.dy, greaterThan(paragraphEnd.dy));
+
+    String? copiedText;
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'Clipboard.setData') {
+        copiedText =
+            (call.arguments as Map<Object?, Object?>)['text'] as String?;
+      }
+      return null;
+    });
+    addTearDown(
+      () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+
+    await tester.tap(find.byKey(const Key('ai-selection-copy')));
+    await tester.pumpAndSettle();
+    expect(copiedText, contains('第一段回答。'));
+    expect(copiedText, contains('第二段回答。'));
+    expect(copiedText, isNot(contains('测试问题')));
   });
 
   testWidgets('流式回答中长按消息暂停自动滚动但不停止回答', (tester) async {

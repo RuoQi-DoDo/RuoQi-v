@@ -7,6 +7,9 @@ import '../common/page_theme.dart';
 
 /// AI conversation colors resolved from the host application's theme.
 abstract final class AiColors {
+  static const Color selection = Color(0xBF4D72E8);
+  static const Color selectionHandle = Color(0xFF5B8DEF);
+
   static bool isDark(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark;
 

@@ -63,10 +63,8 @@ void main() {
 
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('im-open-ai')));
-    await tester.pumpAndSettle();
     await tester.drag(
-      find.byKey(const Key('ai-home-pull-listener')),
+      find.byKey(const Key('chat-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();

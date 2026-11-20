@@ -59,6 +59,8 @@ class _BusinessHostPageState extends State<BusinessHostPage>
   _HostSubview _atsReturnSubview = _HostSubview.home;
   HostTab _hostTab = HostTab.home;
   bool _aiOpen = false;
+  final AiTextSelectionController _aiTextSelectionController =
+      AiTextSelectionController();
   late final AnimationController _pullController;
   late final AnimationController _closeController;
   late final AnimationController _loadingController;
@@ -259,6 +261,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
   void _selectHostTab(HostTab tab) {
     FocusManager.instance.primaryFocus?.unfocus();
     if (tab == HostTab.home && _aiOpen) {
+      _aiTextSelectionController.dismiss();
       setState(() => _aiOpen = false);
       return;
     }
@@ -269,6 +272,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
       _hostTab = tab;
       _aiOpen = false;
     });
+    _aiTextSelectionController.dismiss();
   }
 
   void _openAi() {
@@ -286,6 +290,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
     if (!_aiOpen) {
       return;
     }
+    _aiTextSelectionController.dismiss();
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _aiOpen = false);
   }
@@ -432,7 +437,11 @@ class _BusinessHostPageState extends State<BusinessHostPage>
         }
         switch (_subview) {
           case _HostSubview.home:
-            _closeAi();
+            if (_aiOpen && _aiTextSelectionController.isActive) {
+              _aiTextSelectionController.dismiss();
+            } else {
+              _closeAi();
+            }
           case _HostSubview.picker:
             _closeMiniProgramPicker();
           case _HostSubview.ats:
@@ -612,12 +621,13 @@ class _BusinessHostPageState extends State<BusinessHostPage>
                 ),
                 const DiscoverPage(),
                 MePage(onOpenSettings: _openSettingsPage),
-                _withPullGesture(
+                KeyedSubtree(
                   key: const Key('ai-home-pull-listener'),
                   child: AiPage(
                     onBack: _closeAi,
                     onOpenSettings: _openSettingsPage,
                     scrollController: _aiScrollController,
+                    textSelectionController: _aiTextSelectionController,
                   ),
                 ),
               ],
