@@ -2261,10 +2261,12 @@ class _AiTypingIndicator extends StatelessWidget {
               gradient: AiColors.brandGradient(context),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.auto_awesome_rounded,
-              color: AiColors.onAccent(context),
-              size: 16,
+            child: Center(
+              child: AiBrandMark(
+                key: const Key('ai-typing-logo'),
+                size: 16,
+                color: AiColors.onAccent(context),
+              ),
             ),
           ),
           const SizedBox(width: 10),

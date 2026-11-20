@@ -78,11 +78,12 @@ abstract final class AiColors {
   );
 }
 
-/// The project's RQ loop mark, adapted from the app icon for the AI welcome.
+/// The project's RQ loop logo, adapted from the app icon.
 class AiBrandMark extends StatelessWidget {
-  const AiBrandMark({super.key, this.size = 104});
+  const AiBrandMark({super.key, this.size = 104, this.color});
 
   final double size;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +93,7 @@ class AiBrandMark extends StatelessWidget {
         painter: _AiBrandMarkPainter(
           accent: AiColors.accent(context),
           accentDeep: AiColors.accentDeep(context),
+          color: color,
         ),
       ),
     );
@@ -99,10 +101,15 @@ class AiBrandMark extends StatelessWidget {
 }
 
 class _AiBrandMarkPainter extends CustomPainter {
-  const _AiBrandMarkPainter({required this.accent, required this.accentDeep});
+  const _AiBrandMarkPainter({
+    required this.accent,
+    required this.accentDeep,
+    required this.color,
+  });
 
   final Color accent;
   final Color accentDeep;
+  final Color? color;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -147,17 +154,23 @@ class _AiBrandMarkPainter extends CustomPainter {
       ..scaleByDouble(scale, scale, 1, 1);
     final mark = source.transform(matrix.storage)
       ..fillType = PathFillType.evenOdd;
-    final paint = Paint()
-      ..shader = LinearGradient(
+    final paint = Paint();
+    if (color case final color?) {
+      paint.color = color;
+    } else {
+      paint.shader = LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [accentDeep, accent],
       ).createShader(Offset.zero & size);
+    }
 
     canvas.drawPath(mark, paint);
   }
 
   @override
   bool shouldRepaint(covariant _AiBrandMarkPainter oldDelegate) =>
-      oldDelegate.accent != accent || oldDelegate.accentDeep != accentDeep;
+      oldDelegate.accent != accent ||
+      oldDelegate.accentDeep != accentDeep ||
+      oldDelegate.color != color;
 }
