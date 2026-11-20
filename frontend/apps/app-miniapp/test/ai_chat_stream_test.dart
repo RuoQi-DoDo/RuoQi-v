@@ -850,6 +850,87 @@ void main() {
     expect(find.byKey(const Key('ai-assistant-message')), findsOneWidget);
   });
 
+  testWidgets('流式回答中手动滚动后停止自动跟随并在完成后保持位置', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final adapter = _ControlledChatStreamAdapter();
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
+      ..httpClientAdapter = adapter;
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(dio: dio),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '手动滚动测试');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pump();
+    adapter.addContent(
+      List.generate(
+        24,
+        (index) => '第 $index 段回答内容。这里是一段用于测试手动滚动停止跟随的较长文本。',
+      ).join('\n\n'),
+    );
+    for (
+      var attempt = 0;
+      attempt < 20 &&
+          find.byKey(const Key('ai-assistant-message')).evaluate().isEmpty;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await tester.pump(const Duration(milliseconds: 400));
+
+    final scrollable = tester.state<ScrollableState>(
+      find.descendant(
+        of: find.byKey(const Key('ai-conversation')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.drag(
+      find.byKey(const Key('ai-conversation')).last,
+      const Offset(0, 240),
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+    final pausedOffset = scrollable.position.pixels;
+    final pausedMax = scrollable.position.maxScrollExtent;
+    expect(pausedOffset, lessThan(pausedMax - 24));
+
+    adapter.addContent(
+      List.generate(
+        24,
+        (index) => '新增流式内容 $index。用户手动操作后阅读位置应保持不变。',
+      ).join('\n\n'),
+    );
+    for (var attempt = 0; attempt < 10; attempt++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(scrollable.position.pixels, closeTo(pausedOffset, 1));
+    expect(scrollable.position.maxScrollExtent, greaterThan(pausedMax));
+
+    await adapter.finish();
+    await tester.pumpAndSettle();
+    expect(scrollable.position.pixels, closeTo(pausedOffset, 1));
+    expect(
+      scrollable.position.pixels,
+      lessThan(scrollable.position.maxScrollExtent),
+    );
+  });
+
   testWidgets('AI 语音转写完成后直接作为消息发送', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
@@ -954,6 +1035,20 @@ void main() {
     final scrollButton = find.byKey(const Key('ai-message-scroll-button'));
     expect(scrollButton, findsOneWidget);
     expect(find.byIcon(Icons.keyboard_arrow_up_rounded), findsOneWidget);
+    final scrollButtonRect = tester.getRect(scrollButton);
+    final regenerateButtonRect = tester.getRect(
+      find
+          .ancestor(
+            of: find.byIcon(Icons.refresh_rounded),
+            matching: find.byType(IconButton),
+          )
+          .first,
+    );
+    expect(regenerateButtonRect.overlaps(scrollButtonRect), isFalse);
+    expect(
+      scrollButtonRect.top,
+      greaterThanOrEqualTo(regenerateButtonRect.bottom + 16),
+    );
 
     await tester.tap(scrollButton);
     await tester.pumpAndSettle();
