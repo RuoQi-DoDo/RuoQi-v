@@ -100,7 +100,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
   android:
-    name: Build Android APK
+    name: Build Android packages
     needs: detect_version
     if: needs.detect_version.outputs.changed == 'true'
     runs-on: ubuntu-latest
@@ -134,11 +134,29 @@ jobs:
             --build-name="$APP_VERSION" \
             --build-number="$APP_BUILD_NUMBER"
 
+      - name: Build release AAB
+        working-directory: frontend/apps/app-miniapp
+        env:
+          APP_VERSION: ${{ needs.detect_version.outputs.version }}
+          APP_BUILD_NUMBER: ${{ needs.detect_version.outputs.build_number }}
+        run: |
+          flutter build appbundle --release \
+            --build-name="$APP_VERSION" \
+            --build-number="$APP_BUILD_NUMBER"
+
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
           name: app-miniapp-android-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
           path: frontend/apps/app-miniapp/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-miniapp-android-aab-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
+          path: frontend/apps/app-miniapp/build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 14
 
@@ -387,7 +405,7 @@ jobs:
           mkdir -p "$private_keys_dir"
           echo -n "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" \
             | base64 --decode -o "$private_key_raw"
-          tr -d '\000\r' < "$private_key_raw" > "$private_key"
+          LC_ALL=C tr -d '\000\r' < "$private_key_raw" > "$private_key"
           rm -f "$private_key_raw"
           chmod 600 "$private_key"
 
