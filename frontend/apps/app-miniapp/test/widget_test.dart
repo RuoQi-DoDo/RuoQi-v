@@ -1,5 +1,6 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ruoqi_app_miniapp/appearance.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
 
@@ -153,10 +154,8 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await _openChat(tester);
-
     await tester.drag(
-      find.byKey(const Key('customer-home-scroll')),
+      find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
@@ -192,16 +191,33 @@ void main() {
     expect(app.darkTheme!.colorScheme.primary, defaultAccentColor);
   });
 
+  testWidgets('应用首次打开 AI 首页时立即同步状态栏样式', (tester) async {
+    tester.view.physicalSize = const Size(414, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
+    await tester.pump();
+
+    final page = find.byKey(const Key('ai-page'));
+    final pageTheme = Theme.of(tester.element(page));
+    final overlay = tester.widget<AnnotatedRegion<SystemUiOverlayStyle>>(
+      find.byKey(const Key('ai-system-overlay')),
+    );
+    expect(overlay.value.statusBarColor, pageTheme.colorScheme.surface);
+    expect(overlay.value.statusBarIconBrightness, Brightness.dark);
+    expect(overlay.value.statusBarBrightness, Brightness.light);
+    expect(overlay.value.systemStatusBarContrastEnforced, isFalse);
+  });
+
   testWidgets('平台管理从客户小程序选择页打开', (tester) async {
     tester.view.physicalSize = const Size(414, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await _openChat(tester);
-
     await tester.drag(
-      find.byKey(const Key('customer-home-scroll')),
+      find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();

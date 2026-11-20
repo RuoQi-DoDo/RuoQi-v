@@ -22,18 +22,21 @@ class BusinessAppFrame extends StatefulWidget {
     required this.title,
     required this.home,
     this.miniProgramPinController,
+    this.themeController,
   });
 
   final String title;
   final WidgetBuilder home;
   final MiniProgramPinController? miniProgramPinController;
+  final BusinessThemeController? themeController;
 
   @override
   State<BusinessAppFrame> createState() => _BusinessAppFrameState();
 }
 
 class _BusinessAppFrameState extends State<BusinessAppFrame> {
-  final BusinessThemeController _themeController = BusinessThemeController();
+  late final BusinessThemeController _themeController;
+  BusinessThemeController? _ownedThemeController;
   final AccountController _accountController = AccountController();
   final MiniProgramLibraryController _miniProgramLibrary =
       MiniProgramLibraryController();
@@ -43,6 +46,9 @@ class _BusinessAppFrameState extends State<BusinessAppFrame> {
   @override
   void initState() {
     super.initState();
+    _themeController =
+        widget.themeController ??
+        (_ownedThemeController = BusinessThemeController());
     _miniProgramPinController =
         widget.miniProgramPinController ??
         (_ownedMiniProgramPinController = MiniProgramPinController());
@@ -51,7 +57,7 @@ class _BusinessAppFrameState extends State<BusinessAppFrame> {
 
   @override
   void dispose() {
-    _themeController.dispose();
+    _ownedThemeController?.dispose();
     _accountController.dispose();
     _miniProgramLibrary.dispose();
     _ownedMiniProgramPinController?.dispose();

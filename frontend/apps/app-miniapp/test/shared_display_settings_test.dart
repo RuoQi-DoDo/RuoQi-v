@@ -11,6 +11,7 @@ import 'package:ruoqi_app_miniapp/miniapp/common/common.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/hr_miniapp.dart';
 import 'package:ruoqi_app_miniapp/miniapp/hr/hr_style.dart';
 import 'package:ruoqi_app_miniapp/pages/display/display_settings_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'finders.dart';
 
@@ -34,6 +35,32 @@ void main() {
 
     controller.setFontScale(defaultFontScale);
     expect(controller.fontScale, 0.8);
+  });
+
+  testWidgets('深色模式持久化后冷启动仍生效', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    const store = SharedPreferencesBusinessThemeStore();
+    final firstSession = BusinessThemeController(themeStore: store);
+    await firstSession.initialize();
+    await firstSession.setMode(ThemeMode.dark);
+    firstSession.dispose();
+
+    final reopenedSession = BusinessThemeController(themeStore: store);
+    addTearDown(reopenedSession.dispose);
+    await reopenedSession.initialize();
+    expect(reopenedSession.mode, ThemeMode.dark);
+
+    await tester.pumpWidget(
+      BusinessApp(
+        initiallyAuthenticated: true,
+        themeController: reopenedSession,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
+      ThemeMode.dark,
+    );
   });
 
   testWidgets('显示设置恢复默认时回到微信标准字号档', (tester) async {

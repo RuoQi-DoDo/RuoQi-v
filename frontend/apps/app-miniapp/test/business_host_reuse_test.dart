@@ -54,11 +54,10 @@ void main() {
     await tester.tap(find.byKey(const Key('settings-back')));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('业务首页'));
+    await tester.tap(find.byKey(const Key('host-tab-ai')));
     await tester.pumpAndSettle();
-    expect(find.text('业务计数：1'), findsOneWidget);
     await tester.drag(
-      find.byKey(const Key('replacement-home-scroll')),
+      find.byKey(const Key('ai-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
@@ -75,6 +74,10 @@ void main() {
       find.byKey(const Key('mini-program-picker-exit-swipe')),
       const Offset(0, -80),
     );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+
+    await tester.tap(find.text('业务首页'));
     await tester.pumpAndSettle();
     expect(find.text('业务计数：1'), findsOneWidget);
     expect(tester.takeException(), isNull);
