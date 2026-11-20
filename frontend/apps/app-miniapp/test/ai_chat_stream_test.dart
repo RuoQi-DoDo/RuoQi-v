@@ -11,6 +11,7 @@ import 'package:record/record.dart';
 import 'package:ruoqi_app_miniapp/appearance.dart';
 import 'package:ruoqi_app_miniapp/localization.dart';
 import 'package:ruoqi_app_miniapp/pages/ai/ai_page.dart';
+import 'package:ruoqi_app_miniapp/pages/ai/ai_style.dart';
 import 'package:ruoqi_app_miniapp/pages/ai/chat_history_store.dart';
 import 'package:ruoqi_app_miniapp/pages/ai/deepseek_api.dart';
 import 'package:ruoqi_app_miniapp/pages/ai/deepseek_settings_store.dart';
@@ -343,6 +344,18 @@ void main() {
     expect(find.text('相册'), findsOneWidget);
     expect(find.text('文件'), findsOneWidget);
     expect(find.text('OCR'), findsOneWidget);
+    for (final action in ['camera', 'gallery', 'upload', 'ocr']) {
+      final tile = find.byKey(Key('ai-attachment-$action'));
+      final material = tester.widget<Material>(
+        find.descendant(of: tile, matching: find.byType(Material)).first,
+      );
+      expect(
+        material.color,
+        AiColors.surface(tester.element(tile)),
+        reason: action,
+      );
+      expect(tester.getSize(tile).height, 70, reason: action);
+    }
     expect(
       tester.getTopLeft(menu).dy,
       greaterThan(
