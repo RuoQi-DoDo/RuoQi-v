@@ -342,27 +342,46 @@ jobs:
           fi
           ipa="${ipas[0]}"
 
+          file "$ipa"
+          if ! unzip -tq "$ipa"; then
+            echo "::error::$ipa is not a valid IPA archive."
+            exit 1
+          fi
+          ipa_entries=$(unzip -Z1 "$ipa")
+          if ! grep -Eq '^Payload/[^/]+\.app/Info\.plist$' <<< "$ipa_entries"; then
+            echo "::error::$ipa does not contain Payload/<App>.app/Info.plist."
+            exit 1
+          fi
+
           private_keys_dir="$RUNNER_TEMP/appstoreconnect/private_keys"
           private_key="$private_keys_dir/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
           mkdir -p "$private_keys_dir"
           echo -n "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" \
             | base64 --decode -o "$private_key"
           chmod 600 "$private_key"
-          export API_PRIVATE_KEYS_DIR="$private_keys_dir"
 
-          echo "Validating $ipa with App Store Connect..."
-          xcrun altool --validate-app \
-            --file "$ipa" \
-            --type ios \
-            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
-            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+          if ! openssl pkey -in "$private_key" -noout >/dev/null 2>&1; then
+            echo "::error::APP_STORE_CONNECT_PRIVATE_KEY_BASE64 does not decode to a valid App Store Connect .p8 private key."
+            exit 1
+          fi
 
-          echo "Uploading $ipa to App Store Connect..."
-          xcrun altool --upload-app \
-            --file "$ipa" \
-            --type ios \
-            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
-            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+          api_key_json="$RUNNER_TEMP/appstoreconnect-api-key.json"
+          jq -n \
+            --arg key_id "$APP_STORE_CONNECT_KEY_ID" \
+            --arg issuer_id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --rawfile key "$private_key" \
+            '{key_id: $key_id, issuer_id: $issuer_id, key: $key}' \
+            > "$api_key_json"
+          chmod 600 "$api_key_json"
+          trap 'rm -f "$private_key" "$api_key_json"' EXIT
+
+          echo "Uploading $ipa to App Store Connect with Transporter..."
+          FASTLANE_SKIP_UPDATE_CHECK=true \
+          fastlane pilot upload \
+            --ipa "$ipa" \
+            --api_key_path "$api_key_json" \
+            --skip_submission true \
+            --skip_waiting_for_build_processing true
 
   release:
     name: Publish GitHub Release
