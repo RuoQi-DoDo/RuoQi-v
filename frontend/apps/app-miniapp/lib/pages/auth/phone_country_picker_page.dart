@@ -27,6 +27,8 @@ class _PhoneCountryPickerPageState extends State<PhoneCountryPickerPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final english = l10n.locale.languageCode == 'en';
     final query = _query.trim().toLowerCase();
     final countries = phoneCountries
@@ -41,10 +43,11 @@ class _PhoneCountryPickerPageState extends State<PhoneCountryPickerPage> {
         .toList(growable: false);
     return Scaffold(
       key: const Key('phone-country-picker-page'),
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: scheme.surface,
       appBar: AppBar(
         toolbarHeight: 68,
-        backgroundColor: const Color(0xFFF7F7F7),
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
         leadingWidth: 58,
@@ -57,11 +60,15 @@ class _PhoneCountryPickerPageState extends State<PhoneCountryPickerPage> {
         titleSpacing: 2,
         title: Text(
           l10n.text('选择国家/地区', 'Select a country'),
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: scheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1, color: Color(0xFFE1E5E3)),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(height: 1, color: scheme.outlineVariant),
         ),
       ),
       body: Column(
@@ -73,9 +80,13 @@ class _PhoneCountryPickerPageState extends State<PhoneCountryPickerPage> {
               onChanged: (value) => setState(() => _query = value),
               decoration: InputDecoration(
                 hintText: l10n.text('搜索国家/地区', 'Search countries'),
-                prefixIcon: const Icon(Icons.search_rounded),
+                hintStyle: TextStyle(color: scheme.onSurfaceVariant),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: scheme.onSurfaceVariant,
+                ),
                 filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
+                fillColor: scheme.surfaceContainerHigh,
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -140,9 +151,10 @@ class _CountryRow extends StatelessWidget {
                 width: 38,
                 height: 38,
                 alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerHighest,
                   shape: BoxShape.circle,
+                  border: Border.all(color: scheme.outlineVariant),
                 ),
                 child: Text(
                   _flagEmoji(country.code),

@@ -251,12 +251,12 @@ Future<void> _drop(
 }
 
 Future<void> _openPicker(WidgetTester tester) async {
-  if (find.byKey(const Key('ai-page')).evaluate().isEmpty) {
-    await tester.tap(find.byKey(const Key('im-open-ai')));
+  if (find.byKey(const Key('ai-page')).evaluate().isNotEmpty) {
+    await tester.tap(find.byKey(const Key('ai-back')));
     await tester.pumpAndSettle();
   }
   await tester.drag(
-    find.byKey(const Key('ai-home-pull-listener')),
+    find.byKey(const Key('chat-home-pull-listener')),
     const Offset(0, 320),
   );
   await tester.pumpAndSettle();

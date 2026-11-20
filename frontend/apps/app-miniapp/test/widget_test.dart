@@ -3,10 +3,92 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ruoqi_app_miniapp/appearance.dart';
 import 'package:ruoqi_app_miniapp/main.dart';
+import 'package:ruoqi_app_miniapp/pages/common/page_widgets.dart';
 
 import 'finders.dart';
 
 void main() {
+  testWidgets('公共轻提示在暗黑模式下保持高对比并居中显示', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: TextButton(
+                key: const Key('show-page-message'),
+                onPressed: () => showPageMessage(context, '助手详情为模拟入口'),
+                child: const Text('显示提示'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('show-page-message')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 160));
+
+    final notice = find.byKey(const Key('page-transient-notice'));
+    expect(notice, findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
+    expect(tester.getCenter(notice).dx, closeTo(207, 1));
+    expect(tester.getCenter(notice).dy, closeTo(448, 1));
+    final noticeContainer = tester.widget<Container>(
+      find.descendant(of: notice, matching: find.byType(Container)).first,
+    );
+    expect(
+      (noticeContainer.decoration! as BoxDecoration).color,
+      const Color(0xE64A4A4A),
+    );
+
+    await tester.pump(const Duration(milliseconds: 1700));
+    expect(notice, findsNothing);
+  });
+
+  testWidgets('窄屏长提示会在安全边距内换行', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    const message = '请先在设置中配置 DeepSeek API Key 和模型';
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: TextButton(
+                key: const Key('show-page-message'),
+                onPressed: () => showPageMessage(context, message),
+                child: const Text('显示提示'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('show-page-message')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 160));
+
+    final notice = find.byKey(const Key('page-transient-notice'));
+    final noticeRect = tester.getRect(notice);
+    final textRect = tester.getRect(find.text(message));
+    expect(noticeRect.left, greaterThanOrEqualTo(24));
+    expect(noticeRect.right, lessThanOrEqualTo(296));
+    expect(textRect.left, greaterThanOrEqualTo(noticeRect.left + 15));
+    expect(textRect.right, lessThanOrEqualTo(noticeRect.right - 15));
+    expect(tester.takeException(), isNull);
+
+    await tester.pump(const Duration(milliseconds: 1700));
+    expect(notice, findsNothing);
+  });
+
   testWidgets('未登录启动先进入欢迎页，完成欢迎后进入登录页', (tester) async {
     await tester.pumpWidget(const BusinessApp());
     await tester.pumpAndSettle();
@@ -154,9 +236,8 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await _openAi(tester);
     await tester.drag(
-      find.byKey(const Key('ai-home-pull-listener')),
+      find.byKey(const Key('chat-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
@@ -214,9 +295,8 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const BusinessApp(initiallyAuthenticated: true));
     await tester.pumpAndSettle();
-    await _openAi(tester);
     await tester.drag(
-      find.byKey(const Key('ai-home-pull-listener')),
+      find.byKey(const Key('chat-home-pull-listener')),
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
@@ -230,10 +310,5 @@ void main() {
 
 Future<void> _openChat(WidgetTester tester) async {
   await tester.tap(find.byKey(const Key('host-tab-home')));
-  await tester.pumpAndSettle();
-}
-
-Future<void> _openAi(WidgetTester tester) async {
-  await tester.tap(find.byKey(const Key('im-open-ai')));
   await tester.pumpAndSettle();
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 
 import 'page_localizations.dart';
@@ -49,10 +51,112 @@ class SharedPageFrame extends StatelessWidget {
   }
 }
 
+OverlayEntry? _pageMessageEntry;
+Timer? _pageMessageTimer;
+
 void showPageMessage(BuildContext context, String message) {
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+  final overlay = Overlay.maybeOf(context, rootOverlay: true);
+  if (overlay == null) {
+    ScaffoldMessenger.maybeOf(context)
+        ?.showSnackBar(SnackBar(content: Text(message)));
+    return;
+  }
+
+  _hidePageMessage();
+  final pageTheme = Theme.of(context);
+  final textDirection = Directionality.of(context);
+  late final OverlayEntry entry;
+  entry = OverlayEntry(
+    builder: (context) {
+      return Positioned.fill(
+        child: IgnorePointer(
+          child: Theme(
+            data: pageTheme,
+            child: Directionality(
+              textDirection: textDirection,
+              child: Center(
+                child: PageTransientNotice(
+                  key: const Key('page-transient-notice'),
+                  message: message,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+  overlay.insert(entry);
+  _pageMessageEntry = entry;
+  _pageMessageTimer = Timer(const Duration(milliseconds: 1600), () {
+    if (identical(_pageMessageEntry, entry)) {
+      _hidePageMessage();
+    }
+  });
+}
+
+void _hidePageMessage() {
+  _pageMessageTimer?.cancel();
+  _pageMessageTimer = null;
+  final entry = _pageMessageEntry;
+  _pageMessageEntry = null;
+  if (entry == null) {
+    return;
+  }
+  if (entry.mounted) {
+    entry.remove();
+  }
+  entry.dispose();
+}
+
+class PageTransientNotice extends StatelessWidget {
+  const PageTransientNotice({super.key, required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final maxWidth = (MediaQuery.sizeOf(context).width - 48).clamp(0.0, 320.0);
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.92, end: 1),
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) => Opacity(
+        opacity: value,
+        child: Transform.scale(scale: value, child: child),
+      ),
+      child: Semantics(
+        liveRegion: true,
+        child: Container(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xE64A4A4A),
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 18,
+                offset: Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            softWrap: true,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              height: 1.35,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.15,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class PageListGroup extends StatelessWidget {

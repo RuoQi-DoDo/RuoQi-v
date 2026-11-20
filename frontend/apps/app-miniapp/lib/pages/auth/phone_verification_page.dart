@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../../localization.dart';
+import '../common/page_widgets.dart';
 import '../common/whatsapp_colors.dart';
 
 /// Verification-code step used after submitting a phone number.
@@ -26,9 +27,6 @@ class PhoneVerificationPage extends StatefulWidget {
 
 class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
   static const _accent = WhatsAppColors.brandStrong;
-  static const _background = Color(0xFFF7F7F7);
-  static const _titleColor = Color(0xFF4F565A);
-  static const _bodyColor = Color(0xFF70777B);
   static const _demoCode = '123456';
 
   final TextEditingController _codeController = TextEditingController();
@@ -58,9 +56,10 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return Scaffold(
       key: const Key('phone-verification-page'),
-      backgroundColor: _background,
+      backgroundColor: scheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -89,7 +88,7 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
                       l10n.text('验证你的电话号码', 'Verify your phone number'),
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineMedium?.copyWith(
-                        color: _titleColor,
+                        color: scheme.onSurface,
                         fontSize: 30,
                         height: 1.2,
                         fontWeight: FontWeight.w500,
@@ -102,8 +101,8 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
                         'We sent a 6-digit code to ${_maskedPhone(widget.phoneNumber)}.',
                       ),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: _bodyColor,
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant,
                         fontSize: 17,
                         height: 1.45,
                       ),
@@ -125,8 +124,8 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
                         ],
                         onChanged: (_) => setState(() => _error = null),
                         onSubmitted: (_) => _verify(),
-                        style: const TextStyle(
-                          color: _titleColor,
+                        style: TextStyle(
+                          color: scheme.onSurface,
                           fontSize: 26,
                           letterSpacing: 8,
                         ),
@@ -135,7 +134,9 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
                           counterText: '',
                           hintText: '------',
                           hintStyle: TextStyle(
-                            color: _bodyColor.withValues(alpha: 0.45),
+                            color: scheme.onSurfaceVariant.withValues(
+                              alpha: 0.45,
+                            ),
                             letterSpacing: 8,
                           ),
                           enabledBorder: const UnderlineInputBorder(
@@ -157,8 +158,8 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
                       key: const Key('phone-code-status'),
                       style: TextStyle(
                         color: _error == null
-                            ? _bodyColor
-                            : theme.colorScheme.error,
+                            ? scheme.onSurfaceVariant
+                            : scheme.error,
                         fontSize: 13,
                       ),
                     ),
@@ -187,8 +188,8 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
                   key: const Key('phone-code-verify'),
                   onPressed: _canVerify ? _verify : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: WhatsAppColors.brand,
-                    foregroundColor: Colors.white,
+                    backgroundColor: scheme.primary,
+                    foregroundColor: scheme.onPrimary,
                     disabledBackgroundColor:
                         theme.colorScheme.surfaceContainerHighest,
                     disabledForegroundColor: theme.colorScheme.onSurfaceVariant
@@ -216,9 +217,8 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
       return;
     }
     setState(() {
-      _error = AppLocalizations.of(
-        context,
-      ).text('验证码不正确，请重新输入', 'Incorrect code. Try again.');
+      _error = AppLocalizations.of(context)
+          .text('验证码不正确，请重新输入', 'Incorrect code. Try again.');
     });
   }
 
@@ -226,17 +226,10 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
     _codeController.clear();
     setState(() => _error = null);
     _codeFocusNode.requestFocus();
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(
-              context,
-            ).text('验证码已重新发送', 'Verification code resent'),
-          ),
-        ),
-      );
+    showPageMessage(
+      context,
+      AppLocalizations.of(context).text('验证码已重新发送', 'Verification code resent'),
+    );
   }
 
   Future<void> _showHelp(BuildContext context) {

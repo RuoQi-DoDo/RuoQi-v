@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,6 +13,7 @@ import 'package:record/record.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../localization.dart';
+import '../common/page_widgets.dart';
 import 'ai_history_drawer.dart';
 import 'ai_style.dart';
 import 'chat_history_store.dart';
@@ -25,6 +27,33 @@ const _aiIconButtonStyle = ButtonStyle(
   splashFactory: NoSplash.splashFactory,
 );
 
+/// Lets the host page clear an active text selection before handling Back.
+class AiTextSelectionController {
+  Object? _owner;
+  VoidCallback? _dismiss;
+
+  bool get isActive => _owner != null;
+
+  void dismiss() {
+    if (isActive) {
+      _dismiss?.call();
+    }
+  }
+
+  void _activate(Object owner, VoidCallback dismiss) {
+    _owner = owner;
+    _dismiss = dismiss;
+  }
+
+  void _deactivate(Object owner) {
+    if (_owner != owner) {
+      return;
+    }
+    _owner = null;
+    _dismiss = null;
+  }
+}
+
 /// A DeepSeek-inspired AI conversation surface with local demo interactions.
 class AiPage extends StatefulWidget {
   const AiPage({
@@ -37,6 +66,7 @@ class AiPage extends StatefulWidget {
     this.ttsCache,
     this.recordingReader,
     this.scrollController,
+    this.textSelectionController,
   });
 
   final VoidCallback? onBack;
@@ -47,6 +77,7 @@ class AiPage extends StatefulWidget {
   final DeepSeekTtsCache? ttsCache;
   final Future<Uint8List> Function(String path)? recordingReader;
   final ScrollController? scrollController;
+  final AiTextSelectionController? textSelectionController;
 
   @override
   State<AiPage> createState() => _AiPageState();
@@ -165,6 +196,15 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         );
       }
     });
+  }
+
+  void _handleHeaderBack() {
+    final selection = widget.textSelectionController;
+    if (selection?.isActive ?? false) {
+      selection!.dismiss();
+      return;
+    }
+    widget.onBack?.call();
   }
 
   void _newConversation() {
@@ -1543,6 +1583,10 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     final aiTheme = baseTheme.copyWith(
       scaffoldBackgroundColor: AiColors.background(context),
       colorScheme: aiScheme,
+      textSelectionTheme: const TextSelectionThemeData(
+        selectionColor: AiColors.selection,
+        selectionHandleColor: AiColors.selectionHandle,
+      ),
     );
     final historyEntries = _historyEntries;
 
@@ -1585,7 +1629,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                 child: Column(
                                   children: [
                                     _AiHeader(
-                                      onBack: widget.onBack,
+                                      onBack: _handleHeaderBack,
                                       onHistory: _showHistory,
                                       onNewConversation: _newConversation,
                                       title: _conversationTitle,
@@ -1622,6 +1666,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                                           _speakingText,
                                                       speechLoading:
                                                           _speechLoading,
+                                                      textSelectionController:
+                                                          widget
+                                                              .textSelectionController,
                                                       onCopy: (message) =>
                                                           unawaited(
                                                             _copyMessage(
@@ -1982,39 +2029,9 @@ class _AiTransientNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.92, end: 1),
-      duration: const Duration(milliseconds: 140),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) => Opacity(
-        opacity: value,
-        child: Transform.scale(scale: value, child: child),
-      ),
-      child: Container(
-        key: const Key('ai-transient-notice'),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xE64A4A4A),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x33000000),
-              blurRadius: 18,
-              offset: Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Text(
-          message,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            height: 1.2,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.15,
-          ),
-        ),
-      ),
+    return PageTransientNotice(
+      key: const Key('ai-transient-notice'),
+      message: message,
     );
   }
 }
@@ -2027,6 +2044,7 @@ class _AiConversation extends StatelessWidget {
     required this.scrollController,
     required this.speakingText,
     required this.speechLoading,
+    required this.textSelectionController,
     required this.onCopy,
     required this.onEdit,
     required this.onFeedback,
@@ -2041,6 +2059,7 @@ class _AiConversation extends StatelessWidget {
   final ScrollController scrollController;
   final String speakingText;
   final bool speechLoading;
+  final AiTextSelectionController? textSelectionController;
   final ValueChanged<_AiMessage> onCopy;
   final ValueChanged<_AiMessage> onEdit;
   final void Function(_AiMessage message, int feedback) onFeedback;
@@ -2084,6 +2103,7 @@ class _AiConversation extends StatelessWidget {
               message.content == speakingText &&
               speechLoading &&
               speakingText.isNotEmpty,
+          textSelectionController: textSelectionController,
           onShare: () => onShare(message),
           onRegenerate: () => onRegenerate(message),
         );
@@ -2092,7 +2112,7 @@ class _AiConversation extends StatelessWidget {
   }
 }
 
-class _AiMessageBubble extends StatelessWidget {
+class _AiMessageBubble extends StatefulWidget {
   const _AiMessageBubble({
     required this.message,
     required this.showActions,
@@ -2103,6 +2123,7 @@ class _AiMessageBubble extends StatelessWidget {
     required this.onSpeak,
     required this.speaking,
     required this.speechLoading,
+    required this.textSelectionController,
     required this.onShare,
     required this.onRegenerate,
   });
@@ -2116,11 +2137,224 @@ class _AiMessageBubble extends StatelessWidget {
   final VoidCallback onSpeak;
   final bool speaking;
   final bool speechLoading;
+  final AiTextSelectionController? textSelectionController;
   final VoidCallback onShare;
   final VoidCallback onRegenerate;
 
   @override
+  State<_AiMessageBubble> createState() => _AiMessageBubbleState();
+}
+
+class _AiMessageBubbleState extends State<_AiMessageBubble> {
+  final GlobalKey<SelectionAreaState> _selectionAreaKey =
+      GlobalKey<SelectionAreaState>();
+  final GlobalKey _selectionContentKey = GlobalKey();
+  OverlayEntry? _selectionEndHandleEntry;
+  Offset? _selectionEndHandlePosition;
+  Offset? _selectionAnchor;
+  bool _selectingText = false;
+  bool _enteringTextSelection = false;
+
+  TextStyle _userTextStyle(BuildContext context) {
+    return TextStyle(
+      color: AiColors.text(context),
+      fontSize: 18.5,
+      height: 1.55,
+      letterSpacing: -0.15,
+    );
+  }
+
+  Widget _selectableContent(Widget child) {
+    return SelectionArea(
+      key: _selectionAreaKey,
+      contextMenuBuilder: _buildSelectionToolbar,
+      onSelectionChanged: _handleSelectionChanged,
+      child: Builder(key: _selectionContentKey, builder: (_) => child),
+    );
+  }
+
+  void _exitTextSelection() {
+    _selectionAreaKey.currentState?.selectableRegion.clearSelection();
+    _finishTextSelection();
+  }
+
+  void _finishTextSelection() {
+    _removeSelectionEndHandle();
+    widget.textSelectionController?._deactivate(this);
+    if (!mounted || !_selectingText) {
+      return;
+    }
+    setState(() => _selectingText = false);
+  }
+
+  void _handleSelectionChanged(SelectedContent? content) {
+    if (!_selectingText || _enteringTextSelection) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_selectingText || _enteringTextSelection) {
+        return;
+      }
+      final region = _selectionAreaKey.currentState?.selectableRegion;
+      final hasSelection =
+          region?.contextMenuButtonItems.any(
+            (item) => item.kind == ContextMenuButtonKind.copy,
+          ) ??
+          false;
+      if (!hasSelection) {
+        _finishTextSelection();
+      } else {
+        _refreshSelectionEndHandle();
+      }
+    });
+  }
+
+  Future<void> _enterTextSelection() async {
+    final anchor = _selectionAnchor;
+    _enteringTextSelection = true;
+    widget.textSelectionController?._activate(this, _exitTextSelection);
+    setState(() => _selectingText = true);
+    await WidgetsBinding.instance.endOfFrame;
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) {
+      return;
+    }
+
+    // Showing the overlay through the public selection API also creates the
+    // handles and toolbar. Replacing the selection with the paragraph beneath
+    // the original long press then matches DeepSeek's in-place behavior.
+    final region = _selectionAreaKey.currentState?.selectableRegion;
+    region?.selectAll(SelectionChangedCause.toolbar);
+    final selectionContext = _selectionContentKey.currentContext;
+    if (anchor != null &&
+        selectionContext != null &&
+        selectionContext.mounted) {
+      final registrar = SelectionContainer.maybeOf(selectionContext);
+      if (registrar is SelectionContainerDelegate) {
+        registrar.dispatchSelectionEvent(
+          SelectParagraphSelectionEvent(globalPosition: anchor),
+        );
+        _showSelectionEndHandle(selectionContext);
+      }
+    }
+    _enteringTextSelection = false;
+  }
+
+  void _showSelectionEndHandle(BuildContext selectionContext) {
+    if (widget.message.role != _AiRole.assistant) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_selectingText || !selectionContext.mounted) {
+        return;
+      }
+      final position = _findSelectionEndPoint();
+      if (position == null) {
+        return;
+      }
+      _removeSelectionEndHandle();
+      _selectionEndHandlePosition = position;
+      final entry = OverlayEntry(
+        builder: (context) {
+          final currentPosition = _selectionEndHandlePosition;
+          if (currentPosition == null) {
+            return const SizedBox.shrink();
+          }
+          return Positioned(
+            left: currentPosition.dx - 16,
+            top: currentPosition.dy - 14,
+            child: _AiSelectionEndHandle(
+              key: const Key('ai-selection-end-handle'),
+              color: AiColors.selectionHandle,
+              onDragUpdate: _handleSelectionEndHandleDragUpdate,
+            ),
+          );
+        },
+      );
+      Overlay.of(selectionContext, rootOverlay: true).insert(entry);
+      _selectionEndHandleEntry = entry;
+    });
+  }
+
+  Offset? _findSelectionEndPoint() {
+    final selectionContext = _selectionContentKey.currentContext;
+    if (selectionContext == null || !selectionContext.mounted) {
+      return null;
+    }
+    final registrar = SelectionContainer.maybeOf(selectionContext);
+    if (registrar is! MultiSelectableSelectionContainerDelegate) {
+      return null;
+    }
+
+    Offset? result;
+    for (final selectable in registrar.selectables) {
+      final range = selectable.getSelection();
+      final geometry = selectable.value;
+      if (range == null ||
+          range.endOffset <= range.startOffset ||
+          geometry.selectionRects.isEmpty) {
+        continue;
+      }
+      final rect = geometry.selectionRects.last;
+      final position = MatrixUtils.transformPoint(
+        selectable.getTransformTo(null),
+        Offset(rect.right, rect.bottom),
+      );
+      if (result == null ||
+          position.dy > result.dy ||
+          (position.dy == result.dy && position.dx > result.dx)) {
+        result = position;
+      }
+    }
+    return result;
+  }
+
+  void _handleSelectionEndHandleDragUpdate(DragUpdateDetails details) {
+    final selectionContext = _selectionContentKey.currentContext;
+    if (selectionContext == null || !selectionContext.mounted) {
+      return;
+    }
+    final registrar = SelectionContainer.maybeOf(selectionContext);
+    if (registrar is SelectionContainerDelegate) {
+      registrar.dispatchSelectionEvent(
+        SelectionEdgeUpdateEvent.forEnd(globalPosition: details.globalPosition),
+      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _refreshSelectionEndHandle();
+      });
+    }
+  }
+
+  void _refreshSelectionEndHandle() {
+    if (!mounted || !_selectingText) {
+      return;
+    }
+    final position = _findSelectionEndPoint();
+    if (position == null) {
+      _removeSelectionEndHandle();
+      return;
+    }
+    _selectionEndHandlePosition = position;
+    _selectionEndHandleEntry?.markNeedsBuild();
+  }
+
+  void _removeSelectionEndHandle() {
+    _selectionEndHandleEntry?.remove();
+    _selectionEndHandleEntry?.dispose();
+    _selectionEndHandleEntry = null;
+    _selectionEndHandlePosition = null;
+  }
+
+  @override
+  void dispose() {
+    _removeSelectionEndHandle();
+    widget.textSelectionController?._deactivate(this);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final message = widget.message;
     final fromUser = message.role == _AiRole.user;
     if (fromUser) {
       return Padding(
@@ -2137,20 +2371,27 @@ class _AiMessageBubble extends StatelessWidget {
               color: AiColors.softSurface(context),
               borderRadius: BorderRadius.circular(24),
             ),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onLongPressStart: (details) =>
-                  unawaited(_showMessageMenu(context, details.globalPosition)),
-              child: Text(
-                message.content,
-                style: TextStyle(
-                  color: AiColors.text(context),
-                  fontSize: 18.5,
-                  height: 1.55,
-                  letterSpacing: -0.15,
-                ),
-              ),
-            ),
+            child: _selectingText
+                ? _selectableContent(
+                    Text(
+                      message.content,
+                      key: const Key('ai-user-selectable-text'),
+                      style: _userTextStyle(context),
+                    ),
+                  )
+                : GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onLongPressStart: (details) {
+                      _selectionAnchor = details.globalPosition;
+                      unawaited(
+                        _showMessageMenu(context, details.globalPosition),
+                      );
+                    },
+                    child: Text(
+                      message.content,
+                      style: _userTextStyle(context),
+                    ),
+                  ),
           ),
         ),
       );
@@ -2177,58 +2418,40 @@ class _AiMessageBubble extends StatelessWidget {
               ),
               const SizedBox(height: 10),
             ],
-            GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onLongPressStart: (details) =>
-                  unawaited(_showMessageMenu(context, details.globalPosition)),
-              child: MarkdownBody(
-                data: message.content,
-                selectable: false,
-                styleSheet: MarkdownStyleSheet(
-                  p: TextStyle(
-                    color: AiColors.text(context),
-                    fontSize: 18.5,
-                    height: 1.72,
-                    letterSpacing: -0.08,
+            _selectingText
+                ? _selectableContent(
+                    MarkdownBody(
+                      key: const Key('ai-assistant-selectable-message'),
+                      data: message.content,
+                      selectable: false,
+                      styleSheet: _assistantMarkdownStyle(context),
+                    ),
+                  )
+                : GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onLongPressStart: (details) {
+                      _selectionAnchor = details.globalPosition;
+                      unawaited(
+                        _showMessageMenu(context, details.globalPosition),
+                      );
+                    },
+                    child: MarkdownBody(
+                      data: message.content,
+                      selectable: false,
+                      styleSheet: _assistantMarkdownStyle(context),
+                    ),
                   ),
-                  h1: TextStyle(
-                    color: AiColors.text(context),
-                    fontSize: 23,
-                    height: 1.45,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  h2: TextStyle(
-                    color: AiColors.text(context),
-                    fontSize: 20.5,
-                    height: 1.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  h3: TextStyle(
-                    color: AiColors.text(context),
-                    fontSize: 19,
-                    height: 1.55,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  listBullet: TextStyle(
-                    color: AiColors.text(context),
-                    fontSize: 18.5,
-                    height: 1.65,
-                  ),
-                  blockSpacing: 12,
-                ),
-              ),
-            ),
-            if (showActions) ...[
+            if (widget.showActions) ...[
               const SizedBox(height: 10),
               _AnswerActionBar(
                 feedback: message.feedback,
-                speaking: speaking,
-                speechLoading: speechLoading,
-                onCopy: onCopy,
-                onFeedback: onFeedback,
-                onSpeak: onSpeak,
-                onShare: onShare,
-                onRegenerate: onRegenerate,
+                speaking: widget.speaking,
+                speechLoading: widget.speechLoading,
+                onCopy: widget.onCopy,
+                onFeedback: widget.onFeedback,
+                onSpeak: widget.onSpeak,
+                onShare: widget.onShare,
+                onRegenerate: widget.onRegenerate,
               ),
             ],
           ],
@@ -2237,12 +2460,47 @@ class _AiMessageBubble extends StatelessWidget {
     );
   }
 
+  MarkdownStyleSheet _assistantMarkdownStyle(BuildContext context) {
+    return MarkdownStyleSheet(
+      p: TextStyle(
+        color: AiColors.text(context),
+        fontSize: 18.5,
+        height: 1.72,
+        letterSpacing: -0.08,
+      ),
+      h1: TextStyle(
+        color: AiColors.text(context),
+        fontSize: 23,
+        height: 1.45,
+        fontWeight: FontWeight.w700,
+      ),
+      h2: TextStyle(
+        color: AiColors.text(context),
+        fontSize: 20.5,
+        height: 1.5,
+        fontWeight: FontWeight.w700,
+      ),
+      h3: TextStyle(
+        color: AiColors.text(context),
+        fontSize: 19,
+        height: 1.55,
+        fontWeight: FontWeight.w600,
+      ),
+      listBullet: TextStyle(
+        color: AiColors.text(context),
+        fontSize: 18.5,
+        height: 1.65,
+      ),
+      blockSpacing: 12,
+    );
+  }
+
   Future<void> _showMessageMenu(
     BuildContext context,
     Offset globalPosition,
   ) async {
-    onPauseAutoScroll();
-    final fromUser = message.role == _AiRole.user;
+    widget.onPauseAutoScroll();
+    final fromUser = widget.message.role == _AiRole.user;
     final text = AppLocalizations.of(context);
     final overlayBox =
         Overlay.of(context, rootOverlay: true).context.findRenderObject()
@@ -2258,15 +2516,20 @@ class _AiMessageBubble extends StatelessWidget {
     PopupMenuItem<_AiMessageMenuAction> item(
       _AiMessageMenuAction value,
       IconData icon,
-      String label,
-    ) {
+      String label, {
+      bool flipHorizontally = false,
+    }) {
+      final iconWidget = Icon(icon, color: Colors.white, size: 19);
       return PopupMenuItem<_AiMessageMenuAction>(
         value: value,
         height: 40,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            Icon(icon, color: Colors.white, size: 19),
+            if (flipHorizontally)
+              Transform.flip(flipX: true, child: iconWidget)
+            else
+              iconWidget,
             const SizedBox(width: 10),
             Text(
               label,
@@ -2306,8 +2569,9 @@ class _AiMessageBubble extends StatelessWidget {
             ),
             item(
               _AiMessageMenuAction.share,
-              Icons.forward_outlined,
+              Icons.reply_rounded,
               text.text('分享', 'Share'),
+              flipHorizontally: true,
             ),
           ]
         : <PopupMenuEntry<_AiMessageMenuAction>>[
@@ -2345,8 +2609,9 @@ class _AiMessageBubble extends StatelessWidget {
             ),
             item(
               _AiMessageMenuAction.share,
-              Icons.forward_outlined,
+              Icons.reply_rounded,
               text.text('分享', 'Share'),
+              flipHorizontally: true,
             ),
           ];
 
@@ -2371,46 +2636,236 @@ class _AiMessageBubble extends StatelessWidget {
     }
     switch (action) {
       case _AiMessageMenuAction.copy:
-        onCopy();
+        widget.onCopy();
       case _AiMessageMenuAction.selectText:
-        await _showSelectableText(context);
+        await _enterTextSelection();
       case _AiMessageMenuAction.edit:
-        onEdit();
+        widget.onEdit();
       case _AiMessageMenuAction.share:
-        onShare();
+        widget.onShare();
       case _AiMessageMenuAction.regenerate:
-        onRegenerate();
+        widget.onRegenerate();
       case _AiMessageMenuAction.like:
-        onFeedback(1);
+        widget.onFeedback(1);
       case _AiMessageMenuAction.dislike:
-        onFeedback(-1);
+        widget.onFeedback(-1);
       case _AiMessageMenuAction.read:
-        onSpeak();
+        widget.onSpeak();
     }
   }
 
-  Future<void> _showSelectableText(BuildContext context) {
+  Widget _buildSelectionToolbar(
+    BuildContext context,
+    SelectableRegionState selectableRegionState,
+  ) {
     final text = AppLocalizations.of(context);
-    return showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(text.text('选择文本', 'Select text')),
-        content: SingleChildScrollView(
-          child: SelectableText(
-            message.content,
-            style: TextStyle(
-              color: AiColors.text(dialogContext),
-              fontSize: 17,
-              height: 1.6,
+    final items = selectableRegionState.contextMenuButtonItems;
+
+    ContextMenuButtonItem? itemFor(ContextMenuButtonKind kind) {
+      for (final item in items) {
+        if (item.kind == kind) {
+          return item;
+        }
+      }
+      return null;
+    }
+
+    final copy = itemFor(ContextMenuButtonKind.copy);
+    final selectAll = itemFor(ContextMenuButtonKind.selectAll);
+    final share = itemFor(ContextMenuButtonKind.share);
+    final anchors = selectableRegionState.contextMenuAnchors;
+
+    return _AiTextSelectionToolbar(
+      key: const Key('ai-text-selection-toolbar'),
+      anchorAbove: anchors.primaryAnchor,
+      anchorBelow: anchors.secondaryAnchor ?? anchors.primaryAnchor,
+      buttons: [
+        if (copy?.onPressed case final onPressed?)
+          _AiTextSelectionToolbarButton(
+            key: const Key('ai-selection-copy'),
+            icon: Icons.content_copy_rounded,
+            label: text.text('复制', 'Copy'),
+            onPressed: onPressed,
+          ),
+        if (selectAll?.onPressed case final onPressed?)
+          _AiTextSelectionToolbarButton(
+            key: const Key('ai-selection-select-all'),
+            icon: Icons.check_box_rounded,
+            label: text.text('全选', 'Select all'),
+            onPressed: onPressed,
+          ),
+        if (share?.onPressed case final onPressed?)
+          _AiTextSelectionToolbarButton(
+            key: const Key('ai-selection-share'),
+            icon: Icons.reply_rounded,
+            label: text.text('分享', 'Share'),
+            onPressed: onPressed,
+            flipHorizontally: true,
+          ),
+      ],
+    );
+  }
+}
+
+class _AiSelectionEndHandle extends StatelessWidget {
+  const _AiSelectionEndHandle({
+    super.key,
+    required this.color,
+    required this.onDragUpdate,
+  });
+
+  final Color color;
+  final GestureDragUpdateCallback onDragUpdate;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: AppLocalizations.of(context)
+          .text('调整选区结尾', 'Adjust selection end'),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onPanUpdate: onDragUpdate,
+        child: SizedBox.square(
+          dimension: 32,
+          child: CustomPaint(painter: _AiSelectionEndHandlePainter(color)),
+        ),
+      ),
+    );
+  }
+}
+
+class _AiSelectionEndHandlePainter extends CustomPainter {
+  const _AiSelectionEndHandlePainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    canvas.drawLine(
+      const Offset(16, 3),
+      const Offset(16, 14),
+      Paint()
+        ..color = color
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawCircle(const Offset(16, 20), 8, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _AiSelectionEndHandlePainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+class _AiTextSelectionToolbar extends StatelessWidget {
+  const _AiTextSelectionToolbar({
+    super.key,
+    required this.anchorAbove,
+    required this.anchorBelow,
+    required this.buttons,
+  });
+
+  final Offset anchorAbove;
+  final Offset anchorBelow;
+  final List<Widget> buttons;
+
+  @override
+  Widget build(BuildContext context) {
+    const screenPadding = 8.0;
+    const contentDistance = 16.0;
+    final paddingAbove = MediaQuery.paddingOf(context).top + screenPadding;
+    final localAdjustment = Offset(screenPadding, paddingAbove);
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        screenPadding,
+        paddingAbove,
+        screenPadding,
+        screenPadding,
+      ),
+      child: CustomSingleChildLayout(
+        delegate: TextSelectionToolbarLayoutDelegate(
+          anchorAbove:
+              anchorAbove - const Offset(0, contentDistance) - localAdjustment,
+          anchorBelow:
+              anchorBelow + const Offset(0, screenPadding) - localAdjustment,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: const Color(0xFF343436),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x66000000),
+                  blurRadius: 18,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Row(mainAxisSize: MainAxisSize.min, children: buttons),
             ),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(text.text('关闭', 'Close')),
+      ),
+    );
+  }
+}
+
+class _AiTextSelectionToolbarButton extends StatelessWidget {
+  const _AiTextSelectionToolbarButton({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.flipHorizontally = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final bool flipHorizontally;
+
+  @override
+  Widget build(BuildContext context) {
+    final iconWidget = Icon(icon, color: Colors.white, size: 22);
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(14),
+        child: SizedBox(
+          width: 64,
+          height: 64,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (flipHorizontally)
+                Transform.flip(flipX: true, child: iconWidget)
+              else
+                iconWidget,
+              const SizedBox(height: 4),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.5,
+                  height: 1.1,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -2529,7 +2984,8 @@ class _AnswerActionBar extends StatelessWidget {
           _AnswerActionButton(
             tooltip: text.text('分享', 'Share'),
             onPressed: onShare,
-            icon: Icons.forward_outlined,
+            icon: Icons.reply_rounded,
+            flipHorizontally: true,
           ),
           const Spacer(),
           _AnswerActionButton(
@@ -2549,15 +3005,22 @@ class _AnswerActionButton extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     this.selected = false,
+    this.flipHorizontally = false,
   });
 
   final String tooltip;
   final VoidCallback onPressed;
   final IconData icon;
   final bool selected;
+  final bool flipHorizontally;
 
   @override
   Widget build(BuildContext context) {
+    final iconWidget = Icon(
+      icon,
+      size: 20,
+      color: selected ? AiColors.text(context) : AiColors.muted(context),
+    );
     return IconButton(
       tooltip: tooltip,
       onPressed: onPressed,
@@ -2565,11 +3028,9 @@ class _AnswerActionButton extends StatelessWidget {
       constraints: const BoxConstraints.tightFor(width: 34, height: 34),
       padding: EdgeInsets.zero,
       visualDensity: VisualDensity.compact,
-      icon: Icon(
-        icon,
-        size: 20,
-        color: selected ? AiColors.text(context) : AiColors.muted(context),
-      ),
+      icon: flipHorizontally
+          ? Transform.flip(flipX: true, child: iconWidget)
+          : iconWidget,
     );
   }
 }

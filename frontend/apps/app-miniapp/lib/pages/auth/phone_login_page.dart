@@ -25,9 +25,6 @@ class PhoneLoginPage extends StatefulWidget {
 
 class _PhoneLoginPageState extends State<PhoneLoginPage> {
   static const _accent = WhatsAppColors.brandStrong;
-  static const _background = Color(0xFFF7F7F7);
-  static const _titleColor = Color(0xFF4F565A);
-  static const _bodyColor = Color(0xFF70777B);
 
   final TextEditingController _phoneController = TextEditingController();
   final FocusNode _phoneFocusNode = FocusNode();
@@ -67,7 +64,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
     final english = l10n.locale.languageCode == 'en';
     return Scaffold(
       key: const Key('phone-login-page'),
-      backgroundColor: _background,
+      backgroundColor: scheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -94,7 +91,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                       l10n.text('输入电话号码', 'Enter phone number'),
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineMedium?.copyWith(
-                        color: _titleColor,
+                        color: scheme.onSurface,
                         fontSize: 30,
                         height: 1.2,
                         fontWeight: FontWeight.w500,
@@ -193,13 +190,14 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                                   style: theme.textTheme.titleLarge?.copyWith(
                                     fontSize: 22,
                                     letterSpacing: 0.4,
+                                    color: scheme.onSurface,
                                   ),
                                   decoration: InputDecoration(
                                     filled: false,
                                     hintText: l10n.text('电话号码', 'Phone number'),
                                     hintStyle: theme.textTheme.titleLarge
                                         ?.copyWith(
-                                          color: _bodyColor,
+                                          color: scheme.onSurfaceVariant,
                                           fontSize: 22,
                                         ),
                                     contentPadding: const EdgeInsets.only(
@@ -238,8 +236,8 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                   key: const Key('phone-next'),
                   onPressed: _canContinue ? _submit : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: WhatsAppColors.brand,
-                    foregroundColor: Colors.white,
+                    backgroundColor: scheme.primary,
+                    foregroundColor: scheme.onPrimary,
                     disabledBackgroundColor: scheme.surfaceContainerHighest,
                     disabledForegroundColor: scheme.onSurfaceVariant.withValues(
                       alpha: 0.55,
@@ -262,9 +260,8 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
 
   Future<void> _selectCountry() async {
     _phoneFocusNode.unfocus();
-    final selected = await Navigator.of(
-      context,
-    ).push<PhoneCountry>(PhoneCountryPickerPage.route(_country));
+    final selected = await Navigator.of(context)
+        .push<PhoneCountry>(PhoneCountryPickerPage.route(_country));
     if (!mounted || selected == null) {
       return;
     }
@@ -314,8 +311,9 @@ class _PhoneDescription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final style = Theme.of(context).textTheme.bodyLarge?.copyWith(
-      color: const Color(0xFF70777B),
+    final theme = Theme.of(context);
+    final style = theme.textTheme.bodyLarge?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
       fontSize: 17,
       height: 1.45,
     );

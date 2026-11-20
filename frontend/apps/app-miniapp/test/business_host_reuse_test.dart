@@ -66,6 +66,15 @@ void main() {
       const Offset(0, 320),
     );
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('customer-mini-program-picker')), findsNothing);
+    expect(find.byKey(const Key('ai-page')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ai-back')));
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byKey(const Key('chat-home-pull-listener')),
+      const Offset(0, 320),
+    );
+    await tester.pumpAndSettle();
     expect(
       find.byKey(const Key('customer-mini-program-picker')),
       findsOneWidget,
@@ -79,10 +88,6 @@ void main() {
       find.byKey(const Key('mini-program-picker-exit-swipe')),
       const Offset(0, -80),
     );
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('ai-page')), findsOneWidget);
-
-    await tester.tap(find.byKey(const Key('ai-back')));
     await tester.pumpAndSettle();
     expect(find.text('业务计数：1'), findsOneWidget);
     expect(tester.takeException(), isNull);
