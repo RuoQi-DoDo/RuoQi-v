@@ -15,7 +15,7 @@
 及自定义页头必须通过 `MiniProgramCapsuleOverlay.reservedRight` /
 `reservedHeight` 留出胶囊安全区，避免按钮被遮挡。
 
-当前目录包含企业直聘、人事、商户、伙伴、平台管理和 Tospino 商城。Tospino
+当前目录包含企业直聘、人事、商户、平台管理和 Tospino 商城。Tospino
 直接接入 Tospino 安卓端使用的真实接口：分类、商品搜索、商品详情、购物车、
 收藏、地址、SaleInfo、订单提交、订单列表/详情和买家资料。公共浏览使用 Basic
 鉴权；购物车和订单等账户能力使用 Tospino OAuth 登录后的 access token，并由

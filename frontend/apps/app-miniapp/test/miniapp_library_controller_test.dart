@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ruoqi_app_miniapp/miniapp/launcher/miniapp_launcher_defaults.dart';
 import 'package:ruoqi_app_miniapp/miniapp/launcher/miniapp_launcher_item.dart';
 import 'package:ruoqi_app_miniapp/miniapp/launcher/miniapp_library_controller.dart';
 
@@ -24,6 +25,25 @@ const _c = MiniProgramLauncherItem(
 );
 
 void main() {
+  test('default launcher entries only contain implemented mini-programs', () {
+    const implementedIds = {
+      MiniProgramLauncherIds.tospino,
+      MiniProgramLauncherIds.ats,
+      MiniProgramLauncherIds.merchant,
+      MiniProgramLauncherIds.hr,
+      MiniProgramLauncherIds.platform,
+    };
+
+    expect(
+      defaultRecentMiniPrograms.map((item) => item.id),
+      everyElement(isIn(implementedIds)),
+    );
+    expect(
+      defaultMyMiniPrograms.map((item) => item.id),
+      everyElement(isIn(implementedIds)),
+    );
+  });
+
   test('initial lists deduplicate IDs and cannot be mutated externally', () {
     final recentInput = [_a, _b, _a];
     final controller = MiniProgramLibraryController(

@@ -4,7 +4,6 @@ const launcherMiniProgramLabels = <String, String>{
   '人事': 'HR',
   'RuoQi 人事': 'RuoQi HR',
   '商户': 'Merchant',
-  '伙伴': 'Partner',
   '平台管理': 'Platform',
   '文件助手': 'Files',
   '企业服务': 'Business services',

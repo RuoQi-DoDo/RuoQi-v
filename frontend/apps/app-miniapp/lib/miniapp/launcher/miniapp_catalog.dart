@@ -5,7 +5,6 @@ import '../ats/ats_miniapp.dart';
 import '../common/miniapp_shell.dart';
 import '../hr/hr_miniapp.dart';
 import '../merchant/home_page.dart';
-import '../partner/home_page.dart';
 import '../platform/platform_miniapp.dart';
 import '../tospino/tospino_miniapp.dart';
 import 'miniapp_launcher_item.dart';
@@ -43,13 +42,6 @@ const List<MiniProgramLauncherItem> availableMiniPrograms = [
     searchTerms: ['Merchant', '商家', '商户'],
   ),
   MiniProgramLauncherItem(
-    id: MiniProgramLauncherIds.partner,
-    label: '伙伴',
-    icon: Icons.handshake_outlined,
-    color: Color(0xFF8B5CF6),
-    searchTerms: ['Partner', '伙伴', '合作伙伴'],
-  ),
-  MiniProgramLauncherItem(
     id: MiniProgramLauncherIds.platform,
     label: '平台管理',
     icon: Icons.admin_panel_settings_outlined,
@@ -73,12 +65,6 @@ Future<void> openMiniProgram(
       icon: Icons.fingerprint,
       child: const MerchantHomePage(embedded: true),
     ),
-    MiniProgramLauncherIds.partner => MiniProgramShell.route(
-      title: '伙伴',
-      miniProgramId: item.id,
-      icon: Icons.handshake_outlined,
-      child: const PartnerHomePage(embedded: true),
-    ),
     MiniProgramLauncherIds.platform => PlatformMiniProgram.route(),
     _ => null,
   };
@@ -86,9 +72,8 @@ Future<void> openMiniProgram(
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          AppLocalizations.of(
-            context,
-          ).text('该小程序暂不可用', 'This mini-program is currently unavailable'),
+          AppLocalizations.of(context)
+              .text('该小程序暂不可用', 'This mini-program is currently unavailable'),
         ),
       ),
     );

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -76,17 +78,10 @@ abstract final class AiColors {
   );
 }
 
-/// A compact line/filled whale shared by the AI tab and the welcome mark.
-class AiTabIcon extends StatelessWidget {
-  const AiTabIcon({
-    super.key,
-    required this.color,
-    required this.filled,
-    this.size = 24,
-  });
+/// The project's RQ loop mark, adapted from the app icon for the AI welcome.
+class AiBrandMark extends StatelessWidget {
+  const AiBrandMark({super.key, this.size = 104});
 
-  final Color color;
-  final bool filled;
   final double size;
 
   @override
@@ -94,80 +89,75 @@ class AiTabIcon extends StatelessWidget {
     return SizedBox.square(
       dimension: size,
       child: CustomPaint(
-        painter: _AiTabWhalePainter(color: color, filled: filled),
+        painter: _AiBrandMarkPainter(
+          accent: AiColors.accent(context),
+          accentDeep: AiColors.accentDeep(context),
+        ),
       ),
     );
   }
 }
 
-class _AiTabWhalePainter extends CustomPainter {
-  const _AiTabWhalePainter({required this.color, required this.filled});
+class _AiBrandMarkPainter extends CustomPainter {
+  const _AiBrandMarkPainter({required this.accent, required this.accentDeep});
 
-  final Color color;
-  final bool filled;
+  final Color accent;
+  final Color accentDeep;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final scale = size.width / 24;
-    canvas.save();
-    canvas.scale(scale, scale);
+    final source = Path()
+      ..fillType = PathFillType.evenOdd
+      ..moveTo(386, 264)
+      ..lineTo(518, 264)
+      ..cubicTo(662, 264, 768, 363, 768, 502)
+      ..cubicTo(768, 564, 744, 621, 704, 663)
+      ..lineTo(786, 745)
+      ..lineTo(716, 815)
+      ..lineTo(618, 717)
+      ..cubicTo(588, 728, 554, 734, 518, 734)
+      ..lineTo(386, 734)
+      ..cubicTo(300, 734, 244, 679, 244, 593)
+      ..lineTo(244, 406)
+      ..cubicTo(244, 320, 300, 264, 386, 264)
+      ..close()
+      ..moveTo(394, 362)
+      ..cubicTo(362, 362, 342, 382, 342, 414)
+      ..lineTo(342, 526)
+      ..lineTo(430, 526)
+      ..lineTo(526, 636)
+      ..cubicTo(610, 632, 666, 580, 666, 502)
+      ..cubicTo(666, 418, 607, 362, 518, 362)
+      ..lineTo(394, 362)
+      ..close();
 
-    final body = Path()
-      ..moveTo(1.4, 16.2)
-      ..cubicTo(1.8, 12.3, 4.3, 9.1, 8.1, 7.9)
-      ..cubicTo(11.2, 7, 13.4, 8.3, 15.2, 10.6)
-      ..cubicTo(12.5, 13.7, 7.7, 16.1, 2.7, 17.2)
-      ..cubicTo(2, 17.1, 1.6, 16.8, 1.4, 16.2)
-      ..close();
-    final tail = Path()
-      ..moveTo(14.8, 10.3)
-      ..cubicTo(17, 9.4, 17.8, 7.4, 19.8, 7.8)
-      ..cubicTo(19.3, 8.9, 19.6, 9.8, 20.5, 10.7)
-      ..cubicTo(22.4, 10.2, 23.2, 11.2, 23.7, 12.2)
-      ..cubicTo(22, 13.9, 21.1, 15.8, 18.6, 15.4)
-      ..cubicTo(17, 15.2, 15.8, 14, 15.1, 12.8)
-      ..close();
-    final dorsal = Path()
-      ..moveTo(8.9, 8)
-      ..cubicTo(8.9, 5.8, 9.8, 4, 11.8, 2.8)
-      ..cubicTo(11.4, 5.2, 12.4, 7, 13.4, 8.7)
-      ..close();
-    final fin = Path()
-      ..moveTo(9.8, 14)
-      ..cubicTo(10.8, 15.5, 12.2, 16.8, 14, 17.2)
-      ..cubicTo(12.6, 15.8, 11.9, 14.2, 11.8, 12.9)
-      ..close();
-    final shape = Path.combine(PathOperation.union, body, tail);
-
-    if (filled) {
-      canvas.drawPath(shape, Paint()..color = color);
-      canvas.drawPath(dorsal, Paint()..color = color);
-      canvas.drawPath(fin, Paint()..color = color);
-    } else {
-      final stroke = Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.55
-        ..strokeJoin = StrokeJoin.round
-        ..strokeCap = StrokeCap.round;
-      canvas.drawPath(shape, stroke);
-      canvas.drawPath(dorsal, stroke);
-      canvas.drawPath(fin, stroke);
-    }
-
-    final eyeColor = filled ? Colors.white : color;
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: const Offset(5.9, 11.4),
-        width: filled ? 1.7 : 1.1,
-        height: 1.2,
-      ),
-      Paint()..color = eyeColor,
+    final bounds = source.getBounds();
+    final inset = size.shortestSide * 0.04;
+    final scale = math.min(
+      (size.width - inset * 2) / bounds.width,
+      (size.height - inset * 2) / bounds.height,
     );
-    canvas.restore();
+    final matrix = Matrix4.identity()
+      ..translateByDouble(
+        (size.width - bounds.width * scale) / 2 - bounds.left * scale,
+        (size.height - bounds.height * scale) / 2 - bounds.top * scale,
+        0,
+        1,
+      )
+      ..scaleByDouble(scale, scale, 1, 1);
+    final mark = source.transform(matrix.storage)
+      ..fillType = PathFillType.evenOdd;
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [accentDeep, accent],
+      ).createShader(Offset.zero & size);
+
+    canvas.drawPath(mark, paint);
   }
 
   @override
-  bool shouldRepaint(covariant _AiTabWhalePainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.filled != filled;
+  bool shouldRepaint(covariant _AiBrandMarkPainter oldDelegate) =>
+      oldDelegate.accent != accent || oldDelegate.accentDeep != accentDeep;
 }

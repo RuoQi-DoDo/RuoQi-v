@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - release
     paths:
       - frontend/apps/app-miniapp/pubspec.yaml
       - .github/workflows/build_app_miniapp.yml
@@ -102,7 +103,9 @@ jobs:
   android_apk:
     name: Build Android APK
     needs: detect_version
-    if: needs.detect_version.outputs.changed == 'true'
+    if: >-
+      needs.detect_version.outputs.changed == 'true'
+      && github.ref_name != 'release'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -145,7 +148,9 @@ jobs:
   android_aab:
     name: Build Android AAB
     needs: detect_version
-    if: needs.detect_version.outputs.changed == 'true'
+    if: >-
+      needs.detect_version.outputs.changed == 'true'
+      && github.ref_name != 'release'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -513,6 +518,7 @@ jobs:
       - ios_build
     if: >-
       github.event_name == 'push'
+      && github.ref_name != 'release'
       && needs.detect_version.outputs.changed == 'true'
       && needs.android_apk.result == 'success'
       && needs.android_aab.result == 'success'

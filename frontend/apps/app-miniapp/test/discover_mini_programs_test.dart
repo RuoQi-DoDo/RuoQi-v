@@ -42,7 +42,7 @@ void main() {
     await tester.pumpAndSettle();
     await _openFromDiscover(tester);
 
-    for (final id in ['ats', 'hr', 'merchant', 'partner', 'platform']) {
+    for (final id in ['ats', 'hr', 'merchant', 'platform']) {
       expect(find.byKey(Key('mini-program-entry-$id')), findsOneWidget);
     }
     expect(find.byType(SnackBar), findsNothing);
@@ -77,7 +77,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.widget<TextField>(search).controller!.text, isEmpty);
     expect(find.byKey(const Key('mini-programs-empty')), findsNothing);
-    for (final id in ['ats', 'hr', 'merchant', 'partner', 'platform']) {
+    for (final id in ['ats', 'hr', 'merchant', 'platform']) {
       expect(find.byKey(Key('mini-program-entry-$id')), findsOneWidget);
     }
     expect(tester.takeException(), isNull);

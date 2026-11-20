@@ -357,7 +357,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('ai-page')), findsOneWidget);
-    expect(find.byKey(const Key('ai-whale-mark')), findsOneWidget);
+    expect(find.byKey(const Key('ai-brand-mark')), findsOneWidget);
+    expect(
+      tester.widget<Icon>(find.byKey(const Key('host-tab-ai-icon'))).icon,
+      Icons.auto_awesome_rounded,
+    );
     expect(find.text('你好，我是 RuoQi'), findsOneWidget);
     expect(find.text('发消息或按住说话'), findsOneWidget);
     final tabCenters = [

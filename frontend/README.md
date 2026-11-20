@@ -11,7 +11,7 @@ RuoQi 多项目 Flutter 巨仓（monorepo），基于 Dart 原生 pub workspace 
 apps/
   platform-pc/               # 平台端 PC（ruoqi_platform_pc）：系统管理 / 运营后台
   business-pc/               # 业务端 PC（ruoqi_business_pc）：客户 / 商户 / 伙伴
-  app-miniapp/               # 业务小程序宿主（ruoqi_app_miniapp）：客户 / 商户 / 伙伴
+  app-miniapp/               # 业务小程序宿主（ruoqi_app_miniapp）：客户 / 商户
 packages/
   common/                    # 品牌主题、通用组件、端类型、营销组件
   network/                   # 网络基础设施（不绑定后端）
@@ -38,7 +38,6 @@ apps/app-miniapp/
   lib/miniapp/ats/       # 企业直聘小程序：页面、资源、翻译与 api/
   lib/miniapp/hr/        # 人事小程序：页面、资源、翻译与 api/
   lib/miniapp/merchant/  # 商户小程序：页面、资源、翻译与 api/
-  lib/miniapp/partner/   # 伙伴小程序：页面、资源、翻译与 api/
   lib/miniapp/platform/  # 平台账号中心小程序：页面、资源、翻译与 api/
   lib/miniapp/tospino/   # Tospino 商城小程序：页面、资源、翻译与 api/
 ```
@@ -101,7 +100,7 @@ melos run run:business_pc
 `app-miniapp` 由 `BusinessAppFrame` 管理全局设置和账号状态，
 `BusinessHostPage` 组合业务首页、通讯录、发现、我的及小程序选择页。当前
 `lib/main.dart` 将 `ImChatPage` 注入宿主的 `homeBuilder`；更换业务时替换首页
-构建器即可，公共页面继续复用。ATS、HR、商户、伙伴和平台管理由公共宿主
+构建器即可，公共页面继续复用。ATS、HR、商户和平台管理由公共宿主
 作为小程序打开。具体接入方式见 `apps/app-miniapp/lib/pages/README.md`。
 
 ## 分层约定
@@ -114,7 +113,7 @@ melos run run:business_pc
   `json_serializable` 生成 `*.g.dart`，改动后执行 `melos gen`；各端接口本来就不同，
   因此按端各持一份，互不牵连。
 - `apps/app-miniapp/lib/miniapp/<name>/api/`：小程序私有 API 与 DTO。ATS、HR、
-  商户、伙伴、平台管理和 Tospino 的接口不得放到宿主的公共 `lib/api/`。
+  商户、平台管理和 Tospino 的接口不得放到宿主的公共 `lib/api/`。
 - `apps/<壳>/lib/<域>/`：该域的 UI 页面，按「应用壳 + 端类型」划分——平台 PC 位于
   `platform-pc`；平台账号中心已收敛为 `app-miniapp/lib/miniapp/platform` 小程序。
   业务端（客户 / 商户 / 伙伴）的页面放在同一个壳里，由工作台入口打开。
@@ -130,7 +129,7 @@ flutter run --dart-define=CUSTOMER_API_BASE_URL=https://customer.example.com
 | 域 | App（移动端） | PC（Web） |
 |---|---|---|
 | platform（系统管理 / 运营后台） | app-miniapp 的“平台管理”小程序 | apps/platform-pc |
-| business（客户 / 商户 / 伙伴） | apps/app-miniapp | apps/business-pc |
+| business（客户 / 商户 / 伙伴） | apps/app-miniapp（客户 / 商户） | apps/business-pc |
 
 每个 App 在 `main.dart` 用 `RuoQiPlatformScope` 声明端类型（`RuoQiPlatform.mobile` / `pc`），
 布局代码通过 `RuoQiPlatformScope.of(context)` 或 `RuoQiBreakpoints` 断点自适应。
