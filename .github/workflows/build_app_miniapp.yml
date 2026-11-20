@@ -99,8 +99,8 @@ jobs:
             echo "flutter_version=$flutter_version"
           } >> "$GITHUB_OUTPUT"
 
-  android:
-    name: Build Android packages
+  android_apk:
+    name: Build Android APK
     needs: detect_version
     if: needs.detect_version.outputs.changed == 'true'
     runs-on: ubuntu-latest
@@ -134,6 +134,39 @@ jobs:
             --build-name="$APP_VERSION" \
             --build-number="$APP_BUILD_NUMBER"
 
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-miniapp-android-apk-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
+          path: frontend/apps/app-miniapp/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  android_aab:
+    name: Build Android AAB
+    needs: detect_version
+    if: needs.detect_version.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.detect_version.outputs.flutter_version }}
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        working-directory: frontend
+        run: flutter pub get
+
       - name: Build release AAB
         working-directory: frontend/apps/app-miniapp
         env:
@@ -143,14 +176,6 @@ jobs:
           flutter build appbundle --release \
             --build-name="$APP_VERSION" \
             --build-number="$APP_BUILD_NUMBER"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v7
-        with:
-          name: app-miniapp-android-${{ needs.detect_version.outputs.version }}-${{ needs.detect_version.outputs.build_number }}
-          path: frontend/apps/app-miniapp/build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
-          retention-days: 14
 
       - name: Upload AAB
         uses: actions/upload-artifact@v7
@@ -483,13 +508,15 @@ jobs:
     name: Publish GitHub Release
     needs:
       - detect_version
-      - android
-      - ios_upload
+      - android_apk
+      - android_aab
+      - ios_build
     if: >-
       github.event_name == 'push'
       && needs.detect_version.outputs.changed == 'true'
-      && needs.android.result == 'success'
-      && needs.ios_upload.result == 'success'
+      && needs.android_apk.result == 'success'
+      && needs.android_aab.result == 'success'
+      && needs.ios_build.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
