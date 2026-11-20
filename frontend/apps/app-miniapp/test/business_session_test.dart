@@ -55,8 +55,11 @@ void main() {
 
     expect(find.text('欢迎使用 RuoQi'), findsNothing);
     expect(find.byKey(const Key('phone-login-page')), findsNothing);
+    expect(find.byKey(const Key('customer-home-scroll')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('im-open-ai')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-page')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('host-tab-home')));
+    await tester.tap(find.byKey(const Key('ai-back')));
     await tester.pumpAndSettle();
     expect(find.text('企业直聘'), findsOneWidget);
   });

@@ -6,7 +6,7 @@ import '../common/page_localizations.dart';
 import '../common/page_theme.dart';
 import '../ai/ai_style.dart';
 
-enum HostTab { ai, home, discover, me }
+enum HostTab { home, discover, me }
 
 class HostTabBar extends StatelessWidget {
   const HostTabBar({
@@ -33,13 +33,6 @@ class HostTabBar extends StatelessWidget {
     final dividerColor = HostChromeStyle.dividerColor(context);
     final hairline = HostChromeStyle.hairline(context);
     final items = [
-      (
-        HostTab.ai,
-        Icons.auto_awesome_outlined,
-        Icons.auto_awesome_rounded,
-        'AI',
-        false,
-      ),
       (HostTab.home, homeIcon, homeActiveIcon, homeLabel, false),
       (
         HostTab.discover,

@@ -36,7 +36,8 @@ Future<void> main() async {
 Widget buildImChatPage(
   BuildContext context,
   ScrollController scrollController,
-) => ImChatPage(scrollController: scrollController);
+  VoidCallback onOpenAi,
+) => ImChatPage(scrollController: scrollController, onOpenAi: onOpenAi);
 
 /// App composition: shared host navigation with a replaceable business home.
 class BusinessApp extends StatefulWidget {

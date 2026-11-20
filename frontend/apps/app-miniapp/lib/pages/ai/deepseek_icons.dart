@@ -72,6 +72,21 @@ class DeepSeekVoiceIcon extends StatelessWidget {
   }
 }
 
+class DeepSeekKeyboardIcon extends StatelessWidget {
+  const DeepSeekKeyboardIcon({super.key, required this.color, this.size = 24});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.square(
+      dimension: size,
+      child: CustomPaint(painter: _DeepSeekKeyboardPainter(color: color)),
+    );
+  }
+}
+
 class DeepSeekPlusIcon extends StatelessWidget {
   const DeepSeekPlusIcon({super.key, required this.color, this.size = 24});
 
@@ -231,6 +246,37 @@ class _DeepSeekVoicePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DeepSeekVoicePainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+class _DeepSeekKeyboardPainter extends CustomPainter {
+  const _DeepSeekKeyboardPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.shortestSide / 18;
+    canvas.save();
+    canvas.scale(scale, scale);
+    final dotPaint = Paint()..color = color;
+    for (final y in <double>[6.7, 10.2]) {
+      for (final x in <double>[5.5, 9, 12.5]) {
+        canvas.drawCircle(Offset(x, y), 1.05, dotPaint);
+      }
+    }
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(4.7, 13.1, 8.6, 2.2),
+        const Radius.circular(1.1),
+      ),
+      dotPaint,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _DeepSeekKeyboardPainter oldDelegate) =>
       oldDelegate.color != color;
 }
 

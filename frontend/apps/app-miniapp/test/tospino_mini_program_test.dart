@@ -1321,6 +1321,44 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Tospino 语言设置切换全局应用语言', (tester) async {
+    _usePhoneSize(tester);
+    final api = _FakeTospinoApi();
+    final themeController = BusinessThemeController();
+    addTearDown(themeController.dispose);
+    await tester.pumpWidget(
+      BusinessAppFrame(
+        title: 'test',
+        themeController: themeController,
+        home: (_) => TospinoMiniProgram(controller: _controller(api)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('tospino-tab-我的')));
+    await tester.pumpAndSettle();
+    final settingsEntry = find.byKey(const Key('tospino-profile-settings'));
+    await tester.ensureVisible(settingsEntry);
+    await tester.tap(settingsEntry);
+    await tester.pumpAndSettle();
+
+    final languageEntry = find.byKey(const Key('tospino-settings-language'));
+    await tester.ensureVisible(languageEntry);
+    await tester.tap(languageEntry);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('app-language-page')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('app-language-en')));
+    await tester.pumpAndSettle();
+
+    expect(themeController.locale, const Locale('en'));
+    expect(find.text('Language'), findsOneWidget);
+    expect(find.text('Account & security'), findsOneWidget);
+    expect(find.text('Payment settings'), findsOneWidget);
+    expect(find.text('语言设置'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Tospino 登录从底部弹出并保留关闭入口', (tester) async {
     _usePhoneSize(tester);
     final api = _FakeTospinoApi();

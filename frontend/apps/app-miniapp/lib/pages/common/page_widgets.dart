@@ -154,7 +154,8 @@ class PageListRow extends StatelessWidget {
               ),
             ],
             if (trailingText != null)
-              Flexible(
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 96),
                 child: Text(
                   trailingText!,
                   maxLines: 1,

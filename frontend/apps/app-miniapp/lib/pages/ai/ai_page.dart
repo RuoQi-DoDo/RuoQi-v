@@ -12,7 +12,6 @@ import 'package:record/record.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../localization.dart';
-import '../common/page_widgets.dart';
 import 'ai_history_drawer.dart';
 import 'ai_style.dart';
 import 'chat_history_store.dart';
@@ -21,23 +20,32 @@ import 'deepseek_settings_store.dart';
 import 'deepseek_icons.dart';
 import 'deepseek_tts_cache.dart';
 
+const _aiIconButtonStyle = ButtonStyle(
+  overlayColor: WidgetStatePropertyAll<Color?>(Colors.transparent),
+  splashFactory: NoSplash.splashFactory,
+);
+
 /// A DeepSeek-inspired AI conversation surface with local demo interactions.
 class AiPage extends StatefulWidget {
   const AiPage({
     super.key,
+    this.onBack,
     this.onOpenSettings,
     this.settingsStore,
     this.api,
     this.historyStore,
     this.ttsCache,
+    this.recordingReader,
     this.scrollController,
   });
 
+  final VoidCallback? onBack;
   final VoidCallback? onOpenSettings;
   final DeepSeekSettingsStore? settingsStore;
   final DeepSeekApi? api;
   final ChatHistoryStore? historyStore;
   final DeepSeekTtsCache? ttsCache;
+  final Future<Uint8List> Function(String path)? recordingReader;
   final ScrollController? scrollController;
 
   @override
@@ -65,6 +73,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   StreamSubscription<void>? _speechSubscription;
   File? _ttsFile;
   Timer? _responseTimer;
+  Timer? _noticeTimer;
+  OverlayEntry? _noticeEntry;
   bool _deepThinking = false;
   bool _webSearch = true;
   bool _autoRead = false;
@@ -86,6 +96,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   bool _attachmentMenuOpen = false;
   bool _messagesAtBottom = true;
   bool _messagesCanScroll = false;
+  bool _followResponseScroll = true;
   int _chatGeneration = 0;
 
   @override
@@ -107,6 +118,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   @override
   void dispose() {
     _responseTimer?.cancel();
+    _noticeTimer?.cancel();
+    _noticeEntry?.remove();
     _chatSubscription?.cancel();
     _speechSubscription?.cancel();
     _ttsFile = null;
@@ -155,8 +168,15 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   }
 
   void _newConversation() {
+    if (_messages.isEmpty && _activeConversationId == null) {
+      _showTransientNotice(
+        AppLocalizations.of(context).text('已经在新对话中', 'Already in a new chat'),
+      );
+      return;
+    }
     _responseTimer?.cancel();
     _chatSubscription?.cancel();
+    _hideTransientNotice();
     unawaited(_stopSpeech());
     _chatGeneration++;
     FocusScope.of(context).unfocus();
@@ -172,7 +192,38 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       _voiceMode = false;
       _attachmentMenuOpen = false;
       _responding = false;
+      _followResponseScroll = true;
     });
+  }
+
+  void _showTransientNotice(String message) {
+    if (!mounted) {
+      return;
+    }
+    _hideTransientNotice();
+    final overlay = Overlay.of(context, rootOverlay: true);
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => Positioned.fill(
+        child: IgnorePointer(
+          child: Center(child: _AiTransientNotice(message: message)),
+        ),
+      ),
+    );
+    overlay.insert(entry);
+    _noticeEntry = entry;
+    _noticeTimer = Timer(const Duration(milliseconds: 1600), () {
+      if (_noticeEntry == entry) {
+        _hideTransientNotice();
+      }
+    });
+  }
+
+  void _hideTransientNotice() {
+    _noticeTimer?.cancel();
+    _noticeTimer = null;
+    _noticeEntry?.remove();
+    _noticeEntry = null;
   }
 
   Future<void> _send([String? suggestion, bool addUserMessage = true]) async {
@@ -185,8 +236,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       settings = await _settingsStore.load();
     } catch (_) {
       if (mounted) {
-        showPageMessage(
-          context,
+        _showTransientNotice(
           AppLocalizations.of(context)
               .text('无法读取 DeepSeek 配置', 'Unable to read DeepSeek settings'),
         );
@@ -197,8 +247,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       return;
     }
     if (settings.apiKey.isEmpty || settings.selectedModelId.isEmpty) {
-      showPageMessage(
-        context,
+      _showTransientNotice(
         AppLocalizations.of(context).text(
           '请先在设置中配置 DeepSeek API Key 和模型',
           'Configure a DeepSeek API key and model in Settings first',
@@ -248,6 +297,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       }
       _attachmentMenuOpen = false;
       _responding = true;
+      _followResponseScroll = true;
     });
     _scrollMessagesToEnd();
 
@@ -348,7 +398,14 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
 
   void _toggleAutoRead() {
     final enabled = !_autoRead;
+    final text = AppLocalizations.of(context);
     setState(() => _autoRead = enabled);
+    _showTransientNotice(
+      text.text(
+        enabled ? '已开启自动朗读' : '已关闭自动朗读',
+        enabled ? 'Auto read on' : 'Auto read off',
+      ),
+    );
     if (!enabled) {
       unawaited(_stopSpeech());
     }
@@ -372,8 +429,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         }
         if (settings.apiKey.isEmpty) {
           setState(() => _speechLoading = false);
-          showPageMessage(
-            context,
+          _showTransientNotice(
             AppLocalizations.of(context).text(
               '请先在设置中配置 DeepSeek API Key',
               'Configure a DeepSeek API key in Settings first',
@@ -410,7 +466,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
           _speaking = false;
           _speakingText = '';
         });
-        showPageMessage(context, _chatErrorMessage(error));
+        _showTransientNotice(_chatErrorMessage(error));
       }
     } catch (_) {
       if (mounted) {
@@ -423,8 +479,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         if (!mounted) {
           return;
         }
-        showPageMessage(
-          context,
+        _showTransientNotice(
           AppLocalizations.of(context).text('语音播放失败', 'Unable to play audio'),
         );
       }
@@ -501,11 +556,20 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   Future<void> _copyMessage(String content) async {
     await Clipboard.setData(ClipboardData(text: content));
     if (mounted) {
-      showPageMessage(
-        context,
-        AppLocalizations.of(context).text('已复制回答', 'Answer copied'),
-      );
+      _showTransientNotice(AppLocalizations.of(context).text('已复制', 'Copied'));
     }
+  }
+
+  void _editMessage(_AiMessage message) {
+    if (message.role != _AiRole.user) {
+      return;
+    }
+    _setComposerText(message.content);
+    _showTransientNotice(
+      AppLocalizations.of(
+        context,
+      ).text('已载入输入框，可修改后发送', 'Loaded into the composer. Edit and send again.'),
+    );
   }
 
   void _setMessageFeedback(_AiMessage message, int feedback) {
@@ -558,6 +622,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   }
 
   void _scrollMessagesToEnd() {
+    if (_responding && !_followResponseScroll) {
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_messageScroll.hasClients) {
         return;
@@ -577,10 +644,16 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     final position = _messageScroll.position;
     final canScroll = position.maxScrollExtent > 24;
     final atBottom = position.maxScrollExtent - position.pixels <= 24;
-    if (canScroll != _messagesCanScroll || atBottom != _messagesAtBottom) {
+    final resumeFollow = atBottom && !_followResponseScroll;
+    if (canScroll != _messagesCanScroll ||
+        atBottom != _messagesAtBottom ||
+        resumeFollow) {
       setState(() {
         _messagesCanScroll = canScroll;
         _messagesAtBottom = atBottom;
+        if (resumeFollow) {
+          _followResponseScroll = true;
+        }
       });
     }
   }
@@ -589,11 +662,19 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     if (!_messageScroll.hasClients) {
       return;
     }
+    final goToBottom = !_messagesAtBottom;
+    setState(() => _followResponseScroll = goToBottom);
     _messageScroll.animateTo(
-      _messagesAtBottom ? 0 : _messageScroll.position.maxScrollExtent,
+      goToBottom ? _messageScroll.position.maxScrollExtent : 0,
       duration: const Duration(milliseconds: 360),
       curve: Curves.easeOutCubic,
     );
+  }
+
+  void _pauseResponseScroll() {
+    if (_responding && _followResponseScroll) {
+      setState(() => _followResponseScroll = false);
+    }
   }
 
   double _historyWidth(BuildContext context) =>
@@ -807,8 +888,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       }
     }
     if (mounted) {
-      showPageMessage(
-        context,
+      _showTransientNotice(
         AppLocalizations.of(context).text(
           '请先在设置中配置 DeepSeek API Key',
           'Configure a DeepSeek API key in Settings first',
@@ -863,8 +943,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       );
     } on PlatformException {
       if (mounted) {
-        showPageMessage(
-          context,
+        _showTransientNotice(
           source == ImageSource.camera
               ? AppLocalizations.of(context).text(
                   '无法打开相机，请检查相机权限',
@@ -879,8 +958,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       return;
     } on Exception {
       if (mounted) {
-        showPageMessage(
-          context,
+        _showTransientNotice(
           AppLocalizations.of(context)
               .text('图片选择失败，请重试', 'Unable to select an image. Try again.'),
         );
@@ -898,8 +976,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       );
     } on Exception {
       if (mounted) {
-        showPageMessage(
-          context,
+        _showTransientNotice(
           AppLocalizations.of(context)
               .text('图片读取失败，请重试', 'Unable to read the image. Try again.'),
         );
@@ -937,14 +1014,13 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         return;
       }
       setState(() => _attachmentFile = file);
-      showPageMessage(
-        context,
+      _showTransientNotice(
         AppLocalizations.of(context)
             .text('${file.filename} 已上传', '${file.filename} uploaded'),
       );
     } on DeepSeekApiException catch (error) {
       if (mounted) {
-        showPageMessage(context, _chatErrorMessage(error));
+        _showTransientNotice(_chatErrorMessage(error));
       }
     }
   }
@@ -1021,15 +1097,13 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                     fileId: file.id,
                                   );
                                   if (context.mounted) {
-                                    showPageMessage(
-                                      context,
+                                    _showTransientNotice(
                                       '${detail.filename} · ${detail.id}',
                                     );
                                   }
                                 } on DeepSeekApiException catch (error) {
                                   if (context.mounted) {
-                                    showPageMessage(
-                                      context,
+                                    _showTransientNotice(
                                       _chatErrorMessage(error),
                                     );
                                   }
@@ -1050,8 +1124,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                     setSheetState(() => files.remove(file));
                                   } on DeepSeekApiException catch (error) {
                                     if (context.mounted) {
-                                      showPageMessage(
-                                        context,
+                                      _showTransientNotice(
                                         _chatErrorMessage(error),
                                       );
                                     }
@@ -1070,7 +1143,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       );
     } on DeepSeekApiException catch (error) {
       if (mounted) {
-        showPageMessage(context, _chatErrorMessage(error));
+        _showTransientNotice(_chatErrorMessage(error));
       }
     }
   }
@@ -1115,8 +1188,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
             ).text('该文件未识别到可展示的文字。', 'No readable text was found in this file.')
           : recognized;
       _appendOcrConversation(filename: picked.name, output: output);
-      showPageMessage(
-        context,
+      _showTransientNotice(
         AppLocalizations.of(context).text(
           '已识别 ${result.pageCount} 页',
           'Recognized ${result.pageCount} pages',
@@ -1124,7 +1196,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       );
     } on DeepSeekApiException catch (error) {
       if (mounted) {
-        showPageMessage(context, _chatErrorMessage(error));
+        _showTransientNotice(_chatErrorMessage(error));
       }
     }
   }
@@ -1200,7 +1272,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       );
     } on DeepSeekApiException catch (error) {
       if (mounted) {
-        showPageMessage(context, _chatErrorMessage(error));
+        _showTransientNotice(_chatErrorMessage(error));
       }
     }
   }
@@ -1222,7 +1294,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       _setComposerText('# ${page.title}\n\n${page.content}');
     } on DeepSeekApiException catch (error) {
       if (mounted) {
-        showPageMessage(context, _chatErrorMessage(error));
+        _showTransientNotice(_chatErrorMessage(error));
       }
     }
   }
@@ -1339,8 +1411,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         final permission = await _recorder.hasPermission();
         if (!permission) {
           if (mounted) {
-            showPageMessage(
-              context,
+            _showTransientNotice(
               AppLocalizations.of(context)
                   .text('请允许使用麦克风', 'Microphone permission is required'),
             );
@@ -1372,13 +1443,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     } on DeepSeekApiException catch (error) {
       if (mounted) {
         setState(() => _recording = false);
-        showPageMessage(context, _chatErrorMessage(error));
+        _showTransientNotice(_chatErrorMessage(error));
       }
     } catch (_) {
       if (mounted) {
         setState(() => _recording = false);
-        showPageMessage(
-          context,
+        _showTransientNotice(
           AppLocalizations.of(context)
               .text('录音或语音识别失败', 'Recording or speech recognition failed'),
         );
@@ -1407,26 +1477,35 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       if (path == null) {
         return;
       }
-      final bytes = await File(path).readAsBytes();
+      final bytes =
+          await (widget.recordingReader?.call(path) ??
+              File(path).readAsBytes());
       final result = await _api.speechToText(
         apiKey: settings.apiKey,
         filename: 'voice.wav',
         bytes: bytes,
       );
-      if (mounted) {
-        setState(() => _voiceMode = false);
-        _setComposerText(result.text, focus: false);
+      if (!mounted) {
+        return;
       }
+      setState(() => _voiceMode = false);
+      final transcript = result.text.trim();
+      if (transcript.isEmpty) {
+        _showTransientNotice(
+          AppLocalizations.of(context).text('未识别到语音内容', 'No speech detected'),
+        );
+        return;
+      }
+      await _send(transcript);
     } on DeepSeekApiException catch (error) {
       if (mounted) {
         setState(() => _recording = false);
-        showPageMessage(context, _chatErrorMessage(error));
+        _showTransientNotice(_chatErrorMessage(error));
       }
     } catch (_) {
       if (mounted) {
         setState(() => _recording = false);
-        showPageMessage(
-          context,
+        _showTransientNotice(
           AppLocalizations.of(context)
               .text('录音或语音识别失败', 'Recording or speech recognition failed'),
         );
@@ -1506,6 +1585,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                 child: Column(
                                   children: [
                                     _AiHeader(
+                                      onBack: widget.onBack,
                                       onHistory: _showHistory,
                                       onNewConversation: _newConversation,
                                       title: _conversationTitle,
@@ -1548,8 +1628,11 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                                               message.content,
                                                             ),
                                                           ),
+                                                      onEdit: _editMessage,
                                                       onFeedback:
                                                           _setMessageFeedback,
+                                                      onPauseAutoScroll:
+                                                          _pauseResponseScroll,
                                                       onSpeak: (message) =>
                                                           unawaited(
                                                             _toggleSpeech(
@@ -1701,6 +1784,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
 
 class _AiHeader extends StatelessWidget {
   const _AiHeader({
+    required this.onBack,
     required this.onHistory,
     required this.onNewConversation,
     required this.title,
@@ -1708,6 +1792,7 @@ class _AiHeader extends StatelessWidget {
     required this.onToggleAutoRead,
   });
 
+  final VoidCallback? onBack;
   final VoidCallback onHistory;
   final VoidCallback onNewConversation;
   final String title;
@@ -1746,11 +1831,29 @@ class _AiHeader extends StatelessWidget {
             ),
             Align(
               alignment: Alignment.centerLeft,
-              child: IconButton(
-                key: const Key('ai-history'),
-                tooltip: text.text('对话记录', 'Chat history'),
-                onPressed: onHistory,
-                icon: _TwoLineMenuIcon(color: AiColors.text(context)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (onBack != null)
+                    IconButton(
+                      key: const Key('ai-back'),
+                      style: _aiIconButtonStyle,
+                      tooltip: text.text('返回聊天', 'Back to chat'),
+                      onPressed: onBack,
+                      icon: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: AiColors.text(context),
+                        size: 20,
+                      ),
+                    ),
+                  IconButton(
+                    key: const Key('ai-history'),
+                    style: _aiIconButtonStyle,
+                    tooltip: text.text('对话记录', 'Chat history'),
+                    onPressed: onHistory,
+                    icon: _TwoLineMenuIcon(color: AiColors.text(context)),
+                  ),
+                ],
               ),
             ),
             Align(
@@ -1760,6 +1863,7 @@ class _AiHeader extends StatelessWidget {
                 children: [
                   IconButton(
                     key: const Key('ai-auto-read'),
+                    style: _aiIconButtonStyle,
                     tooltip: text.text('自动朗读', 'Auto read'),
                     onPressed: onToggleAutoRead,
                     icon: DeepSeekAutoReadIcon(
@@ -1767,11 +1871,12 @@ class _AiHeader extends StatelessWidget {
                           ? AiColors.accent(context)
                           : AiColors.text(context),
                       muted: !autoRead,
-                      size: 25,
+                      size: 27,
                     ),
                   ),
                   IconButton(
                     key: const Key('ai-new-conversation'),
+                    style: _aiIconButtonStyle,
                     tooltip: text.text('新对话', 'New chat'),
                     onPressed: onNewConversation,
                     icon: DeepSeekNewChatIcon(
@@ -1870,6 +1975,50 @@ class _AiWelcome extends StatelessWidget {
   }
 }
 
+class _AiTransientNotice extends StatelessWidget {
+  const _AiTransientNotice({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.92, end: 1),
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) => Opacity(
+        opacity: value,
+        child: Transform.scale(scale: value, child: child),
+      ),
+      child: Container(
+        key: const Key('ai-transient-notice'),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xE64A4A4A),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33000000),
+              blurRadius: 18,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            height: 1.2,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.15,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _AiConversation extends StatelessWidget {
   const _AiConversation({
     super.key,
@@ -1879,7 +2028,9 @@ class _AiConversation extends StatelessWidget {
     required this.speakingText,
     required this.speechLoading,
     required this.onCopy,
+    required this.onEdit,
     required this.onFeedback,
+    required this.onPauseAutoScroll,
     required this.onSpeak,
     required this.onShare,
     required this.onRegenerate,
@@ -1891,7 +2042,9 @@ class _AiConversation extends StatelessWidget {
   final String speakingText;
   final bool speechLoading;
   final ValueChanged<_AiMessage> onCopy;
+  final ValueChanged<_AiMessage> onEdit;
   final void Function(_AiMessage message, int feedback) onFeedback;
+  final VoidCallback onPauseAutoScroll;
   final ValueChanged<_AiMessage> onSpeak;
   final ValueChanged<_AiMessage> onShare;
   final ValueChanged<_AiMessage> onRegenerate;
@@ -1922,7 +2075,9 @@ class _AiConversation extends StatelessWidget {
               message.content.isNotEmpty &&
               !streaming,
           onCopy: () => onCopy(message),
+          onEdit: () => onEdit(message),
           onFeedback: (feedback) => onFeedback(message, feedback),
+          onPauseAutoScroll: onPauseAutoScroll,
           onSpeak: () => onSpeak(message),
           speaking: message.content == speakingText && speakingText.isNotEmpty,
           speechLoading:
@@ -1942,7 +2097,9 @@ class _AiMessageBubble extends StatelessWidget {
     required this.message,
     required this.showActions,
     required this.onCopy,
+    required this.onEdit,
     required this.onFeedback,
+    required this.onPauseAutoScroll,
     required this.onSpeak,
     required this.speaking,
     required this.speechLoading,
@@ -1953,7 +2110,9 @@ class _AiMessageBubble extends StatelessWidget {
   final _AiMessage message;
   final bool showActions;
   final VoidCallback onCopy;
+  final VoidCallback onEdit;
   final ValueChanged<int> onFeedback;
+  final VoidCallback onPauseAutoScroll;
   final VoidCallback onSpeak;
   final bool speaking;
   final bool speechLoading;
@@ -1978,13 +2137,18 @@ class _AiMessageBubble extends StatelessWidget {
               color: AiColors.softSurface(context),
               borderRadius: BorderRadius.circular(24),
             ),
-            child: SelectableText(
-              message.content,
-              style: TextStyle(
-                color: AiColors.text(context),
-                fontSize: 18.5,
-                height: 1.55,
-                letterSpacing: -0.15,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onLongPressStart: (details) =>
+                  unawaited(_showMessageMenu(context, details.globalPosition)),
+              child: Text(
+                message.content,
+                style: TextStyle(
+                  color: AiColors.text(context),
+                  fontSize: 18.5,
+                  height: 1.55,
+                  letterSpacing: -0.15,
+                ),
               ),
             ),
           ),
@@ -2013,40 +2177,45 @@ class _AiMessageBubble extends StatelessWidget {
               ),
               const SizedBox(height: 10),
             ],
-            MarkdownBody(
-              data: message.content,
-              selectable: true,
-              styleSheet: MarkdownStyleSheet(
-                p: TextStyle(
-                  color: AiColors.text(context),
-                  fontSize: 18.5,
-                  height: 1.72,
-                  letterSpacing: -0.08,
+            GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onLongPressStart: (details) =>
+                  unawaited(_showMessageMenu(context, details.globalPosition)),
+              child: MarkdownBody(
+                data: message.content,
+                selectable: false,
+                styleSheet: MarkdownStyleSheet(
+                  p: TextStyle(
+                    color: AiColors.text(context),
+                    fontSize: 18.5,
+                    height: 1.72,
+                    letterSpacing: -0.08,
+                  ),
+                  h1: TextStyle(
+                    color: AiColors.text(context),
+                    fontSize: 23,
+                    height: 1.45,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  h2: TextStyle(
+                    color: AiColors.text(context),
+                    fontSize: 20.5,
+                    height: 1.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  h3: TextStyle(
+                    color: AiColors.text(context),
+                    fontSize: 19,
+                    height: 1.55,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  listBullet: TextStyle(
+                    color: AiColors.text(context),
+                    fontSize: 18.5,
+                    height: 1.65,
+                  ),
+                  blockSpacing: 12,
                 ),
-                h1: TextStyle(
-                  color: AiColors.text(context),
-                  fontSize: 23,
-                  height: 1.45,
-                  fontWeight: FontWeight.w700,
-                ),
-                h2: TextStyle(
-                  color: AiColors.text(context),
-                  fontSize: 20.5,
-                  height: 1.5,
-                  fontWeight: FontWeight.w700,
-                ),
-                h3: TextStyle(
-                  color: AiColors.text(context),
-                  fontSize: 19,
-                  height: 1.55,
-                  fontWeight: FontWeight.w600,
-                ),
-                listBullet: TextStyle(
-                  color: AiColors.text(context),
-                  fontSize: 18.5,
-                  height: 1.65,
-                ),
-                blockSpacing: 12,
               ),
             ),
             if (showActions) ...[
@@ -2067,6 +2236,195 @@ class _AiMessageBubble extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _showMessageMenu(
+    BuildContext context,
+    Offset globalPosition,
+  ) async {
+    onPauseAutoScroll();
+    final fromUser = message.role == _AiRole.user;
+    final text = AppLocalizations.of(context);
+    final overlayBox =
+        Overlay.of(context, rootOverlay: true).context.findRenderObject()
+            as RenderBox;
+    final localPosition = overlayBox.globalToLocal(globalPosition);
+    final position = RelativeRect.fromLTRB(
+      localPosition.dx,
+      localPosition.dy,
+      overlayBox.size.width - localPosition.dx,
+      overlayBox.size.height - localPosition.dy,
+    );
+
+    PopupMenuItem<_AiMessageMenuAction> item(
+      _AiMessageMenuAction value,
+      IconData icon,
+      String label,
+    ) {
+      return PopupMenuItem<_AiMessageMenuAction>(
+        value: value,
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 19),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14.5,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final divider = const PopupMenuDivider(
+      height: 1,
+      thickness: 1,
+      color: Color(0xFF3C3C3C),
+    );
+    final items = fromUser
+        ? <PopupMenuEntry<_AiMessageMenuAction>>[
+            item(
+              _AiMessageMenuAction.copy,
+              Icons.content_copy_rounded,
+              text.text('复制', 'Copy'),
+            ),
+            item(
+              _AiMessageMenuAction.selectText,
+              Icons.text_fields_rounded,
+              text.text('选择文本', 'Select text'),
+            ),
+            divider,
+            item(
+              _AiMessageMenuAction.edit,
+              Icons.edit_outlined,
+              text.text('修改', 'Edit'),
+            ),
+            item(
+              _AiMessageMenuAction.share,
+              Icons.forward_outlined,
+              text.text('分享', 'Share'),
+            ),
+          ]
+        : <PopupMenuEntry<_AiMessageMenuAction>>[
+            item(
+              _AiMessageMenuAction.copy,
+              Icons.content_copy_rounded,
+              text.text('复制', 'Copy'),
+            ),
+            item(
+              _AiMessageMenuAction.selectText,
+              Icons.text_fields_rounded,
+              text.text('选择文本', 'Select text'),
+            ),
+            divider,
+            item(
+              _AiMessageMenuAction.regenerate,
+              Icons.refresh_rounded,
+              text.text('重新生成', 'Regenerate'),
+            ),
+            item(
+              _AiMessageMenuAction.like,
+              Icons.thumb_up_alt_outlined,
+              text.text('喜欢', 'Like'),
+            ),
+            item(
+              _AiMessageMenuAction.dislike,
+              Icons.thumb_down_alt_outlined,
+              text.text('不喜欢', 'Dislike'),
+            ),
+            divider,
+            item(
+              _AiMessageMenuAction.read,
+              Icons.volume_up_outlined,
+              text.text('朗读', 'Read aloud'),
+            ),
+            item(
+              _AiMessageMenuAction.share,
+              Icons.forward_outlined,
+              text.text('分享', 'Share'),
+            ),
+          ];
+
+    final action = await showMenu<_AiMessageMenuAction>(
+      context: context,
+      useRootNavigator: true,
+      position: position,
+      items: items,
+      color: const Color(0xFF2A2A2A),
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.black54,
+      elevation: 12,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      constraints: BoxConstraints(
+        minWidth: fromUser ? 194 : 224,
+        maxWidth: 280,
+      ),
+      menuPadding: const EdgeInsets.symmetric(vertical: 4),
+    );
+    if (!context.mounted || action == null) {
+      return;
+    }
+    switch (action) {
+      case _AiMessageMenuAction.copy:
+        onCopy();
+      case _AiMessageMenuAction.selectText:
+        await _showSelectableText(context);
+      case _AiMessageMenuAction.edit:
+        onEdit();
+      case _AiMessageMenuAction.share:
+        onShare();
+      case _AiMessageMenuAction.regenerate:
+        onRegenerate();
+      case _AiMessageMenuAction.like:
+        onFeedback(1);
+      case _AiMessageMenuAction.dislike:
+        onFeedback(-1);
+      case _AiMessageMenuAction.read:
+        onSpeak();
+    }
+  }
+
+  Future<void> _showSelectableText(BuildContext context) {
+    final text = AppLocalizations.of(context);
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(text.text('选择文本', 'Select text')),
+        content: SingleChildScrollView(
+          child: SelectableText(
+            message.content,
+            style: TextStyle(
+              color: AiColors.text(dialogContext),
+              fontSize: 17,
+              height: 1.6,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(text.text('关闭', 'Close')),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+enum _AiMessageMenuAction {
+  copy,
+  selectText,
+  edit,
+  share,
+  regenerate,
+  like,
+  dislike,
+  read,
 }
 
 class _AiModeTag extends StatelessWidget {
@@ -2126,54 +2484,61 @@ class _AnswerActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = AppLocalizations.of(context);
-    return Row(
+    return SizedBox(
       key: const Key('ai-answer-actions'),
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _AnswerActionButton(
-          tooltip: text.text('复制', 'Copy'),
-          onPressed: onCopy,
-          icon: Icons.content_copy_rounded,
-        ),
-        _AnswerActionButton(
-          tooltip: text.text('有帮助', 'Helpful'),
-          onPressed: () => onFeedback(1),
-          icon: feedback == 1
-              ? Icons.thumb_up_alt_rounded
-              : Icons.thumb_up_alt_outlined,
-          selected: feedback == 1,
-        ),
-        _AnswerActionButton(
-          tooltip: text.text('没有帮助', 'Not helpful'),
-          onPressed: () => onFeedback(-1),
-          icon: feedback == -1
-              ? Icons.thumb_down_alt_rounded
-              : Icons.thumb_down_alt_outlined,
-          selected: feedback == -1,
-        ),
-        _AnswerActionButton(
-          tooltip: speaking || speechLoading
-              ? text.text('停止朗读', 'Stop reading')
-              : text.text('朗读', 'Read aloud'),
-          onPressed: onSpeak,
-          icon: speechLoading
-              ? Icons.hourglass_top_rounded
-              : speaking
-              ? Icons.stop_circle_outlined
-              : Icons.volume_up_outlined,
-          selected: speaking || speechLoading,
-        ),
-        _AnswerActionButton(
-          tooltip: text.text('分享', 'Share'),
-          onPressed: onShare,
-          icon: Icons.ios_share_rounded,
-        ),
-        _AnswerActionButton(
-          tooltip: text.text('重新生成', 'Regenerate'),
-          onPressed: onRegenerate,
-          icon: Icons.refresh_rounded,
-        ),
-      ],
+      height: 34,
+      child: Row(
+        children: [
+          _AnswerActionButton(
+            tooltip: text.text('复制', 'Copy'),
+            onPressed: onCopy,
+            icon: Icons.content_copy_rounded,
+          ),
+          const SizedBox(width: 4),
+          _AnswerActionButton(
+            tooltip: text.text('有帮助', 'Helpful'),
+            onPressed: () => onFeedback(1),
+            icon: feedback == 1
+                ? Icons.thumb_up_alt_rounded
+                : Icons.thumb_up_alt_outlined,
+            selected: feedback == 1,
+          ),
+          const SizedBox(width: 4),
+          _AnswerActionButton(
+            tooltip: text.text('没有帮助', 'Not helpful'),
+            onPressed: () => onFeedback(-1),
+            icon: feedback == -1
+                ? Icons.thumb_down_alt_rounded
+                : Icons.thumb_down_alt_outlined,
+            selected: feedback == -1,
+          ),
+          const SizedBox(width: 4),
+          _AnswerActionButton(
+            tooltip: speaking || speechLoading
+                ? text.text('停止朗读', 'Stop reading')
+                : text.text('朗读', 'Read aloud'),
+            onPressed: onSpeak,
+            icon: speechLoading
+                ? Icons.hourglass_top_rounded
+                : speaking
+                ? Icons.stop_circle_outlined
+                : Icons.volume_up_outlined,
+            selected: speaking || speechLoading,
+          ),
+          const SizedBox(width: 4),
+          _AnswerActionButton(
+            tooltip: text.text('分享', 'Share'),
+            onPressed: onShare,
+            icon: Icons.forward_outlined,
+          ),
+          const Spacer(),
+          _AnswerActionButton(
+            tooltip: text.text('重新生成', 'Regenerate'),
+            onPressed: onRegenerate,
+            icon: Icons.refresh_rounded,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -2196,13 +2561,14 @@ class _AnswerActionButton extends StatelessWidget {
     return IconButton(
       tooltip: tooltip,
       onPressed: onPressed,
-      constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+      style: _aiIconButtonStyle,
+      constraints: const BoxConstraints.tightFor(width: 34, height: 34),
       padding: EdgeInsets.zero,
       visualDensity: VisualDensity.compact,
       icon: Icon(
         icon,
         size: 20,
-        color: selected ? AiColors.accent(context) : AiColors.muted(context),
+        color: selected ? AiColors.text(context) : AiColors.muted(context),
       ),
     );
   }
@@ -2261,10 +2627,12 @@ class _AiTypingIndicator extends StatelessWidget {
               gradient: AiColors.brandGradient(context),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.auto_awesome_rounded,
-              color: AiColors.onAccent(context),
-              size: 16,
+            child: Center(
+              child: AiBrandMark(
+                key: const Key('ai-typing-logo'),
+                size: 16,
+                color: AiColors.onAccent(context),
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -2457,25 +2825,19 @@ class _AiComposer extends StatelessWidget {
                                   children: [
                                     if (voiceMode)
                                       Positioned.fill(
-                                        child: Container(
+                                        child: SizedBox.expand(
                                           key: const Key(
                                             'ai-voice-hold-button',
                                           ),
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            color: AiColors.softSurface(
-                                              context,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              13,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            text.text('按住说话', 'Hold to talk'),
-                                            style: TextStyle(
-                                              color: AiColors.text(context),
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.w600,
+                                          child: Center(
+                                            child: Text(
+                                              text.text('按住说话', 'Hold to talk'),
+                                              style: TextStyle(
+                                                color: AiColors.text(context),
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w600,
+                                                letterSpacing: -0.15,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -2527,7 +2889,24 @@ class _AiComposer extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 5),
+                              if (voiceMode)
+                                Container(
+                                  key: const Key('ai-voice-mode-divider'),
+                                  height: 1,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.transparent,
+                                        AiColors.border(context),
+                                        AiColors.border(context),
+                                        Colors.transparent,
+                                      ],
+                                      stops: const [0, 0.12, 0.88, 1],
+                                    ),
+                                  ),
+                                ),
+                              SizedBox(height: voiceMode ? 7 : 4),
                               Row(
                                 children: [
                                   Expanded(
@@ -2608,10 +2987,12 @@ class _AiComposer extends StatelessWidget {
                                         'Switch to keyboard',
                                       ),
                                       onPressed: onVoice,
-                                      icon: Icon(
-                                        Icons.keyboard_alt_outlined,
+                                      icon: DeepSeekKeyboardIcon(
+                                        key: const Key(
+                                          'ai-voice-keyboard-icon',
+                                        ),
                                         color: AiColors.text(context),
-                                        size: 23,
+                                        size: 18,
                                       ),
                                     )
                                   else if (controller.text.trim().isEmpty)
@@ -2977,6 +3358,8 @@ class _AiModeChip extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         child: SizedBox(
           height: 34,
           child: Padding(
@@ -3025,27 +3408,21 @@ class _AiRoundAction extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       triggerMode: tooltipTriggerMode,
-      child: Material(
-        color: Colors.transparent,
-        child: InkResponse(
-          onTap: onPressed,
-          radius: 22,
-          child: SizedBox.square(
-            dimension: 44,
-            child: Center(
-              child: Container(
-                width: 27,
-                height: 27,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AiColors.text(context),
-                    width: 1.35,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: icon,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onPressed,
+        child: SizedBox.square(
+          dimension: 44,
+          child: Center(
+            child: Container(
+              width: 27,
+              height: 27,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AiColors.text(context), width: 1.35),
               ),
+              alignment: Alignment.center,
+              child: icon,
             ),
           ),
         ),
