@@ -151,6 +151,7 @@ class PageTransientNotice extends StatelessWidget {
               height: 1.35,
               fontWeight: FontWeight.w600,
               letterSpacing: -0.15,
+              decoration: TextDecoration.none,
             ),
           ),
         ),

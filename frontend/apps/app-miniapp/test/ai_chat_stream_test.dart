@@ -478,6 +478,10 @@ void main() {
             as BoxDecoration;
     expect(decoration.color, const Color(0xFF4A4A4A));
     expect(decoration.borderRadius, BorderRadius.circular(18));
+    final noticeText = tester.widget<Text>(
+      find.descendant(of: notice, matching: find.text('已开启自动朗读')),
+    );
+    expect(noticeText.style?.decoration, TextDecoration.none);
 
     await tester.pump(const Duration(milliseconds: 1600));
     expect(find.byKey(const Key('ai-transient-notice')), findsNothing);
