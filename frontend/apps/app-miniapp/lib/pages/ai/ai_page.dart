@@ -662,11 +662,11 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   }
 
   void _scrollMessagesToEnd() {
-    if (_responding && !_followResponseScroll) {
+    if (!_followResponseScroll) {
       return;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_messageScroll.hasClients) {
+      if (!mounted || !_followResponseScroll || !_messageScroll.hasClients) {
         return;
       }
       _messageScroll.animateTo(
@@ -684,13 +684,22 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     final position = _messageScroll.position;
     final canScroll = position.maxScrollExtent > 24;
     final atBottom = position.maxScrollExtent - position.pixels <= 24;
+    final userScrolledAway =
+        _responding &&
+        _followResponseScroll &&
+        !atBottom &&
+        position.userScrollDirection != ScrollDirection.idle;
     final resumeFollow = atBottom && !_followResponseScroll;
     if (canScroll != _messagesCanScroll ||
         atBottom != _messagesAtBottom ||
+        userScrolledAway ||
         resumeFollow) {
       setState(() {
         _messagesCanScroll = canScroll;
         _messagesAtBottom = atBottom;
+        if (userScrolledAway) {
+          _followResponseScroll = false;
+        }
         if (resumeFollow) {
           _followResponseScroll = true;
         }
@@ -712,7 +721,14 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   }
 
   void _pauseResponseScroll() {
-    if (_responding && _followResponseScroll) {
+    if (!_responding) {
+      return;
+    }
+    if (_messageScroll.hasClients) {
+      final position = _messageScroll.position;
+      position.jumpTo(position.pixels);
+    }
+    if (_followResponseScroll) {
       setState(() => _followResponseScroll = false);
     }
   }
@@ -801,6 +817,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       _deepThinking = lastAssistant.deepThinking;
       _webSearch = lastAssistant.webSearch;
       _responding = false;
+      _followResponseScroll = true;
     });
     _scrollMessagesToEnd();
   }
@@ -1263,6 +1280,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
           _AiMessage.user(text.text('识别文件：$filename', 'OCR file: $filename')),
         )
         ..add(_AiMessage.assistant(output));
+      _followResponseScroll = true;
     });
     _scrollMessagesToEnd();
     unawaited(_saveCurrentConversation());
@@ -1624,130 +1642,136 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                             child: Scaffold(
                               key: const Key('ai-page'),
                               backgroundColor: AiColors.background(context),
-                              body: SafeArea(
-                                bottom: false,
-                                child: Column(
-                                  children: [
-                                    _AiHeader(
-                                      onBack: _handleHeaderBack,
-                                      onHistory: _showHistory,
-                                      onNewConversation: _newConversation,
-                                      title: _conversationTitle,
-                                      autoRead: _autoRead,
-                                      onToggleAutoRead: _toggleAutoRead,
-                                    ),
-                                    Expanded(
-                                      child: Stack(
-                                        children: [
-                                          Positioned.fill(
-                                            child: AnimatedSwitcher(
-                                              duration: const Duration(
-                                                milliseconds: 220,
-                                              ),
-                                              switchInCurve:
-                                                  Curves.easeOutCubic,
-                                              switchOutCurve:
-                                                  Curves.easeInCubic,
-                                              child: _messages.isEmpty
-                                                  ? const _AiWelcome(
-                                                      key: ValueKey(
-                                                        'ai-welcome',
+                              body: Listener(
+                                behavior: HitTestBehavior.translucent,
+                                onPointerDown: (_) => _pauseResponseScroll(),
+                                child: SafeArea(
+                                  bottom: false,
+                                  child: Column(
+                                    children: [
+                                      _AiHeader(
+                                        onBack: _handleHeaderBack,
+                                        onHistory: _showHistory,
+                                        onNewConversation: _newConversation,
+                                        title: _conversationTitle,
+                                        autoRead: _autoRead,
+                                        onToggleAutoRead: _toggleAutoRead,
+                                      ),
+                                      Expanded(
+                                        child: Stack(
+                                          children: [
+                                            Positioned.fill(
+                                              child: AnimatedSwitcher(
+                                                duration: const Duration(
+                                                  milliseconds: 220,
+                                                ),
+                                                switchInCurve:
+                                                    Curves.easeOutCubic,
+                                                switchOutCurve:
+                                                    Curves.easeInCubic,
+                                                child: _messages.isEmpty
+                                                    ? const _AiWelcome(
+                                                        key: ValueKey(
+                                                          'ai-welcome',
+                                                        ),
+                                                      )
+                                                    : _AiConversation(
+                                                        key: const ValueKey(
+                                                          'ai-conversation',
+                                                        ),
+                                                        messages: _messages,
+                                                        responding: _responding,
+                                                        scrollController:
+                                                            _messageScroll,
+                                                        speakingText:
+                                                            _speakingText,
+                                                        speechLoading:
+                                                            _speechLoading,
+                                                        textSelectionController:
+                                                            widget
+                                                                .textSelectionController,
+                                                        onCopy: (message) =>
+                                                            unawaited(
+                                                              _copyMessage(
+                                                                message.content,
+                                                              ),
+                                                            ),
+                                                        onEdit: _editMessage,
+                                                        onFeedback:
+                                                            _setMessageFeedback,
+                                                        onPauseAutoScroll:
+                                                            _pauseResponseScroll,
+                                                        onSpeak: (message) =>
+                                                            unawaited(
+                                                              _toggleSpeech(
+                                                                message.content,
+                                                              ),
+                                                            ),
+                                                        onShare: (message) =>
+                                                            unawaited(
+                                                              _shareMessage(
+                                                                message.content,
+                                                              ),
+                                                            ),
+                                                        onRegenerate:
+                                                            _regenerateMessage,
                                                       ),
-                                                    )
-                                                  : _AiConversation(
-                                                      key: const ValueKey(
-                                                        'ai-conversation',
-                                                      ),
-                                                      messages: _messages,
-                                                      responding: _responding,
-                                                      scrollController:
-                                                          _messageScroll,
-                                                      speakingText:
-                                                          _speakingText,
-                                                      speechLoading:
-                                                          _speechLoading,
-                                                      textSelectionController:
-                                                          widget
-                                                              .textSelectionController,
-                                                      onCopy: (message) =>
-                                                          unawaited(
-                                                            _copyMessage(
-                                                              message.content,
-                                                            ),
-                                                          ),
-                                                      onEdit: _editMessage,
-                                                      onFeedback:
-                                                          _setMessageFeedback,
-                                                      onPauseAutoScroll:
-                                                          _pauseResponseScroll,
-                                                      onSpeak: (message) =>
-                                                          unawaited(
-                                                            _toggleSpeech(
-                                                              message.content,
-                                                            ),
-                                                          ),
-                                                      onShare: (message) =>
-                                                          unawaited(
-                                                            _shareMessage(
-                                                              message.content,
-                                                            ),
-                                                          ),
-                                                      onRegenerate:
-                                                          _regenerateMessage,
-                                                    ),
-                                            ),
-                                          ),
-                                          if (_messages.isNotEmpty &&
-                                              _messagesCanScroll)
-                                            Positioned(
-                                              right: 18,
-                                              bottom: 10,
-                                              child: _MessageScrollButton(
-                                                atBottom: _messagesAtBottom,
-                                                onPressed:
-                                                    _toggleMessageScrollEdge,
                                               ),
                                             ),
-                                        ],
+                                            if (_messages.isNotEmpty &&
+                                                _messagesCanScroll)
+                                              Positioned(
+                                                right: 18,
+                                                bottom: 10,
+                                                child: _MessageScrollButton(
+                                                  atBottom: _messagesAtBottom,
+                                                  onPressed:
+                                                      _toggleMessageScrollEdge,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    _AiComposer(
-                                      controller: _composer,
-                                      focusNode: _composerFocus,
-                                      focused: _composerFocused,
-                                      canSend:
-                                          _composer.text.trim().isNotEmpty &&
-                                          !_responding,
-                                      responding: _responding,
-                                      deepThinking: _deepThinking,
-                                      webSearch: _webSearch,
-                                      onToggleDeepThinking: () => setState(
-                                        () => _deepThinking = !_deepThinking,
+                                      _AiComposer(
+                                        controller: _composer,
+                                        focusNode: _composerFocus,
+                                        focused: _composerFocused,
+                                        canSend:
+                                            _composer.text.trim().isNotEmpty &&
+                                            !_responding,
+                                        responding: _responding,
+                                        deepThinking: _deepThinking,
+                                        webSearch: _webSearch,
+                                        onToggleDeepThinking: () => setState(
+                                          () => _deepThinking = !_deepThinking,
+                                        ),
+                                        onToggleWebSearch: () => setState(
+                                          () => _webSearch = !_webSearch,
+                                        ),
+                                        attachmentMenuOpen: _attachmentMenuOpen,
+                                        onAttachment: _toggleAttachmentMenu,
+                                        onAttachmentAction: (action) =>
+                                            unawaited(
+                                              _handleAttachmentAction(action),
+                                            ),
+                                        onVoice: _showVoiceMessage,
+                                        attachmentName:
+                                            _attachmentFile?.filename,
+                                        onRemoveAttachment: () => setState(
+                                          () => _attachmentFile = null,
+                                        ),
+                                        voiceActive:
+                                            _recording || _holdToTalkActive,
+                                        voiceMode: _voiceMode,
+                                        onRequestFocus: _requestComposerFocus,
+                                        onHoldToTalkStart: _beginHoldToTalk,
+                                        onHoldToTalkMove: _moveHoldToTalk,
+                                        onHoldToTalkEnd: _endHoldToTalk,
+                                        recordingWillCancel: _holdToTalkCancel,
+                                        onSend: () => unawaited(_send()),
                                       ),
-                                      onToggleWebSearch: () => setState(
-                                        () => _webSearch = !_webSearch,
-                                      ),
-                                      attachmentMenuOpen: _attachmentMenuOpen,
-                                      onAttachment: _toggleAttachmentMenu,
-                                      onAttachmentAction: (action) => unawaited(
-                                        _handleAttachmentAction(action),
-                                      ),
-                                      onVoice: _showVoiceMessage,
-                                      attachmentName: _attachmentFile?.filename,
-                                      onRemoveAttachment: () => setState(
-                                        () => _attachmentFile = null,
-                                      ),
-                                      voiceActive:
-                                          _recording || _holdToTalkActive,
-                                      voiceMode: _voiceMode,
-                                      onRequestFocus: _requestComposerFocus,
-                                      onHoldToTalkStart: _beginHoldToTalk,
-                                      onHoldToTalkMove: _moveHoldToTalk,
-                                      onHoldToTalkEnd: _endHoldToTalk,
-                                      recordingWillCancel: _holdToTalkCancel,
-                                      onSend: () => unawaited(_send()),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
