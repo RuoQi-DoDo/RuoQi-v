@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:ruoqi_app_miniapp/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ruoqi_app_miniapp/miniapp/tospino/api/tospino_api.dart';
@@ -1698,14 +1699,14 @@ void main() {
     final context = tester.element(find.byKey(const Key('tospino-home-page')));
     final theme = Theme.of(context);
     expect(theme.brightness, Brightness.dark);
-    expect(theme.scaffoldBackgroundColor, const Color(0xFF0B0C0F));
+    expect(theme.scaffoldBackgroundColor, MiniAppDarkColors.background);
     expect(
       TospinoColors.resolve(context, TospinoColors.surface),
-      const Color(0xFF141518),
+      MiniAppDarkColors.surface,
     );
     expect(
       TospinoColors.resolve(context, TospinoColors.imagePlaceholder),
-      const Color(0xFF1C1E23),
+      MiniAppDarkColors.surfaceHigh,
     );
     expect(tester.takeException(), isNull);
   });

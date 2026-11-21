@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:common/common.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:record/record.dart';
+import 'package:ruoqi_app_miniapp/app_theme.dart';
 import 'package:ruoqi_app_miniapp/appearance.dart';
 import 'package:ruoqi_app_miniapp/localization.dart';
 import 'package:ruoqi_app_miniapp/pages/ai/ai_page.dart';
@@ -275,7 +275,7 @@ class _VoiceRecordPlatform extends RecordPlatform {
 
 void main() {
   testWidgets('AI 页面沿用主应用主题的强调色与表面色', (tester) async {
-    final hostTheme = ruoQiTheme(accent: defaultAccentColor, mobile: true);
+    final hostTheme = miniAppTheme(accent: defaultAccentColor);
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('zh'),
@@ -315,6 +315,52 @@ void main() {
     expect(overlay.value.statusBarIconBrightness, Brightness.dark);
     expect(overlay.value.statusBarBrightness, Brightness.light);
     expect(overlay.value.systemStatusBarContrastEnforced, isFalse);
+  });
+
+  testWidgets('AI 页面跟随全局暗色石墨灰主题', (tester) async {
+    final hostTheme = miniAppTheme(
+      brightness: Brightness.dark,
+      accent: defaultAccentColor,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        theme: hostTheme,
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final page = find.byKey(const Key('ai-page'));
+    final pageContext = tester.element(page);
+    final aiTheme = Theme.of(pageContext);
+    expect(aiTheme.colorScheme.primary, hostTheme.colorScheme.primary);
+    expect(aiTheme.colorScheme.surface, MiniAppDarkColors.background);
+    expect(AiColors.background(pageContext), MiniAppDarkColors.background);
+    expect(AiColors.surface(pageContext), MiniAppDarkColors.surface);
+    expect(AiColors.softSurface(pageContext), MiniAppDarkColors.surfaceHigh);
+    expect(AiColors.text(pageContext), MiniAppDarkColors.text);
+    expect(AiColors.muted(pageContext), MiniAppDarkColors.muted);
+    expect(
+      tester.widget<Scaffold>(page).backgroundColor,
+      AiColors.background(pageContext),
+    );
+
+    final overlay = tester.widget<AnnotatedRegion<SystemUiOverlayStyle>>(
+      find.byKey(const Key('ai-system-overlay')),
+    );
+    expect(overlay.value.statusBarColor, AiColors.background(pageContext));
+    expect(overlay.value.statusBarIconBrightness, Brightness.light);
+    expect(overlay.value.statusBarBrightness, Brightness.dark);
   });
 
   testWidgets('AI 附件入口在输入框下方内联展开并可收起', (tester) async {
@@ -694,6 +740,148 @@ void main() {
     expect(adapter.lastRequest?.data['stream'], isTrue);
     expect(historyStore.conversations, hasLength(1));
     expect(historyStore.conversations.single.messages, hasLength(2));
+  });
+
+  testWidgets('AI Markdown 表格在暗色主题下保持文字和边框可读', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final adapter = _ChatStreamAdapter(
+      response: '''
+| 维度 | DDR6 | LPDDR6 |
+| --- | --- | --- |
+| 主要用途 | 台式机、服务器 | 智能手机、平板 |
+| 功耗 | 性能优先 | 极致低功耗 |
+''',
+    );
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
+      ..httpClientAdapter = adapter;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        theme: miniAppTheme(
+          brightness: Brightness.dark,
+          accent: defaultAccentColor,
+        ),
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(dio: dio),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '对比两种内存');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pumpAndSettle();
+
+    final tableFinder = find.byType(Table);
+    expect(tableFinder, findsOneWidget);
+    final table = tester.widget<Table>(tableFinder);
+    final border = table.border!;
+    expect(border.top.color, MiniAppDarkColors.border);
+    expect(table.defaultVerticalAlignment, TableCellVerticalAlignment.top);
+    expect(
+      table.children.any(
+        (row) =>
+            row.decoration is BoxDecoration &&
+            (row.decoration! as BoxDecoration).color ==
+                MiniAppDarkColors.surface,
+      ),
+      isTrue,
+    );
+
+    final cellStyles = tester
+        .widgetList<DefaultTextStyle>(
+          find.descendant(
+            of: tableFinder,
+            matching: find.byType(DefaultTextStyle),
+          ),
+        )
+        .map((style) => style.style.color);
+    expect(cellStyles, contains(MiniAppDarkColors.text));
+    expect(cellStyles, isNot(contains(Colors.black)));
+  });
+
+  testWidgets('AI Markdown 行内代码和代码块在暗色主题下保持可读', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final adapter = _ChatStreamAdapter(
+      response: '''
+编辑器在`0.18 版本`首次提供预览。
+
+```dart
+final version = '0.18';
+print(version);
+```
+''',
+    );
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
+      ..httpClientAdapter = adapter;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        theme: miniAppTheme(
+          brightness: Brightness.dark,
+          accent: defaultAccentColor,
+        ),
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(dio: dio),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '解释版本');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pumpAndSettle();
+
+    Iterable<TextSpan> flatten(InlineSpan span) sync* {
+      if (span is! TextSpan) {
+        return;
+      }
+      yield span;
+      for (final child in span.children ?? const <InlineSpan>[]) {
+        yield* flatten(child);
+      }
+    }
+
+    final spans = tester
+        .widgetList<RichText>(
+          find.descendant(
+            of: find.byKey(const Key('ai-assistant-message')),
+            matching: find.byType(RichText),
+          ),
+        )
+        .expand((widget) => flatten(widget.text));
+    final inlineCode = spans.firstWhere((span) => span.text == '0.18 版本');
+    expect(inlineCode.style?.color, MiniAppDarkColors.text);
+    expect(inlineCode.style?.backgroundColor, MiniAppDarkColors.surfaceHigh);
+    final blockCode = spans.firstWhere(
+      (span) => span.text?.contains("final version = '0.18';") ?? false,
+    );
+    expect(blockCode.style?.color, MiniAppDarkColors.text);
+    expect(blockCode.style?.backgroundColor, MiniAppDarkColors.surfaceHigh);
   });
 
   testWidgets('长按用户消息和 AI 回答显示对应操作菜单', (tester) async {

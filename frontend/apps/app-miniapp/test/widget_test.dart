@@ -43,7 +43,7 @@ void main() {
     );
     expect(
       (noticeContainer.decoration! as BoxDecoration).color,
-      const Color(0xE64A4A4A),
+      const Color(0xFF4A4A4A),
     );
 
     await tester.pump(const Duration(milliseconds: 1700));

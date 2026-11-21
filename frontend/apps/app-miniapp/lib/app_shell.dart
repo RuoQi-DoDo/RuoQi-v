@@ -4,6 +4,7 @@ import 'package:common/common.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'app_theme.dart';
 import 'appearance.dart';
 import 'localization.dart';
 import 'miniapp/common/miniapp_pin.dart';
@@ -109,11 +110,10 @@ class _BusinessAppFrameState extends State<BusinessAppFrame> {
                       AppLocalizations.delegate,
                       ...GlobalMaterialLocalizations.delegates,
                     ],
-                    theme: ruoQiTheme(accent: defaultAccentColor, mobile: true),
-                    darkTheme: ruoQiTheme(
+                    theme: miniAppTheme(accent: defaultAccentColor),
+                    darkTheme: miniAppTheme(
                       brightness: Brightness.dark,
                       accent: defaultAccentColor,
-                      mobile: true,
                     ),
                     themeMode: _themeController.mode,
                     home: Builder(builder: widget.home),

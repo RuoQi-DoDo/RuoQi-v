@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../app_theme.dart';
 import '../common/page_theme.dart';
 
 /// AI conversation colors resolved from the host application's theme.
@@ -17,6 +18,12 @@ abstract final class AiColors {
       Theme.of(context).colorScheme;
 
   static Color accent(BuildContext context) => _scheme(context).primary;
+
+  /// Theme accent adjusted for small text and icons placed on dark surfaces.
+  static Color accentText(BuildContext context) {
+    final accent = _scheme(context).primary;
+    return isDark(context) ? Color.lerp(accent, Colors.white, 0.32)! : accent;
+  }
 
   static Color onAccent(BuildContext context) => _scheme(context).onPrimary;
 
@@ -34,14 +41,16 @@ abstract final class AiColors {
         : scheme.surfaceContainerLowest;
   }
 
-  static Color softSurface(BuildContext context) =>
-      _scheme(context).primaryContainer;
-
-  static Color searchSurface(BuildContext context) {
+  static Color softSurface(BuildContext context) {
     final scheme = _scheme(context);
     return isDark(context)
         ? scheme.surfaceContainerHigh
-        : scheme.surfaceContainer;
+        : scheme.primaryContainer;
+  }
+
+  static Color searchSurface(BuildContext context) {
+    final scheme = _scheme(context);
+    return scheme.surfaceContainer;
   }
 
   static Color text(BuildContext context) => _scheme(context).onSurface;
@@ -49,12 +58,11 @@ abstract final class AiColors {
   static Color muted(BuildContext context) => _scheme(context).onSurfaceVariant;
 
   static Color hint(BuildContext context) {
+    if (isDark(context)) {
+      return MiniAppDarkColors.hint;
+    }
     final scheme = _scheme(context);
-    return Color.lerp(
-      scheme.onSurfaceVariant,
-      scheme.surface,
-      isDark(context) ? 0.48 : 0.65,
-    )!;
+    return Color.lerp(scheme.onSurfaceVariant, scheme.surface, 0.65)!;
   }
 
   static Color border(BuildContext context) =>
