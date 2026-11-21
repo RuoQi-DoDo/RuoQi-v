@@ -812,6 +812,78 @@ void main() {
     expect(cellStyles, isNot(contains(Colors.black)));
   });
 
+  testWidgets('AI Markdown 行内代码和代码块在暗色主题下保持可读', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final adapter = _ChatStreamAdapter(
+      response: '''
+编辑器在`0.18 版本`首次提供预览。
+
+```dart
+final version = '0.18';
+print(version);
+```
+''',
+    );
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
+      ..httpClientAdapter = adapter;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        theme: miniAppTheme(
+          brightness: Brightness.dark,
+          accent: defaultAccentColor,
+        ),
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(dio: dio),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '解释版本');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pumpAndSettle();
+
+    Iterable<TextSpan> flatten(InlineSpan span) sync* {
+      if (span is! TextSpan) {
+        return;
+      }
+      yield span;
+      for (final child in span.children ?? const <InlineSpan>[]) {
+        yield* flatten(child);
+      }
+    }
+
+    final spans = tester
+        .widgetList<RichText>(
+          find.descendant(
+            of: find.byKey(const Key('ai-assistant-message')),
+            matching: find.byType(RichText),
+          ),
+        )
+        .expand((widget) => flatten(widget.text));
+    final inlineCode = spans.firstWhere((span) => span.text == '0.18 版本');
+    expect(inlineCode.style?.color, MiniAppDarkColors.text);
+    expect(inlineCode.style?.backgroundColor, MiniAppDarkColors.surfaceHigh);
+    final blockCode = spans.firstWhere(
+      (span) => span.text?.contains("final version = '0.18';") ?? false,
+    );
+    expect(blockCode.style?.color, MiniAppDarkColors.text);
+    expect(blockCode.style?.backgroundColor, MiniAppDarkColors.surfaceHigh);
+  });
+
   testWidgets('长按用户消息和 AI 回答显示对应操作菜单', (tester) async {
     final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
       ..httpClientAdapter = _ChatStreamAdapter();

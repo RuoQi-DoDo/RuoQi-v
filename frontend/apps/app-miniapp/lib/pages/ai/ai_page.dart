@@ -2591,7 +2591,13 @@ class _AiMessageBubbleState extends State<_AiMessageBubble> {
   }
 
   MarkdownStyleSheet _assistantMarkdownStyle(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return MarkdownStyleSheet(
+      a: TextStyle(
+        color: AiColors.accentText(context),
+        decoration: TextDecoration.underline,
+        decorationColor: AiColors.accentText(context),
+      ),
       p: TextStyle(
         color: AiColors.text(context),
         fontSize: 18.5,
@@ -2615,6 +2621,46 @@ class _AiMessageBubbleState extends State<_AiMessageBubble> {
         fontSize: 19,
         height: 1.55,
         fontWeight: FontWeight.w600,
+      ),
+      strong: TextStyle(
+        color: AiColors.text(context),
+        fontWeight: FontWeight.w600,
+      ),
+      em: const TextStyle(fontStyle: FontStyle.italic),
+      del: TextStyle(
+        color: AiColors.muted(context),
+        decoration: TextDecoration.lineThrough,
+      ),
+      code: TextStyle(
+        color: AiColors.text(context),
+        backgroundColor: scheme.surfaceContainerHigh,
+        fontFamily: 'monospace',
+        fontSize: 16,
+        height: 1.45,
+      ),
+      codeblockPadding: const EdgeInsets.all(14),
+      codeblockDecoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AiColors.border(context)),
+      ),
+      blockquote: TextStyle(
+        color: AiColors.muted(context),
+        fontSize: 17.5,
+        height: 1.65,
+      ),
+      blockquotePadding: const EdgeInsets.fromLTRB(14, 10, 12, 10),
+      blockquoteDecoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(8),
+        border: Border(
+          left: BorderSide(color: AiColors.accent(context), width: 3),
+        ),
+      ),
+      horizontalRuleDecoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: AiColors.border(context), width: 0.8),
+        ),
       ),
       listBullet: TextStyle(
         color: AiColors.text(context),
