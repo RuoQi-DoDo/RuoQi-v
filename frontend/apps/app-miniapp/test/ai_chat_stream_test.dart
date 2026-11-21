@@ -691,6 +691,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('zh'),
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: const [
           AppLocalizations.delegate,
@@ -730,7 +731,16 @@ void main() {
     addTearDown(() => messenger.setMockMethodCallHandler(shareChannel, null));
     await tester.tap(find.byTooltip('分享'));
     await tester.pumpAndSettle();
-    expect(sharePayload?['text'], '你好，世界');
+    expect(sharePayload?['text'], isNull);
+    expect(
+      sharePayload?['uri'],
+      allOf(
+        startsWith('https://link.amiemall.com/share/conversation-'),
+        isNot(contains(' ')),
+      ),
+    );
+    expect(sharePayload?['title'], 'RuoQi AI 对话');
+    expect(sharePayload?['subject'], 'RuoQi AI 对话');
     expect(find.text('分享方式'), findsNothing);
     await tester.tap(find.byIcon(Icons.thumb_up_alt_outlined));
     await tester.pump();
