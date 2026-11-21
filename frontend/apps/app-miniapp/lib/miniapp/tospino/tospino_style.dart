@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../app_theme.dart';
 import '../common/miniapp_localizations.dart';
 import 'tospino_models.dart';
 
@@ -33,18 +34,18 @@ class TospinoColors {
   static Color resolve(BuildContext context, Color color) {
     if (Theme.of(context).brightness != Brightness.dark) return color;
     return switch (color) {
-      background => const Color(0xFF0B0C0F),
-      surface => const Color(0xFF141518),
-      surfaceMuted => const Color(0xFF101215),
-      tint => const Color(0xFF1C1E23),
-      ink => const Color(0xFFF3F5F5),
-      secondary => const Color(0xFFCDD1D8),
-      muted => const Color(0xFF8B9098),
-      hint => const Color(0xFF63676E),
-      line => const Color(0xFF26282F),
-      lineStrong => const Color(0xFF353840),
-      imagePlaceholder => const Color(0xFF1C1E23),
-      disabled => const Color(0xFF2A2D34),
+      background => MiniAppDarkColors.background,
+      surface => MiniAppDarkColors.surface,
+      surfaceMuted => MiniAppDarkColors.surfaceMuted,
+      tint => MiniAppDarkColors.surfaceHigh,
+      ink => MiniAppDarkColors.text,
+      secondary => MiniAppDarkColors.muted,
+      muted => MiniAppDarkColors.muted,
+      hint => MiniAppDarkColors.hint,
+      line => MiniAppDarkColors.border,
+      lineStrong => MiniAppDarkColors.outline,
+      imagePlaceholder => MiniAppDarkColors.surfaceHigh,
+      disabled => MiniAppDarkColors.outline,
       brandPale => const Color(0xFF113A40),
       price => const Color(0xFFFF7A8A),
       _ => color,
@@ -189,7 +190,7 @@ class TospinoText {
   static TextStyle secondaryFrom(Brightness brightness) => TextStyle(
     fontFamily: fontFamily,
     color: brightness == Brightness.dark
-        ? const Color(0xFFCDD1D8)
+        ? MiniAppDarkColors.muted
         : TospinoColors.secondary,
     fontSize: 12,
     fontWeight: regular,
@@ -199,7 +200,7 @@ class TospinoText {
   static TextStyle metaFrom(Brightness brightness) => TextStyle(
     fontFamily: fontFamily,
     color: brightness == Brightness.dark
-        ? const Color(0xFF8B9098)
+        ? MiniAppDarkColors.hint
         : TospinoColors.muted,
     fontSize: 12,
     fontWeight: regular,
@@ -207,7 +208,7 @@ class TospinoText {
   );
 
   static Color _inkFor(Brightness brightness) => brightness == Brightness.dark
-      ? const Color(0xFFF0F2F5)
+      ? MiniAppDarkColors.text
       : TospinoColors.ink;
 }
 
@@ -220,30 +221,31 @@ class TospinoTheme {
       seedColor: TospinoColors.brand,
       brightness: brightness,
       primary: isDark ? const Color(0xFF64E0E8) : TospinoColors.brand,
-      surface: isDark ? const Color(0xFF141518) : TospinoColors.surface,
-      onSurface: isDark ? const Color(0xFFF0F2F5) : TospinoColors.ink,
-      outline: isDark ? const Color(0xFF353840) : TospinoColors.lineStrong,
-      outlineVariant: isDark ? const Color(0xFF26282F) : TospinoColors.line,
+      surface: isDark ? MiniAppDarkColors.surface : TospinoColors.surface,
+      onSurface: isDark ? MiniAppDarkColors.text : TospinoColors.ink,
+      onSurfaceVariant: isDark
+          ? MiniAppDarkColors.muted
+          : TospinoColors.secondary,
+      outline: isDark ? MiniAppDarkColors.outline : TospinoColors.lineStrong,
+      outlineVariant: isDark ? MiniAppDarkColors.border : TospinoColors.line,
     );
     final textTheme = TextTheme(
       headlineSmall: TospinoText.pageTitleFrom(brightness),
       titleLarge: TospinoText.sectionFrom(brightness),
-      titleMedium: TospinoText.bodyFrom(
-        brightness,
-      ).copyWith(fontWeight: TospinoText.emphasis),
+      titleMedium: TospinoText.bodyFrom(brightness)
+          .copyWith(fontWeight: TospinoText.emphasis),
       bodyLarge: TospinoText.bodyFrom(brightness),
       bodyMedium: TospinoText.secondaryFrom(brightness),
       bodySmall: TospinoText.metaFrom(brightness),
-      labelLarge: TospinoText.bodyFrom(
-        brightness,
-      ).copyWith(fontWeight: TospinoText.emphasis, fontSize: 14),
+      labelLarge: TospinoText.bodyFrom(brightness)
+          .copyWith(fontWeight: TospinoText.emphasis, fontSize: 14),
     );
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: isDark
-          ? const Color(0xFF0B0C0F)
+          ? MiniAppDarkColors.background
           : TospinoColors.background,
       fontFamily: TospinoText.fontFamily,
       fontFamilyFallback: const [
@@ -295,13 +297,13 @@ class TospinoTheme {
         ),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: isDark ? const Color(0xFF141518) : Colors.white,
+        backgroundColor: isDark ? MiniAppDarkColors.background : Colors.white,
         foregroundColor: scheme.onSurface,
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
       cardTheme: CardThemeData(
-        color: isDark ? const Color(0xFF141518) : Colors.white,
+        color: isDark ? MiniAppDarkColors.surface : Colors.white,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
@@ -322,10 +324,10 @@ class TospinoTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: isDark
-            ? const Color(0xFF1C1E23)
+            ? MiniAppDarkColors.surfaceMuted
             : TospinoColors.surfaceMuted,
         hintStyle: TextStyle(
-          color: isDark ? const Color(0xFF63676E) : TospinoColors.hint,
+          color: isDark ? MiniAppDarkColors.hint : TospinoColors.hint,
           fontSize: 14,
         ),
         contentPadding: const EdgeInsets.symmetric(

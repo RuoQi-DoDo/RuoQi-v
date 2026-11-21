@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/physics.dart';
 
+import '../../app_theme.dart';
 import '../../miniapp/ats/ats_miniapp.dart';
 import '../../miniapp/common/miniapp_pin.dart';
 import '../../miniapp/launcher/launcher.dart';
@@ -479,7 +480,7 @@ class _BusinessHostPageState extends State<BusinessHostPage>
         _pullDragging || (_pullAnimating && _pullTarget == 1);
     final hostInteractive = _subview == _HostSubview.home && !pickerInteractive;
     final pickerBackdropColor = Theme.of(context).brightness == Brightness.dark
-        ? const Color(0xFF303030)
+        ? MiniAppDarkColors.background
         : const Color(0xFFF2F2F2);
     return Stack(
       key: const ValueKey('customer-host-picker-stack'),

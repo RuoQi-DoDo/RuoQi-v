@@ -2,6 +2,7 @@ import '../common/miniapp_localizations.dart';
 
 import 'package:material_ui/material_ui.dart';
 
+import '../../app_theme.dart';
 import 'hr_format.dart';
 
 abstract final class HrColors {
@@ -38,15 +39,15 @@ abstract final class HrColors {
   static Color resolve(BuildContext context, Color color) {
     if (Theme.of(context).brightness != Brightness.dark) return color;
     return switch (color) {
-      surface => const Color(0xFF242422),
-      bg => const Color(0xFF161615),
-      bg2 => const Color(0xFF30302D),
-      ink => const Color(0xFFF1F0EC),
-      ink2 => const Color(0xFFD2D0C9),
-      ink3 => const Color(0xFFB5B3AA),
-      ink4 => const Color(0xFF99978E),
-      line => const Color(0xFF44443D),
-      line2 => const Color(0xFF363630),
+      surface => MiniAppDarkColors.surface,
+      bg => MiniAppDarkColors.background,
+      bg2 => MiniAppDarkColors.surfaceMuted,
+      ink => MiniAppDarkColors.text,
+      ink2 => MiniAppDarkColors.text,
+      ink3 => MiniAppDarkColors.muted,
+      ink4 => MiniAppDarkColors.hint,
+      line => MiniAppDarkColors.border,
+      line2 => MiniAppDarkColors.border,
       brand => const Color(0xFFFF8A73),
       brandTint => const Color(0xFF492A23),
       brandTintBorder => const Color(0xFF754639),
@@ -61,7 +62,7 @@ abstract final class HrColors {
       dangerBorder => const Color(0xFF72483C),
       info => const Color(0xFF90C7F4),
       infoBg => const Color(0xFF203548),
-      readDot => const Color(0xFF55554E),
+      readDot => MiniAppDarkColors.outline,
       _ => color,
     };
   }
@@ -216,12 +217,16 @@ class HrTheme {
       seedColor: HrColors.brand,
       brightness: Brightness.dark,
       primary: const Color(0xFFFF8A73),
-      surface: const Color(0xFF242422),
+      surface: MiniAppDarkColors.surface,
+      onSurface: MiniAppDarkColors.text,
+      onSurfaceVariant: MiniAppDarkColors.muted,
+      outline: MiniAppDarkColors.outline,
+      outlineVariant: MiniAppDarkColors.border,
     );
     return light.copyWith(
       brightness: Brightness.dark,
       colorScheme: dark,
-      scaffoldBackgroundColor: const Color(0xFF161615),
+      scaffoldBackgroundColor: MiniAppDarkColors.background,
       textTheme: light.textTheme.apply(
         bodyColor: dark.onSurface,
         displayColor: dark.onSurface,
@@ -237,8 +242,8 @@ class HrTheme {
         contentTextStyle: TextStyle(color: dark.onInverseSurface, fontSize: 13),
       ),
       inputDecorationTheme: light.inputDecorationTheme.copyWith(
-        fillColor: const Color(0xFF30302D),
-        hintStyle: HrText.meta.copyWith(color: dark.onSurfaceVariant),
+        fillColor: MiniAppDarkColors.surfaceMuted,
+        hintStyle: HrText.meta.copyWith(color: MiniAppDarkColors.hint),
       ),
     );
   }

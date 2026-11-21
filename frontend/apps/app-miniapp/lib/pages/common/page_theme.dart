@@ -1,13 +1,14 @@
-import 'package:common/common.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../../app_theme.dart';
 
 abstract final class HostChromeStyle {
   static const Color lightAppBar = Color(0xFFEDEDED);
-  static const Color darkAppBar = Color(0xFF111111);
+  static const Color darkAppBar = MiniAppDarkColors.background;
   static const Color lightBottomBar = Color(0xFFF7F7F7);
-  static const Color darkBottomBar = Color(0xFF1E1E1E);
+  static const Color darkBottomBar = MiniAppDarkColors.surface;
   static const Color lightDivider = Color(0xFFE5E5E5);
-  static const Color darkDivider = Color(0xFF303030);
+  static const Color darkDivider = MiniAppDarkColors.border;
 
   static bool _isDark(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark;
@@ -43,11 +44,7 @@ ThemeData sharedPageTheme(BuildContext context) {
   final accent = Theme.of(context).colorScheme.primary;
   final brightness = Theme.of(context).brightness;
   final hairline = HostChromeStyle.hairline(context);
-  final baseTheme = ruoQiTheme(
-    brightness: brightness,
-    accent: accent,
-    mobile: true,
-  );
+  final baseTheme = miniAppTheme(brightness: brightness, accent: accent);
   if (brightness == Brightness.light) {
     return baseTheme.copyWith(
       scaffoldBackgroundColor: const Color(0xFFEDEDED),
@@ -79,7 +76,6 @@ ThemeData sharedPageTheme(BuildContext context) {
     );
   }
   return baseTheme.copyWith(
-    scaffoldBackgroundColor: const Color(0xFF181818),
     appBarTheme: baseTheme.appBarTheme.copyWith(
       backgroundColor: HostChromeStyle.darkAppBar,
       surfaceTintColor: Colors.transparent,
@@ -91,16 +87,6 @@ ThemeData sharedPageTheme(BuildContext context) {
       color: HostChromeStyle.darkDivider,
       thickness: hairline,
       space: hairline,
-    ),
-    colorScheme: baseTheme.colorScheme.copyWith(
-      surface: const Color(0xFF181818),
-      surfaceContainerLowest: const Color(0xFF181818),
-      surfaceContainerLow: const Color(0xFF222222),
-      surfaceContainer: const Color(0xFF242424),
-      surfaceContainerHigh: const Color(0xFF282828),
-      onSurface: Colors.white,
-      onSurfaceVariant: const Color(0xFFA8A8A8),
-      outlineVariant: HostChromeStyle.darkDivider,
     ),
   );
 }

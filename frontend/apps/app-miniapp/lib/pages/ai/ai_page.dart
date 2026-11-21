@@ -1989,7 +1989,7 @@ class _AiHeader extends StatelessWidget {
                     onPressed: onToggleAutoRead,
                     icon: DeepSeekAutoReadIcon(
                       color: autoRead
-                          ? AiColors.accent(context)
+                          ? AiColors.accentText(context)
                           : AiColors.text(context),
                       muted: !autoRead,
                       size: 27,
@@ -2621,6 +2621,29 @@ class _AiMessageBubbleState extends State<_AiMessageBubble> {
         fontSize: 18.5,
         height: 1.65,
       ),
+      tableHead: TextStyle(
+        color: AiColors.text(context),
+        fontSize: 14.5,
+        height: 1.4,
+        fontWeight: FontWeight.w600,
+      ),
+      tableBody: TextStyle(
+        color: AiColors.text(context),
+        fontSize: 15,
+        height: 1.5,
+      ),
+      tableHeadAlign: TextAlign.center,
+      tableBorder: TableBorder.all(color: AiColors.border(context), width: 0.8),
+      tableColumnWidth: const FlexColumnWidth(),
+      tableCellsPadding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 9,
+      ),
+      tableCellsDecoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+      ),
+      tablePadding: const EdgeInsets.only(top: 8, bottom: 14),
+      tableVerticalAlignment: TableCellVerticalAlignment.top,
       blockSpacing: 12,
     );
   }
@@ -3029,12 +3052,12 @@ class _AiModeTag extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: AiColors.accent(context)),
+          Icon(icon, size: 13, color: AiColors.accentText(context)),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              color: AiColors.accent(context),
+              color: AiColors.accentText(context),
               fontSize: 10.5,
               fontWeight: FontWeight.w600,
             ),
@@ -3509,7 +3532,7 @@ class _AiComposer extends StatelessWidget {
                                             key: const Key('ai-deep-thinking'),
                                             icon: DeepSeekThinkingIcon(
                                               color: deepThinking
-                                                  ? AiColors.accent(context)
+                                                  ? AiColors.accentText(context)
                                                   : AiColors.text(context),
                                               size: 19,
                                             ),
@@ -3526,7 +3549,7 @@ class _AiComposer extends StatelessWidget {
                                             icon: Icon(
                                               Icons.language_rounded,
                                               color: webSearch
-                                                  ? AiColors.accent(context)
+                                                  ? AiColors.accentText(context)
                                                   : AiColors.text(context),
                                               size: 19,
                                             ),
@@ -3973,7 +3996,7 @@ class _AiModeChip extends StatelessWidget {
                   label,
                   style: TextStyle(
                     color: selected
-                        ? AiColors.accent(context)
+                        ? AiColors.accentText(context)
                         : AiColors.text(context),
                     fontSize: 14,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w500,

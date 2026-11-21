@@ -2,6 +2,7 @@ import '../common/miniapp_localizations.dart';
 
 import 'package:material_ui/material_ui.dart';
 
+import '../../app_theme.dart';
 import 'ats_models.dart';
 
 class AtsColors {
@@ -29,12 +30,12 @@ class AtsColors {
   static Color resolve(BuildContext context, Color color) {
     if (Theme.of(context).brightness != Brightness.dark) return color;
     return switch (color) {
-      background => const Color(0xFF14191A),
-      surface => const Color(0xFF202728),
-      text => const Color(0xFFF0F4F3),
-      textSecondary => const Color(0xFFB9C3C0),
-      textMuted => const Color(0xFF97A5A0),
-      divider => const Color(0xFF35413D),
+      background => MiniAppDarkColors.background,
+      surface => MiniAppDarkColors.surface,
+      text => MiniAppDarkColors.text,
+      textSecondary => MiniAppDarkColors.muted,
+      textMuted => MiniAppDarkColors.hint,
+      divider => MiniAppDarkColors.border,
       mint => const Color(0xFF183C31),
       mintStrong => const Color(0xFF245442),
       primary => const Color(0xFF47D4AB),
@@ -136,12 +137,16 @@ class AtsTheme {
       seedColor: AtsColors.primary,
       brightness: Brightness.dark,
       primary: const Color(0xFF47D4AB),
-      surface: const Color(0xFF202728),
+      surface: MiniAppDarkColors.surface,
+      onSurface: MiniAppDarkColors.text,
+      onSurfaceVariant: MiniAppDarkColors.muted,
+      outline: MiniAppDarkColors.outline,
+      outlineVariant: MiniAppDarkColors.border,
     );
     return light.copyWith(
       brightness: Brightness.dark,
       colorScheme: dark,
-      scaffoldBackgroundColor: const Color(0xFF14191A),
+      scaffoldBackgroundColor: MiniAppDarkColors.background,
       textTheme: light.textTheme.apply(
         bodyColor: dark.onSurface,
         displayColor: dark.onSurface,
@@ -152,8 +157,8 @@ class AtsTheme {
         contentTextStyle: TextStyle(color: dark.onInverseSurface, fontSize: 14),
       ),
       inputDecorationTheme: light.inputDecorationTheme.copyWith(
-        fillColor: const Color(0xFF14191A),
-        hintStyle: TextStyle(color: dark.onSurfaceVariant, fontSize: 14),
+        fillColor: MiniAppDarkColors.surfaceMuted,
+        hintStyle: const TextStyle(color: MiniAppDarkColors.hint, fontSize: 14),
       ),
     );
   }

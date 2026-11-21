@@ -1,8 +1,8 @@
 import '../common/miniapp_localizations.dart';
 
-import 'package:common/common.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../app_theme.dart';
 import '../../localization.dart';
 import 'launcher_widgets.dart';
 import 'miniapp_drag_targets.dart';
@@ -108,11 +108,7 @@ class _MiniProgramPickerPageState extends State<MiniProgramPickerPage> {
   Widget _buildWithTheme(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
     final brightness = Theme.of(context).brightness;
-    final baseTheme = ruoQiTheme(
-      brightness: brightness,
-      accent: accent,
-      mobile: true,
-    );
+    final baseTheme = miniAppTheme(brightness: brightness, accent: accent);
     if (brightness == Brightness.light) {
       final pickerTheme = baseTheme.copyWith(
         scaffoldBackgroundColor: const Color(0xFFF2F2F2),
@@ -129,20 +125,7 @@ class _MiniProgramPickerPageState extends State<MiniProgramPickerPage> {
       );
       return Theme(data: pickerTheme, child: _buildPickerContent(context));
     }
-    final pickerTheme = baseTheme.copyWith(
-      scaffoldBackgroundColor: const Color(0xFF303030),
-      colorScheme: baseTheme.colorScheme.copyWith(
-        surface: const Color(0xFF303030),
-        surfaceContainerLowest: const Color(0xFF292929),
-        surfaceContainerLow: const Color(0xFF424242),
-        surfaceContainer: const Color(0xFF565656),
-        surfaceContainerHigh: const Color(0xFF383838),
-        onSurface: Colors.white,
-        onSurfaceVariant: const Color(0xFFBDBDBD),
-        outlineVariant: const Color(0xFF4A4A4A),
-      ),
-    );
-    return Theme(data: pickerTheme, child: _buildPickerContent(context));
+    return Theme(data: baseTheme, child: _buildPickerContent(context));
   }
 
   Widget _buildPickerContent(BuildContext context) {
