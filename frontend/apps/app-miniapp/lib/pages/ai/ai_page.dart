@@ -631,15 +631,31 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
 
   Future<void> _shareMessage(String content) async {
     final box = context.findRenderObject();
+    final title = AppLocalizations.of(context)
+        .text('RuoQi AI 对话', 'RuoQi AI conversation');
+    final conversationId = _activeConversationId;
+    final shareUri = conversationId == null
+        ? null
+        : Uri.parse('https://link.amiemall.com/share')
+              .replace(pathSegments: ['share', conversationId]);
     await SharePlus.instance.share(
-      ShareParams(
-        text: content,
-        subject: AppLocalizations.of(context)
-            .text('RuoQi AI 回答', 'RuoQi AI answer'),
-        sharePositionOrigin: box is RenderBox
-            ? box.localToGlobal(Offset.zero) & box.size
-            : null,
-      ),
+      shareUri == null
+          ? ShareParams(
+              text: content,
+              title: title,
+              subject: title,
+              sharePositionOrigin: box is RenderBox
+                  ? box.localToGlobal(Offset.zero) & box.size
+                  : null,
+            )
+          : ShareParams(
+              uri: shareUri,
+              title: title,
+              subject: title,
+              sharePositionOrigin: box is RenderBox
+                  ? box.localToGlobal(Offset.zero) & box.size
+                  : null,
+            ),
     );
   }
 
