@@ -194,9 +194,23 @@ jobs:
     name: Build iOS IPA
     needs: detect_version
     if: needs.detect_version.outputs.changed == 'true'
-    runs-on: macos-latest
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v5
+
+      - name: Verify iOS 27 SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          xcodebuild -version
+          sdk_version=$(xcrun --sdk iphoneos --show-sdk-version)
+          echo "Using iOS SDK $sdk_version"
+
+          if [[ ! "$sdk_version" =~ ^27\. ]]; then
+            echo "::error::App Store builds require iOS 27 SDK or later; found $sdk_version."
+            exit 1
+          fi
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
