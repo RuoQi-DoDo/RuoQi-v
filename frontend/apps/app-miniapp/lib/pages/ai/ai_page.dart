@@ -21,6 +21,7 @@ import 'deepseek_api.dart';
 import 'deepseek_settings_store.dart';
 import 'deepseek_icons.dart';
 import 'deepseek_tts_cache.dart';
+import 'speech_text_chunker.dart';
 
 const _aiIconButtonStyle = ButtonStyle(
   overlayColor: WidgetStatePropertyAll<Color?>(Colors.transparent),
@@ -108,6 +109,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   final ImagePicker _imagePicker = ImagePicker();
   StreamSubscription<DeepSeekChatChunk>? _chatSubscription;
   StreamSubscription<void>? _speechSubscription;
+  Completer<void>? _playbackCompletion;
+  int _speechGeneration = 0;
   File? _ttsFile;
   Timer? _responseTimer;
   Timer? _noticeTimer;
@@ -161,6 +164,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     _noticeEntry?.remove();
     _chatSubscription?.cancel();
     _speechSubscription?.cancel();
+    _playbackCompletion?.complete();
     _ttsFile = null;
     unawaited(_recorder.dispose());
     unawaited(_audioPlayer.dispose());
@@ -494,51 +498,69 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     if (!mounted) {
       return;
     }
+    final generation = _speechGeneration;
+    final chunks = splitSpeechTextForPlayback(text);
+    if (chunks.isEmpty) {
+      return;
+    }
     setState(() {
       _speechLoading = true;
       _speakingText = text;
     });
     try {
-      File? audioFile = await _ttsCache.get(text: text);
-      if (audioFile == null) {
-        final settings = await _settingsStore.load();
-        if (!mounted) {
-          return;
-        }
-        if (settings.apiKey.isEmpty) {
-          setState(() => _speechLoading = false);
-          _showTransientNotice(
-            AppLocalizations.of(context).text(
-              '请先在设置中配置 DeepSeek API Key',
-              'Configure a DeepSeek API key in Settings first',
-            ),
-          );
-          return;
-        }
-        final audio = await _api.textToSpeech(
-          apiKey: settings.apiKey,
-          text: text,
-        );
-        audioFile = await _ttsCache.put(text: text, bytes: audio.bytes);
-      }
-      _ttsFile = audioFile;
-      await _audioPlayer.play(
-        DeviceFileSource(audioFile.path, mimeType: 'audio/wav'),
-      );
-      if (!mounted) {
+      final settings = await _settingsStore.load();
+      if (!mounted || !_isSpeechGenerationActive(generation)) {
         return;
       }
-      setState(() {
-        _speechLoading = false;
-        _speaking = true;
-        _speakingText = text;
-      });
-      await _speechSubscription?.cancel();
-      _speechSubscription = _audioPlayer.onPlayerComplete.listen((_) {
-        unawaited(_finishSpeechPlayback());
-      });
+      if (settings.apiKey.isEmpty) {
+        setState(() => _speechLoading = false);
+        _showTransientNotice(
+          AppLocalizations.of(context).text(
+            '请先在设置中配置 DeepSeek API Key',
+            'Configure a DeepSeek API key in Settings first',
+          ),
+        );
+        return;
+      }
+
+      final prepared = <int, Future<File>>{};
+      Future<File> prepareChunk(int index) {
+        return prepared.putIfAbsent(index, () {
+          final future = _loadSpeechChunk(settings, chunks[index]);
+          // A prefetched error is still surfaced when its turn is awaited.
+          unawaited(future.then<void>((_) {}, onError: (_, _) {}));
+          return future;
+        });
+      }
+
+      for (var index = 0; index < chunks.length; index++) {
+        final current = prepareChunk(index);
+        if (index + 1 < chunks.length) {
+          prepareChunk(index + 1);
+        }
+        final audioFile = await current;
+        if (!_isSpeechGenerationActive(generation)) {
+          return;
+        }
+        if (index == 0) {
+          setState(() {
+            _speechLoading = false;
+            _speaking = true;
+            _speakingText = text;
+          });
+        }
+        await _playSpeechFile(audioFile, generation);
+      }
+      if (_isSpeechGenerationActive(generation)) {
+        _ttsFile = null;
+        setState(() {
+          _speaking = false;
+          _speechLoading = false;
+          _speakingText = '';
+        });
+      }
     } on DeepSeekApiException catch (error) {
-      if (mounted) {
+      if (_isSpeechGenerationActive(generation)) {
         setState(() {
           _speechLoading = false;
           _speaking = false;
@@ -547,7 +569,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         _showTransientNotice(_chatErrorMessage(error));
       }
     } catch (_) {
-      if (mounted) {
+      if (_isSpeechGenerationActive(generation)) {
         setState(() {
           _speechLoading = false;
           _speaking = false;
@@ -564,7 +586,52 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     }
   }
 
+  bool _isSpeechGenerationActive(int generation) =>
+      mounted && generation == _speechGeneration;
+
+  Future<File> _loadSpeechChunk(DeepSeekSettings settings, String text) async {
+    final cached = await _ttsCache.get(text: text);
+    if (cached != null) {
+      return cached;
+    }
+    final audio = await _api.textToSpeech(apiKey: settings.apiKey, text: text);
+    return _ttsCache.put(text: text, bytes: audio.bytes);
+  }
+
+  Future<void> _playSpeechFile(File file, int generation) async {
+    if (!_isSpeechGenerationActive(generation)) {
+      return;
+    }
+    await _speechSubscription?.cancel();
+    _playbackCompletion?.complete();
+    final completion = Completer<void>();
+    _playbackCompletion = completion;
+    _ttsFile = file;
+    _speechSubscription = _audioPlayer.onPlayerComplete.listen((_) {
+      if (!completion.isCompleted) {
+        completion.complete();
+      }
+    });
+    try {
+      await _audioPlayer.play(
+        DeviceFileSource(file.path, mimeType: 'audio/wav'),
+      );
+      if (_isSpeechGenerationActive(generation)) {
+        await completion.future;
+      }
+    } finally {
+      await _speechSubscription?.cancel();
+      _speechSubscription = null;
+      if (identical(_playbackCompletion, completion)) {
+        _playbackCompletion = null;
+      }
+    }
+  }
+
   Future<void> _stopSpeech() async {
+    _speechGeneration++;
+    _playbackCompletion?.complete();
+    _playbackCompletion = null;
     await _speechSubscription?.cancel();
     _speechSubscription = null;
     await _audioPlayer.stop();
@@ -573,18 +640,6 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       setState(() {
         _speaking = false;
         _speechLoading = false;
-        _speakingText = '';
-      });
-    }
-  }
-
-  Future<void> _finishSpeechPlayback() async {
-    await _speechSubscription?.cancel();
-    _speechSubscription = null;
-    _ttsFile = null;
-    if (mounted) {
-      setState(() {
-        _speaking = false;
         _speakingText = '';
       });
     }
