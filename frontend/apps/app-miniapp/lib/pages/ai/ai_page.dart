@@ -69,6 +69,7 @@ class AiPage extends StatefulWidget {
     this.historyStore,
     this.ttsCache,
     this.recordingReader,
+    this.imagePicker,
     this.scrollController,
     this.textSelectionController,
   });
@@ -80,6 +81,7 @@ class AiPage extends StatefulWidget {
   final ChatHistoryStore? historyStore;
   final DeepSeekTtsCache? ttsCache;
   final Future<Uint8List> Function(String path)? recordingReader;
+  final Future<List<XFile>> Function(ImageSource source)? imagePicker;
   final ScrollController? scrollController;
   final AiTextSelectionController? textSelectionController;
 
@@ -122,7 +124,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   String? _activeConversationId;
   DateTime? _conversationCreatedAt;
   List<AiHistoryEntry> _historyEntries = const [];
-  DeepSeekFile? _attachmentFile;
+  bool _hasPreviousConversation = false;
+  final List<_AiAttachmentDraft> _attachments = <_AiAttachmentDraft>[];
   bool _recording = false;
   bool _holdToTalkActive = false;
   bool _holdToTalkCancel = false;
@@ -145,6 +148,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       reverseDuration: const Duration(milliseconds: 240),
     );
     unawaited(_loadDeepSeekSettings());
+    unawaited(_loadWelcomeState());
     _composer.addListener(_handleComposerChanged);
     _composerFocus.addListener(_handleComposerFocusChanged);
     _messageScroll.addListener(_handleMessageScroll);
@@ -177,6 +181,17 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   void _handleComposerChanged() {
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  Future<void> _loadWelcomeState() async {
+    try {
+      final conversations = await _historyStore.loadConversations();
+      if (mounted) {
+        setState(() => _hasPreviousConversation = conversations.isNotEmpty);
+      }
+    } catch (_) {
+      // The welcome screen remains usable if local history cannot be read.
     }
   }
 
@@ -235,6 +250,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       _autoRead = false;
       _voiceMode = false;
       _attachmentMenuOpen = false;
+      _attachments.clear();
       _responding = false;
       _followResponseScroll = true;
     });
@@ -272,7 +288,21 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
 
   Future<void> _send([String? suggestion, bool addUserMessage = true]) async {
     final prompt = (suggestion ?? _composer.text).trim();
-    if (prompt.isEmpty || _responding) {
+    final hasUploadingAttachment =
+        addUserMessage &&
+        _attachments.any((attachment) => attachment.uploading);
+    final uploadedFiles = addUserMessage
+        ? _attachments
+              .map((attachment) => attachment.file)
+              .whereType<DeepSeekFile>()
+              .toList(growable: false)
+        : const <DeepSeekFile>[];
+    final attachmentNames = _attachments
+        .map((attachment) => attachment.filename)
+        .join(AppLocalizations.of(context).text('、', ', '));
+    if (hasUploadingAttachment ||
+        (prompt.isEmpty && uploadedFiles.isEmpty) ||
+        _responding) {
       return;
     }
     DeepSeekSettings settings;
@@ -299,10 +329,13 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       );
       return;
     }
-    final attachment = addUserMessage ? _attachmentFile : null;
     final nextTitle = addUserMessage && _messages.isEmpty
-        ? prompt
+        ? (prompt.isEmpty ? uploadedFiles.first.filename : prompt)
         : _conversationTitle;
+    final visiblePrompt = prompt.isEmpty && attachmentNames.isNotEmpty
+        ? AppLocalizations.of(context)
+              .text('附件：$attachmentNames', 'Attachments: $attachmentNames')
+        : prompt;
     FocusScope.of(context).unfocus();
     _composer.clear();
     final history = <DeepSeekChatMessage>[
@@ -316,11 +349,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       if (addUserMessage)
         DeepSeekChatMessage(
           role: 'user',
-          content: attachment == null
+          content: uploadedFiles.isEmpty
               ? prompt
               : [
-                  {'type': 'text', 'text': prompt},
-                  {'type': 'file', 'file_id': attachment.id},
+                  if (prompt.isNotEmpty) {'type': 'text', 'text': prompt},
+                  for (final file in uploadedFiles)
+                    {'type': 'file', 'file_id': file.id},
                 ],
         ),
     ];
@@ -336,8 +370,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         _conversationCreatedAt = now;
       }
       if (addUserMessage) {
-        _messages.add(_AiMessage.user(prompt));
-        _attachmentFile = null;
+        _messages.add(_AiMessage.user(visiblePrompt));
+        _attachments.clear();
       }
       _attachmentMenuOpen = false;
       _responding = true;
@@ -863,6 +897,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       );
       _deepThinking = lastAssistant.deepThinking;
       _webSearch = lastAssistant.webSearch;
+      _attachments.clear();
+      _attachmentMenuOpen = false;
       _responding = false;
       _followResponseScroll = true;
     });
@@ -876,6 +912,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         return;
       }
       setState(() {
+        _hasPreviousConversation = conversations.isNotEmpty;
         _historyEntries = conversations
             .map(
               (conversation) => AiHistoryEntry(
@@ -946,6 +983,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
           .toList(growable: false),
     );
     await _historyStore.saveConversation(conversation);
+    if (mounted && !_hasPreviousConversation) {
+      setState(() => _hasPreviousConversation = true);
+    }
   }
 
   Future<void> _renameHistoryEntry(AiHistoryEntry entry, String title) async {
@@ -1017,9 +1057,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     }
     switch (action) {
       case _AttachmentAction.camera:
-        await _pickImageAttachment(settings, ImageSource.camera);
+        await _pickImageAttachments(settings, ImageSource.camera);
       case _AttachmentAction.gallery:
-        await _pickImageAttachment(settings, ImageSource.gallery);
+        await _pickImageAttachments(settings, ImageSource.gallery);
       case _AttachmentAction.upload:
         await _uploadAttachment(settings);
       case _AttachmentAction.files:
@@ -1033,18 +1073,30 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     }
   }
 
-  Future<void> _pickImageAttachment(
+  Future<void> _pickImageAttachments(
     DeepSeekSettings settings,
     ImageSource source,
   ) async {
-    XFile? picked;
+    List<XFile> picked;
     try {
-      picked = await _imagePicker.pickImage(
-        source: source,
-        imageQuality: 88,
-        maxWidth: 2048,
-        preferredCameraDevice: CameraDevice.rear,
-      );
+      final picker = widget.imagePicker;
+      if (picker != null) {
+        picked = await picker(source);
+      } else if (source == ImageSource.gallery) {
+        picked = await _imagePicker.pickMultiImage(
+          imageQuality: 88,
+          maxWidth: 2048,
+          maxHeight: 2048,
+        );
+      } else {
+        final image = await _imagePicker.pickImage(
+          source: source,
+          imageQuality: 88,
+          maxWidth: 2048,
+          preferredCameraDevice: CameraDevice.rear,
+        );
+        picked = <XFile>[?image];
+      }
     } on PlatformException {
       if (mounted) {
         _showTransientNotice(
@@ -1069,15 +1121,23 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       }
       return;
     }
-    if (picked == null || !mounted) {
+    if (picked.isEmpty || !mounted) {
       return;
     }
+    final selected = <_PickedAiFile>[];
     try {
-      await _uploadSelectedFile(
-        settings,
-        filename: picked.name,
-        bytes: await picked.readAsBytes(),
-      );
+      for (final image in picked) {
+        try {
+          selected.add(
+            _PickedAiFile(
+              filename: image.name,
+              bytes: await image.readAsBytes(),
+            ),
+          );
+        } on Exception {
+          // Keep the other selected images when one cannot be read.
+        }
+      }
     } on Exception {
       if (mounted) {
         _showTransientNotice(
@@ -1085,48 +1145,122 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
               .text('图片读取失败，请重试', 'Unable to read the image. Try again.'),
         );
       }
+      return;
     }
+    if (selected.length < picked.length && mounted) {
+      _showTransientNotice(
+        AppLocalizations.of(context)
+            .text('部分图片读取失败，请重试', 'Some images could not be read'),
+      );
+    }
+    await _uploadSelectedFiles(settings, selected);
   }
 
   Future<void> _uploadAttachment(DeepSeekSettings settings) async {
-    final picked = await FilePicker.pickFile(
+    final picked = await FilePicker.pickFiles(
       dialogTitle: AppLocalizations.of(context)
-          .text('选择要上传的文件', 'Choose a file to upload'),
+          .text('选择要上传的文件', 'Choose files to upload'),
     );
-    if (picked == null) {
+    if (picked.isEmpty || !mounted) {
       return;
     }
-    await _uploadSelectedFile(
-      settings,
-      filename: picked.name,
-      bytes: await picked.readAsBytes(),
+    final selected = <_PickedAiFile>[];
+    for (final file in picked) {
+      try {
+        selected.add(
+          _PickedAiFile(filename: file.name, bytes: await file.readAsBytes()),
+        );
+      } on Exception {
+        // Keep the other selected files when one cannot be read.
+      }
+    }
+    if (selected.length < picked.length && mounted) {
+      _showTransientNotice(
+        AppLocalizations.of(context)
+            .text('部分文件读取失败，请重试', 'Some files could not be read'),
+      );
+    }
+    await _uploadSelectedFiles(settings, selected);
+  }
+
+  Future<void> _uploadSelectedFiles(
+    DeepSeekSettings settings,
+    List<_PickedAiFile> files,
+  ) async {
+    if (files.isEmpty) {
+      return;
+    }
+    final drafts = files
+        .map(
+          (file) =>
+              _AiAttachmentDraft(filename: file.filename, bytes: file.bytes),
+        )
+        .toList(growable: false);
+    setState(() => _attachments.addAll(drafts));
+    await Future.wait(
+      drafts.map((attachment) => _uploadOneAttachment(settings, attachment)),
     );
   }
 
-  Future<void> _uploadSelectedFile(
-    DeepSeekSettings settings, {
-    required String filename,
-    required Uint8List bytes,
-  }) async {
+  Future<void> _uploadOneAttachment(
+    DeepSeekSettings settings,
+    _AiAttachmentDraft attachment,
+  ) async {
     try {
       final file = await _api.uploadFile(
         apiKey: settings.apiKey,
-        filename: filename,
-        bytes: bytes,
+        filename: attachment.filename,
+        bytes: attachment.bytes,
+        purpose: _attachmentUploadPurpose(attachment.filename),
+        onSendProgress: (sent, total) {
+          if (!mounted || !_attachments.contains(attachment)) {
+            return;
+          }
+          final progress = total > 0 ? math.min(1.0, sent / total) : null;
+          if (progress == attachment.uploadProgress) {
+            return;
+          }
+          setState(() => attachment.uploadProgress = progress);
+        },
       );
-      if (!mounted) {
+      if (!mounted || !_attachments.contains(attachment)) {
         return;
       }
-      setState(() => _attachmentFile = file);
-      _showTransientNotice(
-        AppLocalizations.of(context)
-            .text('${file.filename} 已上传', '${file.filename} uploaded'),
-      );
+      setState(() {
+        attachment
+          ..file = file
+          ..uploadProgress = null;
+      });
     } on DeepSeekApiException catch (error) {
-      if (mounted) {
+      if (mounted && _attachments.contains(attachment)) {
+        setState(() => _attachments.remove(attachment));
         _showTransientNotice(_chatErrorMessage(error));
       }
+    } on Exception {
+      if (mounted && _attachments.contains(attachment)) {
+        setState(() => _attachments.remove(attachment));
+        _showTransientNotice(
+          AppLocalizations.of(context)
+              .text('附件上传失败，请重试', 'Attachment upload failed'),
+        );
+      }
     }
+  }
+
+  String _attachmentUploadPurpose(String filename) {
+    final parts = filename.toLowerCase().split('.');
+    final extension = parts.length > 1 ? parts.last : '';
+    return switch (extension) {
+      'bmp' ||
+      'doc' ||
+      'docx' ||
+      'pdf' ||
+      'ppt' ||
+      'pptx' ||
+      'tif' ||
+      'tiff' => 'text_recognition',
+      _ => 'user_data',
+    };
   }
 
   Future<void> _showFiles(DeepSeekSettings settings) async {
@@ -1670,6 +1804,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       ),
     );
     final historyEntries = _historyEntries;
+    final attachmentsUploading = _attachments.any(
+      (attachment) => attachment.uploading,
+    );
+    final hasUploadedAttachment = _attachments.any(
+      (attachment) => attachment.file != null,
+    );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       key: const Key('ai-system-overlay'),
@@ -1733,10 +1873,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                                 switchOutCurve:
                                                     Curves.easeInCubic,
                                                 child: _messages.isEmpty
-                                                    ? const _AiWelcome(
+                                                    ? _AiWelcome(
                                                         key: ValueKey(
                                                           'ai-welcome',
                                                         ),
+                                                        returning:
+                                                            _hasPreviousConversation,
                                                       )
                                                     : _AiConversation(
                                                         key: const ValueKey(
@@ -1804,7 +1946,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                         focusNode: _composerFocus,
                                         focused: _composerFocused,
                                         canSend:
-                                            _composer.text.trim().isNotEmpty &&
+                                            (_composer.text.trim().isNotEmpty ||
+                                                hasUploadedAttachment) &&
+                                            !attachmentsUploading &&
                                             !_responding,
                                         responding: _responding,
                                         deepThinking: _deepThinking,
@@ -1822,11 +1966,13 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                               _handleAttachmentAction(action),
                                             ),
                                         onVoice: _showVoiceMessage,
-                                        attachmentName:
-                                            _attachmentFile?.filename,
-                                        onRemoveAttachment: () => setState(
-                                          () => _attachmentFile = null,
-                                        ),
+                                        attachments: _attachments,
+                                        onRemoveAttachment: (attachment) =>
+                                            setState(
+                                              () => _attachments.remove(
+                                                attachment,
+                                              ),
+                                            ),
                                         voiceActive:
                                             _recording || _holdToTalkActive,
                                         voiceMode: _voiceMode,
@@ -1836,6 +1982,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                         onHoldToTalkEnd: _endHoldToTalk,
                                         recordingWillCancel: _holdToTalkCancel,
                                         onSend: () => unawaited(_send()),
+                                        onAttachmentSuggestion: (suggestion) =>
+                                            unawaited(_send(suggestion)),
                                       ),
                                     ],
                                   ),
@@ -2105,43 +2253,142 @@ class _TwoLineMenuIcon extends StatelessWidget {
   }
 }
 
-class _AiWelcome extends StatelessWidget {
-  const _AiWelcome({super.key});
+class _AiWelcome extends StatefulWidget {
+  const _AiWelcome({super.key, required this.returning});
+
+  final bool returning;
+
+  @override
+  State<_AiWelcome> createState() => _AiWelcomeState();
+}
+
+class _AiWelcomeState extends State<_AiWelcome> {
+  String? _message;
+  String? _localeTag;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final text = AppLocalizations.of(context);
+    final localeTag = text.locale.toLanguageTag();
+    if (_localeTag == localeTag) {
+      return;
+    }
+    _localeTag = localeTag;
+    _message = _pickMessage(DateTime.now(), text, widget.returning);
+  }
+
+  @override
+  void didUpdateWidget(covariant _AiWelcome oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.returning == widget.returning) {
+      return;
+    }
+    _message = _pickMessage(
+      DateTime.now(),
+      AppLocalizations.of(context),
+      widget.returning,
+    );
+  }
+
+  String _pickMessage(DateTime now, AppLocalizations text, bool returning) {
+    if (returning) {
+      final templates = [
+        text.text('欢迎回来，我可以为你做点什么？', 'Welcome back. What can I do for you?'),
+        text.text(
+          '欢迎回来，今天想聊点什么？',
+          'Welcome back. What would you like to discuss?',
+        ),
+        text.text('欢迎回来，有什么我能帮你吗？', 'Welcome back. How can I help?'),
+        text.text(
+          '又见面了，今天想聊点什么？',
+          'Good to see you again. What would you like to discuss?',
+        ),
+      ];
+      return templates[math.Random().nextInt(templates.length)];
+    }
+    final generic = [
+      text.text('你好，让我们开始聊天吧。', 'Hi there. Let’s get started.'),
+      text.text('你好，有什么我能帮你吗？', 'Hello. How can I help?'),
+      text.text('今天想做点什么？', 'What would you like to do today?'),
+    ];
+    final timed = switch (now.hour) {
+      >= 5 && < 9 => [
+        text.text(
+          '早上好，今天想做点什么？',
+          'Good morning. What would you like to do today?',
+        ),
+        text.text('早上好，有什么我能帮你吗？', 'Good morning. How can I help?'),
+        text.text('早上好，今天有什么安排？', 'Good morning. What’s on your agenda?'),
+      ],
+      >= 9 && < 12 => [
+        text.text('上午好，今天想处理点什么？', 'Good morning. What are we working on?'),
+        text.text('上午好，我能帮什么忙吗？', 'Good morning. What can I help with?'),
+        text.text('上午好，有什么我能帮你吗？', 'Good morning. How can I help?'),
+      ],
+      >= 12 && < 14 => [
+        text.text('中午好，有什么我能帮你吗？', 'Good afternoon. How can I help?'),
+        text.text('中午好，想先聊点什么？', 'Good afternoon. What should we start with?'),
+      ],
+      >= 14 && < 18 => [
+        text.text(
+          '下午好，今天想聊点什么？',
+          'Good afternoon. What would you like to discuss?',
+        ),
+        text.text('下午好，我能帮什么忙吗？', 'Good afternoon. What can I help with?'),
+        text.text('下午好，有什么我能帮你吗？', 'Good afternoon. How can I help?'),
+      ],
+      >= 18 && < 23 => [
+        text.text('晚上好，今天过得怎么样？', 'Good evening. How was your day?'),
+        text.text('晚上好，需要我帮你处理什么？', 'Good evening. What can I help with?'),
+        text.text(
+          '晚上好，想聊点什么？',
+          'Good evening. What would you like to discuss?',
+        ),
+      ],
+      _ => [
+        text.text('夜深了，还没休息吗？', 'Still up?'),
+        text.text('夜深了，需要我帮你处理什么？', 'It’s late. How can I help?'),
+        text.text('晚上好，需要我陪你聊聊吗？', 'Good evening. Would you like to talk?'),
+      ],
+    };
+    final templates = <String>[
+      ...generic,
+      ...timed,
+      if (now.weekday == DateTime.saturday ||
+          now.weekday == DateTime.sunday) ...[
+        text.text('周末好，今天想做点什么？', 'Happy weekend. What would you like to do?'),
+        text.text('周末愉快，有什么我能帮你吗？', 'Enjoy your weekend. How can I help?'),
+        text.text(
+          '周末好，想聊点什么？',
+          'Happy weekend. What would you like to discuss?',
+        ),
+      ],
+    ];
+    return templates[math.Random().nextInt(templates.length)];
+  }
 
   @override
   Widget build(BuildContext context) {
-    final text = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const AiBrandMark(key: Key('ai-brand-mark'), size: 72),
+            const AiBrandMark(key: Key('ai-brand-mark'), size: 60),
             const SizedBox(height: 24),
-            Text.rich(
-              TextSpan(
-                text: text.text('你好，我是 ', 'Hello, I’m '),
-                style: TextStyle(
-                  color: AiColors.text(context),
-                  fontSize: 26.5,
-                  height: 1.24,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.45,
-                ),
-                children: [
-                  TextSpan(
-                    text: 'RuoQi',
-                    style: TextStyle(
-                      fontSize: 25.5,
-                      fontFamily: 'Inter',
-                      letterSpacing: -0.35,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+            Text(
+              _message ?? '',
+              key: const Key('ai-welcome-message'),
               textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AiColors.text(context),
+                fontSize: 26.5,
+                height: 1.24,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.45,
+              ),
             ),
           ],
         ),
@@ -3356,10 +3603,11 @@ class _AiComposer extends StatelessWidget {
     required this.attachmentMenuOpen,
     required this.onAttachment,
     required this.onAttachmentAction,
+    required this.onAttachmentSuggestion,
     required this.onVoice,
     required this.onSend,
-    this.attachmentName,
-    this.onRemoveAttachment,
+    required this.attachments,
+    required this.onRemoveAttachment,
     this.voiceActive = false,
     required this.voiceMode,
     required this.onRequestFocus,
@@ -3381,10 +3629,11 @@ class _AiComposer extends StatelessWidget {
   final bool attachmentMenuOpen;
   final VoidCallback onAttachment;
   final ValueChanged<_AttachmentAction> onAttachmentAction;
+  final ValueChanged<String> onAttachmentSuggestion;
   final VoidCallback onVoice;
   final VoidCallback onSend;
-  final String? attachmentName;
-  final VoidCallback? onRemoveAttachment;
+  final List<_AiAttachmentDraft> attachments;
+  final ValueChanged<_AiAttachmentDraft> onRemoveAttachment;
   final bool voiceActive;
   final bool voiceMode;
   final VoidCallback onRequestFocus;
@@ -3397,6 +3646,9 @@ class _AiComposer extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = AppLocalizations.of(context);
     final canHoldToTalk = (voiceMode || controller.text.isEmpty) && !focused;
+    final attachmentsUploading = attachments.any(
+      (attachment) => attachment.uploading,
+    );
     return TextFieldTapRegion(
       child: Listener(
         behavior: HitTestBehavior.translucent,
@@ -3455,42 +3707,60 @@ class _AiComposer extends StatelessWidget {
                         : Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (attachmentName != null)
+                              if (attachments.isNotEmpty)
                                 Padding(
-                                  padding: const EdgeInsets.only(bottom: 4),
-                                  child: Row(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      const Icon(
-                                        Icons.insert_drive_file,
-                                        size: 16,
-                                      ),
-                                      const SizedBox(width: 7),
-                                      Expanded(
-                                        child: Text(
-                                          attachmentName!,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 12),
+                                      SizedBox(
+                                        height: 96,
+                                        child: SingleChildScrollView(
+                                          key: const Key(
+                                            'ai-attachment-previews',
+                                          ),
+                                          scrollDirection: Axis.horizontal,
+                                          child: Row(
+                                            children: [
+                                              for (
+                                                var index = 0;
+                                                index < attachments.length;
+                                                index++
+                                              ) ...[
+                                                _AiPendingAttachment(
+                                                  key: ValueKey(
+                                                    attachments[index],
+                                                  ),
+                                                  filename: attachments[index]
+                                                      .filename,
+                                                  previewBytes:
+                                                      attachments[index].bytes,
+                                                  uploading: attachments[index]
+                                                      .uploading,
+                                                  uploadProgress:
+                                                      attachments[index]
+                                                          .uploadProgress,
+                                                  onRemove: () =>
+                                                      onRemoveAttachment(
+                                                        attachments[index],
+                                                      ),
+                                                ),
+                                                if (index !=
+                                                    attachments.length - 1)
+                                                  const SizedBox(width: 10),
+                                              ],
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                      IconButton(
-                                        tooltip: text.text(
-                                          '移除附件',
-                                          'Remove attachment',
+                                      const SizedBox(height: 12),
+                                      if (attachmentsUploading)
+                                        const _AiAttachmentSuggestionsSkeleton()
+                                      else
+                                        _AiAttachmentSuggestions(
+                                          onSelected: onAttachmentSuggestion,
                                         ),
-                                        onPressed: onRemoveAttachment,
-                                        visualDensity: VisualDensity.compact,
-                                        constraints:
-                                            const BoxConstraints.tightFor(
-                                              width: 30,
-                                              height: 30,
-                                            ),
-                                        padding: EdgeInsets.zero,
-                                        icon: const Icon(
-                                          Icons.close_rounded,
-                                          size: 16,
-                                        ),
-                                      ),
                                     ],
                                   ),
                                 ),
@@ -3677,7 +3947,8 @@ class _AiComposer extends StatelessWidget {
                                         size: 18,
                                       ),
                                     )
-                                  else if (controller.text.trim().isEmpty)
+                                  else if (controller.text.trim().isEmpty &&
+                                      attachments.isEmpty)
                                     _AiRoundAction(
                                       key: const Key('ai-voice-mode-toggle'),
                                       tooltip: text.text('语音输入', 'Voice input'),
@@ -3713,6 +3984,332 @@ class _AiComposer extends StatelessWidget {
                 child: _AiAttachmentMenu(onSelected: onAttachmentAction),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AiPendingAttachment extends StatelessWidget {
+  const _AiPendingAttachment({
+    super.key,
+    required this.filename,
+    required this.previewBytes,
+    required this.uploading,
+    required this.uploadProgress,
+    required this.onRemove,
+  });
+
+  final String filename;
+  final Uint8List? previewBytes;
+  final bool uploading;
+  final double? uploadProgress;
+  final VoidCallback? onRemove;
+
+  static const _imageExtensions = {
+    'bmp',
+    'gif',
+    'heic',
+    'jpeg',
+    'jpg',
+    'png',
+    'webp',
+  };
+
+  bool get _isImage {
+    final parts = filename.toLowerCase().split('.');
+    return parts.length > 1 && _imageExtensions.contains(parts.last);
+  }
+
+  String get _extension {
+    final parts = filename.split('.');
+    if (parts.length < 2 || parts.last.trim().isEmpty) {
+      return 'FILE';
+    }
+    return parts.last.toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = AppLocalizations.of(context);
+    final radius = BorderRadius.circular(16);
+    return SizedBox(
+      key: const Key('ai-attachment-preview'),
+      width: 90,
+      height: 96,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: 0,
+            bottom: 0,
+            child: Semantics(
+              label: filename,
+              image: _isImage,
+              child: Container(
+                width: 80,
+                height: 92,
+                decoration: BoxDecoration(
+                  color: AiColors.background(context),
+                  borderRadius: radius,
+                  border: Border.all(
+                    color: AiColors.border(context).withValues(alpha: 0.75),
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _thumbnail(context),
+                    if (uploading)
+                      _AiAttachmentUploadOverlay(progress: uploadProgress),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Tooltip(
+              message: text.text('移除附件', 'Remove attachment'),
+              child: Material(
+                color: AiColors.isDark(context)
+                    ? const Color(0xFFE8E9EC)
+                    : const Color(0xFFF2F3F5),
+                shape: const CircleBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: InkResponse(
+                  key: const Key('ai-attachment-preview-remove'),
+                  onTap: onRemove,
+                  radius: 12,
+                  child: SizedBox.square(
+                    dimension: 22,
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: AiColors.isDark(context)
+                          ? const Color(0xFF303136)
+                          : AiColors.text(context),
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _thumbnail(BuildContext context) {
+    final bytes = previewBytes;
+    if (_isImage && bytes != null) {
+      return Image.memory(
+        bytes,
+        key: const Key('ai-attachment-preview-image'),
+        fit: BoxFit.cover,
+        gaplessPlayback: true,
+        errorBuilder: (_, _, _) => _fileThumbnail(context),
+      );
+    }
+    return _fileThumbnail(context);
+  }
+
+  Widget _fileThumbnail(BuildContext context) {
+    return ColoredBox(
+      key: const Key('ai-attachment-preview-file'),
+      color: AiColors.background(context),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.insert_drive_file_rounded,
+            color: AiColors.text(context),
+            size: 28,
+          ),
+          const SizedBox(height: 7),
+          Text(
+            _extension,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: AiColors.muted(context),
+              fontSize: 9.5,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.35,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AiAttachmentUploadOverlay extends StatelessWidget {
+  const _AiAttachmentUploadOverlay({required this.progress});
+
+  final double? progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final normalized = progress?.clamp(0.0, 1.0);
+    return ColoredBox(
+      key: const Key('ai-attachment-upload-progress'),
+      color: Colors.black.withValues(alpha: 0.52),
+      child: Center(
+        child: SizedBox.square(
+          dimension: 38,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox.square(
+                dimension: 34,
+                child: CircularProgressIndicator(
+                  key: const Key('ai-attachment-upload-spinner'),
+                  value: normalized,
+                  strokeWidth: 2.4,
+                  color: Colors.white,
+                  backgroundColor: Colors.white.withValues(alpha: 0.24),
+                ),
+              ),
+              if (normalized == null)
+                const Icon(
+                  Icons.arrow_upward_rounded,
+                  color: Colors.white,
+                  size: 15,
+                )
+              else
+                Text(
+                  '${(normalized * 100).round()}%',
+                  key: const Key('ai-attachment-upload-percent'),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    height: 1,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.1,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AiAttachmentSuggestionsSkeleton extends StatelessWidget {
+  const _AiAttachmentSuggestionsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(15);
+    return Row(
+      key: const Key('ai-attachment-suggestions-loading'),
+      children: [
+        for (var index = 0; index < 3; index++) ...[
+          Expanded(
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: AiColors.surface(context).withValues(alpha: 0.55),
+                borderRadius: radius,
+                border: Border.all(
+                  color: AiColors.border(context).withValues(alpha: 0.72),
+                ),
+              ),
+            ),
+          ),
+          if (index != 2) const SizedBox(width: 8),
+        ],
+      ],
+    );
+  }
+}
+
+class _AiAttachmentSuggestions extends StatelessWidget {
+  const _AiAttachmentSuggestions({required this.onSelected});
+
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = AppLocalizations.of(context);
+    final suggestions = [
+      text.text('这是什么', 'What is this?'),
+      text.text('分析一下', 'Analyze it'),
+      text.text('怎么办', 'What should I do?'),
+    ];
+    return Row(
+      key: const Key('ai-attachment-suggestions'),
+      children: [
+        for (var index = 0; index < suggestions.length; index++) ...[
+          Expanded(
+            child: _AiAttachmentSuggestionButton(
+              suggestion: suggestions[index],
+              onTap: () => onSelected(suggestions[index]),
+            ),
+          ),
+          if (index != suggestions.length - 1) const SizedBox(width: 8),
+        ],
+      ],
+    );
+  }
+}
+
+class _AiAttachmentSuggestionButton extends StatelessWidget {
+  const _AiAttachmentSuggestionButton({
+    required this.suggestion,
+    required this.onTap,
+  });
+
+  final String suggestion;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(15);
+    return Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: BorderSide(color: AiColors.border(context)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: AiColors.accent(context).withValues(alpha: 0.1),
+        highlightColor: AiColors.accent(context).withValues(alpha: 0.05),
+        child: SizedBox(
+          height: 40,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 9),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    suggestion,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AiColors.text(context),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  color: AiColors.muted(context),
+                  size: 14,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -4194,6 +4791,24 @@ class _AiSendButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AiAttachmentDraft {
+  _AiAttachmentDraft({required this.filename, required this.bytes});
+
+  final String filename;
+  final Uint8List bytes;
+  DeepSeekFile? file;
+  double? uploadProgress;
+
+  bool get uploading => file == null;
+}
+
+class _PickedAiFile {
+  const _PickedAiFile({required this.filename, required this.bytes});
+
+  final String filename;
+  final Uint8List bytes;
 }
 
 enum _AttachmentAction { camera, gallery, upload, files, ocr, search, fetch }
