@@ -175,6 +175,35 @@ class _ControlledChatStreamAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
+class _StopContinueDeepSeekApi extends DeepSeekApi {
+  final StreamController<DeepSeekChatChunk> initial =
+      StreamController<DeepSeekChatChunk>();
+  final List<List<DeepSeekChatMessage>> requests = [];
+
+  void addInitialContent(String content) {
+    initial.add(DeepSeekChatChunk(content: content, reasoningContent: ''));
+  }
+
+  @override
+  Stream<DeepSeekChatChunk> streamChatCompletion({
+    required String apiKey,
+    required String model,
+    required List<DeepSeekChatMessage> messages,
+    bool thinking = false,
+    bool webSearch = false,
+    int? maxTokens,
+    double? temperature,
+  }) {
+    requests.add(messages);
+    if (requests.length == 1) {
+      return initial.stream;
+    }
+    return Stream<DeepSeekChatChunk>.fromIterable(const [
+      DeepSeekChatChunk(content: '继续生成部分。', reasoningContent: ''),
+    ]);
+  }
+}
+
 class _VoiceDeepSeekApi extends DeepSeekApi {
   int transcriptionCalls = 0;
   final List<List<DeepSeekChatMessage>> chatRequests = [];
@@ -1728,6 +1757,124 @@ print(version);
     await adapter.finish();
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-assistant-message')), findsOneWidget);
+  });
+
+  testWidgets('AI 回答中显示主题色停止按钮并可中止流式回答', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final adapter = _ControlledChatStreamAdapter();
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
+      ..httpClientAdapter = adapter;
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(dio: dio),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '停止回答测试');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pump();
+    adapter.addContent('已经生成的第一段回答。');
+    for (
+      var attempt = 0;
+      attempt < 20 && find.textContaining('已经生成的第一段回答').evaluate().isEmpty;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    final stopButton = find.byKey(const Key('ai-stop'));
+    final stopIcon = find.byKey(const Key('ai-stop-icon'));
+    expect(stopButton, findsOneWidget);
+    expect(stopIcon, findsOneWidget);
+    final stopDecoration =
+        tester.widget<AnimatedContainer>(stopIcon).decoration! as BoxDecoration;
+    expect(stopDecoration.color, AiColors.accent(tester.element(stopIcon)));
+
+    await tester.tap(stopButton);
+    for (var attempt = 0; attempt < 10; attempt++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(find.byKey(const Key('ai-stop')), findsNothing);
+    expect(find.byKey(const Key('ai-typing-indicator')), findsNothing);
+    expect(find.textContaining('已经生成的第一段回答'), findsOneWidget);
+
+    adapter.addContent('停止后不应继续追加。');
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.textContaining('停止后不应继续追加'), findsNothing);
+  });
+
+  testWidgets('AI 停止后显示继续生成并从断点续写', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final api = _StopContinueDeepSeekApi();
+    addTearDown(api.initial.close);
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: api,
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '继续生成测试');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pump();
+    api.addInitialContent('已经生成的前半段。');
+    for (
+      var attempt = 0;
+      attempt < 20 && find.textContaining('已经生成的前半段').evaluate().isEmpty;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    await tester.tap(find.byKey(const Key('ai-stop')));
+    for (var attempt = 0; attempt < 10; attempt++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(find.byKey(const Key('ai-continue-generation')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('ai-continue-generation')));
+    await tester.pumpAndSettle();
+
+    expect(api.requests, hasLength(2));
+    expect(find.textContaining('已经生成的前半段。继续生成部分。'), findsOneWidget);
+    expect(find.byKey(const Key('ai-continue-generation')), findsNothing);
+    final continuationRequest = api.requests.last;
+    expect(
+      continuationRequest[continuationRequest.length - 2].role,
+      'assistant',
+    );
+    expect(
+      continuationRequest[continuationRequest.length - 2].content,
+      '已经生成的前半段。',
+    );
+    expect(continuationRequest.last.content, contains('从中断处继续生成'));
   });
 
   testWidgets('流式回答中手动滚动后停止自动跟随并在完成后保持位置', (tester) async {

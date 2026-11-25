@@ -653,6 +653,175 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         );
   }
 
+  Future<void> _stopResponse() async {
+    if (!_responding) {
+      return;
+    }
+    _chatGeneration++;
+    final subscription = _chatSubscription;
+    _chatSubscription = null;
+    setState(() {
+      _responding = false;
+      _followResponseScroll = true;
+      final assistantIndex = _messages.lastIndexWhere(
+        (message) =>
+            message.role == _AiRole.assistant && message.content.isNotEmpty,
+      );
+      if (assistantIndex >= 0) {
+        _messages[assistantIndex] = _messages[assistantIndex].copyWith(
+          interrupted: true,
+        );
+      }
+    });
+    await subscription?.cancel();
+    await _stopSpeech();
+    if (!mounted) {
+      return;
+    }
+    unawaited(_saveCurrentConversation());
+  }
+
+  Future<void> _continueGeneration(_AiMessage message) async {
+    if (_responding || !message.interrupted) {
+      return;
+    }
+    final messageIndex = _messages.indexOf(message);
+    if (messageIndex < 0 || messageIndex != _messages.length - 1) {
+      return;
+    }
+    DeepSeekSettings settings;
+    try {
+      settings = await _settingsStore.load();
+    } catch (_) {
+      if (mounted) {
+        _showTransientNotice(
+          AppLocalizations.of(context)
+              .text('无法读取 DeepSeek 配置', 'Unable to read DeepSeek settings'),
+        );
+      }
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    if (settings.apiKey.isEmpty || settings.selectedModelId.isEmpty) {
+      _showTransientNotice(
+        AppLocalizations.of(context).text(
+          '请先在设置中配置 DeepSeek API Key 和模型',
+          'Configure a DeepSeek API key and model in Settings first',
+        ),
+      );
+      return;
+    }
+    if (_speaking || _speechLoading || _autoReadSpeechDraining) {
+      await _stopSpeech();
+      if (!mounted) {
+        return;
+      }
+    }
+    _autoReadSpeechQueue.clear();
+    _autoReadSpeechBuffer = '';
+    _autoReadSpeechSourceDone = !_autoRead;
+
+    final history = <DeepSeekChatMessage>[
+      const DeepSeekChatMessage(role: 'system', content: _deepSeekSystemPrompt),
+      for (var index = 0; index <= messageIndex; index++)
+        if (_messages[index].content.isNotEmpty ||
+            _messages[index].attachments.isNotEmpty)
+          DeepSeekChatMessage(
+            role: _messages[index].role == _AiRole.user ? 'user' : 'assistant',
+            content: _historyMessageContent(_messages[index]),
+          ),
+      const DeepSeekChatMessage(
+        role: 'user',
+        content: '请从中断处继续生成上面的回答。只输出新增内容，不要重复已经生成的部分。',
+      ),
+    ];
+    final generation = ++_chatGeneration;
+    var streamStarted = false;
+    setState(() {
+      _selectedModelName = settings.selectedModelName;
+      _messages[messageIndex] = message.copyWith(interrupted: false);
+      _responding = true;
+      _attachmentMenuOpen = false;
+      _followResponseScroll = true;
+    });
+    _scrollMessagesToEnd();
+
+    await _chatSubscription?.cancel();
+    _chatSubscription = _api
+        .streamChatCompletion(
+          apiKey: settings.apiKey,
+          model: settings.selectedModelId,
+          messages: history,
+          thinking: _deepThinking,
+          webSearch: _webSearch,
+        )
+        .listen(
+          (chunk) {
+            if (!mounted ||
+                generation != _chatGeneration ||
+                chunk.content.isEmpty) {
+              return;
+            }
+            setState(() {
+              streamStarted = true;
+              final current = _messages[messageIndex];
+              _messages[messageIndex] = current.copyWith(
+                content: '${current.content}${chunk.content}',
+              );
+            });
+            if (_autoRead) {
+              _queueAutoReadSpeech(chunk.content, settings);
+            }
+            _scrollMessagesToEnd();
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            if (!mounted || generation != _chatGeneration) {
+              return;
+            }
+            setState(() {
+              _responding = false;
+              _chatSubscription = null;
+              _messages[messageIndex] = _messages[messageIndex].copyWith(
+                interrupted: true,
+              );
+            });
+            if (_autoRead) {
+              _finishAutoReadSpeech(settings);
+            }
+            _showTransientNotice(_chatErrorMessage(error));
+            unawaited(_saveCurrentConversation());
+            _scrollMessagesToEnd();
+          },
+          onDone: () {
+            if (!mounted || generation != _chatGeneration) {
+              return;
+            }
+            setState(() {
+              _responding = false;
+              _chatSubscription = null;
+              if (!streamStarted) {
+                _messages[messageIndex] = _messages[messageIndex].copyWith(
+                  interrupted: true,
+                );
+              }
+            });
+            if (_autoRead) {
+              _finishAutoReadSpeech(settings);
+            }
+            if (!streamStarted) {
+              _showTransientNotice(
+                AppLocalizations.of(context)
+                    .text('DeepSeek 未返回内容', 'DeepSeek returned no content'),
+              );
+            }
+            unawaited(_saveCurrentConversation());
+            _scrollMessagesToEnd();
+          },
+        );
+  }
+
   Object _historyMessageContent(_AiMessage message) {
     if (message.role != _AiRole.user || message.attachments.isEmpty) {
       return message.content;
@@ -743,7 +912,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         prefetchedAudio = null;
         if (_autoReadSpeechQueue.isNotEmpty) {
           prefetchedChunk = _autoReadSpeechQueue.removeAt(0);
-          final nextAudio = _loadSpeechChunk(settings, prefetchedChunk!);
+          final nextAudio = _loadSpeechChunk(settings, prefetchedChunk);
           prefetchedAudio = nextAudio;
           unawaited(nextAudio.then<void>((_) {}, onError: (_, _) {}));
         }
@@ -1373,7 +1542,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         message.content,
         deepThinking: message.deepThinking,
         webSearch: message.webSearch,
-      ).copyWith(feedback: message.feedback);
+      ).copyWith(feedback: message.feedback, interrupted: message.interrupted);
     }
 
     final attachments = <_AiMessageAttachment>[];
@@ -1432,6 +1601,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
           attachments: attachments,
           deepThinking: message.deepThinking,
           webSearch: message.webSearch,
+          interrupted: message.interrupted,
           feedback: message.feedback,
         ),
       );
@@ -2516,6 +2686,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                                             ),
                                                         onRegenerate:
                                                             _regenerateMessage,
+                                                        onContinue: (message) =>
+                                                            unawaited(
+                                                              _continueGeneration(
+                                                                message,
+                                                              ),
+                                                            ),
                                                       ),
                                               ),
                                             ),
@@ -2574,6 +2750,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                         onHoldToTalkEnd: _endHoldToTalk,
                                         recordingWillCancel: _holdToTalkCancel,
                                         onSend: () => unawaited(_send()),
+                                        onStop: () =>
+                                            unawaited(_stopResponse()),
                                         onAttachmentSuggestion: (suggestion) =>
                                             unawaited(_send(suggestion)),
                                       ),
@@ -3021,6 +3199,7 @@ class _AiConversation extends StatelessWidget {
     required this.onSpeak,
     required this.onShare,
     required this.onRegenerate,
+    required this.onContinue,
   });
 
   final List<_AiMessage> messages;
@@ -3038,6 +3217,7 @@ class _AiConversation extends StatelessWidget {
   final ValueChanged<_AiMessage> onSpeak;
   final ValueChanged<_AiMessage> onShare;
   final ValueChanged<_AiMessage> onRegenerate;
+  final ValueChanged<_AiMessage> onContinue;
 
   @override
   Widget build(BuildContext context) {
@@ -3090,6 +3270,11 @@ class _AiConversation extends StatelessWidget {
             textSelectionController: textSelectionController,
             onShare: () => onShare(message),
             onRegenerate: () => onRegenerate(message),
+            canContinue:
+                !responding &&
+                index == messages.length - 1 &&
+                message.interrupted,
+            onContinue: () => onContinue(message),
           );
         },
       ),
@@ -3111,6 +3296,8 @@ class _AiMessageBubble extends StatefulWidget {
     required this.textSelectionController,
     required this.onShare,
     required this.onRegenerate,
+    required this.canContinue,
+    required this.onContinue,
   });
 
   final _AiMessage message;
@@ -3125,6 +3312,8 @@ class _AiMessageBubble extends StatefulWidget {
   final AiTextSelectionController? textSelectionController;
   final VoidCallback onShare;
   final VoidCallback onRegenerate;
+  final bool canContinue;
+  final VoidCallback onContinue;
 
   @override
   State<_AiMessageBubble> createState() => _AiMessageBubbleState();
@@ -3453,6 +3642,34 @@ class _AiMessageBubbleState extends State<_AiMessageBubble> {
                       styleSheet: _assistantMarkdownStyle(context),
                     ),
                   ),
+            if (widget.canContinue) ...[
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: OutlinedButton(
+                  key: const Key('ai-continue-generation'),
+                  onPressed: widget.onContinue,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AiColors.text(context),
+                    side: BorderSide(color: AiColors.border(context)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: const StadiumBorder(),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context).text('继续生成', 'Continue'),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
             if (widget.showActions) ...[
               const SizedBox(height: 10),
               _AnswerActionBar(
@@ -4221,6 +4438,7 @@ class _AiComposer extends StatelessWidget {
     required this.onAttachmentSuggestion,
     required this.onVoice,
     required this.onSend,
+    required this.onStop,
     required this.attachments,
     required this.onRemoveAttachment,
     this.voiceActive = false,
@@ -4247,6 +4465,7 @@ class _AiComposer extends StatelessWidget {
   final ValueChanged<String> onAttachmentSuggestion;
   final VoidCallback onVoice;
   final VoidCallback onSend;
+  final VoidCallback onStop;
   final List<_AiAttachmentDraft> attachments;
   final ValueChanged<_AiAttachmentDraft> onRemoveAttachment;
   final bool voiceActive;
@@ -4539,9 +4758,9 @@ class _AiComposer extends StatelessWidget {
                                   const SizedBox(width: 7),
                                   if (responding)
                                     _AiSendButton(
-                                      enabled: false,
+                                      enabled: true,
                                       responding: true,
-                                      onTap: onSend,
+                                      onTap: onStop,
                                     )
                                   else if (voiceMode)
                                     _AiRoundAction(
@@ -5602,7 +5821,10 @@ class _AiSendButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = AppLocalizations.of(context).text('发送', 'Send');
+    final text = AppLocalizations.of(context);
+    final label = responding
+        ? text.text('停止回答', 'Stop response')
+        : text.text('发送', 'Send');
     return Tooltip(
       message: label,
       child: Semantics(
@@ -5612,30 +5834,31 @@ class _AiSendButton extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkResponse(
-            key: const Key('ai-send'),
+            key: Key(responding ? 'ai-stop' : 'ai-send'),
             onTap: enabled ? onTap : null,
             radius: 22,
             child: SizedBox.square(
               dimension: 44,
               child: Center(
                 child: AnimatedContainer(
+                  key: Key(responding ? 'ai-stop-icon' : 'ai-send-icon'),
                   duration: const Duration(milliseconds: 160),
                   width: 27,
                   height: 27,
                   decoration: BoxDecoration(
-                    color: enabled
+                    color: enabled || responding
                         ? AiColors.accent(context)
                         : AiColors.softSurface(context),
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
                   child: responding
-                      ? SizedBox(
-                          width: 12,
-                          height: 12,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 1.8,
-                            color: AiColors.accent(context),
+                      ? Container(
+                          width: 11,
+                          height: 11,
+                          decoration: BoxDecoration(
+                            color: AiColors.onAccent(context),
+                            borderRadius: BorderRadius.circular(3),
                           ),
                         )
                       : Icon(
@@ -5716,6 +5939,7 @@ class _AiMessage {
   }) : role = _AiRole.user,
        deepThinking = false,
        webSearch = false,
+       interrupted = false,
        feedback = 0;
 
   const _AiMessage.assistant(
@@ -5724,12 +5948,14 @@ class _AiMessage {
     this.webSearch = false,
   }) : role = _AiRole.assistant,
        feedback = 0,
+       interrupted = false,
        attachments = const <_AiMessageAttachment>[];
 
   final _AiRole role;
   final String content;
   final bool deepThinking;
   final bool webSearch;
+  final bool interrupted;
   final int feedback;
   final List<_AiMessageAttachment> attachments;
 
@@ -5737,6 +5963,7 @@ class _AiMessage {
     String? content,
     bool? deepThinking,
     bool? webSearch,
+    bool? interrupted,
     int? feedback,
   }) {
     return _AiMessage._(
@@ -5744,6 +5971,7 @@ class _AiMessage {
       content: content ?? this.content,
       deepThinking: deepThinking ?? this.deepThinking,
       webSearch: webSearch ?? this.webSearch,
+      interrupted: interrupted ?? this.interrupted,
       feedback: feedback ?? this.feedback,
       attachments: attachments,
     );
@@ -5754,6 +5982,7 @@ class _AiMessage {
     required this.content,
     required this.deepThinking,
     required this.webSearch,
+    required this.interrupted,
     required this.feedback,
     required this.attachments,
   });

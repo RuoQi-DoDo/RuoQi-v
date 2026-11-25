@@ -39,6 +39,7 @@ class ChatHistoryMessage {
     this.attachments = const [],
     this.deepThinking = false,
     this.webSearch = false,
+    this.interrupted = false,
     this.feedback = 0,
   });
 
@@ -47,6 +48,7 @@ class ChatHistoryMessage {
   final List<ChatHistoryAttachment> attachments;
   final bool deepThinking;
   final bool webSearch;
+  final bool interrupted;
   final int feedback;
 
   Map<String, dynamic> toJson() => {
@@ -57,6 +59,7 @@ class ChatHistoryMessage {
         .toList(),
     'deepThinking': deepThinking,
     'webSearch': webSearch,
+    'interrupted': interrupted,
     'feedback': feedback,
   };
 
@@ -77,6 +80,7 @@ class ChatHistoryMessage {
           : const [],
       deepThinking: json['deepThinking'] as bool? ?? false,
       webSearch: json['webSearch'] as bool? ?? false,
+      interrupted: json['interrupted'] as bool? ?? false,
       feedback: json['feedback'] as int? ?? 0,
     );
   }
