@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
@@ -31,6 +32,149 @@ const _aiIconButtonStyle = ButtonStyle(
 const _aiMessageListBottomPadding = 18.0;
 const _aiMessageListScrollButtonPadding = 52.0;
 const _aiMessageBottomTolerance = 24.0;
+const _aiImageFileExtensions = {
+  'bmp',
+  'gif',
+  'heic',
+  'jpeg',
+  'jpg',
+  'png',
+  'webp',
+};
+
+bool _isAiImageFilename(String filename) {
+  final parts = filename.toLowerCase().split('.');
+  return parts.length > 1 && _aiImageFileExtensions.contains(parts.last);
+}
+
+class _AiImageSize {
+  const _AiImageSize({required this.width, required this.height});
+
+  final int width;
+  final int height;
+
+  double get aspectRatio => width > 0 && height > 0 ? width / height : 1;
+}
+
+_AiImageSize? _readAiImageSize(Uint8List bytes) {
+  if (bytes.length < 10) {
+    return null;
+  }
+  final data = ByteData.sublistView(bytes);
+  if (bytes.length >= 24 &&
+      bytes[0] == 0x89 &&
+      bytes[1] == 0x50 &&
+      bytes[2] == 0x4e &&
+      bytes[3] == 0x47) {
+    return _AiImageSize(
+      width: data.getUint32(16, Endian.big),
+      height: data.getUint32(20, Endian.big),
+    );
+  }
+  if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) {
+    return _AiImageSize(
+      width: data.getUint16(6, Endian.little),
+      height: data.getUint16(8, Endian.little),
+    );
+  }
+  if (bytes.length >= 26 && bytes[0] == 0x42 && bytes[1] == 0x4d) {
+    return _AiImageSize(
+      width: data.getInt32(18, Endian.little).abs(),
+      height: data.getInt32(22, Endian.little).abs(),
+    );
+  }
+  if (bytes.length >= 30 &&
+      bytes[0] == 0x52 &&
+      bytes[1] == 0x49 &&
+      bytes[8] == 0x57 &&
+      bytes[9] == 0x45) {
+    var offset = 12;
+    while (offset + 8 <= bytes.length) {
+      final type = String.fromCharCodes(bytes, offset, offset + 4);
+      final chunkSize = data.getUint32(offset + 4, Endian.little);
+      final content = offset + 8;
+      if (type == 'VP8X' && content + 10 <= bytes.length) {
+        return _AiImageSize(
+          width:
+              1 +
+              bytes[content + 4] +
+              (bytes[content + 5] << 8) +
+              (bytes[content + 6] << 16),
+          height:
+              1 +
+              bytes[content + 7] +
+              (bytes[content + 8] << 8) +
+              (bytes[content + 9] << 16),
+        );
+      }
+      if (type == 'VP8 ' &&
+          content + 10 <= bytes.length &&
+          bytes[content + 3] == 0x9d &&
+          bytes[content + 4] == 0x01 &&
+          bytes[content + 5] == 0x2a) {
+        return _AiImageSize(
+          width: data.getUint16(content + 6, Endian.little) & 0x3fff,
+          height: data.getUint16(content + 8, Endian.little) & 0x3fff,
+        );
+      }
+      offset = content + chunkSize + (chunkSize.isOdd ? 1 : 0);
+    }
+  }
+  if (bytes[0] == 0xff && bytes[1] == 0xd8) {
+    var offset = 2;
+    while (offset + 1 < bytes.length) {
+      if (bytes[offset] != 0xff) {
+        offset++;
+        continue;
+      }
+      while (offset < bytes.length && bytes[offset] == 0xff) {
+        offset++;
+      }
+      if (offset >= bytes.length) {
+        break;
+      }
+      final marker = bytes[offset++];
+      if (marker == 0xd9 || marker == 0xda) {
+        break;
+      }
+      if (marker == 0x01 ||
+          marker == 0xd8 ||
+          (marker >= 0xd0 && marker <= 0xd7)) {
+        continue;
+      }
+      if (offset + 2 > bytes.length) {
+        break;
+      }
+      final segmentLength = data.getUint16(offset, Endian.big);
+      if (segmentLength < 2) {
+        break;
+      }
+      final segment = offset + 2;
+      final isStartOfFrame =
+          marker == 0xc0 ||
+          marker == 0xc1 ||
+          marker == 0xc2 ||
+          marker == 0xc3 ||
+          marker == 0xc5 ||
+          marker == 0xc6 ||
+          marker == 0xc7 ||
+          marker == 0xc9 ||
+          marker == 0xca ||
+          marker == 0xcb ||
+          marker == 0xcd ||
+          marker == 0xce ||
+          marker == 0xcf;
+      if (isStartOfFrame && segment + 5 <= bytes.length) {
+        return _AiImageSize(
+          width: data.getUint16(segment + 3, Endian.big),
+          height: data.getUint16(segment + 1, Endian.big),
+        );
+      }
+      offset = segment + segmentLength - 2;
+    }
+  }
+  return null;
+}
 
 /// Lets the host page clear an active text selection before handling Back.
 class AiTextSelectionController {
@@ -301,7 +445,25 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
               .whereType<DeepSeekFile>()
               .toList(growable: false)
         : const <DeepSeekFile>[];
-    final attachmentNames = _attachments
+    final sentAttachments = addUserMessage
+        ? _attachments
+              .where((attachment) => attachment.file != null)
+              .map(
+                (attachment) => _AiMessageAttachment(
+                  filename: attachment.filename,
+                  bytes: attachment.bytes,
+                  fileId: attachment.file!.id,
+                  sourcePath: attachment.sourcePath,
+                  aspectRatio:
+                      attachment.aspectRatio ??
+                      _readAiImageSize(attachment.bytes)?.aspectRatio ??
+                      1,
+                ),
+              )
+              .toList(growable: false)
+        : const <_AiMessageAttachment>[];
+    final visibleAttachmentNames = sentAttachments
+        .where((attachment) => !attachment.isImage)
         .map((attachment) => attachment.filename)
         .join(AppLocalizations.of(context).text('、', ', '));
     if (hasUploadingAttachment ||
@@ -336,19 +498,23 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     final nextTitle = addUserMessage && _messages.isEmpty
         ? (prompt.isEmpty ? uploadedFiles.first.filename : prompt)
         : _conversationTitle;
-    final visiblePrompt = prompt.isEmpty && attachmentNames.isNotEmpty
-        ? AppLocalizations.of(context)
-              .text('附件：$attachmentNames', 'Attachments: $attachmentNames')
-        : prompt;
+    final visiblePrompt = prompt.isNotEmpty
+        ? prompt
+        : visibleAttachmentNames.isNotEmpty
+        ? AppLocalizations.of(context).text(
+            '附件：$visibleAttachmentNames',
+            'Attachments: $visibleAttachmentNames',
+          )
+        : '';
     FocusScope.of(context).unfocus();
     _composer.clear();
     final history = <DeepSeekChatMessage>[
       const DeepSeekChatMessage(role: 'system', content: _deepSeekSystemPrompt),
       for (final message in _messages)
-        if (message.content.isNotEmpty)
+        if (message.content.isNotEmpty || message.attachments.isNotEmpty)
           DeepSeekChatMessage(
             role: message.role == _AiRole.user ? 'user' : 'assistant',
-            content: message.content,
+            content: _historyMessageContent(message),
           ),
       if (addUserMessage)
         DeepSeekChatMessage(
@@ -374,7 +540,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         _conversationCreatedAt = now;
       }
       if (addUserMessage) {
-        _messages.add(_AiMessage.user(visiblePrompt));
+        _messages.add(
+          _AiMessage.user(visiblePrompt, attachments: sentAttachments),
+        );
         _attachments.clear();
       }
       _attachmentMenuOpen = false;
@@ -460,6 +628,28 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
             _scrollMessagesToEnd();
           },
         );
+  }
+
+  Object _historyMessageContent(_AiMessage message) {
+    if (message.role != _AiRole.user || message.attachments.isEmpty) {
+      return message.content;
+    }
+    final fileIds = message.attachments
+        .where((attachment) => attachment.fileId.isNotEmpty)
+        .map((attachment) => attachment.fileId)
+        .toList(growable: false);
+    if (fileIds.isEmpty) {
+      return message.content.isNotEmpty
+          ? message.content
+          : AppLocalizations.of(context).text(
+              '附件：${message.attachments.map((item) => item.filename).join('、')}',
+              'Attachments: ${message.attachments.map((item) => item.filename).join(', ')}',
+            );
+    }
+    return [
+      if (message.content.isNotEmpty) {'type': 'text', 'text': message.content},
+      for (final fileId in fileIds) {'type': 'file', 'file_id': fileId},
+    ];
   }
 
   Future<void> _toggleSpeech(String text) async {
@@ -1003,13 +1193,46 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   }
 
   _AiMessage _toAiMessage(ChatHistoryMessage message) {
-    return message.role == 'assistant'
-        ? _AiMessage.assistant(
-            message.content,
-            deepThinking: message.deepThinking,
-            webSearch: message.webSearch,
-          ).copyWith(feedback: message.feedback)
-        : _AiMessage.user(message.content);
+    if (message.role == 'assistant') {
+      return _AiMessage.assistant(
+        message.content,
+        deepThinking: message.deepThinking,
+        webSearch: message.webSearch,
+      ).copyWith(feedback: message.feedback);
+    }
+
+    final attachments = <_AiMessageAttachment>[];
+    for (final attachment in message.attachments) {
+      final bytes = _readHistoryAttachmentBytes(attachment);
+      if (bytes == null) {
+        continue;
+      }
+      attachments.add(
+        _AiMessageAttachment(
+          filename: attachment.filename,
+          bytes: bytes,
+          fileId: attachment.fileId,
+          sourcePath: attachment.path,
+          aspectRatio: attachment.aspectRatio,
+        ),
+      );
+    }
+    if (attachments.isEmpty) {
+      attachments.addAll(_recoverLegacyImageAttachments(message.content));
+    }
+    final text = AppLocalizations.of(context);
+    var content = message.content;
+    if (attachments.isNotEmpty && _isAttachmentOnlyContent(content)) {
+      content = '';
+    } else if (attachments.isEmpty &&
+        message.attachments.isNotEmpty &&
+        content.isEmpty) {
+      content = text.text(
+        '附件：${message.attachments.map((item) => item.filename).join('、')}',
+        'Attachments: ${message.attachments.map((item) => item.filename).join(', ')}',
+      );
+    }
+    return _AiMessage.user(content, attachments: attachments);
   }
 
   Future<void> _saveCurrentConversation() async {
@@ -1017,30 +1240,156 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     if (id == null || _messages.isEmpty) {
       return;
     }
+    final text = AppLocalizations.of(context);
+    final historyMessages = <ChatHistoryMessage>[];
+    for (final message in _messages) {
+      final attachments = <ChatHistoryAttachment>[];
+      for (final attachment in message.attachments) {
+        final persisted = _persistHistoryAttachment(attachment);
+        if (persisted != null) {
+          attachments.add(persisted);
+        }
+      }
+      historyMessages.add(
+        ChatHistoryMessage(
+          role: message.role == _AiRole.user ? 'user' : 'assistant',
+          content: message.content,
+          attachments: attachments,
+          deepThinking: message.deepThinking,
+          webSearch: message.webSearch,
+          feedback: message.feedback,
+        ),
+      );
+    }
     final now = DateTime.now();
     final conversation = ChatConversation(
       id: id,
       title: _conversationTitle.isEmpty
-          ? AppLocalizations.of(context).text('新对话', 'New chat')
+          ? text.text('新对话', 'New chat')
           : _conversationTitle,
       createdAt: _conversationCreatedAt ?? now,
       updatedAt: now,
-      messages: _messages
-          .map(
-            (message) => ChatHistoryMessage(
-              role: message.role == _AiRole.user ? 'user' : 'assistant',
-              content: message.content,
-              deepThinking: message.deepThinking,
-              webSearch: message.webSearch,
-              feedback: message.feedback,
-            ),
-          )
-          .toList(growable: false),
+      messages: historyMessages,
     );
     await _historyStore.saveConversation(conversation);
     if (mounted && !_hasPreviousConversation) {
       setState(() => _hasPreviousConversation = true);
     }
+  }
+
+  ChatHistoryAttachment? _persistHistoryAttachment(
+    _AiMessageAttachment attachment,
+  ) {
+    try {
+      final sourcePath = attachment.sourcePath;
+      if (sourcePath != null && File(sourcePath).existsSync()) {
+        return ChatHistoryAttachment(
+          filename: attachment.filename,
+          path: sourcePath,
+          aspectRatio: attachment.aspectRatio,
+          fileId: attachment.fileId,
+        );
+      }
+      final directory = Directory(
+        '${Directory.systemTemp.path}${Platform.pathSeparator}ruoqi_ai_history',
+      );
+      directory.createSync(recursive: true);
+      final safeFileId = attachment.fileId.replaceAll(
+        RegExp(r'[^A-Za-z0-9._-]'),
+        '_',
+      );
+      final extension = _attachmentExtension(attachment.filename);
+      final path =
+          '${directory.path}${Platform.pathSeparator}'
+          '${safeFileId.isEmpty ? attachment.filename.hashCode.abs() : safeFileId}'
+          '$extension';
+      final file = File(path);
+      if (!file.existsSync()) {
+        file.writeAsBytesSync(attachment.bytes, flush: true);
+      }
+      return ChatHistoryAttachment(
+        filename: attachment.filename,
+        path: path,
+        aspectRatio: attachment.aspectRatio,
+        fileId: attachment.fileId,
+      );
+    } on FileSystemException {
+      return null;
+    }
+  }
+
+  Uint8List? _readHistoryAttachmentBytes(ChatHistoryAttachment attachment) {
+    final candidates = <File>[
+      if (attachment.path.isNotEmpty) File(attachment.path),
+      File(
+        '${Directory.systemTemp.path}${Platform.pathSeparator}'
+        '${attachment.filename}',
+      ),
+    ];
+    for (final file in candidates) {
+      try {
+        if (file.existsSync()) {
+          return file.readAsBytesSync();
+        }
+      } on FileSystemException {
+        // Try the next known location.
+      }
+    }
+    return null;
+  }
+
+  List<_AiMessageAttachment> _recoverLegacyImageAttachments(String content) {
+    final names = _attachmentNamesFromContent(content)
+        .where(_isAiImageFilename)
+        .toList(growable: false);
+    if (names.isEmpty) {
+      return const [];
+    }
+    final attachments = <_AiMessageAttachment>[];
+    for (final filename in names) {
+      final attachment = _readHistoryAttachmentBytes(
+        ChatHistoryAttachment(filename: filename, path: '', aspectRatio: 1),
+      );
+      if (attachment == null) {
+        continue;
+      }
+      attachments.add(
+        _AiMessageAttachment(
+          filename: filename,
+          bytes: attachment,
+          fileId: '',
+          sourcePath: '',
+          aspectRatio: _readAiImageSize(attachment)?.aspectRatio ?? 1,
+        ),
+      );
+    }
+    return attachments;
+  }
+
+  List<String> _attachmentNamesFromContent(String content) {
+    for (final prefix in const ['附件：', 'Attachments: ']) {
+      if (!content.startsWith(prefix)) {
+        continue;
+      }
+      return content
+          .substring(prefix.length)
+          .split(RegExp(r'、|,\s*'))
+          .map((name) => name.trim())
+          .where((name) => name.isNotEmpty)
+          .toList(growable: false);
+    }
+    return const [];
+  }
+
+  bool _isAttachmentOnlyContent(String content) =>
+      _attachmentNamesFromContent(content).isNotEmpty;
+
+  String _attachmentExtension(String filename) {
+    final dot = filename.lastIndexOf('.');
+    if (dot < 0 || dot == filename.length - 1) {
+      return '';
+    }
+    return filename.substring(dot).toLowerCase();
   }
 
   Future<void> _renameHistoryEntry(AiHistoryEntry entry, String title) async {
@@ -1183,10 +1532,13 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     try {
       for (final image in picked) {
         try {
+          final bytes = await image.readAsBytes();
           selected.add(
             _PickedAiFile(
               filename: image.name,
-              bytes: await image.readAsBytes(),
+              bytes: bytes,
+              sourcePath: image.path,
+              aspectRatio: _readAiImageSize(bytes)?.aspectRatio,
             ),
           );
         } on Exception {
@@ -1222,8 +1574,14 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     final selected = <_PickedAiFile>[];
     for (final file in picked) {
       try {
+        final bytes = await file.readAsBytes();
         selected.add(
-          _PickedAiFile(filename: file.name, bytes: await file.readAsBytes()),
+          _PickedAiFile(
+            filename: file.name,
+            bytes: bytes,
+            sourcePath: file.path,
+            aspectRatio: _readAiImageSize(bytes)?.aspectRatio,
+          ),
         );
       } on Exception {
         // Keep the other selected files when one cannot be read.
@@ -1247,8 +1605,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     }
     final drafts = files
         .map(
-          (file) =>
-              _AiAttachmentDraft(filename: file.filename, bytes: file.bytes),
+          (file) => _AiAttachmentDraft(
+            filename: file.filename,
+            bytes: file.bytes,
+            sourcePath: file.sourcePath,
+            aspectRatio: file.aspectRatio,
+          ),
         )
         .toList(growable: false);
     setState(() => _attachments.addAll(drafts));
@@ -2805,41 +3167,68 @@ class _AiMessageBubbleState extends State<_AiMessageBubble> {
     final message = widget.message;
     final fromUser = message.role == _AiRole.user;
     if (fromUser) {
+      final images = message.attachments
+          .where((attachment) => attachment.isImage)
+          .toList(growable: false);
+      final hasText = message.content.trim().isNotEmpty;
+      final maxWidth = MediaQuery.sizeOf(context).width * 0.76;
       return Padding(
         padding: const EdgeInsets.only(bottom: 24),
         child: Align(
           alignment: Alignment.centerRight,
-          child: Container(
-            key: const Key('ai-user-message'),
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.sizeOf(context).width * 0.76,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
-            decoration: BoxDecoration(
-              color: AiColors.softSurface(context),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: _selectingText
-                ? _selectableContent(
-                    Text(
-                      message.content,
-                      key: const Key('ai-user-selectable-text'),
-                      style: _userTextStyle(context),
-                    ),
-                  )
-                : GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onLongPressStart: (details) {
-                      _selectionAnchor = details.globalPosition;
-                      unawaited(
-                        _showMessageMenu(context, details.globalPosition),
-                      );
-                    },
-                    child: Text(
-                      message.content,
-                      style: _userTextStyle(context),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (images.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: hasText ? 8 : 0),
+                    child: _AiSentImageStrip(
+                      key: const Key('ai-sent-image'),
+                      attachments: images,
+                      maxWidth: maxWidth,
                     ),
                   ),
+                if (hasText)
+                  Container(
+                    key: const Key('ai-user-message'),
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 15,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AiColors.softSurface(context),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: _selectingText
+                        ? _selectableContent(
+                            Text(
+                              message.content,
+                              key: const Key('ai-user-selectable-text'),
+                              style: _userTextStyle(context),
+                            ),
+                          )
+                        : GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onLongPressStart: (details) {
+                              _selectionAnchor = details.globalPosition;
+                              unawaited(
+                                _showMessageMenu(
+                                  context,
+                                  details.globalPosition,
+                                ),
+                              );
+                            },
+                            child: Text(
+                              message.content,
+                              style: _userTextStyle(context),
+                            ),
+                          ),
+                  ),
+              ],
+            ),
           ),
         ),
       );
@@ -3571,16 +3960,12 @@ class _MessageScrollButton extends StatelessWidget {
         onTap: onPressed,
         child: SizedBox.square(
           dimension: 42,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 160),
-            child: Icon(
-              atBottom
-                  ? Icons.keyboard_arrow_up_rounded
-                  : Icons.keyboard_arrow_down_rounded,
-              key: ValueKey(atBottom),
-              color: AiColors.text(context),
-              size: 23,
-            ),
+          child: Icon(
+            atBottom
+                ? Icons.keyboard_arrow_up_rounded
+                : Icons.keyboard_arrow_down_rounded,
+            color: AiColors.text(context),
+            size: 23,
           ),
         ),
       ),
@@ -4062,20 +4447,7 @@ class _AiPendingAttachment extends StatelessWidget {
   final double? uploadProgress;
   final VoidCallback? onRemove;
 
-  static const _imageExtensions = {
-    'bmp',
-    'gif',
-    'heic',
-    'jpeg',
-    'jpg',
-    'png',
-    'webp',
-  };
-
-  bool get _isImage {
-    final parts = filename.toLowerCase().split('.');
-    return parts.length > 1 && _imageExtensions.contains(parts.last);
-  }
+  bool get _isImage => _isAiImageFilename(filename);
 
   String get _extension {
     final parts = filename.split('.');
@@ -4195,6 +4567,266 @@ class _AiPendingAttachment extends StatelessWidget {
               fontWeight: FontWeight.w600,
               letterSpacing: 0.35,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AiSentImageStrip extends StatelessWidget {
+  const _AiSentImageStrip({
+    super.key,
+    required this.attachments,
+    required this.maxWidth,
+  });
+
+  final List<_AiMessageAttachment> attachments;
+  final double maxWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    final multiple = attachments.length > 1;
+    final maxHeight = multiple
+        ? 98.0
+        : MediaQuery.sizeOf(context).height * 0.38;
+    final gap = multiple ? 6.0 : 0.0;
+    if (!multiple) {
+      return ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerRight,
+          child: _AiSentImage(
+            attachment: attachments.single,
+            height: maxHeight,
+            radius: 22,
+            onTap: () => _openImagePreview(context, attachments, 0),
+          ),
+        ),
+      );
+    }
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: maxWidth,
+        minHeight: maxHeight,
+        maxHeight: maxHeight,
+      ),
+      child: SingleChildScrollView(
+        key: const Key('ai-sent-image-scroll'),
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: maxWidth),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              for (var index = 0; index < attachments.length; index++) ...[
+                if (index > 0) SizedBox(width: gap),
+                _AiSentImage(
+                  key: Key('ai-sent-image-tile-$index'),
+                  attachment: attachments[index],
+                  height: maxHeight,
+                  width: maxHeight,
+                  radius: 10,
+                  onTap: () => _openImagePreview(context, attachments, index),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void _openImagePreview(
+  BuildContext context,
+  List<_AiMessageAttachment> attachments,
+  int initialIndex,
+) {
+  Navigator.of(context, rootNavigator: true).push<void>(
+    PageRouteBuilder<void>(
+      pageBuilder: (_, _, _) => _AiImagePreviewPage(
+        attachments: attachments,
+        initialIndex: initialIndex,
+      ),
+      transitionDuration: const Duration(milliseconds: 180),
+      reverseTransitionDuration: const Duration(milliseconds: 150),
+      transitionsBuilder: (_, animation, _, child) =>
+          FadeTransition(opacity: animation, child: child),
+    ),
+  );
+}
+
+class _AiImagePreviewPage extends StatefulWidget {
+  const _AiImagePreviewPage({
+    required this.attachments,
+    required this.initialIndex,
+  });
+
+  final List<_AiMessageAttachment> attachments;
+  final int initialIndex;
+
+  @override
+  State<_AiImagePreviewPage> createState() => _AiImagePreviewPageState();
+}
+
+class _AiImagePreviewPageState extends State<_AiImagePreviewPage> {
+  late final PageController _controller = PageController(
+    initialPage: widget.initialIndex,
+  );
+  late int _currentIndex = widget.initialIndex;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        key: const Key('ai-image-preview'),
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            PageView.builder(
+              controller: _controller,
+              itemCount: widget.attachments.length,
+              onPageChanged: (index) => setState(() => _currentIndex = index),
+              itemBuilder: (context, index) {
+                final attachment = widget.attachments[index];
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Center(
+                    child: Image.memory(
+                      attachment.bytes,
+                      key: Key('ai-image-preview-image-$index'),
+                      fit: BoxFit.contain,
+                      gaplessPlayback: true,
+                    ),
+                  ),
+                );
+              },
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      key: const Key('ai-image-preview-close'),
+                      tooltip: AppLocalizations.of(context).text('关闭', 'Close'),
+                      onPressed: () => Navigator.of(context).pop(),
+                      color: Colors.white,
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${_currentIndex + 1} / ${widget.attachments.length}',
+                      key: const Key('ai-image-preview-position'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(width: 48),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AiSentImage extends StatelessWidget {
+  const _AiSentImage({
+    super.key,
+    required this.attachment,
+    required this.height,
+    required this.radius,
+    required this.onTap,
+    this.width,
+  });
+
+  final _AiMessageAttachment attachment;
+  final double height;
+  final double radius;
+  final VoidCallback onTap;
+  final double? width;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolvedWidth = width ?? height * attachment.aspectRatio;
+    return Semantics(
+      button: true,
+      image: true,
+      label: attachment.filename,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: SizedBox(
+            width: resolvedWidth,
+            height: height,
+            child: Image.memory(
+              attachment.bytes,
+              key: const Key('ai-sent-image-content'),
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
+              gaplessPlayback: true,
+              errorBuilder: (_, _, _) =>
+                  _AiSentImageFallback(filename: attachment.filename),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AiSentImageFallback extends StatelessWidget {
+  const _AiSentImageFallback({required this.filename});
+
+  final String filename;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 180,
+      height: 120,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.broken_image_outlined,
+            color: AiColors.muted(context),
+            size: 30,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            filename,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AiColors.muted(context), fontSize: 12),
           ),
         ],
       ),
@@ -4849,10 +5481,17 @@ class _AiSendButton extends StatelessWidget {
 }
 
 class _AiAttachmentDraft {
-  _AiAttachmentDraft({required this.filename, required this.bytes});
+  _AiAttachmentDraft({
+    required this.filename,
+    required this.bytes,
+    this.sourcePath,
+    this.aspectRatio,
+  });
 
   final String filename;
   final Uint8List bytes;
+  final String? sourcePath;
+  final double? aspectRatio;
   DeepSeekFile? file;
   double? uploadProgress;
 
@@ -4860,10 +5499,35 @@ class _AiAttachmentDraft {
 }
 
 class _PickedAiFile {
-  const _PickedAiFile({required this.filename, required this.bytes});
+  const _PickedAiFile({
+    required this.filename,
+    required this.bytes,
+    this.sourcePath,
+    this.aspectRatio,
+  });
 
   final String filename;
   final Uint8List bytes;
+  final String? sourcePath;
+  final double? aspectRatio;
+}
+
+class _AiMessageAttachment {
+  const _AiMessageAttachment({
+    required this.filename,
+    required this.bytes,
+    required this.fileId,
+    required this.sourcePath,
+    required this.aspectRatio,
+  });
+
+  final String filename;
+  final Uint8List bytes;
+  final String fileId;
+  final String? sourcePath;
+  final double aspectRatio;
+
+  bool get isImage => _isAiImageFilename(filename);
 }
 
 enum _AttachmentAction { camera, gallery, upload, files, ocr, search, fetch }
@@ -4871,24 +5535,28 @@ enum _AttachmentAction { camera, gallery, upload, files, ocr, search, fetch }
 enum _AiRole { user, assistant }
 
 class _AiMessage {
-  const _AiMessage.user(this.content)
-    : role = _AiRole.user,
-      deepThinking = false,
-      webSearch = false,
-      feedback = 0;
+  const _AiMessage.user(
+    this.content, {
+    this.attachments = const <_AiMessageAttachment>[],
+  }) : role = _AiRole.user,
+       deepThinking = false,
+       webSearch = false,
+       feedback = 0;
 
   const _AiMessage.assistant(
     this.content, {
     this.deepThinking = false,
     this.webSearch = false,
   }) : role = _AiRole.assistant,
-       feedback = 0;
+       feedback = 0,
+       attachments = const <_AiMessageAttachment>[];
 
   final _AiRole role;
   final String content;
   final bool deepThinking;
   final bool webSearch;
   final int feedback;
+  final List<_AiMessageAttachment> attachments;
 
   _AiMessage copyWith({
     String? content,
@@ -4902,6 +5570,7 @@ class _AiMessage {
       deepThinking: deepThinking ?? this.deepThinking,
       webSearch: webSearch ?? this.webSearch,
       feedback: feedback ?? this.feedback,
+      attachments: attachments,
     );
   }
 
@@ -4911,6 +5580,7 @@ class _AiMessage {
     required this.deepThinking,
     required this.webSearch,
     required this.feedback,
+    required this.attachments,
   });
 }
 

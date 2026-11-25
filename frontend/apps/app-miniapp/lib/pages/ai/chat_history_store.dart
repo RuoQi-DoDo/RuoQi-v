@@ -2,10 +2,41 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+class ChatHistoryAttachment {
+  const ChatHistoryAttachment({
+    required this.filename,
+    required this.path,
+    required this.aspectRatio,
+    this.fileId = '',
+  });
+
+  final String filename;
+  final String path;
+  final double aspectRatio;
+  final String fileId;
+
+  Map<String, dynamic> toJson() => {
+    'filename': filename,
+    'path': path,
+    'aspectRatio': aspectRatio,
+    'fileId': fileId,
+  };
+
+  factory ChatHistoryAttachment.fromJson(Map<String, dynamic> json) {
+    return ChatHistoryAttachment(
+      filename: json['filename'] as String? ?? '',
+      path: json['path'] as String? ?? '',
+      aspectRatio: (json['aspectRatio'] as num?)?.toDouble() ?? 1,
+      fileId: json['fileId'] as String? ?? '',
+    );
+  }
+}
+
 class ChatHistoryMessage {
   const ChatHistoryMessage({
     required this.role,
     required this.content,
+    this.attachments = const [],
     this.deepThinking = false,
     this.webSearch = false,
     this.feedback = 0,
@@ -13,6 +44,7 @@ class ChatHistoryMessage {
 
   final String role;
   final String content;
+  final List<ChatHistoryAttachment> attachments;
   final bool deepThinking;
   final bool webSearch;
   final int feedback;
@@ -20,15 +52,29 @@ class ChatHistoryMessage {
   Map<String, dynamic> toJson() => {
     'role': role,
     'content': content,
+    'attachments': attachments
+        .map((attachment) => attachment.toJson())
+        .toList(),
     'deepThinking': deepThinking,
     'webSearch': webSearch,
     'feedback': feedback,
   };
 
   factory ChatHistoryMessage.fromJson(Map<String, dynamic> json) {
+    final attachments = json['attachments'];
     return ChatHistoryMessage(
       role: json['role'] as String? ?? 'user',
       content: json['content'] as String? ?? '',
+      attachments: attachments is List
+          ? attachments
+                .whereType<Map>()
+                .map(
+                  (item) => ChatHistoryAttachment.fromJson(
+                    item.cast<String, dynamic>(),
+                  ),
+                )
+                .toList(growable: false)
+          : const [],
       deepThinking: json['deepThinking'] as bool? ?? false,
       webSearch: json['webSearch'] as bool? ?? false,
       feedback: json['feedback'] as int? ?? 0,
