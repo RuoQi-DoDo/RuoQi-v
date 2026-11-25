@@ -380,7 +380,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-page')), findsOneWidget);
     expect(find.byKey(const Key('ai-brand-mark')), findsOneWidget);
-    expect(find.text('你好，我是 RuoQi'), findsOneWidget);
+    expect(find.text('欢迎回来，想从哪里开始?'), findsOneWidget);
     expect(find.byKey(const Key('ai-back')), findsOneWidget);
     expect(find.byKey(const Key('host-tab-home')), findsNothing);
 
@@ -479,7 +479,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('im-open-ai')));
     await tester.pumpAndSettle();
-    final welcomeTitle = find.text('你好，我是 RuoQi');
+    final welcomeTitle = find.text('欢迎回来，想从哪里开始?');
     final initialTitleX = tester.getTopLeft(welcomeTitle).dx;
     await tester.tap(find.byKey(const Key('ai-history')));
     await tester.pumpAndSettle();
@@ -670,7 +670,7 @@ void main() {
     expect(tester.widget<EditableText>(editable).focusNode.hasFocus, isTrue);
     expect(tester.testTextInput.isVisible, isTrue);
 
-    await tester.tap(find.text('你好，我是 RuoQi'));
+    await tester.tap(find.text('欢迎回来，想从哪里开始?'));
     await tester.pump();
     expect(tester.widget<EditableText>(editable).focusNode.hasFocus, isFalse);
     expect(find.byKey(const Key('ai-hold-to-talk')), findsOneWidget);

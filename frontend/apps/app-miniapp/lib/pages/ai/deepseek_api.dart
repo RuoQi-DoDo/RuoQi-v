@@ -126,6 +126,7 @@ class DeepSeekApi {
     required Uint8List bytes,
     String purpose = 'user_data',
     int? expiresAfterSeconds,
+    void Function(int sent, int total)? onSendProgress,
   }) async {
     final form = FormData();
     form.fields.add(MapEntry('purpose', purpose));
@@ -138,7 +139,12 @@ class DeepSeekApi {
     form.files.add(
       MapEntry('file', MultipartFile.fromBytes(bytes, filename: filename)),
     );
-    final data = await _multipart('/files', apiKey: apiKey, form: form);
+    final data = await _multipart(
+      '/files',
+      apiKey: apiKey,
+      form: form,
+      onSendProgress: onSendProgress,
+    );
     return DeepSeekFile.fromJson(_asJsonMap(data));
   }
 
@@ -330,12 +336,14 @@ class DeepSeekApi {
     String path, {
     required String apiKey,
     required FormData form,
+    void Function(int sent, int total)? onSendProgress,
   }) async {
     try {
       final response = await _dio.post<dynamic>(
         path,
         data: form,
         options: Options(headers: _headers(apiKey)),
+        onSendProgress: onSendProgress,
       );
       return response.data;
     } on DioException catch (error) {

@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:record/record.dart';
 import 'package:ruoqi_app_miniapp/app_theme.dart';
@@ -174,6 +175,60 @@ class _ControlledChatStreamAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
+class _StopContinueDeepSeekApi extends DeepSeekApi {
+  final StreamController<DeepSeekChatChunk> initial =
+      StreamController<DeepSeekChatChunk>();
+  final List<List<DeepSeekChatMessage>> requests = [];
+
+  void addInitialContent(String content) {
+    initial.add(DeepSeekChatChunk(content: content, reasoningContent: ''));
+  }
+
+  @override
+  Stream<DeepSeekChatChunk> streamChatCompletion({
+    required String apiKey,
+    required String model,
+    required List<DeepSeekChatMessage> messages,
+    bool thinking = false,
+    bool webSearch = false,
+    int? maxTokens,
+    double? temperature,
+  }) {
+    requests.add(messages);
+    if (requests.length == 1) {
+      return initial.stream;
+    }
+    return Stream<DeepSeekChatChunk>.fromIterable(const [
+      DeepSeekChatChunk(content: '继续生成部分。', reasoningContent: ''),
+    ]);
+  }
+}
+
+class _RegenerateDeepSeekApi extends DeepSeekApi {
+  final List<List<DeepSeekChatMessage>> requests = [];
+
+  @override
+  Stream<DeepSeekChatChunk> streamChatCompletion({
+    required String apiKey,
+    required String model,
+    required List<DeepSeekChatMessage> messages,
+    bool thinking = false,
+    bool webSearch = false,
+    int? maxTokens,
+    double? temperature,
+  }) async* {
+    requests.add(messages);
+    yield DeepSeekChatChunk(
+      content: switch (requests.length) {
+        1 => '原始回答',
+        2 => '重新生成的回答',
+        _ => '菜单重新生成的回答',
+      },
+      reasoningContent: '',
+    );
+  }
+}
+
 class _VoiceDeepSeekApi extends DeepSeekApi {
   int transcriptionCalls = 0;
   final List<List<DeepSeekChatMessage>> chatRequests = [];
@@ -207,6 +262,61 @@ class _VoiceDeepSeekApi extends DeepSeekApi {
     chatRequests.add(messages);
     yield const DeepSeekChatChunk(
       content: '语音消息已收到',
+      reasoningContent: '',
+      finishReason: 'stop',
+    );
+  }
+}
+
+class _AttachmentDeepSeekApi extends DeepSeekApi {
+  int uploadCalls = 0;
+  int chatCalls = 0;
+  Completer<void>? uploadGate;
+  final List<String> uploadedFilenames = <String>[];
+  final Map<String, int> uploadProgressSent = <String, int>{};
+  final Map<String, int> uploadProgressTotal = <String, int>{};
+  List<DeepSeekChatMessage>? chatRequest;
+
+  @override
+  Future<DeepSeekFile> uploadFile({
+    required String apiKey,
+    required String filename,
+    required Uint8List bytes,
+    String purpose = 'user_data',
+    int? expiresAfterSeconds,
+    void Function(int sent, int total)? onSendProgress,
+  }) async {
+    uploadCalls++;
+    expect(bytes, isNotEmpty);
+    uploadedFilenames.add(filename);
+    onSendProgress?.call(bytes.length ~/ 2, bytes.length);
+    uploadProgressSent[filename] = bytes.length ~/ 2;
+    uploadProgressTotal[filename] = bytes.length;
+    await uploadGate?.future;
+    final file = DeepSeekFile(
+      id: 'file_$filename',
+      bytes: bytes.length,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      filename: filename,
+      purpose: purpose,
+    );
+    return file;
+  }
+
+  @override
+  Stream<DeepSeekChatChunk> streamChatCompletion({
+    required String apiKey,
+    required String model,
+    required List<DeepSeekChatMessage> messages,
+    bool thinking = false,
+    bool webSearch = false,
+    int? maxTokens,
+    double? temperature,
+  }) async* {
+    chatCalls++;
+    chatRequest = messages;
+    yield const DeepSeekChatChunk(
+      content: '图片已收到',
       reasoningContent: '',
       finishReason: 'stop',
     );
@@ -305,7 +415,7 @@ void main() {
     );
     expect(
       tester.getSize(find.byKey(const Key('ai-brand-mark'))),
-      const Size.square(72),
+      const Size.square(60),
     );
 
     final overlay = tester.widget<AnnotatedRegion<SystemUiOverlayStyle>>(
@@ -315,6 +425,157 @@ void main() {
     expect(overlay.value.statusBarIconBrightness, Brightness.dark);
     expect(overlay.value.statusBarBrightness, Brightness.light);
     expect(overlay.value.systemStatusBarContrastEnforced, isFalse);
+  });
+
+  testWidgets('AI 欢迎语使用时段模板且不展示 RuoQi 字样', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final welcome = tester.widget<Text>(
+      find.byKey(const Key('ai-welcome-message')),
+    );
+    expect(const {
+      '你好，让我们开始聊天吧。',
+      '你好，有什么我能帮你吗？',
+      '今天想做点什么？',
+      '早上好，今天想做点什么？',
+      '早上好，有什么我能帮你吗？',
+      '早上好，今天有什么安排？',
+      '上午好，今天想处理点什么？',
+      '上午好，我能帮什么忙吗？',
+      '上午好，有什么我能帮你吗？',
+      '中午好，有什么我能帮你吗？',
+      '中午好，想先聊点什么？',
+      '下午好，今天想聊点什么？',
+      '下午好，我能帮什么忙吗？',
+      '下午好，有什么我能帮你吗？',
+      '晚上好，今天过得怎么样？',
+      '晚上好，需要我帮你处理什么？',
+      '晚上好，想聊点什么？',
+      '夜深了，还没休息吗？',
+      '夜深了，需要我帮你处理什么？',
+      '晚上好，需要我陪你聊聊吗？',
+      '周末好，今天想做点什么？',
+      '周末愉快，有什么我能帮你吗？',
+      '周末好，想聊点什么？',
+    }, contains(welcome.data));
+    expect(welcome.data, isNot(contains('RuoQi')));
+    expect(find.textContaining('RuoQi'), findsNothing);
+  });
+
+  testWidgets('AI 欢迎语在已有对话记录时使用欢迎回来模板', (tester) async {
+    final now = DateTime.now();
+    final historyStore = _MemoryHistoryStore();
+    await historyStore.saveConversation(
+      ChatConversation(
+        id: 'existing-conversation',
+        title: '之前的对话',
+        createdAt: now.subtract(const Duration(days: 1)),
+        updatedAt: now,
+        messages: const [
+          ChatHistoryMessage(role: 'user', content: '你好'),
+          ChatHistoryMessage(role: 'assistant', content: '你好，有什么可以帮你？'),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: historyStore,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final welcome = tester.widget<Text>(
+      find.byKey(const Key('ai-welcome-message')),
+    );
+    expect(const {
+      '欢迎回来，我可以为你做点什么？',
+      '欢迎回来，今天想聊点什么？',
+      '欢迎回来，有什么我能帮你吗？',
+      '又见面了，今天想聊点什么？',
+    }, contains(welcome.data));
+    expect(welcome.data, isNot(contains('RuoQi')));
+  });
+
+  testWidgets('AI 旧图片历史可从缓存文件恢复预览', (tester) async {
+    final now = DateTime.now();
+    final pngBytes = base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk'
+      '+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+    );
+    final filename = 'scaled_ai_history_${now.microsecondsSinceEpoch}.png';
+    final file = File(
+      '${Directory.systemTemp.path}${Platform.pathSeparator}$filename',
+    );
+    file.writeAsBytesSync(pngBytes, flush: true);
+    addTearDown(() {
+      if (file.existsSync()) {
+        file.deleteSync();
+      }
+    });
+    final historyStore = _MemoryHistoryStore();
+    await historyStore.saveConversation(
+      ChatConversation(
+        id: 'legacy-image-conversation',
+        title: '旧图片对话',
+        createdAt: now,
+        updatedAt: now,
+        messages: [
+          ChatHistoryMessage(role: 'user', content: '附件：$filename'),
+          const ChatHistoryMessage(role: 'assistant', content: '图片已收到'),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(),
+          historyStore: historyStore,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('ai-history')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('旧图片对话'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('ai-sent-image')), findsOneWidget);
+    expect(find.text('附件：$filename'), findsNothing);
   });
 
   testWidgets('AI 页面跟随全局暗色石墨灰主题', (tester) async {
@@ -421,6 +682,377 @@ void main() {
     await tester.tap(find.byKey(const Key('ai-attachment-toggle')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-attachment-menu')), findsNothing);
+  });
+
+  testWidgets('AI 图片附件显示缩略预览并可在无文字时直接发送', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final api = _AttachmentDeepSeekApi();
+    api.uploadGate = Completer<void>();
+    final historyStore = _MemoryHistoryStore();
+    final pngBytes = base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk'
+      '+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: api,
+          historyStore: historyStore,
+          imagePicker: (_) async => [
+            XFile.fromData(
+              pngBytes,
+              path: '/tmp/photo.png',
+              mimeType: 'image/png',
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('ai-attachment-toggle')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('ai-attachment-gallery')));
+    for (
+      var attempt = 0;
+      attempt < 20 &&
+          find
+              .byKey(const Key('ai-attachment-upload-progress'))
+              .evaluate()
+              .isEmpty;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+
+    expect(api.uploadCalls, 1);
+    expect(find.byKey(const Key('ai-attachment-preview')), findsOneWidget);
+    expect(
+      find.byKey(const Key('ai-attachment-upload-progress')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('ai-attachment-upload-spinner')),
+      findsOneWidget,
+    );
+    expect(find.text('50%'), findsOneWidget);
+    expect(find.byKey(const Key('ai-attachment-suggestions')), findsNothing);
+    expect(
+      find.byKey(const Key('ai-attachment-suggestions-loading')),
+      findsOneWidget,
+    );
+    expect(find.text('photo.png 已上传'), findsNothing);
+
+    api.uploadGate!.complete();
+    for (
+      var attempt = 0;
+      attempt < 20 &&
+          find
+              .byKey(const Key('ai-attachment-upload-progress'))
+              .evaluate()
+              .isNotEmpty;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+
+    expect(
+      find.byKey(const Key('ai-attachment-preview-image')),
+      findsOneWidget,
+    );
+    expect(
+      tester.getSize(find.byKey(const Key('ai-attachment-preview'))),
+      const Size(90, 96),
+    );
+    expect(
+      tester.getSize(find.byKey(const Key('ai-attachment-preview-image'))),
+      const Size(78, 90),
+    );
+    expect(
+      find.byKey(const Key('ai-attachment-upload-progress')),
+      findsNothing,
+    );
+    expect(find.byKey(const Key('ai-attachment-suggestions')), findsOneWidget);
+    expect(
+      find.byKey(const Key('ai-attachment-suggestions-loading')),
+      findsNothing,
+    );
+    expect(find.text('这是什么'), findsOneWidget);
+    expect(find.text('分析一下'), findsOneWidget);
+    expect(find.text('怎么办'), findsOneWidget);
+    expect(find.byKey(const Key('ai-voice-mode-toggle')), findsNothing);
+    expect(find.byKey(const Key('ai-send')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('ai-attachment-preview')), findsNothing);
+    expect(find.byKey(const Key('ai-sent-image')), findsOneWidget);
+    expect(find.byKey(const Key('ai-sent-image-content')), findsOneWidget);
+    expect(find.text('附件：photo.png'), findsNothing);
+    expect(find.text('图片已收到'), findsOneWidget);
+    expect(api.chatRequest?.last.content, [
+      {'type': 'file', 'file_id': 'file_photo.png'},
+    ]);
+    expect(api.chatCalls, 1);
+
+    await tester.tap(find.byTooltip('重新生成'));
+    await tester.pumpAndSettle();
+
+    expect(api.chatCalls, 2);
+    expect(find.text('图片已收到'), findsOneWidget);
+    expect(api.chatRequest?.last.content, [
+      {'type': 'file', 'file_id': 'file_photo.png'},
+    ]);
+    expect(historyStore.conversations.single.messages, hasLength(2));
+    final savedImage =
+        historyStore.conversations.single.messages.first.attachments.single;
+    expect(historyStore.conversations.single.messages.first.content, isEmpty);
+    expect(File(savedImage.path).existsSync(), isTrue);
+    addTearDown(() {
+      final file = File(savedImage.path);
+      if (file.existsSync()) {
+        file.deleteSync();
+      }
+    });
+
+    await tester.tap(find.byKey(const Key('ai-new-conversation')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('ai-history')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('photo.png'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('ai-sent-image')), findsOneWidget);
+    expect(find.byKey(const Key('ai-sent-image-content')), findsOneWidget);
+    expect(find.textContaining('附件：photo.png'), findsNothing);
+  });
+
+  testWidgets('AI 相册支持多张图片同时上传并逐张显示进度', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final api = _AttachmentDeepSeekApi()..uploadGate = Completer<void>();
+    final historyStore = _MemoryHistoryStore();
+    final pngBytes = base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk'
+      '+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: api,
+          historyStore: historyStore,
+          imagePicker: (_) async => [
+            XFile.fromData(
+              pngBytes,
+              path: '/tmp/first.png',
+              mimeType: 'image/png',
+            ),
+            XFile.fromData(
+              pngBytes,
+              path: '/tmp/second.png',
+              mimeType: 'image/png',
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('ai-attachment-toggle')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('ai-attachment-gallery')));
+    for (
+      var attempt = 0;
+      attempt < 20 &&
+          find
+                  .byKey(const Key('ai-attachment-upload-progress'))
+                  .evaluate()
+                  .length <
+              2;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+
+    expect(api.uploadCalls, 2);
+    expect(api.uploadedFilenames, ['first.png', 'second.png']);
+    expect(find.byKey(const Key('ai-attachment-preview')), findsNWidgets(2));
+    expect(
+      find.byKey(const Key('ai-attachment-upload-progress')),
+      findsNWidgets(2),
+    );
+    expect(find.text('50%'), findsNWidgets(2));
+    expect(find.byKey(const Key('ai-attachment-suggestions')), findsNothing);
+    expect(
+      find.byKey(const Key('ai-attachment-suggestions-loading')),
+      findsOneWidget,
+    );
+
+    api.uploadGate!.complete();
+    for (
+      var attempt = 0;
+      attempt < 20 &&
+          find
+              .byKey(const Key('ai-attachment-upload-progress'))
+              .evaluate()
+              .isNotEmpty;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+
+    expect(
+      find.byKey(const Key('ai-attachment-upload-progress')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('ai-attachment-preview-image')),
+      findsNWidgets(2),
+    );
+    expect(find.byKey(const Key('ai-attachment-suggestions')), findsOneWidget);
+    expect(
+      find.byKey(const Key('ai-attachment-suggestions-loading')),
+      findsNothing,
+    );
+    expect(find.text('first.png 已上传'), findsNothing);
+    expect(find.text('second.png 已上传'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pumpAndSettle();
+
+    final sentImages = find.byKey(const Key('ai-sent-image-content'));
+    expect(sentImages, findsNWidgets(2));
+    expect(tester.getSize(sentImages.at(0)).height, closeTo(98, 0.01));
+    expect(tester.getSize(sentImages.at(1)).height, closeTo(98, 0.01));
+    expect(
+      tester.getTopLeft(sentImages.at(0)).dy,
+      closeTo(tester.getTopLeft(sentImages.at(1)).dy, 0.01),
+    );
+    expect(
+      tester.getTopLeft(sentImages.at(1)).dx -
+          tester.getTopRight(sentImages.at(0)).dx,
+      closeTo(6, 0.01),
+    );
+    expect(tester.getTopRight(sentImages.at(1)).dx, lessThanOrEqualTo(396));
+
+    await tester.tap(find.byKey(const Key('ai-sent-image-tile-0')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-image-preview')), findsOneWidget);
+    expect(find.text('1 / 2'), findsOneWidget);
+    await tester.drag(find.byType(PageView), const Offset(-320, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('2 / 2'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ai-image-preview-close')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('ai-image-preview')), findsNothing);
+
+    expect(find.text('附件：first.png、second.png'), findsNothing);
+    expect(api.chatRequest?.last.content, [
+      {'type': 'file', 'file_id': 'file_first.png'},
+      {'type': 'file', 'file_id': 'file_second.png'},
+    ]);
+    expect(historyStore.conversations.single.messages, hasLength(2));
+    expect(historyStore.conversations.single.messages.first.content, isEmpty);
+    expect(
+      historyStore.conversations.single.messages.first.attachments,
+      hasLength(2),
+    );
+    for (final attachment
+        in historyStore.conversations.single.messages.first.attachments) {
+      expect(File(attachment.path).existsSync(), isTrue);
+    }
+  });
+
+  testWidgets('AI 多图超出消息宽度时横向滚动且不压缩高度', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final api = _AttachmentDeepSeekApi();
+    final pngBytes = base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk'
+      '+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+    );
+    final tallPngBytes = base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAoAAABkCAIAAAAwrjbAAAAAGElEQVR4nO3BAQEA'
+      'AACAkP6v7ggKAACgBgwcAAF+dCQYAAAAAElFTkSuQmCC',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: api,
+          historyStore: _MemoryHistoryStore(),
+          imagePicker: (_) async => [
+            for (var index = 0; index < 5; index++)
+              XFile.fromData(
+                index == 0 ? tallPngBytes : pngBytes,
+                path: '/tmp/${index == 0 ? 'tall' : 'image'}-$index.png',
+                mimeType: 'image/png',
+              ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('ai-attachment-toggle')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('ai-attachment-gallery')));
+    await tester.pumpAndSettle();
+
+    expect(api.uploadCalls, 5);
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pumpAndSettle();
+
+    final sentImages = find.byKey(const Key('ai-sent-image-content'));
+    expect(sentImages, findsNWidgets(5));
+    for (var index = 0; index < 5; index++) {
+      expect(tester.getSize(sentImages.at(index)).height, closeTo(98, 0.01));
+    }
+    expect(tester.getSize(sentImages.at(0)).width, closeTo(98, 0.01));
+
+    final scrollFinder = find.byKey(const Key('ai-sent-image-scroll'));
+    final scrollableFinder = find.descendant(
+      of: scrollFinder,
+      matching: find.byType(Scrollable),
+    );
+    expect(scrollableFinder, findsOneWidget);
+    final position = tester.state<ScrollableState>(scrollableFinder).position;
+    expect(position.maxScrollExtent, greaterThan(0));
+
+    await tester.drag(scrollableFinder, const Offset(-160, 0));
+    await tester.pumpAndSettle();
+
+    expect(position.pixels, greaterThan(0));
+    for (var index = 0; index < 5; index++) {
+      expect(tester.getSize(sentImages.at(index)).height, closeTo(98, 0.01));
+    }
   });
 
   testWidgets('AI 模式按钮不绘制矩形按压覆盖层', (tester) async {
@@ -596,7 +1228,7 @@ void main() {
     expect(notice, findsNothing);
   });
 
-  testWidgets('长按附件按钮执行点击动作且不显示白色 Tooltip', (tester) async {
+  testWidgets('长按附件按钮展开扩展菜单且不显示白色 Tooltip', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -944,6 +1576,49 @@ print(version);
     expect(find.text('修改'), findsNothing);
   });
 
+  testWidgets('点击重新生成会清空旧回答并请求新的回答', (tester) async {
+    final api = _RegenerateDeepSeekApi();
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: api,
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '重新生成测试');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pumpAndSettle();
+    expect(find.text('原始回答'), findsOneWidget);
+    expect(api.requests, hasLength(1));
+
+    await tester.tap(find.byTooltip('重新生成'));
+    await tester.pumpAndSettle();
+
+    expect(api.requests, hasLength(2));
+    expect(find.text('原始回答'), findsNothing);
+    expect(find.text('重新生成的回答'), findsOneWidget);
+
+    await tester.longPress(find.text('重新生成的回答'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('重新生成'));
+    await tester.pumpAndSettle();
+
+    expect(api.requests, hasLength(3));
+    expect(find.text('重新生成的回答'), findsNothing);
+    expect(find.text('菜单重新生成的回答'), findsOneWidget);
+  });
+
   testWidgets('选择文本在 AI 回答原位进入选区并显示横排工具栏', (tester) async {
     tester.view.physicalSize = const Size(414, 896);
     tester.view.devicePixelRatio = 1;
@@ -1162,6 +1837,124 @@ print(version);
     await adapter.finish();
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ai-assistant-message')), findsOneWidget);
+  });
+
+  testWidgets('AI 回答中显示主题色停止按钮并可中止流式回答', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final adapter = _ControlledChatStreamAdapter();
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.deepseek.com'))
+      ..httpClientAdapter = adapter;
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: DeepSeekApi(dio: dio),
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '停止回答测试');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pump();
+    adapter.addContent('已经生成的第一段回答。');
+    for (
+      var attempt = 0;
+      attempt < 20 && find.textContaining('已经生成的第一段回答').evaluate().isEmpty;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    final stopButton = find.byKey(const Key('ai-stop'));
+    final stopIcon = find.byKey(const Key('ai-stop-icon'));
+    expect(stopButton, findsOneWidget);
+    expect(stopIcon, findsOneWidget);
+    final stopDecoration =
+        tester.widget<AnimatedContainer>(stopIcon).decoration! as BoxDecoration;
+    expect(stopDecoration.color, AiColors.accent(tester.element(stopIcon)));
+
+    await tester.tap(stopButton);
+    for (var attempt = 0; attempt < 10; attempt++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(find.byKey(const Key('ai-stop')), findsNothing);
+    expect(find.byKey(const Key('ai-typing-indicator')), findsNothing);
+    expect(find.textContaining('已经生成的第一段回答'), findsOneWidget);
+
+    adapter.addContent('停止后不应继续追加。');
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.textContaining('停止后不应继续追加'), findsNothing);
+  });
+
+  testWidgets('AI 停止后显示继续生成并从断点续写', (tester) async {
+    tester.view.physicalSize = const Size(414, 896);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final api = _StopContinueDeepSeekApi();
+    addTearDown(api.initial.close);
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: api,
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '继续生成测试');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pump();
+    api.addInitialContent('已经生成的前半段。');
+    for (
+      var attempt = 0;
+      attempt < 20 && find.textContaining('已经生成的前半段').evaluate().isEmpty;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    await tester.tap(find.byKey(const Key('ai-stop')));
+    for (var attempt = 0; attempt < 10; attempt++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(find.byKey(const Key('ai-continue-generation')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('ai-continue-generation')));
+    await tester.pumpAndSettle();
+
+    expect(api.requests, hasLength(2));
+    expect(find.textContaining('已经生成的前半段。继续生成部分。'), findsOneWidget);
+    expect(find.byKey(const Key('ai-continue-generation')), findsNothing);
+    final continuationRequest = api.requests.last;
+    expect(
+      continuationRequest[continuationRequest.length - 2].role,
+      'assistant',
+    );
+    expect(
+      continuationRequest[continuationRequest.length - 2].content,
+      '已经生成的前半段。',
+    );
+    expect(continuationRequest.last.content, contains('从中断处继续生成'));
   });
 
   testWidgets('流式回答中手动滚动后停止自动跟随并在完成后保持位置', (tester) async {

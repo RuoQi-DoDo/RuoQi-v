@@ -13,7 +13,18 @@ void main() {
       createdAt: now,
       updatedAt: now,
       messages: const [
-        ChatHistoryMessage(role: 'user', content: '你好'),
+        ChatHistoryMessage(
+          role: 'user',
+          content: '你好',
+          attachments: [
+            ChatHistoryAttachment(
+              filename: 'photo.jpg',
+              path: '/tmp/photo.jpg',
+              aspectRatio: 0.75,
+              fileId: 'file_photo',
+            ),
+          ],
+        ),
         ChatHistoryMessage(
           role: 'assistant',
           content: '你好，有什么可以帮你？',
@@ -46,6 +57,10 @@ void main() {
 
     final restored = await store.getConversation('conversation-1');
     expect(restored?.messages, hasLength(2));
+    expect(restored?.messages.first.attachments.single.filename, 'photo.jpg');
+    expect(restored?.messages.first.attachments.single.path, '/tmp/photo.jpg');
+    expect(restored?.messages.first.attachments.single.aspectRatio, 0.75);
+    expect(restored?.messages.first.attachments.single.fileId, 'file_photo');
     expect(restored?.messages.last.webSearch, isTrue);
 
     await store.deleteConversation('conversation-1');
