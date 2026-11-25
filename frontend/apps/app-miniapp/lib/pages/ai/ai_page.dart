@@ -476,9 +476,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         .where((attachment) => !attachment.isImage)
         .map((attachment) => attachment.filename)
         .join(AppLocalizations.of(context).text('、', ', '));
-    if (hasUploadingAttachment ||
-        (prompt.isEmpty && uploadedFiles.isEmpty) ||
-        _responding) {
+    final canStartRequest =
+        !addUserMessage || prompt.isNotEmpty || uploadedFiles.isNotEmpty;
+    if (hasUploadingAttachment || !canStartRequest || _responding) {
       return;
     }
     DeepSeekSettings settings;

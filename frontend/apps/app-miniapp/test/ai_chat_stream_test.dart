@@ -204,6 +204,31 @@ class _StopContinueDeepSeekApi extends DeepSeekApi {
   }
 }
 
+class _RegenerateDeepSeekApi extends DeepSeekApi {
+  final List<List<DeepSeekChatMessage>> requests = [];
+
+  @override
+  Stream<DeepSeekChatChunk> streamChatCompletion({
+    required String apiKey,
+    required String model,
+    required List<DeepSeekChatMessage> messages,
+    bool thinking = false,
+    bool webSearch = false,
+    int? maxTokens,
+    double? temperature,
+  }) async* {
+    requests.add(messages);
+    yield DeepSeekChatChunk(
+      content: switch (requests.length) {
+        1 => '原始回答',
+        2 => '重新生成的回答',
+        _ => '菜单重新生成的回答',
+      },
+      reasoningContent: '',
+    );
+  }
+}
+
 class _VoiceDeepSeekApi extends DeepSeekApi {
   int transcriptionCalls = 0;
   final List<List<DeepSeekChatMessage>> chatRequests = [];
@@ -245,6 +270,7 @@ class _VoiceDeepSeekApi extends DeepSeekApi {
 
 class _AttachmentDeepSeekApi extends DeepSeekApi {
   int uploadCalls = 0;
+  int chatCalls = 0;
   Completer<void>? uploadGate;
   final List<String> uploadedFilenames = <String>[];
   final Map<String, int> uploadProgressSent = <String, int>{};
@@ -287,6 +313,7 @@ class _AttachmentDeepSeekApi extends DeepSeekApi {
     int? maxTokens,
     double? temperature,
   }) async* {
+    chatCalls++;
     chatRequest = messages;
     yield const DeepSeekChatChunk(
       content: '图片已收到',
@@ -772,6 +799,16 @@ void main() {
     expect(find.byKey(const Key('ai-sent-image')), findsOneWidget);
     expect(find.byKey(const Key('ai-sent-image-content')), findsOneWidget);
     expect(find.text('附件：photo.png'), findsNothing);
+    expect(find.text('图片已收到'), findsOneWidget);
+    expect(api.chatRequest?.last.content, [
+      {'type': 'file', 'file_id': 'file_photo.png'},
+    ]);
+    expect(api.chatCalls, 1);
+
+    await tester.tap(find.byTooltip('重新生成'));
+    await tester.pumpAndSettle();
+
+    expect(api.chatCalls, 2);
     expect(find.text('图片已收到'), findsOneWidget);
     expect(api.chatRequest?.last.content, [
       {'type': 'file', 'file_id': 'file_photo.png'},
@@ -1537,6 +1574,49 @@ print(version);
       expect(find.text(label), findsOneWidget, reason: label);
     }
     expect(find.text('修改'), findsNothing);
+  });
+
+  testWidgets('点击重新生成会清空旧回答并请求新的回答', (tester) async {
+    final api = _RegenerateDeepSeekApi();
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        home: AiPage(
+          settingsStore: _ChatSettingsStore(),
+          api: api,
+          historyStore: _MemoryHistoryStore(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('ai-composer')), '重新生成测试');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('ai-send')));
+    await tester.pumpAndSettle();
+    expect(find.text('原始回答'), findsOneWidget);
+    expect(api.requests, hasLength(1));
+
+    await tester.tap(find.byTooltip('重新生成'));
+    await tester.pumpAndSettle();
+
+    expect(api.requests, hasLength(2));
+    expect(find.text('原始回答'), findsNothing);
+    expect(find.text('重新生成的回答'), findsOneWidget);
+
+    await tester.longPress(find.text('重新生成的回答'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('重新生成'));
+    await tester.pumpAndSettle();
+
+    expect(api.requests, hasLength(3));
+    expect(find.text('重新生成的回答'), findsNothing);
+    expect(find.text('菜单重新生成的回答'), findsOneWidget);
   });
 
   testWidgets('选择文本在 AI 回答原位进入选区并显示横排工具栏', (tester) async {
