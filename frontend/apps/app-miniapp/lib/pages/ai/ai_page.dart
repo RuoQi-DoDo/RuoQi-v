@@ -1017,8 +1017,58 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
         enabled ? 'Auto read on' : 'Auto read off',
       ),
     );
-    if (!enabled) {
+    if (enabled) {
+      unawaited(_startAutoReadFromCurrent());
+    } else {
       unawaited(_stopSpeech());
+    }
+  }
+
+  Future<void> _startAutoReadFromCurrent() async {
+    if (!_autoRead ||
+        _speaking ||
+        _speechLoading ||
+        _autoReadSpeechDraining ||
+        _autoReadSpeechQueue.isNotEmpty ||
+        _autoReadSpeechBuffer.isNotEmpty) {
+      return;
+    }
+    final content = _currentAssistantText().trim();
+    if (content.isEmpty) {
+      return;
+    }
+    try {
+      final settings = await _settingsStore.load();
+      if (!mounted ||
+          !_autoRead ||
+          _speaking ||
+          _speechLoading ||
+          _autoReadSpeechDraining ||
+          _autoReadSpeechQueue.isNotEmpty ||
+          _autoReadSpeechBuffer.isNotEmpty) {
+        return;
+      }
+      if (settings.apiKey.isEmpty) {
+        _showTransientNotice(
+          AppLocalizations.of(context).text(
+            '请先在设置中配置 DeepSeek API Key',
+            'Configure a DeepSeek API key in Settings first',
+          ),
+        );
+        return;
+      }
+      _autoReadSpeechSourceDone = !_responding;
+      _queueAutoReadSpeech(content, settings);
+      if (!_responding) {
+        _finishAutoReadSpeech(settings);
+      }
+    } catch (_) {
+      if (mounted) {
+        _showTransientNotice(
+          AppLocalizations.of(context)
+              .text('无法读取 DeepSeek 配置', 'Unable to read DeepSeek settings'),
+        );
+      }
     }
   }
 
