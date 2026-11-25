@@ -264,6 +264,11 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   bool _autoRead = false;
   bool _speaking = false;
   bool _speechLoading = false;
+  bool _autoReadSpeechDraining = false;
+  bool _autoReadSpeechSourceDone = true;
+  final List<String> _autoReadSpeechQueue = <String>[];
+  String _autoReadSpeechBuffer = '';
+  Completer<void>? _autoReadSpeechWakeup;
   String _speakingText = '';
   bool _responding = false;
   String _selectedModelName = '';
@@ -309,6 +314,11 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     _chatSubscription?.cancel();
     _speechSubscription?.cancel();
     _playbackCompletion?.complete();
+    final autoReadWakeup = _autoReadSpeechWakeup;
+    _autoReadSpeechWakeup = null;
+    if (autoReadWakeup != null && !autoReadWakeup.isCompleted) {
+      autoReadWakeup.complete();
+    }
     _ttsFile = null;
     unawaited(_recorder.dispose());
     unawaited(_audioPlayer.dispose());
@@ -495,6 +505,15 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       );
       return;
     }
+    if (_speaking || _speechLoading || _autoReadSpeechDraining) {
+      await _stopSpeech();
+      if (!mounted) {
+        return;
+      }
+    }
+    _autoReadSpeechQueue.clear();
+    _autoReadSpeechBuffer = '';
+    _autoReadSpeechSourceDone = !_autoRead;
     final nextTitle = addUserMessage && _messages.isEmpty
         ? (prompt.isEmpty ? uploadedFiles.first.filename : prompt)
         : _conversationTitle;
@@ -530,7 +549,6 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
     ];
     final generation = ++_chatGeneration;
     var streamStarted = false;
-    var responseBuffer = '';
     setState(() {
       _selectedModelName = settings.selectedModelName;
       _conversationTitle = _shortTitle(nextTitle);
@@ -567,7 +585,6 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                 chunk.content.isEmpty) {
               return;
             }
-            responseBuffer += chunk.content;
             setState(() {
               if (!streamStarted) {
                 streamStarted = true;
@@ -585,6 +602,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                 );
               }
             });
+            if (_autoRead) {
+              _queueAutoReadSpeech(chunk.content, settings);
+            }
             _scrollMessagesToEnd();
           },
           onError: (Object error, StackTrace stackTrace) {
@@ -602,6 +622,9 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                 ),
               );
             });
+            if (_autoRead) {
+              _finishAutoReadSpeech(settings);
+            }
             unawaited(_saveCurrentConversation());
             _scrollMessagesToEnd();
           },
@@ -621,8 +644,8 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                 );
               }
             });
-            if (_autoRead && responseBuffer.trim().isNotEmpty) {
-              unawaited(_startSpeech(responseBuffer.trim()));
+            if (_autoRead) {
+              _finishAutoReadSpeech(settings);
             }
             unawaited(_saveCurrentConversation());
             _scrollMessagesToEnd();
@@ -650,6 +673,153 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
       if (message.content.isNotEmpty) {'type': 'text', 'text': message.content},
       for (final fileId in fileIds) {'type': 'file', 'file_id': fileId},
     ];
+  }
+
+  void _queueAutoReadSpeech(String text, DeepSeekSettings settings) {
+    if (text.isEmpty) {
+      return;
+    }
+    _autoReadSpeechSourceDone = false;
+    _autoReadSpeechBuffer += text;
+    while (true) {
+      final cut = streamingSpeechCutIndex(_autoReadSpeechBuffer);
+      if (cut <= 0) {
+        break;
+      }
+      final chunk = _autoReadSpeechBuffer.substring(0, cut).trim();
+      _autoReadSpeechBuffer = _autoReadSpeechBuffer.substring(cut).trimLeft();
+      if (chunk.isNotEmpty) {
+        _autoReadSpeechQueue.add(chunk);
+      }
+    }
+    if (_autoReadSpeechQueue.isNotEmpty && !_autoReadSpeechDraining) {
+      unawaited(_drainAutoReadSpeech(settings, _speechGeneration));
+    }
+    _wakeAutoReadSpeech();
+  }
+
+  void _finishAutoReadSpeech(DeepSeekSettings settings) {
+    final remaining = _autoReadSpeechBuffer.trim();
+    if (remaining.isNotEmpty) {
+      _autoReadSpeechQueue.add(remaining);
+      _autoReadSpeechBuffer = '';
+    }
+    _autoReadSpeechSourceDone = true;
+    if (_autoReadSpeechQueue.isNotEmpty && !_autoReadSpeechDraining) {
+      unawaited(_drainAutoReadSpeech(settings, _speechGeneration));
+    }
+    _wakeAutoReadSpeech();
+  }
+
+  Future<void> _drainAutoReadSpeech(
+    DeepSeekSettings settings,
+    int generation,
+  ) async {
+    if (_autoReadSpeechDraining) {
+      return;
+    }
+    _autoReadSpeechDraining = true;
+    var playbackStarted = false;
+    String? prefetchedChunk;
+    Future<File>? prefetchedAudio;
+    try {
+      if (mounted) {
+        setState(() {
+          _speechLoading = true;
+          _speakingText = _currentAssistantText();
+        });
+      }
+      while (_isSpeechGenerationActive(generation)) {
+        if (_autoReadSpeechQueue.isEmpty && prefetchedChunk == null) {
+          if (_autoReadSpeechSourceDone) {
+            break;
+          }
+          await _waitForAutoReadSpeech();
+          continue;
+        }
+        final chunk = prefetchedChunk ?? _autoReadSpeechQueue.removeAt(0);
+        final audio = prefetchedAudio ?? _loadSpeechChunk(settings, chunk);
+        prefetchedChunk = null;
+        prefetchedAudio = null;
+        if (_autoReadSpeechQueue.isNotEmpty) {
+          prefetchedChunk = _autoReadSpeechQueue.removeAt(0);
+          final nextAudio = _loadSpeechChunk(settings, prefetchedChunk!);
+          prefetchedAudio = nextAudio;
+          unawaited(nextAudio.then<void>((_) {}, onError: (_, _) {}));
+        }
+        final audioFile = await audio;
+        if (!_isSpeechGenerationActive(generation)) {
+          return;
+        }
+        if (!playbackStarted) {
+          playbackStarted = true;
+          setState(() {
+            _speechLoading = false;
+            _speaking = true;
+            _speakingText = _currentAssistantText();
+          });
+        }
+        await _playSpeechFile(audioFile, generation);
+      }
+      if (_isSpeechGenerationActive(generation)) {
+        _ttsFile = null;
+        setState(() {
+          _speaking = false;
+          _speechLoading = false;
+          _speakingText = '';
+        });
+      }
+    } on DeepSeekApiException catch (error) {
+      if (_isSpeechGenerationActive(generation)) {
+        setState(() {
+          _speaking = false;
+          _speechLoading = false;
+          _speakingText = '';
+        });
+        _showTransientNotice(_chatErrorMessage(error));
+      }
+    } catch (_) {
+      if (_isSpeechGenerationActive(generation)) {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _speaking = false;
+          _speechLoading = false;
+          _speakingText = '';
+        });
+        _showTransientNotice(
+          AppLocalizations.of(context).text('语音播放失败', 'Unable to play audio'),
+        );
+      }
+    } finally {
+      if (generation == _speechGeneration) {
+        _autoReadSpeechDraining = false;
+      }
+    }
+  }
+
+  Future<void> _waitForAutoReadSpeech() {
+    final wakeup = Completer<void>();
+    _autoReadSpeechWakeup = wakeup;
+    return wakeup.future;
+  }
+
+  void _wakeAutoReadSpeech() {
+    final wakeup = _autoReadSpeechWakeup;
+    _autoReadSpeechWakeup = null;
+    if (wakeup != null && !wakeup.isCompleted) {
+      wakeup.complete();
+    }
+  }
+
+  String _currentAssistantText() {
+    for (final message in _messages.reversed) {
+      if (message.role == _AiRole.assistant) {
+        return message.content;
+      }
+    }
+    return '';
   }
 
   Future<void> _toggleSpeech(String text) async {
@@ -820,6 +990,11 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
 
   Future<void> _stopSpeech() async {
     _speechGeneration++;
+    _autoReadSpeechQueue.clear();
+    _autoReadSpeechBuffer = '';
+    _autoReadSpeechSourceDone = true;
+    _autoReadSpeechDraining = false;
+    _wakeAutoReadSpeech();
     _playbackCompletion?.complete();
     _playbackCompletion = null;
     await _speechSubscription?.cancel();

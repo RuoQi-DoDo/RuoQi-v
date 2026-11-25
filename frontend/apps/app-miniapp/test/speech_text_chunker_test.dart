@@ -42,4 +42,25 @@ void main() {
   test('空白文本不会产生 TTS 请求', () {
     expect(splitSpeechTextForPlayback('   \n  '), isEmpty);
   });
+
+  test('流式自动朗读遇到句号立即切出首段', () {
+    const text = '你好。后面的内容可以继续生成。';
+    final cut = streamingSpeechCutIndex(text);
+
+    expect(cut, 3);
+    expect(text.substring(0, cut), '你好。');
+  });
+
+  test('流式自动朗读遇到较长逗号句可提前播放', () {
+    const text = '这是一段超过十二个字的句子，后面的回答还在流式生成。';
+    final comma = text.indexOf('，') + 1;
+
+    expect(streamingSpeechCutIndex(text), comma);
+  });
+
+  test('流式自动朗读无标点时限制单次长度', () {
+    final text = List.filled(40, '连续').join();
+
+    expect(streamingSpeechCutIndex(text), 64);
+  });
 }

@@ -1,5 +1,36 @@
 const _firstChunkLimit = 90;
 const _followingChunkLimit = 220;
+const _streamingSoftBreakAfter = 12;
+const _streamingMaxChunkLength = 64;
+
+/// Returns the first safe cut in incrementally arriving answer text.
+///
+/// Hard punctuation always ends a segment. Soft punctuation is used once a
+/// segment is long enough to sound natural, while unpunctuated text is capped
+/// so auto-read can begin before the full answer has arrived.
+int streamingSpeechCutIndex(String text) {
+  const hardBreaks = '。！？!?；;\n';
+  const softBreaks = '，,、：:';
+  final limit = text.length < _streamingMaxChunkLength
+      ? text.length
+      : _streamingMaxChunkLength;
+  for (var index = 0; index < limit; index++) {
+    final char = text[index];
+    if (hardBreaks.contains(char)) {
+      return index + 1;
+    }
+    if (softBreaks.contains(char)) {
+      if (index + 1 >= _streamingSoftBreakAfter) {
+        return index + 1;
+      }
+    }
+  }
+  if (text.length < _streamingMaxChunkLength) {
+    return -1;
+  }
+  final whitespace = text.lastIndexOf(' ', _streamingMaxChunkLength);
+  return whitespace > 0 ? whitespace + 1 : _streamingMaxChunkLength;
+}
 
 /// Splits spoken text into short sentence-aligned chunks so playback can begin
 /// after the first chunk is synthesized instead of waiting for the full answer.
